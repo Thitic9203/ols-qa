@@ -203,6 +203,25 @@ Each skill ships with knowledge reference files — domain patterns, checklists,
 
 ---
 
+## Contributing / QA
+
+Before opening a PR, run the validation suite to verify nothing is broken:
+
+```bash
+bash tests/run.sh
+```
+
+| Check | What it verifies |
+|-------|-----------------|
+| `01-frontmatter` | Every `SKILL.md` has valid `name` + `description` in correct format |
+| `02-dead-refs` | Knowledge files listed in SKILL.md headers exist on disk |
+| `03-cross-refs` | `helix:skill-name` references point to real skill directories |
+| `04-skill-map` | `skills/` directory is in sync with `commands/helix.md` |
+
+Run a single check: `bash tests/run.sh 2`
+
+---
+
 ## Advanced: parallel agents + MCP (Claude Code)
 
 Some skills support optional parallel sub-agents (faster, 2–4× more tokens) and MCP tool integrations (Jira, GitHub, Confluence, Slack). Both require explicit opt-in — the skill will ask before using either. These features are currently Claude Code only.
