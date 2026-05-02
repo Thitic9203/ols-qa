@@ -93,6 +93,23 @@ go test ./... -v
 
 แจ้ง user ผลสรุป + coverage แล้วถามว่าต้องการต่อ `/helix:test-integration` ไหม
 
+## HTML Report
+
+```bash
+# Jest — output JSON แล้ว generate report
+npx jest --json --outputFile=test-results/results-raw.json
+
+# แปลงเป็น helix normalized format แล้ว generate HTML
+# (AI แปลง Jest JSON → normalized format ดู scripts/helix-report.mjs สำหรับ schema)
+node scripts/helix-report.mjs --input=test-results/results.json --title="Unit Tests"
+
+# Vitest (alternative)
+# npx vitest run --reporter=json --outputFile=test-results/results.json
+# node scripts/helix-report.mjs --input=test-results/results.json
+
+open playwright-report/index.html
+```
+
 ---
 
 ## Self-Evaluation Loop

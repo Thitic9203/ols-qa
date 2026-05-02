@@ -161,6 +161,16 @@ Bundle Size:
 - Score < 90 → ระบุ specific optimizations
 - ผ่านทั้งหมด → แนะนำเพิ่ม Lighthouse CI ใน CI pipeline
 
+## HTML Report
+
+```bash
+# Lighthouse output HTML โดยตรง
+npx lhci autorun --config=lighthouserc.json
+# หรือ generate report จาก lhci JSON:
+node scripts/helix-report.mjs --input=test-results/results.json --title="Frontend Performance"
+open playwright-report/index.html
+```
+
 ---
 
 ## Self-Evaluation Loop

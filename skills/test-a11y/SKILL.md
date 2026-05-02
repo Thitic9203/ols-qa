@@ -136,6 +136,16 @@ npx playwright test tests/a11y/ --reporter=html
 แจ้ง user ผลสรุป violations ตาม page + severity  
 ถามว่าต้องการต่อ `/helix:test-visual` ไหม
 
+## HTML Report
+
+```bash
+# รัน พร้อม HTML report
+npx playwright test --reporter=html
+
+# เปิด report
+npx playwright show-report
+```
+
 ---
 
 ## Self-Evaluation Loop

@@ -179,6 +179,15 @@ Connection Pool: 45/100 (45%) ✅
 - แก้ query แล้ว → re-run `test-perf-load` เพื่อ verify ผล
 - ยังมี perf ปัญหา → `test-perf-profile` เพื่อ CPU/heap analysis
 
+## HTML Report
+
+```bash
+# AI collect slow query results → normalized format
+# suite = ชื่อ table, test = แต่ละ query (status: passed/failed ตาม threshold)
+node scripts/helix-report.mjs --input=test-results/results.json --title="DB Performance"
+open playwright-report/index.html
+```
+
 ---
 
 ## Self-Evaluation Loop

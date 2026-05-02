@@ -151,6 +151,15 @@ pytest tests/contract/
 แจ้ง user ผลสรุป + list contracts ที่ผ่าน/ไม่ผ่าน  
 ถามว่าต้องการต่อ `/helix:test-a11y` ไหม
 
+## HTML Report
+
+```bash
+# Pact JSON → normalized format
+npx jest tests/contract/ --json --outputFile=test-results/contract-raw.json
+node scripts/helix-report.mjs --input=test-results/results.json --title="Contract Tests"
+open playwright-report/index.html
+```
+
 ---
 
 ## Self-Evaluation Loop

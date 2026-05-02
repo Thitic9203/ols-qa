@@ -83,6 +83,15 @@ go test -tags integration ./...
 
 แจ้ง user ผลสรุป แล้วถามว่าต้องการต่อ `/helix:test-e2e` ไหม
 
+## HTML Report
+
+```bash
+npx jest --config jest.integration.config.ts --json --outputFile=test-results/results-raw.json
+# แปลง Jest JSON → helix normalized format → generate
+node scripts/helix-report.mjs --input=test-results/results.json --title="Integration Tests"
+open playwright-report/index.html
+```
+
 ---
 
 ## Self-Evaluation Loop

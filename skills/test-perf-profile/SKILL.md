@@ -170,6 +170,17 @@ Estimated improvement after fixes:
 - แก้แล้ว → re-run `test-perf-load` เพื่อ verify
 - ถ้า fix ต้องการ infra changes → แจ้ง cost estimate ก่อน
 
+## HTML Report
+
+```bash
+# clinic.js / py-spy output HTML โดยตรง
+clinic flame -- node app.js   # เปิด HTML อัตโนมัติ
+
+# หรือ generate helix report จาก profiling summary:
+node scripts/helix-report.mjs --input=test-results/results.json --title="CPU & Memory Profile"
+open playwright-report/index.html
+```
+
 ---
 
 ## Self-Evaluation Loop

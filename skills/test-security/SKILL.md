@@ -126,6 +126,16 @@ bandit -r src/ -ll
 สร้าง `tests/security/SECURITY_SCAN.md` สรุปผล scan ทั้งหมด + issues ที่แก้แล้ว  
 แจ้ง user และถามว่าต้องการต่อ `/helix:test-contract` ไหม
 
+## HTML Report
+
+```bash
+# semgrep JSON → normalized format
+semgrep --config=auto --json > test-results/security-raw.json
+# AI แปลง semgrep findings → normalized format (ทุก finding = 1 test, status failed ถ้า severity high/critical)
+node scripts/helix-report.mjs --input=test-results/results.json --title="Security Scan"
+open playwright-report/index.html
+```
+
 ---
 
 ## Self-Evaluation Loop

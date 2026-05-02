@@ -108,6 +108,15 @@ Recovery time: 45 seconds
 - มี DB timeout ใน stress → `test-perf-db`
 - CPU spike ชัดเจน → `test-perf-profile`
 
+## HTML Report
+
+```bash
+k6 run --out json=test-results/stress-raw.json tests/performance/stress.js
+# AI แปลง k6 stages output → normalized format (แต่ละ stage = 1 suite)
+node scripts/helix-report.mjs --input=test-results/results.json --title="Stress Test"
+open playwright-report/index.html
+```
+
 ---
 
 ## Self-Evaluation Loop

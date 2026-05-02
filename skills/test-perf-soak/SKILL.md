@@ -135,6 +135,15 @@ Root cause investigation needed before deploy
 - มี heap leak → `test-perf-profile` สำหรับ flamegraph/heap analysis
 - มี DB connection leak → `test-perf-db` ตรวจ query patterns
 
+## HTML Report
+
+```bash
+# export time-series metrics → normalized format
+# suites = ["5min", "10min", "20min", "30min"] แต่ละ suite มี tests สำหรับ metric แต่ละตัว
+node scripts/helix-report.mjs --input=test-results/results.json --title="Soak Test (30 min)"
+open playwright-report/index.html
+```
+
 ---
 
 ## Self-Evaluation Loop

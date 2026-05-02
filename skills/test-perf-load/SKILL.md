@@ -113,6 +113,16 @@ locust -f tests/performance/locustfile.py --headless -u 50 -r 5 -t 5m \
 - มี leak สงสัย → แนะนำ `test-perf-soak`
 - DB ช้า → แนะนำ `test-perf-db`
 
+## HTML Report
+
+```bash
+# k6 output JSON → แปลงเป็น normalized format
+k6 run --out json=test-results/load-raw.json tests/performance/load.js
+# AI แปลง k6 JSON summary → helix normalized format
+node scripts/helix-report.mjs --input=test-results/results.json --title="Load Test"
+open playwright-report/index.html
+```
+
 ---
 
 ## Self-Evaluation Loop
