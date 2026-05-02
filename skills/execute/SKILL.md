@@ -73,7 +73,7 @@ Trust: ⭐⭐⭐ Official / ⭐⭐ Trusted / ⭐ Community
 เหตุผล: [ทำไมถึงเหมาะ]
 
 ต้องการติดตั้งไหมคับ?
-[ ] ใช่ → claude plugins install <skill>@<marketplace>
+[ ] ใช่ → install the skill via your platform's plugin manager
 [ ] ไม่ → ใช้ [fallback] แทน
 ```
 

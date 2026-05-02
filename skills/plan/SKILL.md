@@ -94,7 +94,7 @@ https://<ORG_REPO_URL>/blob/main/docs/md_template.md
 ```
 1. รายละเอียด plan โอเคไหม? มีอะไรต้องปรับแก้ไหม?
 2. ต้องการให้ upload MD plan ไว้ที่ path ใดใน repo?
-   (เช่น docs/plans/, .claude/plans/)
+   (เช่น docs/plans/, .helix/plans/)
 ```
 
 เมื่อ approve → commit MD plan ไปที่ path ที่ระบุ แล้วถามว่าต้องการต่อไป `/helix:execute` ไหม
