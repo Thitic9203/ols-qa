@@ -38,6 +38,7 @@ git checkout main && git pull origin main
 
 → invoke `helix:execute` เพื่อ implement ตาม plan
 → อัปเดตทุก 10 นาที จนครบทุก task
+→ **หลัง implement เสร็จ: วน bug-fix loop 3 รอบ (Logic / Integration / Security) ก่อนออกจาก step นี้เสมอ**
 
 ## STEP 5: Test
 

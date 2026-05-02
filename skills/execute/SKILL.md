@@ -1,11 +1,12 @@
 ---
 name: execute
-description: "Execute an existing development plan. Use when a plan is already approved and committed — this phase handles coding, implementation, and progress reporting every 10 minutes until complete."
+description: "Execute an existing development plan. Use when a plan is already approved and committed — this phase handles coding, implementation, 3-round bug-fix loop after dev, then hands off to testing."
 ---
 
-# Dev Orchestrator — Execute Phase
+# Helix — Execute Phase
 
-ลงมือ implement ตาม plan ที่ approve แล้ว พร้อมอัปเดตทุก 10 นาที
+ลงมือ implement ตาม plan ที่ approve แล้ว พร้อมอัปเดตทุก 10 นาที  
+**หลัง dev เสร็จ → วนเช็คและแก้บัค 3 รอบก่อนส่งต่อไป test phase เสมอ**
 
 ## Input ที่ต้องการ
 
@@ -72,6 +73,63 @@ Trust: ⭐⭐⭐ Official / ⭐⭐ Trusted / ⭐ Community
 [ ] ไม่ → ใช้ [fallback] แทน
 ```
 
+---
+
+## Post-Dev: Bug-Fix Loop (3 รอบ — บังคับ)
+
+**ทำทันทีที่ implement ครบทุก task ใน plan ก่อนส่งต่อ test phase เสมอ**
+
+### รอบที่ 1 — Logic & Correctness
+ตรวจทีละ component/module ที่เพิ่งเขียน:
+```
+[ ] Logic ถูกต้องตาม requirement?
+[ ] Edge cases ทั้งหมดที่รู้จักได้รับการ handle?
+[ ] Return values / error responses ถูกต้อง?
+[ ] ไม่มี off-by-one, null pointer, unhandled promise?
+```
+พบบัค → **แก้ทันที** แล้วเช็คต่อ ไม่ข้าม
+
+### รอบที่ 2 — Integration & Side Effects
+ตรวจการทำงานร่วมกันระหว่าง components:
+```
+[ ] Data flow ระหว่าง modules ถูกต้อง?
+[ ] ไม่มี race condition / missing await?
+[ ] DB transactions ครบถ้วน?
+[ ] การเปลี่ยนแปลงนี้ไม่ทำให้ feature เดิมพัง?
+[ ] API contracts ยังตรงกับ consumers?
+```
+พบบัค → **แก้ทันที** แล้วเช็คต่อ ไม่ข้าม
+
+### รอบที่ 3 — Code Quality & Security
+ตรวจ code ที่เขียนใหม่ทั้งหมด:
+```
+[ ] ไม่มี hardcoded secrets / credentials?
+[ ] Input validation ครบในทุก entry point?
+[ ] ไม่มี SQL injection / XSS surface ใหม่?
+[ ] ไม่มี dead code / commented-out code?
+[ ] Build / compile สะอาด ไม่มี warning?
+```
+พบบัค → **แก้ทันที** แล้วเช็คต่อ ไม่ข้าม
+
+### สรุป Bug-Fix Loop
+
+รายงานให้ user หลังครบ 3 รอบ:
+```
+🔍 Bug-Fix Loop เสร็จแล้วคับ (3/3 รอบ)
+
+| รอบ | ตรวจ | บัคที่พบ | แก้แล้ว |
+|-----|------|---------|--------|
+| 1   | Logic & Correctness | X | X |
+| 2   | Integration & Side Effects | X | X |
+| 3   | Code Quality & Security | X | X |
+
+พร้อมเข้า test phase แล้วคับ
+```
+
+**ห้ามข้ามไป `/helix:test` โดยไม่ผ่าน bug-fix loop ครบ 3 รอบ**
+
+---
+
 ## Staging-First Deployment
 
 ทุก deployment change ต้องผ่าน:
@@ -80,6 +138,6 @@ staging → verify → production
 ```
 ห้าม deploy ตรงไป production
 
-## เมื่อ Execute เสร็จ
+## เมื่อ Execute + Bug-Fix Loop เสร็จ
 
 ถามผู้ใช้ว่าต้องการต่อไป `/helix:test` ไหม
