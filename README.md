@@ -78,20 +78,26 @@ review        — code review + security audit
 
 ### Test sub-skills
 
+Test types follow **ISO/IEC 25010 (SQuaRE)** classification. Run tiers in order — Tier 1 must pass before Tier 2 is meaningful.
+
+**Tier 1 — Functional** *(ISO 25010: Functional Suitability)*
 ```
 test-unit          — unit tests (creates structure if missing)
 test-integration   — integration tests with real DB/services
-test-e2e           — Playwright E2E tests
-test-perf          — performance orchestrator (choose sub-type)
-test-security      — OWASP Top 10, semgrep, trufflehog, trivy
 test-contract      — API contract tests (Pact)
+test-e2e           — Playwright E2E tests
+```
+
+**Tier 2 — Non-Functional Quality** *(ISO 25010: Security + Usability — run after Tier 1 passes)*
+```
+test-security      — OWASP Top 10, semgrep, trufflehog, trivy
 test-a11y          — Accessibility (axe-core + WCAG 2.1)
 test-visual        — Visual regression (Playwright snapshots)
 ```
 
-### Performance sub-skills
-
+**Tier 3 — Non-Functional Performance** *(ISO 25010: Performance Efficiency — requires running environment)*
 ```
+test-perf          — performance orchestrator (choose sub-type)
 test-perf-load     — p95/p99 at expected concurrent users (k6, locust, autocannon)
 test-perf-stress   — find breaking point + verify recovery after overload
 test-perf-soak     — detect memory/connection leaks over 30–60 min sustained load
