@@ -32,7 +32,13 @@ argument-hint: "phase (optional): full | analyze | plan | execute | test | deplo
 │    │  ├ /helix:test-unit        │ Unit tests                        │
 │    │  ├ /helix:test-integration │ Integration tests                 │
 │    │  ├ /helix:test-e2e         │ E2E (Playwright)                  │
-│    │  ├ /helix:test-perf        │ Performance (k6/locust)           │
+│    │  ├ /helix:test-perf        │ Performance orchestrator          │
+│    │  │  ├ /helix:test-perf-load     │ Load — p95/p99 at expected VUs  │
+│    │  │  ├ /helix:test-perf-stress   │ Stress — find breaking point    │
+│    │  │  ├ /helix:test-perf-soak     │ Soak — memory/connection leak   │
+│    │  │  ├ /helix:test-perf-frontend │ Frontend — CWV + bundle size    │
+│    │  │  ├ /helix:test-perf-db       │ DB — slow query + index         │
+│    │  │  └ /helix:test-perf-profile  │ Profile — flamegraph + heap     │
 │    │  ├ /helix:test-security    │ Security (OWASP/semgrep)          │
 │    │  ├ /helix:test-contract    │ API Contract (Pact)               │
 │    │  ├ /helix:test-a11y        │ Accessibility (axe/WCAG)          │
@@ -58,6 +64,12 @@ Argument mapping:
 - `test-integration` → `helix:test-integration`
 - `test-e2e` → `helix:test-e2e`
 - `test-perf` → `helix:test-perf`
+- `test-perf-load` → `helix:test-perf-load`
+- `test-perf-stress` → `helix:test-perf-stress`
+- `test-perf-soak` → `helix:test-perf-soak`
+- `test-perf-frontend` → `helix:test-perf-frontend`
+- `test-perf-db` → `helix:test-perf-db`
+- `test-perf-profile` → `helix:test-perf-profile`
 - `test-security` → `helix:test-security`
 - `test-contract` → `helix:test-contract`
 - `test-a11y` → `helix:test-a11y`

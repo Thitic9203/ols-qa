@@ -1,97 +1,74 @@
 ---
 name: test-perf
-description: "Performance test workflow — checks existing perf test structure, creates if missing, augments if exists. Measures response time, throughput, and resource usage. Free tools only unless user approves paid."
+description: "Performance test orchestrator — choose a perf test type or run the full pipeline. Delegates to sub-skills: load, stress, soak, frontend, db, profile."
 ---
 
-# Helix — Performance Test
+# Helix — Performance Test Orchestrator
 
 > 📚 **Knowledge References** (loaded automatically):  
-> `perf-thresholds.md` — threshold guidelines, tool templates, bottleneck patterns
+> `perf-thresholds.md` — threshold guidelines, tool matrix, bottleneck patterns
 
-วัด response time, throughput, และ resource usage — เน้น free tools ก่อนเสมอ
+## Choose Your Performance Test
 
-## Step 1: Repo Structure Check
-
-```bash
-# หา performance test folder
-find . -type d \( -name "perf" -o -name "performance" -o -name "load" -o -name "benchmark" \) \
-  | grep -v node_modules | grep -v .git
-
-# ตรวจ perf tool ที่มีอยู่
-cat package.json 2>/dev/null | grep -E "k6|autocannon|artillery|locust|ab"
-which k6 ab wrk locust artillery 2>/dev/null
-```
-
-### กรณี A: ยังไม่มี performance test
-
-**Free tools แนะนำ (เรียงตามความเหมาะสม):**
-
-| Tool | เหมาะกับ | ติดตั้ง | Cost |
-|------|---------|--------|------|
-| `k6` | HTTP APIs, scripted scenarios | `brew install k6` | Free (OSS) |
-| `autocannon` | Node.js HTTP benchmarks | `npm i -D autocannon` | Free |
-| `artillery` | HTTP + WebSocket + complex flows | `npm i -D artillery` | Free tier |
-| `locust` | Python projects | `pip install locust` | Free |
-| `ab` (Apache Bench) | quick spot-checks | built-in macOS/Linux | Free |
-
-สร้าง structure:
-```
-tests/performance/
-├── scenarios/       ← k6/artillery scripts
-├── thresholds.js    ← pass/fail criteria
-└── reports/         ← .gitignore'd output
-```
-
-**ห้ามแนะนำ k6 Cloud, BlazeMeter, LoadNinja** โดยไม่แจ้ง cost ก่อน
-
-### กรณี B: มี perf test แล้ว
-
-- อ่าน scenarios และ thresholds ที่มีอยู่
-- ระบุ endpoints/flows ใหม่ที่ยังไม่มี test
-- เพิ่ม scenarios ใหม่ + ตรวจว่า thresholds ยังเหมาะสมไหม
-
-## Step 2: Test Case Planning
-
-กำหนด thresholds ก่อน run:
+ถามถ้าไม่มี argument:
 
 ```
-| Metric | Target | Failing Threshold |
-|--------|--------|-----------------|
-| p95 response time | < 500ms | > 1000ms |
-| p99 response time | < 1000ms | > 2000ms |
-| Error rate | < 1% | > 5% |
-| Throughput | > X req/s | < Y req/s |
-| CPU usage | < 70% | > 90% |
+🚀 Performance Testing — เลือกประเภท:
+
+[ ] test-perf-load      — p95/p99 ที่ load ปกติ (baseline validation)
+[ ] test-perf-stress    — หา breaking point + ตรวจ recovery
+[ ] test-perf-soak      — จับ memory/connection leak (30-60 min)
+[ ] test-perf-frontend  — Core Web Vitals, bundle size, LCP/CLS/INP
+[ ] test-perf-db        — slow queries, missing index, N+1 detection
+[ ] test-perf-profile   — CPU flamegraph + heap snapshot
+
+หรือพิมพ์ "all" เพื่อรัน pipeline ทั้งหมด
 ```
 
-ครอบคลุม scenarios:
-| Scenario | Load | Duration |
-|---------|------|---------|
-| Smoke test | 1-5 VUs | 1 min |
-| Average load | expected concurrent users | 5 min |
-| Spike test | 10x normal | 2 min |
-| Soak test | sustained load | 30 min (optional) |
+## Recommended Pipeline Order
 
-## Step 3: Run & Fix
-
-```bash
-# k6
-k6 run --out json=reports/result.json tests/performance/scenarios/main.js
-
-# autocannon
-npx autocannon -c 100 -d 30 http://localhost:3000/api/target
-
-# locust
-locust -f tests/performance/locustfile.py --headless -u 100 -r 10 -t 5m
+```
+load → stress → soak → db → frontend → profile
 ```
 
-รายงานทุก 10 นาที ถ้า threshold ไม่ผ่าน → วิเคราะห์ bottleneck → แก้ → re-run
+| Step | เมื่อไร | Skip เมื่อ |
+|------|--------|-----------|
+| `test-perf-load` | เสมอ | — |
+| `test-perf-stress` | หลัง load pass | ไม่สนใจ capacity limit |
+| `test-perf-soak` | สงสัย leak | service รัน < 5 min |
+| `test-perf-db` | API latency สูง | app ไม่มี DB |
+| `test-perf-frontend` | มี web UI | backend-only service |
+| `test-perf-profile` | ยังหา root cause ไม่ได้ | ใช้เมื่อ confirm ปัญหาแล้ว |
 
-**ถ้าแก้แล้วต้องการ infra เพิ่ม → แจ้ง cost estimate ก่อน ห้ามดำเนินการเองเด็ดขาด**
+## Quick Decision Guide
 
-## Done
+```
+API ช้า แต่ไม่รู้สาเหตุ?     → load → db → profile
+Memory ค่อยๆ เพิ่มใน prod?   → soak → profile
+ต้องการรู้ capacity limit?   → load → stress
+หน้าเว็บช้า / Google ranking? → frontend
+เพิ่งแก้ query / เพิ่ม index? → db → load
+```
 
-แจ้ง user ผลสรุป + metrics report แล้วถามว่าต้องการต่อ `/helix:test-security` ไหม
+## Invoke Sub-skill
+
+เมื่อ user เลือกแล้ว → invoke skill ที่ตรงกัน:
+
+| เลือก | Invoke |
+|-------|--------|
+| load | `helix:test-perf-load` |
+| stress | `helix:test-perf-stress` |
+| soak | `helix:test-perf-soak` |
+| frontend | `helix:test-perf-frontend` |
+| db | `helix:test-perf-db` |
+| profile | `helix:test-perf-profile` |
+| all | รันตามลำดับ load → stress → soak → db → frontend → profile |
+
+## Core Rules
+
+- ห้ามแนะนำ k6 Cloud, BlazeMeter, LoadNinja โดยไม่แจ้ง cost ก่อน
+- ห้าม run load/stress test บน production โดยไม่ได้รับอนุญาต
+- ถ้าแก้ perf แล้วต้องใช้ infra เพิ่ม → แจ้ง cost estimate ก่อนเสมอ
 
 ---
 

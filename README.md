@@ -82,11 +82,22 @@ review        — code review + security audit
 test-unit          — unit tests (creates structure if missing)
 test-integration   — integration tests with real DB/services
 test-e2e           — Playwright E2E tests
-test-perf          — performance tests (k6, autocannon, locust)
+test-perf          — performance orchestrator (choose sub-type)
 test-security      — OWASP Top 10, semgrep, trufflehog, trivy
 test-contract      — API contract tests (Pact)
 test-a11y          — Accessibility (axe-core + WCAG 2.1)
 test-visual        — Visual regression (Playwright snapshots)
+```
+
+### Performance sub-skills
+
+```
+test-perf-load     — p95/p99 at expected concurrent users (k6, locust, autocannon)
+test-perf-stress   — find breaking point + verify recovery after overload
+test-perf-soak     — detect memory/connection leaks over 30–60 min sustained load
+test-perf-frontend — Core Web Vitals (LCP/CLS/INP), bundle size, Lighthouse CI
+test-perf-db       — slow queries, EXPLAIN ANALYZE, N+1 detection, index gaps
+test-perf-profile  — CPU flamegraph + heap snapshot (clinic.js, py-spy, pprof)
 ```
 
 ---
@@ -136,8 +147,20 @@ skills/
     integration-patterns.md
   test-e2e/            ← Playwright-based
     e2e-patterns.md
-  test-perf/
+  test-perf/               ← performance orchestrator
     perf-thresholds.md
+  test-perf-load/          ← p95/p99 at expected load
+    load-patterns.md
+  test-perf-stress/        ← breaking point + recovery
+    stress-patterns.md
+  test-perf-soak/          ← memory/connection leak detection
+    soak-patterns.md
+  test-perf-frontend/      ← Core Web Vitals + bundle size
+    frontend-perf-patterns.md
+  test-perf-db/            ← slow query + index analysis
+    db-perf-patterns.md
+  test-perf-profile/       ← CPU flamegraph + heap snapshot
+    profile-patterns.md
   test-security/
     owasp-checklist.md
   deploy/
