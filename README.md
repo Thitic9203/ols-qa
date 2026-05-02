@@ -4,7 +4,23 @@
 
 Helix is a plugin/skill pack that guides any AI through every stage of software development: requirements analysis, planning, implementation, testing, deployment, and code review.
 
-Skills are written in plain Markdown following the [agentskills.io](https://agentskills.io/specification) open format — they work with Claude Code, Copilot CLI, Gemini CLI, Cursor, or any AI that can read context.
+Skills are written in plain Markdown following the [agentskills.io](https://agentskills.io/specification) open format.
+
+## Compatible AI Tools
+
+| AI Tool | Support | Notes |
+|---------|:-------:|-------|
+| **Claude Code** (Anthropic) | ✅ Full | Plugin system + slash commands |
+| **GitHub Copilot CLI** | ✅ Full | agentskills format |
+| **Codex CLI** (OpenAI) | ✅ Full | agentskills format |
+| **Gemini CLI** (Google) | ✅ Full | skill directory |
+| **Cursor** | ✅ Full | `.cursor/rules/` |
+| **Windsurf** (Codeium) | ✅ Full | `.windsurf/rules/` |
+| **Continue** (VS Code / JetBrains) | ✅ Full | context provider |
+| **Aider** | ✅ Full | paste SKILL.md as context |
+| **Any AI with Markdown context** | ✅ Manual | paste skills directly |
+
+> The plugin entry point (`.claude-plugin/`, `commands/`) is Claude Code only. All skills and knowledge files work universally.
 
 ---
 
