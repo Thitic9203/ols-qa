@@ -1,6 +1,6 @@
 ---
 name: test-visual
-description: "Visual regression test workflow — captures baseline screenshots and compares on each run. Uses Playwright built-in snapshot comparison. Creates tests if missing, augments if exists."
+description: "[Tier 2 — Non-Functional: Usability · ISO 25010] Visual regression test workflow — captures baseline screenshots and compares on each run using Playwright snapshots. Run after Tier 1 functional tests pass."
 ---
 
 # Helix — Visual Regression Test

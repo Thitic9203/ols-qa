@@ -1,6 +1,6 @@
 ---
 name: test-security
-description: "Security test workflow — checks existing security test structure, creates if missing, augments if exists. Covers OWASP Top 10, dependency vulnerabilities, secrets scanning, and auth testing."
+description: "[Tier 2 — Non-Functional: Security · ISO 25010] Security test workflow — OWASP Top 10, dependency CVEs, secrets scanning, and auth testing. Run after Tier 1 functional tests pass."
 ---
 
 # Helix — Security Test

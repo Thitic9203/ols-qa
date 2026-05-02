@@ -1,6 +1,6 @@
 ---
 name: test-perf-stress
-description: "Stress test workflow — ramps load beyond capacity to find breaking point and verify recovery. Use to discover system limits before they hit production."
+description: "[Tier 3 — Non-Functional: Performance Efficiency · ISO 25010] Stress test workflow — ramps load beyond capacity to find breaking point and verify recovery. Discovers system limits before they hit production. Requires a running environment."
 ---
 
 # Helix — Stress Test

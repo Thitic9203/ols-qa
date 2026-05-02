@@ -1,6 +1,6 @@
 ---
 name: test-perf-profile
-description: "CPU and memory profiling workflow — generates flamegraphs and heap snapshots to pinpoint hot code paths and memory leaks. Use after load/soak tests confirm a performance problem exists."
+description: "[Tier 3 — Non-Functional: Performance Efficiency · ISO 25010] CPU and memory profiling workflow — flamegraphs and heap snapshots to pinpoint hot paths and memory leaks. Use after load/soak tests confirm a performance problem exists."
 ---
 
 # Helix — CPU & Memory Profiling

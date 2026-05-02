@@ -1,6 +1,6 @@
 ---
 name: test-perf-frontend
-description: "Frontend performance test workflow — measures Core Web Vitals (LCP, CLS, INP), bundle size, and render performance. Use before releasing UI changes or when Google ranking / user-perceived speed matters."
+description: "[Tier 3 — Non-Functional: Performance Efficiency · ISO 25010] Frontend performance test workflow — Core Web Vitals (LCP, CLS, INP), bundle size, and render performance. Use before releasing UI changes or when Google ranking matters."
 ---
 
 # Helix — Frontend Performance Test

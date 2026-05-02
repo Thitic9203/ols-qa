@@ -1,6 +1,6 @@
 ---
 name: test-perf-soak
-description: "Soak test workflow — runs sustained load for 30-60 min to detect memory leaks and connection pool exhaustion. Use when suspecting gradual degradation in long-running services."
+description: "[Tier 3 — Non-Functional: Performance Efficiency · ISO 25010] Soak test workflow — sustained load for 30-60 min to detect memory leaks and connection pool exhaustion. Use when suspecting gradual degradation. Requires a running environment."
 ---
 
 # Helix — Soak Test

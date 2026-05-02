@@ -1,6 +1,6 @@
 ---
 name: test-unit
-description: "Unit test workflow — checks existing unit test structure in target repo, creates if missing, augments if exists. Covers all functions, methods, and components related to the current feature."
+description: "[Tier 1 — Functional · ISO 25010: Functional Suitability] Unit test workflow — checks existing unit test structure, creates if missing, augments if exists. Covers all functions, methods, and components related to the current feature."
 ---
 
 # Helix — Unit Test

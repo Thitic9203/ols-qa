@@ -1,6 +1,6 @@
 ---
 name: test-integration
-description: "Integration test workflow — checks existing integration test structure, creates if missing, augments if exists. Tests interactions between modules, services, and databases with real dependencies."
+description: "[Tier 1 — Functional · ISO 25010: Functional Suitability] Integration test workflow — checks existing integration test structure, creates if missing, augments if exists. Tests module-to-module interactions with real DB connections."
 ---
 
 # Helix — Integration Test

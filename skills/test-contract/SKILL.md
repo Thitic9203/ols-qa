@@ -1,6 +1,6 @@
 ---
 name: test-contract
-description: "API contract test workflow — verifies that API providers and consumers agree on the contract. Creates Pact tests if missing, augments if exists. Essential for microservices and separated frontend/backend teams."
+description: "[Tier 1 — Functional · ISO 25010: Functional Suitability] API contract test workflow — verifies API providers and consumers agree on the contract using Pact. Essential for microservices and separated frontend/backend teams."
 ---
 
 # Helix — Contract Test (Pact)

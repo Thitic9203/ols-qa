@@ -1,6 +1,6 @@
 ---
 name: test-perf-load
-description: "Load test workflow — measures response time and throughput at expected concurrent users. Use to validate p95/p99 SLOs before release."
+description: "[Tier 3 — Non-Functional: Performance Efficiency · ISO 25010] Load test workflow — measures p95/p99 latency and throughput at expected concurrent users. Use to validate SLOs before release. Requires a running environment."
 ---
 
 # Helix — Load Test

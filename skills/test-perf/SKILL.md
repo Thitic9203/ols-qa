@@ -1,6 +1,6 @@
 ---
 name: test-perf
-description: "Performance test orchestrator — choose a perf test type or run the full pipeline. Delegates to sub-skills: load, stress, soak, frontend, db, profile."
+description: "[Tier 3 — Non-Functional: Performance Efficiency · ISO 25010] Performance test orchestrator — choose a sub-type or run the full pipeline. Requires a running environment. Delegates to: load, stress, soak, db, frontend, profile."
 ---
 
 # Helix — Performance Test Orchestrator

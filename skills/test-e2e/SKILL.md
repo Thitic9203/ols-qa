@@ -1,6 +1,6 @@
 ---
 name: test-e2e
-description: "E2E test workflow using Playwright — checks existing E2E structure, creates if missing, augments if exists. Tests full user flows through real browser."
+description: "[Tier 1 — Functional · ISO 25010: Functional Suitability] E2E test workflow using Playwright — checks existing E2E structure, creates if missing, augments if exists. Tests full user flows through a real browser."
 ---
 
 # Helix — E2E Test (Playwright)

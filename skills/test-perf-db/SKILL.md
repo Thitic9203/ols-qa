@@ -1,6 +1,6 @@
 ---
 name: test-perf-db
-description: "Database performance test workflow — finds slow queries, missing indexes, and N+1 patterns using EXPLAIN ANALYZE. Use when API latency is high and the bottleneck is suspected to be the database."
+description: "[Tier 3 — Non-Functional: Performance Efficiency · ISO 25010] Database performance test workflow — slow queries, missing indexes, and N+1 patterns via EXPLAIN ANALYZE. Use when API latency is high and the database is suspected. Requires a running environment."
 ---
 
 # Helix — Database Performance Test

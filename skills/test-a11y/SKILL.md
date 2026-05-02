@@ -1,6 +1,6 @@
 ---
 name: test-a11y
-description: "Accessibility test workflow — checks WCAG 2.1 compliance using axe-core with Playwright. Creates a11y tests if missing, augments if exists. Works on any web UI."
+description: "[Tier 2 — Non-Functional: Usability · ISO 25010] Accessibility test workflow — WCAG 2.1 AA compliance via axe-core + Playwright. Creates tests if missing, augments if exists. Run after Tier 1 functional tests pass."
 ---
 
 # Helix — Accessibility Test (a11y)
