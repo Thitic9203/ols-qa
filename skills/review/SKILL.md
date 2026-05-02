@@ -5,6 +5,10 @@ description: "Code review and security audit. Use when you need a thorough revie
 
 # Dev Orchestrator — Review Phase
 
+> 📚 **Knowledge References** (loaded automatically):  
+> `code-quality-patterns.md` — 5 quality dimensions, code smell catalog  
+> `review-output-format.md` — standard output structure, finding classification
+
 ทำ code review + security audit อย่างละเอียดก่อน merge หรือ deploy
 
 ## Input ที่ต้องการ
@@ -100,3 +104,35 @@ description: "Code review and security audit. Use when you need a thorough revie
 ```
 
 แจ้ง user ว่า review เสร็จแล้ว พร้อม list สิ่งที่ต้องแก้ก่อน merge
+
+---
+
+## Self-Evaluation Loop
+
+ก่อนส่ง output ให้ user ทำ self-check ทุกครั้ง:
+
+```
+1. Output ครบถ้วนตาม scope ที่รับมาไหม?
+2. มีจุดไหนที่ยังไม่แน่ใจ ควรถามก่อนไหม?
+3. Format ถูกต้องตามที่กำหนดในสกิลไหม?
+4. มีอะไรที่อาจทำให้งานพัง / เกิด side effect ที่ไม่ตั้งใจไหม?
+```
+
+ตอบ "ไม่ใช่" ข้อไหน → **แก้ก่อนส่ง** เสมอ
+
+---
+
+## MCP Tool Integration ⚠️ เชื่อมต่อระบบภายนอก
+
+สกิลนี้สามารถดึง code changes จาก GitHub PR ผ่าน MCP ได้
+
+> **ก่อนเชื่อมต่อ**: MCP tools จะเข้าถึงข้อมูลจาก external services ในนามของคุณ
+
+**อนุญาตให้เชื่อมต่อ MCP tools ต่อไปนี้ไหมคับ?**
+
+| Tool | ประโยชน์ | อนุญาต? |
+|------|---------|--------|
+| GitHub PR API | ดึง diff + comments โดยตรงจาก PR | `[ ] ใช่ / [ ] ไม่` |
+| Linear/Jira | link review findings กับ tickets | `[ ] ใช่ / [ ] ไม่` |
+
+ไม่อนุญาต → review จาก files/diffs ที่ user paste มาใน chat แทน

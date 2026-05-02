@@ -5,6 +5,10 @@ description: Requirements analysis and risk assessment for a software feature or
 
 # Dev Orchestrator — Analyze Phase
 
+> 📚 **Knowledge References** (loaded automatically):  
+> `requirement-patterns.md` — underspecification patterns, clarification questions  
+> `risk-patterns.md` — risk severity matrix, cost trap patterns
+
 วิเคราะห์ requirement และ risk อย่างละเอียดก่อนเริ่มพัฒนา
 
 ## Input ที่ต้องการ
@@ -60,3 +64,50 @@ description: Requirements analysis and risk assessment for a software feature or
 - สิ่งที่ต้องถาม stakeholder เพิ่มเติมก่อนดำเนินการ
 
 ถามผู้ใช้ว่าต้องการต่อไป `/helix:plan` เพื่อสร้าง development plan ไหม
+
+---
+
+## Self-Evaluation Loop
+
+ก่อนส่ง output ให้ user ทำ self-check ทุกครั้ง:
+
+```
+1. Output ครบถ้วนตาม scope ที่รับมาไหม?
+2. มีจุดไหนที่ยังไม่แน่ใจ ควรถามก่อนไหม?
+3. Format ถูกต้องตามที่กำหนดในสกิลไหม?
+4. มีอะไรที่อาจทำให้งานพัง / เกิด side effect ที่ไม่ตั้งใจไหม?
+```
+
+ตอบ "ไม่ใช่" ข้อไหน → **แก้ก่อนส่ง** เสมอ
+
+---
+
+## Parallel Agent Option ⚠️ ใช้ token มากขึ้น
+
+สกิลนี้รองรับ parallel sub-agents — แยก agents ทำงานพร้อมกันเพื่อความเร็ว
+
+> **ค่าใช้จ่าย**: Parallel mode = หลาย API calls พร้อมกัน → token เพิ่มขึ้น 2-4×  
+> แบบปกติ (sequential): ทีละขั้น ใช้ token น้อยกว่า  
+> แบบ parallel: เร็วขึ้น ~50% แต่ต้นทุน token สูงกว่า
+
+**ต้องการเปิด parallel mode ไหมคับ?**  
+`[ ] ใช่` → เปิด (แจ้งเมื่อใช้ token สูงกว่าปกติ)  
+`[x] ไม่` → รันแบบปกติ (default)
+
+---
+
+## MCP Tool Integration ⚠️ เชื่อมต่อระบบภายนอก
+
+สกิลนี้สามารถดึงข้อมูล requirement จากระบบที่เชื่อมต่อผ่าน MCP ได้
+
+> **ก่อนเชื่อมต่อ**: MCP tools จะเข้าถึงข้อมูลจาก external services ในนามของคุณ
+
+**อนุญาตให้เชื่อมต่อ MCP tools ต่อไปนี้ไหมคับ?**
+
+| Tool | ประโยชน์ | อนุญาต? |
+|------|---------|--------|
+| Jira/Linear | ดึง requirements จาก tickets | `[ ] ใช่ / [ ] ไม่` |
+| GitHub | อ่าน issues, PR descriptions, README | `[ ] ใช่ / [ ] ไม่` |
+| Confluence/Notion | ดึง spec/design docs | `[ ] ใช่ / [ ] ไม่` |
+
+ไม่อนุญาต → วิเคราะห์จากข้อมูลที่ user ระบุใน chat แทน

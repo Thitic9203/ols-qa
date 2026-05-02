@@ -5,6 +5,10 @@ description: "Execute an existing development plan. Use when a plan is already a
 
 # Helix — Execute Phase
 
+> 📚 **Knowledge References** (loaded automatically):  
+> `impact-analysis.md` — dependency tracing, change risk categories  
+> `bug-fix-patterns.md` — 50-point bug-fix checklist, code vs test bug guide
+
 ลงมือ implement ตาม plan ที่ approve แล้ว พร้อมอัปเดตทุก 10 นาที  
 **หลัง dev เสร็จ → วนเช็คและแก้บัค 3 รอบก่อนส่งต่อไป test phase เสมอ**
 
@@ -141,3 +145,18 @@ staging → verify → production
 ## เมื่อ Execute + Bug-Fix Loop เสร็จ
 
 ถามผู้ใช้ว่าต้องการต่อไป `/helix:test` ไหม
+
+---
+
+## Self-Evaluation Loop
+
+ก่อนส่ง output ให้ user ทำ self-check ทุกครั้ง:
+
+```
+1. Output ครบถ้วนตาม scope ที่รับมาไหม?
+2. มีจุดไหนที่ยังไม่แน่ใจ ควรถามก่อนไหม?
+3. Format ถูกต้องตามที่กำหนดในสกิลไหม?
+4. มีอะไรที่อาจทำให้งานพัง / เกิด side effect ที่ไม่ตั้งใจไหม?
+```
+
+ตอบ "ไม่ใช่" ข้อไหน → **แก้ก่อนส่ง** เสมอ

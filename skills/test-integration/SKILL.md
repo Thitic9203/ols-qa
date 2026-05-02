@@ -5,6 +5,9 @@ description: "Integration test workflow — checks existing integration test str
 
 # Helix — Integration Test
 
+> 📚 **Knowledge References** (loaded automatically):  
+> `integration-patterns.md` — what to test, DB patterns, API integration structure
+
 ทดสอบการทำงานร่วมกันของ modules, services, APIs, และ databases
 
 ## Step 1: Repo Structure Check
@@ -79,3 +82,18 @@ go test -tags integration ./...
 ## Done
 
 แจ้ง user ผลสรุป แล้วถามว่าต้องการต่อ `/helix:test-e2e` ไหม
+
+---
+
+## Self-Evaluation Loop
+
+ก่อนส่ง output ให้ user ทำ self-check ทุกครั้ง:
+
+```
+1. Output ครบถ้วนตาม scope ที่รับมาไหม?
+2. มีจุดไหนที่ยังไม่แน่ใจ ควรถามก่อนไหม?
+3. Format ถูกต้องตามที่กำหนดในสกิลไหม?
+4. มีอะไรที่อาจทำให้งานพัง / เกิด side effect ที่ไม่ตั้งใจไหม?
+```
+
+ตอบ "ไม่ใช่" ข้อไหน → **แก้ก่อนส่ง** เสมอ

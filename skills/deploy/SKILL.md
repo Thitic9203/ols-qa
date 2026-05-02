@@ -5,6 +5,10 @@ description: "Deployment workflow — staging-first deployment, smoke tests, pro
 
 # Dev Orchestrator — Deploy Phase
 
+> 📚 **Knowledge References** (loaded automatically):  
+> `env-separation.md` — separation audit, secret naming, common failures  
+> `smoke-test-patterns.md` — smoke test scripts, go/no-go decision, rollback commands
+
 ดูแล deployment ครบวงจร staging → verify → production
 
 ## Input ที่ต้องการ
@@ -85,3 +89,37 @@ Staging ✅ พร้อมแล้ว
 ## Output
 
 รายงาน deployment status ทั้งสอง env แล้วถามว่าต้องการต่อไป `/helix:review` หรือปิดงานเลย
+
+---
+
+## Self-Evaluation Loop
+
+ก่อนส่ง output ให้ user ทำ self-check ทุกครั้ง:
+
+```
+1. Output ครบถ้วนตาม scope ที่รับมาไหม?
+2. มีจุดไหนที่ยังไม่แน่ใจ ควรถามก่อนไหม?
+3. Format ถูกต้องตามที่กำหนดในสกิลไหม?
+4. มีอะไรที่อาจทำให้งานพัง / เกิด side effect ที่ไม่ตั้งใจไหม?
+```
+
+ตอบ "ไม่ใช่" ข้อไหน → **แก้ก่อนส่ง** เสมอ
+
+---
+
+## MCP Tool Integration ⚠️ เชื่อมต่อระบบภายนอก
+
+สกิลนี้สามารถ trigger deployments ผ่าน MCP tools ได้
+
+> **ก่อนเชื่อมต่อ**: MCP tools จะเข้าถึง infrastructure ในนามของคุณ  
+> **Action ที่ต้อง approve ก่อนเสมอ**: deploy, migrate, restart
+
+**อนุญาตให้เชื่อมต่อ MCP tools ต่อไปนี้ไหมคับ?**
+
+| Tool | ประโยชน์ | อนุญาต? |
+|------|---------|--------|
+| GitHub Actions | trigger deploy workflow | `[ ] ใช่ / [ ] ไม่` |
+| Firebase CLI | deploy hosting/functions | `[ ] ใช่ / [ ] ไม่` |
+| Slack | แจ้ง deploy notification | `[ ] ใช่ / [ ] ไม่` |
+
+ไม่อนุญาต → แสดง commands ให้ user run เอง

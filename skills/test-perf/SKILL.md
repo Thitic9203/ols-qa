@@ -5,6 +5,9 @@ description: "Performance test workflow — checks existing perf test structure,
 
 # Helix — Performance Test
 
+> 📚 **Knowledge References** (loaded automatically):  
+> `perf-thresholds.md` — threshold guidelines, tool templates, bottleneck patterns
+
 วัด response time, throughput, และ resource usage — เน้น free tools ก่อนเสมอ
 
 ## Step 1: Repo Structure Check
@@ -89,3 +92,18 @@ locust -f tests/performance/locustfile.py --headless -u 100 -r 10 -t 5m
 ## Done
 
 แจ้ง user ผลสรุป + metrics report แล้วถามว่าต้องการต่อ `/helix:test-security` ไหม
+
+---
+
+## Self-Evaluation Loop
+
+ก่อนส่ง output ให้ user ทำ self-check ทุกครั้ง:
+
+```
+1. Output ครบถ้วนตาม scope ที่รับมาไหม?
+2. มีจุดไหนที่ยังไม่แน่ใจ ควรถามก่อนไหม?
+3. Format ถูกต้องตามที่กำหนดในสกิลไหม?
+4. มีอะไรที่อาจทำให้งานพัง / เกิด side effect ที่ไม่ตั้งใจไหม?
+```
+
+ตอบ "ไม่ใช่" ข้อไหน → **แก้ก่อนส่ง** เสมอ

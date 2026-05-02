@@ -90,3 +90,32 @@ Deployment: Staging ✅ | Production ✅
 | Progress Policy | อัปเดตทุก 10 นาที ในรูปแบบตาราง |
 | Deployment Policy | Staging first เสมอ → ห้าม deploy ตรงไป production |
 | Skill Policy | External skill → แนะนำ + ถาม user ก่อนติดตั้งเสมอ |
+
+---
+
+## Self-Evaluation Loop
+
+ก่อนส่ง output ให้ user ทำ self-check ทุกครั้ง:
+
+```
+1. Output ครบถ้วนตาม scope ที่รับมาไหม?
+2. มีจุดไหนที่ยังไม่แน่ใจ ควรถามก่อนไหม?
+3. Format ถูกต้องตามที่กำหนดในสกิลไหม?
+4. มีอะไรที่อาจทำให้งานพัง / เกิด side effect ที่ไม่ตั้งใจไหม?
+```
+
+ตอบ "ไม่ใช่" ข้อไหน → **แก้ก่อนส่ง** เสมอ
+
+---
+
+## Parallel Agent Option ⚠️ ใช้ token มากขึ้น
+
+สกิลนี้รองรับ parallel sub-agents — แยก agents ทำงานพร้อมกันเพื่อความเร็ว
+
+> **ค่าใช้จ่าย**: Parallel mode = หลาย API calls พร้อมกัน → token เพิ่มขึ้น 2-4×  
+> แบบปกติ (sequential): ทีละขั้น ใช้ token น้อยกว่า  
+> แบบ parallel: เร็วขึ้น ~50% แต่ต้นทุน token สูงกว่า
+
+**ต้องการเปิด parallel mode ไหมคับ?**  
+`[ ] ใช่` → เปิด (แจ้งเมื่อใช้ token สูงกว่าปกติ)  
+`[x] ไม่` → รันแบบปกติ (default)

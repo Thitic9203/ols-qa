@@ -5,6 +5,9 @@ description: "Security test workflow — checks existing security test structure
 
 # Helix — Security Test
 
+> 📚 **Knowledge References** (loaded automatically):  
+> `owasp-checklist.md` — OWASP Top 10 checklists, scan tool commands, severity guide
+
 ตรวจช่องโหว่ความปลอดภัยครอบคลุม OWASP Top 10 และ dependency risks
 
 ## Step 1: Repo Structure Check
@@ -122,3 +125,18 @@ bandit -r src/ -ll
 
 สร้าง `tests/security/SECURITY_SCAN.md` สรุปผล scan ทั้งหมด + issues ที่แก้แล้ว  
 แจ้ง user และถามว่าต้องการต่อ `/helix:deploy` ไหม
+
+---
+
+## Self-Evaluation Loop
+
+ก่อนส่ง output ให้ user ทำ self-check ทุกครั้ง:
+
+```
+1. Output ครบถ้วนตาม scope ที่รับมาไหม?
+2. มีจุดไหนที่ยังไม่แน่ใจ ควรถามก่อนไหม?
+3. Format ถูกต้องตามที่กำหนดในสกิลไหม?
+4. มีอะไรที่อาจทำให้งานพัง / เกิด side effect ที่ไม่ตั้งใจไหม?
+```
+
+ตอบ "ไม่ใช่" ข้อไหน → **แก้ก่อนส่ง** เสมอ

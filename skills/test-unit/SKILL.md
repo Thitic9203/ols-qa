@@ -5,6 +5,9 @@ description: "Unit test workflow — checks existing unit test structure in targ
 
 # Helix — Unit Test
 
+> 📚 **Knowledge References** (loaded automatically):  
+> `testing-patterns.md` — AAA pattern, naming, coverage types, mock patterns
+
 ทดสอบทุก function/method/component แบบ isolated
 
 ## Step 1: Repo Structure Check
@@ -89,3 +92,18 @@ go test ./... -v
 ## Done
 
 แจ้ง user ผลสรุป + coverage แล้วถามว่าต้องการต่อ `/helix:test-integration` ไหม
+
+---
+
+## Self-Evaluation Loop
+
+ก่อนส่ง output ให้ user ทำ self-check ทุกครั้ง:
+
+```
+1. Output ครบถ้วนตาม scope ที่รับมาไหม?
+2. มีจุดไหนที่ยังไม่แน่ใจ ควรถามก่อนไหม?
+3. Format ถูกต้องตามที่กำหนดในสกิลไหม?
+4. มีอะไรที่อาจทำให้งานพัง / เกิด side effect ที่ไม่ตั้งใจไหม?
+```
+
+ตอบ "ไม่ใช่" ข้อไหน → **แก้ก่อนส่ง** เสมอ
