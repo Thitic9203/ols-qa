@@ -84,3 +84,13 @@ The skill names in this repo use the `helix:<phase>` convention (Claude Code sty
 | Test | `helix:test` | `helix-test` | "helix test" |
 | Deploy | `helix:deploy` | `helix-deploy` | "helix deploy" |
 | Review | `helix:review` | `helix-review` | "helix review" |
+| QA Strategy | `helix:qa-strategy` | `helix-qa-strategy` | "helix qa-strategy" |
+| QA Plan | `helix:qa-plan` | `helix-qa-plan` | "helix qa-plan" |
+| QA Risk | `helix:qa-risk` | `helix-qa-risk` | "helix qa-risk" |
+| QA Explore | `helix:qa-explore` | `helix-qa-explore` | "helix qa-explore" |
+| QA Report | `helix:qa-report` | `helix-qa-report` | "helix qa-report" |
+| QA Defect | `helix:qa-defect` | `helix-qa-defect` | "helix qa-defect" |
+| QA Metrics | `helix:qa-metrics` | `helix-qa-metrics` | "helix qa-metrics" |
+| QA Data | `helix:qa-data` | `helix-qa-data` | "helix qa-data" |
+| QA CI | `helix:qa-ci` | `helix-qa-ci` | "helix qa-ci" |
+| QA Full | `helix:qa-full` | `helix-qa-full` | "helix qa-full" |

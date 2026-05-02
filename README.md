@@ -107,6 +107,33 @@ test-perf-db       — slow queries, EXPLAIN ANALYZE, N+1 detection, index gaps
 test-perf-profile  — CPU flamegraph + heap snapshot (clinic.js, py-spy, pprof)
 ```
 
+### QA skills
+
+For QA Engineers running full release cycles — process skills, technical skills, and a pipeline orchestrator.
+
+**QA Process**
+```
+qa-strategy    — test strategy (ISO 25010 + ISTQB CTFL v4.0)
+qa-plan        — test plan (IEEE 829) with entry/exit criteria + schedule
+qa-risk        — risk matrix (Likelihood × Impact, ISO 31000)
+qa-explore     — exploratory testing session (SBTM + HICCUPPS)
+qa-report      — test report + sign-off decision (PASS / CONDITIONAL / FAIL)
+qa-defect      — defect report with P0–P3 severity + 5-Whys RCA
+qa-metrics     — HTML dashboard (chart.js) + Markdown metrics summary
+```
+
+**QA Technical**
+```
+qa-data        — test data management, PII masking, factory functions, seed scripts
+qa-ci          — GitHub Actions 5-stage CI pipeline setup
+```
+
+**QA Pipeline Orchestrator**
+```
+qa-full        — complete QA lifecycle: strategy → plan → risk → tests → explore
+                 → data → report → defect → metrics → (optional) Tier 3 perf
+```
+
 ---
 
 ## How it works
@@ -182,6 +209,25 @@ skills/
   review/
     code-quality-patterns.md
     review-output-format.md
+  qa-full/             ← QA pipeline orchestrator
+  qa-strategy/         ← test strategy (ISO 25010 + ISTQB)
+    qa-strategy-patterns.md
+  qa-plan/             ← test plan (IEEE 829)
+    qa-plan-patterns.md
+  qa-risk/             ← risk-based prioritization (ISO 31000)
+    qa-risk-patterns.md
+  qa-explore/          ← exploratory testing (SBTM)
+    qa-explore-patterns.md
+  qa-report/           ← test report + sign-off
+    qa-report-patterns.md
+  qa-defect/           ← defect report + 5-Whys RCA
+    qa-defect-patterns.md
+  qa-metrics/          ← HTML dashboard + Markdown metrics
+    qa-metrics-patterns.md
+  qa-data/             ← test data + PII masking + factories
+    qa-data-patterns.md
+  qa-ci/               ← GitHub Actions 5-stage CI
+    qa-ci-patterns.md
 
 COMPATIBILITY.md       ← install guide for all AI platforms
 PRINCIPLES.md          ← core rules reference
