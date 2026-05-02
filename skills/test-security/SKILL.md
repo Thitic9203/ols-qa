@@ -124,7 +124,7 @@ bandit -r src/ -ll
 ## Done
 
 สร้าง `tests/security/SECURITY_SCAN.md` สรุปผล scan ทั้งหมด + issues ที่แก้แล้ว  
-แจ้ง user และถามว่าต้องการต่อ `/helix:deploy` ไหม
+แจ้ง user และถามว่าต้องการต่อ `/helix:test-contract` ไหม
 
 ---
 

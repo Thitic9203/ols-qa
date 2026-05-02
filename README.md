@@ -84,6 +84,9 @@ test-integration   — integration tests with real DB/services
 test-e2e           — Playwright E2E tests
 test-perf          — performance tests (k6, autocannon, locust)
 test-security      — OWASP Top 10, semgrep, trufflehog, trivy
+test-contract      — API contract tests (Pact)
+test-a11y          — Accessibility (axe-core + WCAG 2.1)
+test-visual        — Visual regression (Playwright snapshots)
 ```
 
 ---
@@ -140,6 +143,12 @@ skills/
   deploy/
     env-separation.md
     smoke-test-patterns.md
+  test-contract/          ← API contract tests (Pact)
+    contract-patterns.md
+  test-a11y/              ← Accessibility (axe + WCAG)
+    a11y-patterns.md
+  test-visual/            ← Visual regression (Playwright)
+    visual-patterns.md
   review/
     code-quality-patterns.md
     review-output-format.md

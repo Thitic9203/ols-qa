@@ -1,6 +1,6 @@
 ---
 name: test
-description: "Testing orchestrator — choose test type or run all. Checks existing test structure in target repo before creating or augmenting. Supports unit, integration, e2e, performance, and security tests."
+description: "Testing orchestrator — choose test type or run all. Checks existing test structure in target repo before creating or augmenting. Supports unit, integration, e2e, performance, security, contract, accessibility, and visual regression tests."
 ---
 
 # Helix — Test Phase
@@ -20,7 +20,10 @@ description: "Testing orchestrator — choose test type or run all. Checks exist
    [ ] 3. E2E Tests          →  /helix:test-e2e
    [ ] 4. Performance Tests  →  /helix:test-perf
    [ ] 5. Security Tests     →  /helix:test-security
-   [ ] 6. ทั้งหมด (1-5 ตามลำดับ)
+   [ ] 6. Contract Tests     →  /helix:test-contract
+   [ ] 7. Accessibility      →  /helix:test-a11y
+   [ ] 8. Visual Regression  →  /helix:test-visual
+   [ ] 9. ทั้งหมด (1-8 ตามลำดับ)
 ```
 
 ## Execution Order (ถ้าเลือกหลายประเภท)
@@ -28,28 +31,24 @@ description: "Testing orchestrator — choose test type or run all. Checks exist
 รันตามลำดับนี้เสมอ เพราะแต่ละชั้นขึ้นอยู่กับชั้นก่อน:
 
 ```
-unit → integration → e2e → performance → security
+unit → integration → contract → e2e → a11y → visual → performance → security
 ```
-
-invoke แต่ละ skill ตามที่ user เลือก:
-- `/helix:test-unit`
-- `/helix:test-integration`
-- `/helix:test-e2e`
-- `/helix:test-perf`
-- `/helix:test-security`
 
 ## สรุปผลรวม (หลังทุก type เสร็จ)
 
 ```
 🧪 Test Summary — [timestamp]
 
-| Type        | Cases | ✅ Pass | ❌ Fail | Coverage |
+| Type        | Cases | ✅ Pass | ❌ Fail | Notes    |
 |-------------|-------|---------|---------|----------|
-| Unit        | —     | —       | —       | —%       |
+| Unit        | —     | —       | —       | —% cov   |
 | Integration | —     | —       | —       | —        |
+| Contract    | —     | —       | —       | —        |
 | E2E         | —     | —       | —       | —        |
-| Performance | —     | —       | —       | —        |
-| Security    | —     | —       | —       | —        |
+| A11y        | —     | —       | —       | violations|
+| Visual      | —     | —       | —       | diff px  |
+| Performance | —     | —       | —       | p95 ms   |
+| Security    | —     | —       | —       | findings |
 ```
 
 ถามผู้ใช้ว่าต้องการต่อไป `/helix:deploy` ไหม
