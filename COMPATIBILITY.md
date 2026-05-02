@@ -20,7 +20,8 @@ Helix skills are written in plain Markdown and follow the [agentskills.io](https
 
 ### Claude Code
 ```bash
-claude plugins install helix@https://github.com/Thitic9203/helix
+claude plugin marketplace add Thitic9203/helix
+claude plugin install helix
 ```
 
 ### Copilot CLI / Codex (agentskills format)
