@@ -1,0 +1,10 @@
+{
+  "name": "helix",
+  "description": "Full-cycle project orchestrator — analysis, planning, execution, testing, deployment, and review. Supports complete workflow or individual phases via /helix:<phase>.",
+  "version": "1.0.0",
+  "author": {
+    "name": "<ORG>",
+    "email": "<USER>@<ORG>.com"
+  },
+  "keywords": ["planning", "analysis", "testing", "deployment", "review", "orchestrator", "full-cycle"]
+}
