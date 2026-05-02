@@ -44,9 +44,10 @@ description: "Frontend performance test workflow — measures Core Web Vitals (L
 | LCP    | < 2.5s   | 2.5–4.0s   | > 4.0s   |
 | CLS    | < 0.1    | 0.1–0.25   | > 0.25   |
 | INP    | < 200ms  | 200–500ms  | > 500ms  |
-| FID    | < 100ms  | 100–300ms  | > 300ms  |
 | TTFB   | < 800ms  | 800–1800ms | > 1800ms |
 ```
+
+> **Note:** FID (First Input Delay) was officially retired by Google in March 2024 and replaced by INP (Interaction to Next Paint) as the official responsiveness Core Web Vital. Do not use FID as a target metric.
 
 ## Step 4: Lighthouse CI
 
