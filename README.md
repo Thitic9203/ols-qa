@@ -8,17 +8,17 @@ Skills are written in plain Markdown following the [agentskills.io](https://agen
 
 ## Compatible AI Tools
 
-| AI Tool | Support | Notes |
-|---------|:-------:|-------|
-| **Claude Code** (Anthropic) | ✅ Full | Plugin system + slash commands |
-| **GitHub Copilot CLI** | ✅ Full | agentskills format |
-| **Codex CLI** (OpenAI) | ✅ Full | agentskills format |
-| **Gemini CLI** (Google) | ✅ Full | skill directory |
-| **Cursor** | ✅ Full | `.cursor/rules/` |
-| **Windsurf** (Codeium) | ✅ Full | `.windsurf/rules/` |
-| **Continue** (VS Code / JetBrains) | ✅ Full | context provider |
-| **Aider** | ✅ Full | paste SKILL.md as context |
-| **Any AI with Markdown context** | ✅ Manual | paste skills directly |
+| AI Tool | Support | Example usage |
+|---------|:-------:|--------------|
+| **Claude Code** (Anthropic) | ✅ Full | `/helix analyze` |
+| **GitHub Copilot CLI** | ✅ Full | `@helix-analyze` |
+| **Codex CLI** (OpenAI) | ✅ Full | `@helix-analyze` |
+| **Gemini CLI** (Google) | ✅ Full | `/skill helix-analyze` |
+| **Cursor** | ✅ Full | `Apply rule helix-analyze` |
+| **Windsurf** (Codeium) | ✅ Full | `Apply rule helix-analyze` |
+| **Continue** (VS Code / JetBrains) | ✅ Full | `@helix-analyze` |
+| **Aider** | ✅ Full | `/add skills/analyze/SKILL.md` |
+| **Any AI with Markdown context** | ✅ Manual | paste `SKILL.md` into chat |
 
 > The plugin entry point (`.claude-plugin/`, `commands/`) is Claude Code only. All skills and knowledge files work universally.
 
