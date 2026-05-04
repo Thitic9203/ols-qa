@@ -12,6 +12,32 @@ Helix is a plugin/skill pack that guides any AI through the **complete software 
 
 Skills are plain Markdown following the [agentskills.io](https://agentskills.io/specification) open format — no vendor lock-in. Works with Claude Code, Copilot CLI, Gemini CLI, Cursor, Windsurf, Aider, and more.
 
+> ⭐ If Helix saves you time, a star helps others find it.
+
+---
+
+## Demo
+
+```bash
+# Preview the QA pipeline output (no AI needed)
+bash demo/helix-demo.sh
+
+# Record a shareable demo
+asciinema rec demo.cast -c "bash demo/helix-demo.sh"
+```
+
+<details>
+<summary>What the demo shows</summary>
+
+`/helix qa-full` running through the full QA lifecycle:
+- QA strategy (ISO 25010 + ISTQB)
+- Risk matrix (ISO 31000 · Likelihood × Impact)
+- Tier 1–2 test execution (unit → integration → E2E → security → a11y → visual)
+- Exploratory testing session (SBTM)
+- Defect report with 5-Whys RCA
+- Final sign-off decision (PASS / CONDITIONAL / FAIL)
+</details>
+
 ---
 
 ## Why Helix?
@@ -268,3 +294,7 @@ Full documentation: [github.com/Thitic9203/helix/wiki](https://github.com/Thitic
 ## License
 
 MIT
+
+---
+
+*Found Helix useful? ⭐ [Star it on GitHub](https://github.com/Thitic9203/helix) — it helps QA engineers and AI devs find it.*
