@@ -3,6 +3,7 @@
 **Stop babysitting your AI. Give it a structured QA + dev brain.**
 
 [![Stars](https://img.shields.io/github/stars/Thitic9203/helix?style=flat-square)](https://github.com/Thitic9203/helix/stargazers)
+[![CI](https://img.shields.io/github/actions/workflow/status/Thitic9203/helix/ci.yml?style=flat-square&label=CI)](https://github.com/Thitic9203/helix/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-%E2%9C%93-orange?style=flat-square)](https://claude.ai/code)
 [![Copilot CLI](https://img.shields.io/badge/Copilot%20CLI-%E2%9C%93-blue?style=flat-square)](https://githubnext.com/projects/copilot-cli)
