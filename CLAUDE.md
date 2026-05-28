@@ -1,25 +1,30 @@
-# helix — contributor rules
+# Helix — contributor rules
 
-## Skill layout
+## Skills
 
-- Shippable skills live under `skills/<skill-name>/SKILL.md`
-- Details go in `skills/<skill-name>/references/` (progressive disclosure)
-- Keep `SKILL.md` under ~500 lines
+| Skill | Path |
+|-------|------|
+| TC FE prep | `skills/tc-fe-prep-workflow/` |
+| Retest bug | `skills/retest-bug-workflow/` |
 
-## Portability rules
+Both must stay **portable**: no machine-specific paths, no real ticket IDs in committed files.
 
-- **No absolute paths** on a developer machine (`/Users/...`, `C:\...`)
-- **No private repo names** or real ticket numbers in committed files
-- Use placeholders and workspace-relative paths in examples (`references/{ISSUE_KEY}_FE_TC.md`)
-- User-facing agent responses for this plugin: **English**
+## Commands
 
-## Version sync
+| Command | File |
+|---------|------|
+| `/helix` | `commands/helix.md` — router |
+| `/tc-fe-prep` | `commands/tc-fe-prep.md` |
+| `/retest-bug` | `commands/retest-bug.md` |
 
-- Bump `version` in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` together
+## User language
+
+Helix speaks **concise English** to users (defined in `commands/helix.md` and both skills).
+
+## Version
+
+Bump `version` in `.claude-plugin/plugin.json` and `marketplace.json` together.
 
 ## Adding skills
 
-1. Create `skills/<name>/SKILL.md` with YAML frontmatter (`name`, `description`)
-2. Add path to `plugin.json` → `skills` array
-3. Link in `README.md`
-4. Optional: `commands/<command>.md` for Claude Code slash commands
+See `skills/retest-bug-workflow/references/new-skill-template.md`.

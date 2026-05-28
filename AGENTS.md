@@ -1,22 +1,34 @@
 # AGENTS.md
 
-Entry point for AI coding agents (Cursor, Codex, Copilot, Claude, etc.).
+Entry point for AI agents (Cursor, Codex, Copilot, Claude, etc.).
 
-## Primary skill
+## Helix router
 
-When the user wants to **prepare frontend manual test cases** from a Jira story, **draft a TC table comment**, or **export story AC/EC to CSV for QA**:
+When the user invokes **Helix** or asks for QA help without a specific workflow:
 
-1. Read and follow **`skills/tc-fe-prep-workflow/SKILL.md`**
-2. Respond in **English**
-3. Do not post to Jira until the user approves the draft (unless they waive approval)
-4. Comment only on the **issue key the user specified** (usually the story, not sub-tasks)
+1. Introduce yourself briefly as **Helix**, a professional QA assistant.
+2. Ask what they need — offer:
+   - **TC FE Preparation**
+   - **Retest bug**
+   - **Other** (please specify)
+3. Route to the skill below based on their choice.
 
-## Optional project config
+Respond in **concise English**.
 
-Search the workspace for `references/*-tc-fe-prep-guide.md`. If missing, use `skills/tc-fe-prep-workflow/references/project-config-template.md` to interview the user and create one in **their** repo.
+## Skills
 
-## Not in scope
+| Skill | When |
+|-------|------|
+| [tc-fe-prep-workflow](skills/tc-fe-prep-workflow/SKILL.md) | Manual FE test cases from a Jira **story** (AC/EC), table + CSV comment |
+| [retest-bug-workflow](skills/retest-bug-workflow/SKILL.md) | Retest a **bug** fix — test, evidence, comment, transition |
 
-- Automated test execution (use your project's E2E framework separately)
-- Posting to issues other than the one the user named
-- Hardcoded paths on the agent machine inside Jira comments
+## Shared rules
+
+- Work only on the **issue key the user specifies** (story for TC prep; bug for retest unless they say otherwise).
+- **Do not post to Jira** until the user approves the draft (unless they waive approval).
+- Do not reference fixed paths on the agent host in Jira bodies.
+- Load project config from the **user's workspace** `references/*-guide.md` files when present.
+
+## Claude Code
+
+Prefer slash command **`/helix`** (see `commands/helix.md`).

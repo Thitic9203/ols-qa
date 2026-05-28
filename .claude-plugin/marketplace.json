@@ -1,24 +1,24 @@
 {
   "name": "helix-dev",
   "id": "helix-dev",
-  "description": "Development marketplace for helix TC FE Prep plugin",
+  "description": "Development marketplace for Helix QA assistant",
   "owner": {
     "name": "QA Lead"
   },
   "metadata": {
-    "description": "Jira story → FE manual test cases → comment + CSV",
-    "version": "1.0.0"
+    "description": "TC FE prep + bug retest for Jira",
+    "version": "1.1.0"
   },
   "plugins": [
     {
       "name": "helix",
-      "description": "TC FE Prep — draft manual test cases from AC/EC and publish to Jira",
-      "version": "1.0.0",
+      "description": "Helix — TC FE Preparation, Retest bug, and QA routing via /helix",
+      "version": "1.1.0",
       "source": "./",
       "author": {
         "name": "QA Lead"
       },
-      "keywords": ["qa", "jira", "test-cases", "manual", "frontend"],
+      "keywords": ["qa", "jira", "helix", "retest", "test-cases"],
       "category": "qa"
     }
   ]

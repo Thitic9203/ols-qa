@@ -1,33 +1,26 @@
-# helix — TC FE Prep
+# Helix — AI QA assistant
 
-Portable skill pack for AI agents: turn a Jira **story** (AC/EC) into **frontend manual test cases**, get approval in chat, then publish one Jira comment with a 9-column table and matching CSV.
+Portable skill pack for AI agents: **manual FE test-case prep** and **Jira bug retests**, with one entry command.
 
-Works with **Claude Code**, **Cursor**, **Codex**, and any tool that loads `SKILL.md` or `AGENTS.md`.
+Works with **Claude Code**, **Cursor**, **Codex**, and any tool that reads `SKILL.md` or `AGENTS.md`.
 
-## Why use this
+## Why Helix
 
-| Without skill | With skill |
-|---------------|------------|
-| Reread story, invent table format, miss EC coverage | Repeatable AC/EC mapping and structure |
-| Ambiguous "Shared" preconditions | Shared prep block + clear per-case preconditions |
-| Broken Jira tables / truncated comments | Formatting rules + verify-on-Jira discipline |
-| CSV out of sync with comment | Single markdown source → CSV export |
+| Task | What Helix does |
+|------|-----------------|
+| **TC FE Preparation** | Story AC/EC → 9-column manual TC table + CSV → one Jira comment on the story you name |
+| **Retest bug** | Login, test API/UI, Swagger check, evidence, comment, transition, assign |
+| **Other** | Ask Helix; it routes or helps ad hoc |
 
 ## Quick install
-
-### One command (recommended)
 
 ```bash
 curl -sL https://raw.githubusercontent.com/Thitic9203/helix/main/scripts/install.sh | bash
 ```
 
-This will:
+This clones to `~/.helix/tc-fe-prep`, links **both** skills into `~/.claude/skills` and `~/.cursor/skills` when those folders exist, and registers the Claude Code plugin cache.
 
-1. Clone or update the repo under `~/.helix/tc-fe-prep`
-2. Register the Claude Code plugin cache symlink (if you use Claude Code)
-3. Link the skill into `~/.claude/skills/` and `~/.cursor/skills/` when those folders exist
-
-### Manual install (any agent)
+### Manual install
 
 ```bash
 git clone https://github.com/Thitic9203/helix.git
@@ -35,67 +28,65 @@ cd helix
 ./scripts/link-skills.sh
 ```
 
-Then point your agent at:
+## Usage
 
-- **Skill file:** `skills/tc-fe-prep-workflow/SKILL.md`
-- **Or root:** `AGENTS.md` (entry point for agents that read repo root)
-
-### Cursor
-
-After `install.sh` or `link-skills.sh`, the skill appears as `tc-fe-prep-workflow` under your Cursor skills directory. Invoke by asking to prepare FE test cases for a Jira story.
-
-### Claude Code plugin
-
-```bash
-# After install.sh — add marketplace from your clone path, or use:
-/plugin marketplace add ~/.helix/tc-fe-prep
-/plugin install helix@helix-dev
-```
-
-Then run:
+### Helix menu (recommended)
 
 ```text
-/tc-fe-prep PROJ-123
+/helix
 ```
 
-### Update
+Helix introduces itself and asks what you need:
 
-```bash
-cd ~/.helix/tc-fe-prep && git pull
-```
+1. TC FE Preparation  
+2. Retest bug  
+3. Other (describe)
 
-Symlinks point at the repo — no reinstall needed.
+You can also run shortcuts:
+
+| Command | Skill |
+|---------|--------|
+| `/helix` | Router → choose workflow |
+| `/tc-fe-prep ISSUE-123` | `tc-fe-prep-workflow` |
+| `/retest-bug ISSUE-456` | `retest-bug-workflow` |
+
+### Any other agent
+
+Read `AGENTS.md` or invoke:
+
+- `tc-fe-prep-workflow`
+- `retest-bug-workflow`
+
+**User-facing replies:** concise **English**.
+
+## Skills
+
+| Skill | Description |
+|-------|-------------|
+| [tc-fe-prep-workflow](skills/tc-fe-prep-workflow/SKILL.md) | FE manual TC from story AC/EC, draft + CSV + Jira |
+| [retest-bug-workflow](skills/retest-bug-workflow/SKILL.md) | Full bug retest with evidence and ticket hygiene |
 
 ## Prerequisites (human)
 
-- Jira access to the target story
-- Browser logged into Jira (if using large-comment / CSV upload flows)
-- VPN or network access to test environments (if your project requires it)
-
-## Skill
-
-| Skill | Purpose |
-|-------|---------|
-| [tc-fe-prep-workflow](skills/tc-fe-prep-workflow/SKILL.md) | Full flow: story → draft → approve → artifacts → Jira |
-
-## References
-
-| File | Purpose |
-|------|---------|
-| [prerequisites.md](skills/tc-fe-prep-workflow/references/prerequisites.md) | Pre-flight checklist |
-| [jira-formatting.md](skills/tc-fe-prep-workflow/references/jira-formatting.md) | Tables, `<br>`, CSV footer |
-| [gotchas.md](skills/tc-fe-prep-workflow/references/gotchas.md) | Common failures |
-| [markdown-template.md](skills/tc-fe-prep-workflow/references/markdown-template.md) | Skeleton table |
-| [project-config-template.md](skills/tc-fe-prep-workflow/references/project-config-template.md) | First-time project setup |
-| [publish-options.md](skills/tc-fe-prep-workflow/references/publish-options.md) | How to post without truncation |
+- Jira access to the issues you name
+- Browser logged into Jira (for large comments / attachments / retest UI)
+- Project guide files in your repo (optional; skills help create them):
+  - `references/*-tc-fe-prep-guide.md`
+  - `references/*-retest-guide.md`
 
 ## Scripts
 
 ```bash
-./scripts/install.sh      # Clone + symlinks (Claude + Cursor)
-./scripts/setup.sh        # Setup after manual git clone
-./scripts/link-skills.sh  # Link skill into agent skill folders
+./scripts/install.sh      # One-command install
+./scripts/setup.sh        # After manual clone
+./scripts/link-skills.sh  # Symlink skills for Claude, Cursor, Codex, agents
 ./scripts/list-skills.sh  # List bundled skills
+```
+
+## Update
+
+```bash
+cd ~/.helix/tc-fe-prep && git pull
 ```
 
 ## Domain language
@@ -104,4 +95,4 @@ See [CONTEXT.md](CONTEXT.md).
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — [LICENSE](LICENSE)
