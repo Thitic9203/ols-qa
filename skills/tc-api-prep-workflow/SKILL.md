@@ -1,7 +1,7 @@
 ---
 name: tc-api-prep-workflow
 description: |
-  Prepare API manual test cases from API spec and Swagger/OpenAPI — confirm columns and delivery (Jira comment link and/or CSV/Excel in workspace).
+  Prepare API manual test cases from API spec and Swagger with mandatory spec/Swagger coverage review and ISTQB/29119-3 quality check — confirm columns and delivery (Jira comment link and/or CSV/Excel in workspace).
   Use when the user chooses TC API Preparation from Helix, invokes /tc-api-prep, or asks for API test cases from Swagger/OpenAPI.
   Do NOT use for frontend story AC/EC tables (tc-fe-prep-workflow), Playwright or test execution (testing-ticket-workflow), retest-after-fix (retest-bug-workflow), or opening bugs (create-bug-workflow).
 proactive_triggers:
@@ -118,12 +118,31 @@ Optional: if user gave a Jira story key in the same session, map cases to AC onl
 
 ---
 
-## Phase E — QA self-review (before draft in chat)
+## Phase E — Coverage & quality review (mandatory; 1–2 rounds)
 
-- [ ] Every in-scope endpoint/method from user’s API spec has at least one case (or explicit out-of-scope list).
-- [ ] Expected results cite **status code** and observable JSON fields / error codes.
-- [ ] Test Data includes method, path, and payload/query samples (sanitized — no real secrets).
-- [ ] Priorities assigned (happy path High, minor validation Medium/Low unless user rules differ).
+MUST complete **before** Phase F.
+
+### E1 — Spec & Swagger coverage (API scope)
+
+Follow [spec-coverage-review.md](references/spec-coverage-review.md):
+
+- Build the **endpoint coverage matrix** (in-scope operations → `TC_API_*`).
+- Confirm alignment with **API spec** and **Swagger** — **ไม่กาว ไม่เพ้อ นอกสโคป** (no invented endpoints, documented out-of-scope list).
+- Multiple TCs per endpoint allowed when scenarios differ (auth, validation, 4xx).
+
+### E2 — International TC quality (ISTQB + ISO/IEC/IEEE 29119-3)
+
+Follow [tc-quality-standards.md](../../references/tc-quality-standards.md) on every row.
+
+Also verify writing rules in [api-tc-guidelines.md](references/api-tc-guidelines.md) (status codes, payloads, no secrets).
+
+### E3 — Post review summary in chat
+
+Post the **API TC coverage review** block from spec-coverage-review.md (with **Ready for draft: YES**).
+
+MUST NOT post the full TC table until **Ready for draft: YES**.
+
+If review fails → revise Phase D and re-run E1–E3 (max 2 rounds).
 
 ---
 
@@ -205,6 +224,8 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
 
 1. **Assume** the first draft missed endpoints or wrong status codes — Phase E exists for this reason.
 2. Skill-specific:
+   - [ ] Phase E review block posted with **Ready for draft: YES** and endpoint matrix complete.
+   - [ ] Spec/Swagger coverage complete; out-of-scope documented; tc-quality-standards PASS.
    - [ ] Row count and columns match Phase B confirmation.
    - [ ] If comment delivery: destination UI shows full table.
    - [ ] If file delivery: CSV opens with header + N data rows.
@@ -231,6 +252,8 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
 | [delivery-options.md](references/delivery-options.md) | Jira / Confluence / CSV |
 | [markdown-template.md](references/markdown-template.md) | Table skeleton |
 | [worked-example.md](references/worked-example.md) | Anonymized end-to-end sample |
+| [spec-coverage-review.md](references/spec-coverage-review.md) | Spec + Swagger traceability review |
+| [tc-quality-standards.md](../../references/tc-quality-standards.md) | ISTQB / 29119-3 TC quality |
 | [scripts/README.md](scripts/README.md) | Optional CSV helper pointer |
 
 ---
@@ -242,4 +265,6 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
 | MUST refuse without API spec + Swagger | No authoritative coverage |
 | MUST NOT deliver before Phase F approval | User gate |
 | MUST NOT invent endpoints not in spec/Swagger | False coverage |
+| MUST run Phase E review before draft table | Prevents out-of-scope API cases |
+| MUST apply tc-quality-standards on every row | ISTQB / 29119-3 consistency |
 | MUST verify comment destination UI when using delivery A | Truncation |
