@@ -164,6 +164,7 @@ echo ""
 echo "Docs:  $REPO/docs/supported-agents.md"
 echo "Start: /helix (Claude) · @helix / skill helix (others)"
 echo "Direct: /tc-fe-prep /tc-api-prep /retest-bug /testing-ticket /create-bug"
+echo "Auto-update: HELIX_AUTO_UPDATE=1 (default) — see scripts/helix-auto-update.sh · log ~/.helix/auto-update.log"
 echo ""
 
 if [ "$FAIL" -gt 0 ]; then

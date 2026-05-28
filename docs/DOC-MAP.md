@@ -24,6 +24,7 @@ Use this map to avoid duplicating content across markdown files.
 | Router intent (Thai/mixed) | [references/intent-shortcuts.md](../references/intent-shortcuts.md) | helix skill + commands/helix |
 | Install health check | [scripts/helix-doctor.sh](../scripts/helix-doctor.sh) | README install section |
 | Claude plugin (helix@helix) | [scripts/claude-plugin-sync.sh](../scripts/claude-plugin-sync.sh) | Legacy helix@local handling |
+| Auto-update on session | [scripts/helix-auto-update.sh](../scripts/helix-auto-update.sh) | Manual git pull for daily use |
 | Skill invocation / priority | [references/skill-invocation-discipline.md](../references/skill-invocation-discipline.md) | Full discipline in every skill |
 | Session bootstrap (hooks) | [references/helix-session-bootstrap.md](../references/helix-session-bootstrap.md), [hooks/session-start](../hooks/session-start) | Dumping full SKILL.md in hook |
 | QA evidence gates | [references/qa-evidence-gates.md](../references/qa-evidence-gates.md) | Ad-hoc “done” without proof |

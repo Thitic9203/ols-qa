@@ -136,7 +136,30 @@ cd ~/.helix/tc-fe-prep && git pull
 bash ~/.helix/tc-fe-prep/scripts/claude-plugin-sync.sh   # Claude Code only
 ```
 
-Symlinks point at this folder — **global skills update automatically** after pull. **Claude Code** users should run `claude-plugin-sync.sh` (or full `install.sh`) so the marketplace plugin stays on **`helix@helix`**, not the old **`helix@local`** id. No need to re-run the curl installer unless you deleted the repo.
+Symlinks point at this folder — **global skills update automatically** after pull.
+
+### Auto-update (no manual step for most users)
+
+If you ran **`install.sh`** once (`~/.helix/tc-fe-prep` exists), Helix checks GitHub **`main`** for a newer `VERSION`:
+
+| Trigger | What happens |
+|---------|----------------|
+| New **Claude Code** session (plugin enabled) | `hooks/session-start` → `helix-auto-update.sh` |
+| New **Cursor** session (Helix plugin / hook) | same |
+| `git pull` in `~/.helix/tc-fe-prep` | `post-merge` hook → pull artifacts + `claude-plugin-sync` |
+
+When a new version is published, the next session (at most every **4 hours** per machine) can **git pull**, refresh skill symlinks, and **`claude plugin update helix@helix`** — users do not need to run `git pull` themselves for day-to-day use.
+
+| Opt out / tune | Value |
+|----------------|-------|
+| Disable auto-update | `HELIX_AUTO_UPDATE=0` |
+| Force check now | `HELIX_FORCE_UPDATE=1 bash ~/.helix/tc-fe-prep/scripts/helix-auto-update.sh` |
+| Check interval (seconds) | `HELIX_AUTO_UPDATE_INTERVAL_SEC` (default `14400`) |
+| Verbose log | `HELIX_AUTO_UPDATE_VERBOSE=1` → also prints; log file `~/.helix/auto-update.log` |
+
+**Marketplace-only** (never ran `install.sh`): `helix@helix` updates via the same hook calling `claude-plugin-sync.sh` (marketplace refresh). Skill folders under `~/.claude/skills` still need **`install.sh`** once for symlink-based agents.
+
+**Claude Code** marketplace plugin stays on **`helix@helix`** (legacy **`helix@local`** is disabled, not uninstalled). No need to re-run the curl installer unless you deleted the repo.
 
 ### Step 2 — By agent (if needed)
 
