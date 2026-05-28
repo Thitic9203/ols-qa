@@ -7,6 +7,7 @@
 | TC FE prep | `skills/tc-fe-prep-workflow/` |
 | Retest bug | `skills/retest-bug-workflow/` |
 | Testing ticket | `skills/testing-ticket-workflow/` |
+| Create bug | `skills/create-bug-workflow/` |
 
 All must stay **portable**: no machine-specific paths, no real ticket IDs in committed files.
 
@@ -18,6 +19,7 @@ All must stay **portable**: no machine-specific paths, no real ticket IDs in com
 | `/tc-fe-prep` | `commands/tc-fe-prep.md` |
 | `/retest-bug` | `commands/retest-bug.md` |
 | `/testing-ticket` | `commands/testing-ticket.md` |
+| `/create-bug` | `commands/create-bug.md` |
 
 ## User language
 

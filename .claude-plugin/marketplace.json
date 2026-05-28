@@ -6,14 +6,14 @@
     "name": "Thitichaya"
   },
   "metadata": {
-    "description": "TC FE prep, testing ticket (Playwright), and bug retest for Jira",
-    "version": "1.2.0"
+    "description": "TC FE prep, testing ticket, create bug, and retest for Jira/GitHub",
+    "version": "1.3.0"
   },
   "plugins": [
     {
       "name": "helix",
-      "description": "Helix — TC FE prep, Testing ticket, Retest bug, and QA routing via /helix",
-      "version": "1.2.0",
+      "description": "Helix — TC FE prep, Testing ticket, Create bug, Retest, routing via /helix",
+      "version": "1.3.0",
       "source": "./",
       "author": {
         "name": "Thitichaya"
