@@ -141,10 +141,12 @@ Draft TC FE as below
 
 **Note — Precondition column:** After completing shared prep above, complete the numbered items in Precondition before Test Steps.
 
-| Acceptance Criteria | ... |
-| --- | --- |
+| **Acceptance Criteria** | **Services Impacted** | **Test Case ID** | **Test Title** | **Precondition** | **Test Data** | **Test Steps** | **Expected Result** | **Priority** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | ... one row per TC ... |
 ```
+
+**Header rule:** Every column header MUST be wrapped in `**bold**` in the chat draft, the Jira comment, and the markdown `.md` file — e.g. `| **Acceptance Criteria** |`. This applies here and in Step 7.
 
 State clearly: **Not posted to Jira yet.**
 

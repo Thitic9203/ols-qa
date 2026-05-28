@@ -78,7 +78,7 @@ Use this path when format detection resolves to `.xlsx`.
 ```python
 import re
 import openpyxl
-from openpyxl.styles import Alignment
+from openpyxl.styles import Alignment, Font
 
 def clean_cell(text):
     text = str(text) if text is not None else ""
@@ -93,6 +93,10 @@ ws.title = "Test Cases"
 
 headers = ["{col1}", "{col2}", ...]   # replace with actual column names
 ws.append([clean_cell(h) for h in headers])
+
+# bold every header cell
+for cell in ws[1]:
+    cell.font = Font(bold=True)
 
 rows = [
     ["{val}", ...],  # one list per TC row — Thai strings passed as-is
