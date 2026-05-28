@@ -1,6 +1,6 @@
 # Helix — AI QA assistant
 
-Portable skill pack for AI agents: **manual FE test-case prep** and **Jira bug retests**, with one entry command.
+Portable skill pack for AI agents: **manual FE test-case prep**, **Playwright ticket testing**, and **Jira bug retests**, with one entry command.
 
 Works with **Claude Code**, **Cursor**, **Codex**, and any tool that reads `SKILL.md` or `AGENTS.md`.
 
@@ -10,6 +10,7 @@ Works with **Claude Code**, **Cursor**, **Codex**, and any tool that reads `SKIL
 |------|-----------------|
 | **TC FE Preparation** | Story AC/EC → 9-column manual TC table + CSV → one Jira comment on the story you name |
 | **Retest bug** | Login, test API/UI, Swagger check, evidence, comment, transition, assign |
+| **Testing ticket** | Collect Ticket/URL/credentials/VPN/Confluence/Swagger → confirm → Playwright run |
 | **Other** | Ask Helix; it routes or helps ad hoc |
 
 ## Quick install
@@ -40,7 +41,8 @@ Helix introduces itself and asks what you need:
 
 1. TC FE Preparation  
 2. Retest bug  
-3. Other (describe)
+3. Testing ticket  
+4. Other (describe)
 
 You can also run shortcuts:
 
@@ -49,6 +51,7 @@ You can also run shortcuts:
 | `/helix` | Router → choose workflow |
 | `/tc-fe-prep ISSUE-123` | `tc-fe-prep-workflow` |
 | `/retest-bug ISSUE-456` | `retest-bug-workflow` |
+| `/testing-ticket ISSUE-789` | `testing-ticket-workflow` |
 
 ### Any other agent
 
@@ -56,6 +59,7 @@ Read `AGENTS.md` or invoke:
 
 - `tc-fe-prep-workflow`
 - `retest-bug-workflow`
+- `testing-ticket-workflow`
 
 **User-facing replies:** concise **English**.
 
@@ -65,6 +69,7 @@ Read `AGENTS.md` or invoke:
 |-------|-------------|
 | [tc-fe-prep-workflow](skills/tc-fe-prep-workflow/SKILL.md) | FE manual TC from story AC/EC, draft + CSV + Jira |
 | [retest-bug-workflow](skills/retest-bug-workflow/SKILL.md) | Full bug retest with evidence and ticket hygiene |
+| [testing-ticket-workflow](skills/testing-ticket-workflow/SKILL.md) | Ticket intake, confirm, Playwright execution, results |
 
 ## Prerequisites (human)
 
@@ -73,6 +78,7 @@ Read `AGENTS.md` or invoke:
 - Project guide files in your repo (optional; skills help create them):
   - `references/*-tc-fe-prep-guide.md`
   - `references/*-retest-guide.md`
+  - `references/*-testing-ticket-guide.md` (optional non-secret defaults)
 
 ## Scripts
 

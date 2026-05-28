@@ -2,7 +2,7 @@
 
 ## Helix
 
-**Helix:** QA assistant persona — routes to TC prep or retest workflows. User-facing language: English.
+**Helix:** QA assistant persona — routes to TC prep, testing ticket, or retest workflows. User-facing language: English.
 
 ## TC FE prep
 
@@ -22,6 +22,14 @@
 | **Bug FE** | UI — screenshots required, v2 wiki markup |
 | **Project config** | `references/*-retest-guide.md` in the user's repo |
 | **v2 / v3** | Jira REST comment API versions (wiki vs ADF) |
+
+## Testing ticket
+
+| Term | Meaning |
+|------|---------|
+| **Intake** | Seven fields: Ticket, URL, User, Password, VPN, Confluence, Swagger |
+| **Confirm gate** | User must approve summary before Playwright runs |
+| **Ticket guide** | Optional `references/*-testing-ticket-guide.md` (no passwords) |
 
 ## Placeholders
 
