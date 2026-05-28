@@ -13,16 +13,37 @@ Check the user’s **original request** for this session — not just the latest
 
 ---
 
+## Cell text cleaning (apply to EVERY cell, both formats)
+
+Run these steps on every cell value **before** writing to any file:
+
+1. Convert all `<br>` variants to a newline character — use a case-insensitive regex:
+   ```
+   pattern: <br\s*/?>   (matches <br>, <br/>, <BR>, <BR/>, <br >, <BR />, etc.)
+   replace with: \n
+   ```
+2. Strip all remaining HTML tags — use a greedy strip:
+   ```
+   pattern: <[^>]+>
+   replace with: (empty string)
+   ```
+   This removes `<b>`, `<strong>`, `<em>`, `<p>`, `<li>`, `<ul>`, etc.
+3. Strip `**` markdown bold markers (replace `**` with empty string).
+4. **Do NOT alter, escape, or transliterate any Thai or non-ASCII characters** — preserve them exactly.
+
+After cleaning, a cell that contained `ตรวจสอบ<br>ผลลัพธ์` must read `ตรวจสอบ\nผลลัพธ์` (literal newline, Thai intact).
+
+---
+
 ## CSV export (default)
 
 MUST use this path unless the user explicitly requested Excel **or** gave an explicit Helix install directory:
 
-1. Header row = column names from the approved table.
-2. Convert `<br>` / `<br/>` in cells to newlines.
-3. Strip `**` markdown bold for plain CSV text.
-4. Write **UTF-8 with BOM** — the BOM (`﻿`) is mandatory so Excel opens the file with UTF-8 encoding; without it, Thai and other non-ASCII characters render as garbled symbols.
-5. **Do NOT alter, escape, or transliterate any Thai or non-ASCII characters** — preserve them exactly as they appear in the approved table.
-6. Row count must match the approved markdown table (excluding header).
+1. Apply **Cell text cleaning** (above) to every cell.
+2. Header row = column names from the approved table.
+3. Write **UTF-8 with BOM** (`encoding='utf-8-sig'` in Python) — mandatory so Excel opens the file with UTF-8 encoding; without it, Thai and other non-ASCII characters render as garbled symbols.
+4. **Multiline cells** (containing `\n`) MUST be double-quoted in the CSV — use Python's `csv.writer` which handles this automatically; do NOT build CSV by string concatenation.
+5. Row count must match the approved markdown table (excluding header).
 
 ### Optional CSV script (user-provided install root only)
 
@@ -47,38 +68,50 @@ Use this path when format detection resolves to `.xlsx`.
 
 ### In-agent xlsx export
 
-1. Parse the approved markdown table into header row + data rows.
-2. Convert `<br>` / `<br/>` in cells to `\n`.
-3. Strip `**` markdown bold for plain text.
-4. **Do NOT alter, escape, or transliterate any Thai or non-ASCII characters** — openpyxl handles Unicode natively; pass Thai strings as-is into `ws.append()`.
-5. Ensure `openpyxl` is available — if not, install it first:
+1. Apply **Cell text cleaning** (see above) to every cell — `<br>` variants → `\n`, strip HTML tags, strip `**`.
+2. Ensure `openpyxl` is available — if not, install it first:
    ```bash
    pip install openpyxl
    ```
-5. Generate and run a Python script inline:
+3. Generate and run a Python script inline — include the cleaning function:
 
 ```python
+import re
 import openpyxl
+from openpyxl.styles import Alignment
+
+def clean_cell(text):
+    text = str(text) if text is not None else ""
+    text = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)  # <br> variants → newline
+    text = re.sub(r"<[^>]+>", "", text)                            # strip remaining HTML tags
+    text = text.replace("**", "")                                  # strip markdown bold
+    return text.strip()
 
 wb = openpyxl.Workbook()
 ws = wb.active
 ws.title = "Test Cases"
 
 headers = ["{col1}", "{col2}", ...]   # replace with actual column names
-ws.append(headers)
+ws.append([clean_cell(h) for h in headers])
 
 rows = [
-    ["{val}", ...],  # one list per TC row
+    ["{val}", ...],  # one list per TC row — Thai strings passed as-is
 ]
 for row in rows:
-    ws.append(row)
+    cleaned = [clean_cell(v) for v in row]
+    ws.append(cleaned)
+    # enable wrap_text for any cell that contains a newline
+    row_idx = ws.max_row
+    for col_idx, val in enumerate(cleaned, 1):
+        if "\n" in val:
+            ws.cell(row=row_idx, column=col_idx).alignment = Alignment(wrap_text=True)
 
 wb.save("{ISSUE_KEY}_FE_TC.xlsx")
 print(f"Saved {len(rows)} rows to {ISSUE_KEY}_FE_TC.xlsx")
 ```
 
-6. Row count printed must match the approved markdown table (excluding header).
-7. Save to `references/{ISSUE_KEY}_FE_TC.xlsx` inside the user’s workspace.
+4. Row count printed must match the approved markdown table (excluding header).
+5. Save to `references/{ISSUE_KEY}_FE_TC.xlsx` inside the user’s workspace.
 
 ### Fallback
 
