@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -26,7 +27,7 @@ jobs:
           BASE_REF: ${{ github.event.before }}
           HEAD_REF: ${{ github.sha }}
         run: |
-          set -euo pipefail
+          set -o pipefail
           if [ "$BASE_REF" = "0000000000000000000000000000000000000000" ] || [ -z "$BASE_REF" ]; then
             export BASE_REF="HEAD~1"
             export HEAD_REF="HEAD"
@@ -36,12 +37,12 @@ jobs:
 
   verify:
     needs: auto-bump
-    # Skip verify on the same run that auto-bump pushed — the follow-up push run will verify.
     if: >-
       always() &&
       (github.event_name == 'pull_request' ||
-       contains(github.event.head_commit.message, '[automated]') ||
-       needs.auto-bump.result == 'skipped')
+       (github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+        (needs.auto-bump.result == 'skipped' || needs.auto-bump.result == 'success')) ||
+       github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,6 +50,7 @@ jobs:
           fetch-depth: 0
       - name: Verify version markers match VERSION
         run: |
+          set -o pipefail
           chmod +x scripts/sync-version.sh
           ./scripts/sync-version.sh --check
       - name: Require VERSION bump on pull requests (or bump before merge)
@@ -57,7 +59,7 @@ jobs:
           BASE_REF: origin/${{ github.base_ref }}
           HEAD_REF: HEAD
         run: |
-          set -euo pipefail
+          set -o pipefail
           git fetch origin "${{ github.base_ref }}"
           chmod +x scripts/ci-needs-version-bump.sh
           if ./scripts/ci-needs-version-bump.sh; then
@@ -66,12 +68,14 @@ jobs:
 
   release:
     needs: verify
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >-
+      needs.verify.result == 'success' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: main
           fetch-depth: 0
       - name: Read version
         id: ver
@@ -80,7 +84,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
+          set -o pipefail
           V="${{ steps.ver.outputs.version }}"
           TAG="v${V}"
           if gh release view "$TAG" >/dev/null 2>&1; then
@@ -88,15 +92,19 @@ jobs:
             exit 0
           fi
           PREV="$(git tag -l 'v*' --sort=-v:refname | head -1 || true)"
-          if [ -n "$PREV" ]; then
-            NOTES="$(git log "${PREV}..HEAD" --pretty=format:'- %s (%h)' 2>/dev/null | head -50 || true)"
-          else
-            NOTES="Initial Helix release."
-          fi
+          NOTES_FILE="$(mktemp)"
+          {
+            echo "## Helix ${V}"
+            echo ""
+            if [ -n "$PREV" ]; then
+              git log "${PREV}..HEAD" --pretty=format:'- %s (%h)' 2>/dev/null | head -50 || true
+            else
+              echo "Skill and workflow updates."
+            fi
+            echo ""
+            echo 'Install: `curl -sL https://raw.githubusercontent.com/Thitic9203/helix/main/scripts/install.sh | bash`'
+          } > "$NOTES_FILE"
           gh release create "$TAG" \
             --title "Helix ${V}" \
-            --notes "## Helix ${V}
-
-${NOTES:-Skill and workflow updates.}
-
-Install: \`curl -sL https://raw.githubusercontent.com/Thitic9203/helix/main/scripts/install.sh | bash\`"
+            --notes-file "$NOTES_FILE"
+          echo "Created release $TAG"
