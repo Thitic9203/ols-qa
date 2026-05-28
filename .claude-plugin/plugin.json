@@ -1,14 +1,15 @@
 {
   "name": "helix",
-  "version": "1.1.0",
-  "description": "Helix QA assistant — FE test-case prep and Jira bug retest workflows",
+  "version": "1.2.0",
+  "description": "Helix QA assistant — TC prep, testing ticket (Playwright), and bug retest workflows",
   "author": {
     "name": "QA Lead"
   },
   "license": "MIT",
-  "keywords": ["qa", "jira", "test-cases", "retest", "manual", "frontend", "helix"],
+  "keywords": ["qa", "jira", "test-cases", "retest", "playwright", "manual", "frontend", "helix"],
   "skills": [
     "./skills/tc-fe-prep-workflow",
-    "./skills/retest-bug-workflow"
+    "./skills/retest-bug-workflow",
+    "./skills/testing-ticket-workflow"
   ]
 }

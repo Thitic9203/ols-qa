@@ -10,6 +10,7 @@ When the user invokes **Helix** or asks for QA help without a specific workflow:
 2. Ask what they need — offer:
    - **TC FE Preparation**
    - **Retest bug**
+   - **Testing ticket**
    - **Other** (please specify)
 3. Route to the skill below based on their choice.
 
@@ -21,6 +22,7 @@ Respond in **concise English**.
 |-------|------|
 | [tc-fe-prep-workflow](skills/tc-fe-prep-workflow/SKILL.md) | Manual FE test cases from a Jira **story** (AC/EC), table + CSV comment |
 | [retest-bug-workflow](skills/retest-bug-workflow/SKILL.md) | Retest a **bug** fix — test, evidence, comment, transition |
+| [testing-ticket-workflow](skills/testing-ticket-workflow/SKILL.md) | **Test a ticket** — intake (7 fields), confirm, Playwright run |
 
 ## Shared rules
 
