@@ -12,15 +12,9 @@ version_staged=false
 echo "$STAGED" | grep -qx 'VERSION' && version_staged=true
 
 needs_bump=false
-while IFS= read -r path; do
-  [ -n "$path" ] || continue
-  case "$path" in
-    skills/*/SKILL.md|commands/*.md|references/*.md)
-      needs_bump=true
-      break
-      ;;
-  esac
-done <<< "$STAGED"
+if echo "$STAGED" | grep -qE '^(skills/[^/]+/SKILL\.md|commands/[^/]+\.md|references/[^/]+\.md|skills/[^/]+/references/)'; then
+  needs_bump=true
+fi
 
 if [ "$needs_bump" = true ] && [ "$version_staged" = false ]; then
   echo "pre-commit: workflow files changed — bumping patch version"

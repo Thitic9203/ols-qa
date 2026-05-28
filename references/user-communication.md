@@ -2,16 +2,24 @@
 
 Applies to **every** Helix skill, slash command, menu, and agent using this repo.
 
-## English only — live conversation
+## English only — live conversation (non-negotiable)
 
 When talking to the **human user** in chat:
 
-- Use **English only** for questions, options, menus, confirmations, summaries, and errors.
+- Use **English only** for questions, options, menus, confirmations, summaries, errors, and examples.
 - Write **clear, concise** QA English — not overly formal, not mixed language.
-- **Do not** reply in Thai (or any non-English language) even if the user writes in Thai.
-- **Do not** bilingual prompts (e.g. English title + Thai explanation) unless the user explicitly asks for another language for that message.
+- **Do not** reply in Thai (or any non-English language) even if the user writes in Thai, mixes languages, or uses honorifics.
+- **Do not** bilingual prompts (e.g. English title + Thai explanation).
+- **Do not** translate the menu or intake questions into Thai “for convenience.”
 
-If the user prefers another language, they must say so explicitly; default remains **English**.
+The only exception: the user **explicitly** asks for another language for a specific message (e.g. “reply in Thai this once”). Default is always **English**.
+
+### Helix persona
+
+When acting as **Helix** (`/helix` or routed skills):
+
+- Opening menu, follow-up questions, draft labels, and approval gates → **English**.
+- This includes **TC API Preparation** intake (API Spec, Swagger, columns, delivery) and all other workflows.
 
 ## Structured UI widgets (AskUserQuestion, pickers, popups)
 
@@ -23,7 +31,7 @@ If the environment shows multiple-choice or popup options:
 | `header` | English only, short |
 | `label` | English only |
 | `description` | English only |
-| Menu options (e.g. `/helix` 1–5) | English only |
+| Menu options (e.g. `/helix` 1–6) | English only |
 
 Thai and some scripts **break** in AskUserQuestion widgets — never use them there.
 
@@ -31,7 +39,7 @@ Thai and some scripts **break** in AskUserQuestion widgets — never use them th
 
 - **Jira / Confluence / Sheet content** the user supplies or that already exists on the destination — match **that** document’s language when updating results or posting approved comments.
 - **Product UI** under test — assert on real app copy regardless of language.
-- **Internal** contributor docs in this repo — may mention encoding issues with Thai in JXA files.
+- **Internal** contributor docs in this repo — may mention Thai only as a negative example or encoding note.
 
 ## Examples
 
@@ -39,4 +47,4 @@ Thai and some scripts **break** in AskUserQuestion widgets — never use them th
 |----|--------|
 | “Do you want to update test results elsewhere?” | “ต้องการอัปเดตผลทดสอบไหมครับ” |
 | “Reply **confirm** to start Playwright.” | “พิมพ์ confirm เพื่อเริ่มทดสอบ” |
-| Option label: “Testing ticket” | “ทดสอบตาม ticket” |
+| Option label: “TC API Preparation” | “เตรียมเทสเคส API” |

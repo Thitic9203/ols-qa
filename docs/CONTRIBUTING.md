@@ -40,8 +40,16 @@ Check consistency:
 
 ### CI / releases
 
-- **Pull requests:** CI fails if workflow files change without a `VERSION` bump.
-- **Push to `main`:** CI verifies markers, then creates a GitHub **Release** `vx.y.z` if that tag does not exist yet.
+- **Push to `main`:** If workflow files change without a `VERSION` bump, the **auto-bump** job runs `./scripts/ci-auto-bump-commit.sh`, commits `chore(ci): bump version … [automated]`, and pushes to `main` (skips when the commit message already contains `[automated]`).
+- **Pull requests:** CI warns if `VERSION` was not bumped; merging to `main` still triggers auto-bump when needed.
+- **Release:** After verify, creates GitHub **Release** `vx.y.z` when that tag is missing.
+
+Workflow path patterns (same as pre-commit):
+
+- `skills/*/SKILL.md`
+- `skills/*/references/**`
+- `commands/*.md`
+- `references/*.md` (repo root)
 
 Enable hooks after clone:
 
