@@ -186,13 +186,16 @@ Verified: {what you re-read}
 
 ## QA closing (mandatory before "done")
 
+Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-rules-style.md#qa-closing-doubt-and-fix-verify).
+
 1. **Assume** the first draft missed endpoints or wrong status codes — Phase E exists for this reason.
 2. Skill-specific:
    - [ ] Row count and columns match Phase B confirmation.
    - [ ] If comment delivery: destination UI shows full table.
    - [ ] If file delivery: CSV opens with header + N data rows.
-3. Shared: [skill-rules-style.md](../../references/skill-rules-style.md).
-4. NEVER say complete without re-reading the file or comment URL.
+   - [ ] Close-out block includes `Verified:` and test case count.
+3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
+4. Optional fresh-eyes: re-read draft table before Phase G if >15 rows.
 
 ---
 
@@ -212,6 +215,8 @@ Verified: {what you re-read}
 | [api-tc-guidelines.md](references/api-tc-guidelines.md) | API TC writing rules |
 | [delivery-options.md](references/delivery-options.md) | Jira / Confluence / CSV |
 | [markdown-template.md](references/markdown-template.md) | Table skeleton |
+| [worked-example.md](references/worked-example.md) | Anonymized end-to-end sample |
+| [scripts/README.md](scripts/README.md) | Optional CSV helper pointer |
 
 ---
 

@@ -12,6 +12,8 @@ Do **not** paraphrase the menu in another language.
 
 ## Skills
 
+Full routing and handoffs: [references/skill-routing.md](references/skill-routing.md).
+
 | Skill | When |
 |-------|------|
 | [tc-fe-prep-workflow](skills/tc-fe-prep-workflow/SKILL.md) | FE manual TC from a Jira **story** |

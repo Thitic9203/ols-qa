@@ -224,13 +224,16 @@ Use **v2** wiki markup and `/rest/api/2/issue/{KEY}/comment`. Attach images befo
 
 ## QA closing (mandatory before "done")
 
+Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-rules-style.md#qa-closing-doubt-and-fix-verify).
+
 1. **Assume** the first draft comment or test conclusion is wrong — re-check evidence.
 2. Skill-specific:
    - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌** (not ambiguous text).
+   - [ ] Close-out includes `Verdict: PASSED` or `Verdict: FAILED` with issue link.
    - [ ] v2/v3 format matches Step 3 lock; FE bugs have screenshots attached before wiki embed.
    - [ ] API cases: full cURL + response per row (no "same as above").
    - [ ] Jira issue re-opened after post: comment visible, not truncated.
-3. Shared: [skill-rules-style.md](../../references/skill-rules-style.md).
+3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
 4. Optional fresh-eyes: re-read draft comment before Step 7 if comment is long.
 
 ---

@@ -1,5 +1,7 @@
 ---
-description: Prepare FE manual test cases from a Jira story (AC/EC), draft comment + CSV, publish to the specified story
+description: |
+  Prepare FE manual test cases from a Jira story (AC/EC), draft comment + CSV, publish to the specified story.
+  Do NOT use for API-only Swagger TC (tc-api-prep), retest-after-fix (retest-bug), or Playwright ticket runs (testing-ticket).
 ---
 
 Invoke the `tc-fe-prep-workflow` skill.

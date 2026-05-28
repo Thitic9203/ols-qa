@@ -21,6 +21,18 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 Commands: `commands/helix.md` (canonical menu), plus one file per workflow.
 
+## Ship checklist (Rule 2)
+
+Before merging a **new or renamed** workflow skill:
+
+1. `skills/<name>/SKILL.md` + `references/` as needed
+2. [README.md](README.md) — user-visible workflow list
+3. [.claude-plugin/plugin.json](.claude-plugin/plugin.json) — `skills` entry
+4. `commands/<name>.md` — slash command with trigger + negative case in `description`
+5. [references/skill-routing.md](references/skill-routing.md) — one row in the routing table
+
+WIP: `skills/in-progress/` only until the checklist passes.
+
 ## Quality bar
 
 - Portable: [references/portable-content.md](references/portable-content.md) — no machine paths, no single-project coupling, no assumed Helix install cwd in skills.

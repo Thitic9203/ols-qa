@@ -14,6 +14,9 @@ Use this map to avoid duplicating content across markdown files.
 | Skill authoring (Pluton-aligned) | [references/skill-rules-style.md](../references/skill-rules-style.md) | MUST/NEVER tables in every skill |
 | Portable skills (no host/project lock-in) | [references/portable-content.md](../references/portable-content.md) | Machine paths, PD3, one-repo Playwright layout |
 | CSV export | [references/csv-export-rules.md](../references/csv-export-rules.md) | tc-fe / tc-api skills (in-agent default) |
+| Skill routing / handoffs | [references/skill-routing.md](../references/skill-routing.md) | Per-skill Handoff tables |
+| Session constraint recital | [references/helix-session-constraints.md](../references/helix-session-constraints.md) | Full block pasted in every skill |
+| CI portable-content guard | [scripts/ci-check-portable-skills.sh](../scripts/ci-check-portable-skills.sh) | Ad-hoc grep in skills |
 | New skill template | [docs/new-skill-template.md](new-skill-template.md) | `skills/retest-bug-workflow/references/new-skill-template.md` (stub only) |
 | Markdown table → CSV | [scripts/export-markdown-table-to-csv.py](../scripts/export-markdown-table-to-csv.py) | Inline CSV logic in tc-fe/tc-api skills |
 | Domain glossary | [CONTEXT.md](../CONTEXT.md) | README, skills |
@@ -38,10 +41,10 @@ Deep detail lives under `skills/<name>/references/`. The parent `SKILL.md` shoul
 | Skill | References |
 |-------|------------|
 | tc-fe-prep-workflow | prerequisites, jira-formatting, publish-options, gotchas, templates, worked-example |
-| tc-api-prep-workflow | default-columns, api-tc-guidelines, delivery-options, markdown-template |
+| tc-api-prep-workflow | default-columns, api-tc-guidelines, delivery-options, markdown-template, worked-example, scripts/README |
 | retest-bug-workflow | project-config-template, gotchas, debug-discipline, worked-example |
-| testing-ticket-workflow | session-intake, playwright-discipline, result-update-discipline |
-| create-bug-workflow | bug-draft-template, posting-discipline |
+| testing-ticket-workflow | session-intake, playwright-discipline, result-update-discipline, worked-example |
+| create-bug-workflow | bug-draft-template, posting-discipline, worked-example |
 
 ## Commands vs skills
 
