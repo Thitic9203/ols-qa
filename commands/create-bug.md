@@ -4,7 +4,7 @@ description: |
   Do NOT use for full Playwright test passes (testing-ticket) or retest comments on an existing bug (retest-bug).
 ---
 
-Read and follow [the create-bug workflow](../skills/deprecated/create-bug-workflow/SKILL.md) end-to-end.
+Read and follow [the create-bug workflow](../skills/deprecated/create-bug-workflow/WORKFLOW.md) end-to-end.
 
 If the user pasted bug details or evidence from a prior test in this chat, reuse them. Otherwise start Phase A intake (target link, format, bug information).
 

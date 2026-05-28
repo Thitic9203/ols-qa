@@ -4,12 +4,6 @@ description: |
   Test one Jira ticket with Playwright after intake and confirmation — summarize results in chat, then optionally update an external results destination.
   Use for Testing ticket from Helix, /testing-ticket, or when the user wants automated UI/API checks for a single ticket.
   Do NOT use for opening bug tickets (create-bug-workflow), retest-after-fix on a bug (retest-bug-workflow), or drafting manual TC tables (tc-fe-prep / tc-api-prep). Does not run full-app regression.
-proactive_triggers:
-  - testing ticket
-  - test this ticket
-  - Playwright ticket test
-  - /testing-ticket
-  - Testing ticket
 ---
 
 # Testing ticket workflow

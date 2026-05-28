@@ -5,7 +5,7 @@ Minimal entry for any coding agent (Cursor, Copilot, Gemini CLI, Windsurf, Cline
 ## Instruction priority
 
 1. **User** — explicit chat instructions and the project’s `AGENTS.md` / `CLAUDE.md`  
-2. **Helix** — workflow `SKILL.md` files and `references/` gates  
+2. **Helix** — workflow skill files and `references/` gates  
 3. **Default agent behavior** — lowest  
 
 When a Helix workflow might apply, **load and follow that skill**; announce once: `Using **{skill-name}** to {purpose}.` Details: [references/skill-invocation-discipline.md](references/skill-invocation-discipline.md).
@@ -31,11 +31,11 @@ Full routing and handoffs: [references/skill-routing.md](references/skill-routin
 | Skill | When |
 |-------|------|
 | [helix](skills/helix/SKILL.md) | Menu / routing (no `/helix` slash command) |
-| [tc-fe-prep-workflow](skills/deprecated/tc-fe-prep-workflow/SKILL.md) | FE manual TC from a Jira **story** |
-| [tc-api-prep-workflow](skills/deprecated/tc-api-prep-workflow/SKILL.md) | API manual TC from spec + **Swagger** |
-| [retest-bug-workflow](skills/deprecated/retest-bug-workflow/SKILL.md) | Retest a **bug** fix |
-| [testing-ticket-workflow](skills/deprecated/testing-ticket-workflow/SKILL.md) | Playwright test for a ticket |
-| [create-bug-workflow](skills/deprecated/create-bug-workflow/SKILL.md) | Open bug(s) on Jira/GitHub |
+| [tc-fe-prep-workflow](skills/deprecated/tc-fe-prep-workflow/WORKFLOW.md) | FE manual TC from a Jira **story** |
+| [tc-api-prep-workflow](skills/deprecated/tc-api-prep-workflow/WORKFLOW.md) | API manual TC from spec + **Swagger** |
+| [retest-bug-workflow](skills/deprecated/retest-bug-workflow/WORKFLOW.md) | Retest a **bug** fix |
+| [testing-ticket-workflow](skills/deprecated/testing-ticket-workflow/WORKFLOW.md) | Playwright test for a ticket |
+| [create-bug-workflow](skills/deprecated/create-bug-workflow/WORKFLOW.md) | Open bug(s) on Jira/GitHub |
 
 ## Rules
 

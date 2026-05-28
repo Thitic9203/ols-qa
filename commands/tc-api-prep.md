@@ -4,7 +4,7 @@ description: |
   Do NOT use for FE story AC/EC tables (tc-fe-prep), Playwright runs (testing-ticket), or filing bugs (create-bug).
 ---
 
-Read and follow [the TC API prep workflow](../skills/deprecated/tc-api-prep-workflow/SKILL.md) end-to-end.
+Read and follow [the TC API prep workflow](../skills/deprecated/tc-api-prep-workflow/WORKFLOW.md) end-to-end.
 
 Pass any API spec or Swagger URL from the message. If missing, run Phase A intake (API Spec, Swagger), then Phase B (columns), then Phase C (delivery).
 

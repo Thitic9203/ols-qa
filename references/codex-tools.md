@@ -5,7 +5,7 @@ Treat Helix like any **AGENTS.md**-driven repo: read skills from disk, execute s
 | Need | Codex approach |
 |------|----------------|
 | Router | Read `skills/helix/SKILL.md` or `AGENTS.md` |
-| Workflow | Read full `skills/{workflow}/SKILL.md` + linked `references/` |
+| Workflow | Read `commands/{workflow}.md` (loads the matching `WORKFLOW.md` internally) |
 | Jira | MCP or API if user configured; else draft in chat |
 | Playwright | `npx playwright test` per user project — never assume Credit-Port paths |
 | Long tasks | Split phases; optional todos per [long-workflow-todos.md](long-workflow-todos.md) |

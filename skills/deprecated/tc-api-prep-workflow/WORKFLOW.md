@@ -4,12 +4,6 @@ description: |
   Prepare API manual test cases from API spec and Swagger with mandatory spec/Swagger coverage review and ISTQB/29119-3 quality check — confirm columns and delivery (Jira comment link and/or CSV/Excel in workspace).
   Use when the user chooses TC API Preparation from Helix, invokes /tc-api-prep, or asks for API test cases from Swagger/OpenAPI.
   Do NOT use for frontend story AC/EC tables (tc-fe-prep-workflow), Playwright or test execution (testing-ticket-workflow), retest-after-fix (retest-bug-workflow), or opening bugs (create-bug-workflow).
-proactive_triggers:
-  - API test cases
-  - Swagger test cases
-  - OpenAPI manual TC
-  - /tc-api-prep
-  - TC API Preparation
 ---
 
 # TC API Prep Workflow

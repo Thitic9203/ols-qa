@@ -4,12 +4,6 @@ description: |
   Retest a Jira bug after a dev fix — read ticket, test API or UI, compare Swagger, draft evidence, post comment (with approval), transition and assign back to dev.
   Use when the user says retest bug, verify fix, check if an issue is fixed, /retest-bug, or Retest bug from Helix.
   Do NOT use for writing new FE/API test case tables (tc-fe-prep / tc-api-prep), full ticket Playwright runs (testing-ticket-workflow), or opening new bugs (create-bug-workflow).
-proactive_triggers:
-  - retest bug
-  - verify fix
-  - check if fixed
-  - /retest-bug
-  - Retest bug
 ---
 
 # Retest bug workflow

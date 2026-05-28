@@ -34,11 +34,11 @@ When the user writes Thai or informal English, map intent using [intent-shortcut
 
 | User choice | Action |
 |-------------|--------|
-| 1, TC FE, FE test cases | Read and follow [tc-fe-prep-workflow](../deprecated/tc-fe-prep-workflow/SKILL.md) |
-| 2, TC API, Swagger API TC | Read and follow [tc-api-prep-workflow](../deprecated/tc-api-prep-workflow/SKILL.md) |
-| 3, retest, verify fix | Read and follow [retest-bug-workflow](../deprecated/retest-bug-workflow/SKILL.md) |
-| 4, testing ticket, Playwright | Read and follow [testing-ticket-workflow](../deprecated/testing-ticket-workflow/SKILL.md) |
-| 5, create bug, file bug | Read and follow [create-bug-workflow](../deprecated/create-bug-workflow/SKILL.md) |
+| 1, TC FE, FE test cases | Read and follow [tc-fe-prep-workflow](../deprecated/tc-fe-prep-workflow/WORKFLOW.md) |
+| 2, TC API, Swagger API TC | Read and follow [tc-api-prep-workflow](../deprecated/tc-api-prep-workflow/WORKFLOW.md) |
+| 3, retest, verify fix | Read and follow [retest-bug-workflow](../deprecated/retest-bug-workflow/WORKFLOW.md) |
+| 4, testing ticket, Playwright | Read and follow [testing-ticket-workflow](../deprecated/testing-ticket-workflow/WORKFLOW.md) |
+| 5, create bug, file bug | Read and follow [create-bug-workflow](../deprecated/create-bug-workflow/WORKFLOW.md) |
 | 6, other | Clarify; suggest closest workflow |
 
 Handoffs: [skill-routing.md](../../references/skill-routing.md).

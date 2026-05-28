@@ -36,11 +36,11 @@ If the user’s message already names a workflow (including Thai phrases), map v
 
 | User choice | Action |
 |-------------|--------|
-| `1`, TC FE, FE test case prep | Read and follow [tc-fe-prep-workflow](../skills/deprecated/tc-fe-prep-workflow/SKILL.md). Pass any issue key/URL from the message. |
-| `2`, TC API, API test case prep, API TC | Read and follow [tc-api-prep-workflow](../skills/deprecated/tc-api-prep-workflow/SKILL.md). Run Phase A–C intake if spec/Swagger/delivery missing. |
-| `3`, retest, verify fix, retest bug | Read and follow [retest-bug-workflow](../skills/deprecated/retest-bug-workflow/SKILL.md). Pass any bug key/URL from the message. |
-| `4`, testing ticket, test ticket, playwright ticket | Read and follow [testing-ticket-workflow](../skills/deprecated/testing-ticket-workflow/SKILL.md). Pass any issue key/URL; complete Phase A intake if fields are missing. |
-| `5`, create bug, file bug, open bug, log bug | Read and follow [create-bug-workflow](../skills/deprecated/create-bug-workflow/SKILL.md). Reuse bug evidence from the same chat if present. |
+| `1`, TC FE, FE test case prep | Read and follow [tc-fe-prep-workflow](../skills/deprecated/tc-fe-prep-workflow/WORKFLOW.md). Pass any issue key/URL from the message. |
+| `2`, TC API, API test case prep, API TC | Read and follow [tc-api-prep-workflow](../skills/deprecated/tc-api-prep-workflow/WORKFLOW.md). Run Phase A–C intake if spec/Swagger/delivery missing. |
+| `3`, retest, verify fix, retest bug | Read and follow [retest-bug-workflow](../skills/deprecated/retest-bug-workflow/WORKFLOW.md). Pass any bug key/URL from the message. |
+| `4`, testing ticket, test ticket, playwright ticket | Read and follow [testing-ticket-workflow](../skills/deprecated/testing-ticket-workflow/WORKFLOW.md). Pass any issue key/URL; complete Phase A intake if fields are missing. |
+| `5`, create bug, file bug, open bug, log bug | Read and follow [create-bug-workflow](../skills/deprecated/create-bug-workflow/WORKFLOW.md). Reuse bug evidence from the same chat if present. |
 | `6`, other | Ask one clarifying question, then help or suggest which Helix workflow fits. |
 
 If the user invoked `/helix PROJ-123` with no mode:

@@ -5,7 +5,7 @@ Helix skills are **markdown procedures**. Copilot does not have Claude’s **Ski
 | Helix skill | Copilot action |
 |-------------|----------------|
 | `helix` | Read `skills/helix/SKILL.md` + `commands/helix.md` |
-| Workflows | Read `skills/{name}/SKILL.md` |
+| Workflows | Read `commands/{name}.md` (loads the matching `WORKFLOW.md` internally) |
 | Jira | Use Copilot **Atlassian** or **Jira** integration if configured; else user pastes ticket |
 | Playwright | Run terminal commands from `testing-ticket-workflow`; user workspace owns config |
 | Evidence | Apply [qa-evidence-gates.md](qa-evidence-gates.md) manually |
