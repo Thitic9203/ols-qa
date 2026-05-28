@@ -9,13 +9,9 @@ File **one or more bug reports** on the tracker the user names (Jira, GitHub Iss
 
 ## Communication (mandatory)
 
-Read [user-communication.md](../../references/user-communication.md).
+Follow [user-communication.md](../../references/user-communication.md).
 
-- **English only** for all questions, options, confirmations, and summaries — **never Thai**, even if the user writes in Thai.
-- **AskUserQuestion / popups:** every field English only.
-- **No issue created** until the user confirms the intake + bug drafts (Phase C).
-- **No evidence, no issue** — every bug needs observable behavior or measurable error.
-- Verify each created issue **exists at the URL** before saying done (Phase F).
+**Gates:** no issue created until Phase C confirm. No evidence, no issue. Verify each URL in Phase F before saying done.
 
 ---
 

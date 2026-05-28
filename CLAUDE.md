@@ -1,6 +1,15 @@
 # Helix — contributor rules
 
-## Skills
+## Version
+
+- **Source of truth:** [VERSION](VERSION)
+- Run `./scripts/sync-version.sh` after editing `VERSION`
+- Changing `skills/*/SKILL.md`, `commands/*.md`, or `references/*.md` triggers **patch bump** via pre-commit (unless `VERSION` is already staged)
+- CI creates a [GitHub Release](https://github.com/Thitic9203/helix/releases) when `VERSION` changes on `main`
+
+See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
+
+## Layout
 
 | Skill | Path |
 |-------|------|
@@ -9,26 +18,14 @@
 | Testing ticket | `skills/testing-ticket-workflow/` |
 | Create bug | `skills/create-bug-workflow/` |
 
-All must stay **portable**: no machine-specific paths, no real ticket IDs in committed files.
+Commands: `commands/helix.md` (canonical menu), plus one file per workflow.
 
-## Commands
+## Quality bar
 
-| Command | File |
-|---------|------|
-| `/helix` | `commands/helix.md` — router |
-| `/tc-fe-prep` | `commands/tc-fe-prep.md` |
-| `/retest-bug` | `commands/retest-bug.md` |
-| `/testing-ticket` | `commands/testing-ticket.md` |
-| `/create-bug` | `commands/create-bug.md` |
+- Portable: no machine paths, no real ticket IDs in committed skills.
+- User chat: [references/user-communication.md](references/user-communication.md) — link from skills; do not paste the full rule in four places.
+- Doc map: [docs/DOC-MAP.md](docs/DOC-MAP.md) — avoid duplicating README/helix menu in other md files.
 
-## User language
+## New skill
 
-Helix speaks **English only** to users — no Thai in chat, menus, or questions. Canonical rule: [references/user-communication.md](references/user-communication.md). Every skill’s **Communication** section must match.
-
-## Version
-
-Bump `version` in `.claude-plugin/plugin.json` and `marketplace.json` together.
-
-## Adding skills
-
-See `skills/retest-bug-workflow/references/new-skill-template.md`.
+[skills/retest-bug-workflow/references/new-skill-template.md](skills/retest-bug-workflow/references/new-skill-template.md)

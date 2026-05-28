@@ -1,8 +1,6 @@
-# CONTEXT — domain language
+# CONTEXT — domain glossary
 
-## Helix
-
-**Helix:** QA assistant persona — routes to TC prep, testing ticket, create bug, or retest. **User-facing language: English only** — all questions, menu options, and chat replies; never Thai unless the user explicitly requests another language. See `references/user-communication.md`.
+Terms used across Helix skills. For install, menu, and versioning see [README.md](README.md) and [docs/DOC-MAP.md](docs/DOC-MAP.md).
 
 ## TC FE prep
 
@@ -27,19 +25,18 @@
 
 | Term | Meaning |
 |------|---------|
-| **Intake** | Seven fields: Ticket, URL, User, Password, VPN, Confluence, Swagger |
-| **Confirm gate** | User must approve summary before Playwright runs |
-| **Result update** | Optional Phase G — user gives link, columns, formats; verify before “complete” |
-| **Ticket guide** | Optional `references/*-testing-ticket-guide.md` (no passwords) |
+| **Intake** | Ticket, URL, User, Password, VPN, Confluence, Swagger |
+| **Confirm gate** | User approves summary before Playwright |
+| **Result update** | Optional destination link + columns + verify |
 
 ## Create bug
 
 | Term | Meaning |
 |------|---------|
-| **Target** | Jira project/board or GitHub repo URL |
-| **Format** | User template, example issue, or Helix default draft |
-| **Verify** | Re-open each created issue URL before closing |
+| **Target** | Jira or GitHub URL |
+| **Format** | User template or Helix default draft |
+| **Verify** | Re-open each created issue URL |
 
 ## Placeholders
 
-Use `{ISSUE_KEY}`, `{JIRA_DOMAIN}`, `{PORTAL}` — never commit real customer ticket numbers in skill files.
+`{ISSUE_KEY}`, `{JIRA_DOMAIN}`, `{PORTAL}` — never commit real customer keys in skill files.
