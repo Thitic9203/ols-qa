@@ -92,6 +92,7 @@ Record failures in the PR description; fix the skill reference, not the test sce
 ## Documentation rules
 
 - Follow [DOC-MAP.md](DOC-MAP.md) — no copy-paste of the `/helix` menu outside `commands/helix.md`.
+- When **install**, **update**, or **Claude plugin** behaviour changes, update [README.md](../README.md) and [docs/wiki/Home.md](wiki/Home.md) (GitHub Wiki mirror).
 - User-facing language: [references/user-communication.md](../references/user-communication.md).
 - Portable skills: [references/portable-content.md](../references/portable-content.md) — no real ticket IDs, no `/Users/...`, no `~/.helix` in `skills/` or `commands/`, no one-product env/commands (e.g. `pd3`, customer Playwright paths).
 
