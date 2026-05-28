@@ -2,22 +2,30 @@
 
 ## CSV
 
-- UTF-8 with BOM for Excel compatibility
-- One row per test case; header = confirmed columns
-- Replace `<br>` with newline inside cells
-- Strip `**` from markdown bold
+Follow [csv-export-rules.md](../../../references/csv-export-rules.md) — CSV export section. Key points:
+
+- Apply **Cell text cleaning**: `<br>` variants → `\n`, strip ALL HTML tags, strip `**`
+- UTF-8 with BOM (`encoding='utf-8-sig'`) — mandatory for Thai and non-ASCII to render correctly
+- Use `csv.writer` (not string concatenation) — handles multiline cell quoting automatically
+- Header row: plain text column names (no bold — CSV format does not support formatting)
+- Do NOT alter Thai or non-ASCII characters
 
 ## Excel (.xlsx)
 
-- Same data as CSV
-- Prefer a small script or library in the user repo if available; otherwise CSV only and tell user to open in Excel
+Follow [csv-export-rules.md](../../../references/csv-export-rules.md) — Excel/xlsx section. Key points:
 
-## Jira comment
+- Use Python + openpyxl inline script (see csv-export-rules.md for full script template)
+- Apply **Cell text cleaning** same as CSV
+- Header row 1: `Font(bold=True)` on every cell
+- Cells with `\n`: set `Alignment(wrap_text=True)`
+- **Never silently produce CSV when user asked for xlsx** — if openpyxl fails, warn and ask
 
-- Bold headers: `**Test Case ID**`
+## Jira comment / chat draft
+
+- **Bold every header cell**: `| **Test Case ID** | **Module / Feature** | **Test Title** | ... |` — ALL columns, not just one
 - Multi-line cells: `<br>` between numbered items
 - Wrap issue keys in `{{PROJ-123}}` if auto-link is unwanted
-- Large tables: verify row count on Jira UI after post; consider CSV attachment + table summary (see tc-fe-prep `publish-options` patterns in sibling skill)
+- Large tables: verify row count on Jira UI after post; consider CSV/xlsx attachment + table summary
 
 ## Confluence
 

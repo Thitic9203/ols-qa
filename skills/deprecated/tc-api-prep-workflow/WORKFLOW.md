@@ -186,7 +186,7 @@ Tell the user the **workspace-relative paths** to download.
 
 ### G2 — Comment on link (if user chose A)
 
-1. Draft comment body in chat (same table; Jira use `<br>` in cells, bold headers `**Column**`).
+1. Draft comment body in chat (same table; Jira use `<br>` in cells; **bold every header cell** — e.g. `| **Test Case ID** | **Module / Feature** | **Test Title** | ...`).
 2. Show draft comment → user may waive second approval if they already approved Phase F table.
 3. Post using environment tools (MCP, browser). Match format: [references/delivery-options.md](references/delivery-options.md).
 4. **Verify** on the destination UI: row count, formatting, correct page/issue.
@@ -199,7 +199,7 @@ After G1 and/or G2:
 2. Checklist:
    - [ ] Row count matches approved Phase F table.
    - [ ] Columns match Phase B confirmation.
-   - [ ] No truncation (Jira) or missing header row (CSV).
+   - [ ] No truncation (Jira) or missing header row (CSV/xlsx).
 3. If mismatch → fix delivery → re-read. **Max 2 rounds** — then report blockers.
 
 MUST NOT run G3 close until at least one fix-verify round passes — because first export/post is often wrong.
@@ -220,7 +220,7 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 - [ ] Spec/Swagger coverage complete; out-of-scope documented; tc-quality-standards PASS.
 - [ ] Row count and columns match Phase B confirmation.
 - [ ] If comment delivery: destination UI shows full table.
-- [ ] If file delivery: CSV opens with header + N data rows.
+- [ ] If file delivery: CSV/xlsx opens with bold header row + N data rows.
 - [ ] Close-out includes `Verified:` and test case count.
 - [ ] G-verify completed (at least one re-read of destination).
 - [ ] [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (TC API section).

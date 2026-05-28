@@ -186,7 +186,7 @@ See [references/publish-options.md](references/publish-options.md) for Jira deli
 | Method | When to use |
 |--------|-------------|
 | Atlassian MCP / REST | Short comments; **verify** full table rendered |
-| ADF JSON + browser session | Large tables; upload CSV via authenticated session |
+| ADF JSON + browser session | Large tables; upload CSV/xlsx via authenticated session |
 | User pastes | Fallback if automation unavailable |
 
 **After publish — mandatory fix-verify on Jira UI:**
