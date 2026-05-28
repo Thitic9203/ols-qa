@@ -18,7 +18,7 @@ Hi — I'm Helix, your QA assistant. I help with test-case preparation, ticket t
 
 What would you like to do?
 
-1. **TC FE Preparation** — manual frontend test cases from a story (AC/EC), draft comment + CSV
+1. **TC FE Preparation** — manual frontend test cases from a story (AC/EC), draft comment + CSV/Excel
 2. **TC API Preparation** — API test cases from spec + Swagger; confirm columns; comment link or CSV/Excel
 3. **Retest Bug** — verify a fix on a Jira bug (API or UI), evidence, comment, transition
 4. **Testing Ticket** — Playwright test for a ticket; summarize in chat; optionally update results elsewhere

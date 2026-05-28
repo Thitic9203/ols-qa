@@ -11,7 +11,7 @@ Portable skill pack for AI agents: **FE/API manual test-case prep** (with covera
 
 | Workflow | Summary |
 |----------|---------|
-| **TC FE Preparation** | Story AC/EC → coverage review → manual FE TC table + CSV → Jira comment |
+| **TC FE Preparation** | Story AC/EC → coverage review → manual FE TC table + CSV/Excel → Jira comment |
 | **TC API Preparation** | API spec + Swagger → coverage review → API TC table → comment or CSV/Excel |
 | **Retest Bug** | Verify a fix — API/UI, Swagger, evidence, comment, transition |
 | **Testing Ticket** | Intake → Playwright → summary in chat → optional result update elsewhere |
