@@ -225,11 +225,11 @@ git config core.hooksPath scripts/hooks
 | Skill | Description |
 |-------|-------------|
 | [helix](skills/helix/SKILL.md) | Router menu (agents without `/helix`) |
-| [tc-fe-prep-workflow](skills/tc-fe-prep-workflow/SKILL.md) | FE manual TC from story AC/EC |
-| [tc-api-prep-workflow](skills/tc-api-prep-workflow/SKILL.md) | API manual TC from spec + Swagger |
-| [retest-bug-workflow](skills/retest-bug-workflow/SKILL.md) | Bug retest with evidence |
-| [testing-ticket-workflow](skills/testing-ticket-workflow/SKILL.md) | Playwright ticket test + optional result update |
-| [create-bug-workflow](skills/create-bug-workflow/SKILL.md) | File bugs on Jira/GitHub |
+| [tc-fe-prep-workflow](skills/deprecated/tc-fe-prep-workflow/SKILL.md) | FE manual TC from story AC/EC |
+| [tc-api-prep-workflow](skills/deprecated/tc-api-prep-workflow/SKILL.md) | API manual TC from spec + Swagger |
+| [retest-bug-workflow](skills/deprecated/retest-bug-workflow/SKILL.md) | Bug retest with evidence |
+| [testing-ticket-workflow](skills/deprecated/testing-ticket-workflow/SKILL.md) | Playwright ticket test + optional result update |
+| [create-bug-workflow](skills/deprecated/create-bug-workflow/SKILL.md) | File bugs on Jira/GitHub |
 
 ## Prerequisites (human)
 

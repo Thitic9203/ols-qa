@@ -24,7 +24,7 @@ When you notice these thoughts, **stop** and follow the linked reference or skil
 
 | Rationalization | Correct action |
 |-----------------|----------------|
-| “Row count = AC count, good enough” | Run AC/EC traceability — [ac-ec-coverage-review.md](../skills/tc-fe-prep-workflow/references/ac-ec-coverage-review.md) |
+| “Row count = AC count, good enough” | Run AC/EC traceability — [ac-ec-coverage-review.md](../skills/deprecated/tc-fe-prep-workflow/references/ac-ec-coverage-review.md) |
 | “Extra TCs are helpful” | Orphan TCs violate scope — remove or get user sign-off |
 | “Swagger is enough, skip API spec” | Refuse Phase D until spec + Swagger per skill |
 

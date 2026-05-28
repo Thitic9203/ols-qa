@@ -11,7 +11,7 @@ Use before merging a **new or materially changed** workflow skill. Based on [cla
 ## Structure
 
 - [ ] `SKILL.md` under 500 lines (split detail into `references/`)
-- [ ] At least one [worked-example.md](../skills/tc-fe-prep-workflow/references/worked-example.md) under `references/` for non-trivial workflows
+- [ ] At least one [worked-example.md](../skills/deprecated/tc-fe-prep-workflow/references/worked-example.md) under `references/` for non-trivial workflows
 - [ ] `scripts/README.md` if the workflow mentions CSV export
 
 ## Content
