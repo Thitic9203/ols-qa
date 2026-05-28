@@ -75,33 +75,36 @@ Commit `.github/skills/` if your team uses Copilot on the same repository.
 
 ## Usage
 
-### Start Helix (menu)
+**You do not have to start with `/helix`.** If you already know the workflow, call it directly — that skips the menu and is the recommended path. Use `/helix` (or skill **`helix`**) only when you want the menu or are unsure which workflow fits.
 
-| Agent / IDE | How to open the Helix menu |
-|-------------|----------------------------|
+### Run a workflow directly (recommended when you know the goal)
+
+| Goal | Claude Code | Other agents (skill name) |
+|------|-------------|---------------------------|
+| FE manual TC from story | `/tc-fe-prep` | `tc-fe-prep-workflow` |
+| API manual TC from spec + Swagger | `/tc-api-prep` | `tc-api-prep-workflow` |
+| Retest a bug after a fix | `/retest-bug` | `retest-bug-workflow` |
+| Playwright test for one ticket | `/testing-ticket` | `testing-ticket-workflow` |
+| File bugs on Jira or GitHub | `/create-bug` | `create-bug-workflow` |
+
+Append a Jira key or URL when your tool supports it, e.g. `/tc-fe-prep PROJ-123` or “run `retest-bug-workflow` on PROJ-456”.
+
+Full map: [references/skill-routing.md](references/skill-routing.md) · copy-paste prompts: [references/agent-entry.md](references/agent-entry.md)
+
+### Open the Helix menu (optional — when unsure)
+
+| Agent / IDE | How to open the menu |
+|-------------|----------------------|
 | **Claude Code** | `/helix` |
 | **Cursor** | `@helix` or “use skill helix” |
 | **Windsurf** | `@helix` |
 | **GitHub Copilot** | “Follow the **helix** skill and show the QA menu” |
-| **Gemini CLI** | `/skills list` then use skill **helix** |
-| **Cline** | Select skill **helix** or ask in chat |
+| **Gemini CLI** | `/skills list` then skill **helix** |
+| **Cline** | Select skill **helix** |
 | **Codex** | Ask to load skill **helix** |
 | **OpenCode / Pi** | Invoke **helix** per tool’s skill UI |
 
-More prompts: [references/agent-entry.md](references/agent-entry.md)
-
-### Claude Code shortcuts (slash commands)
-
-| Command | Workflow |
-|---------|----------|
-| `/helix` | Menu + routing |
-| `/tc-fe-prep` | FE manual TC from a Jira story |
-| `/tc-api-prep` | API manual TC from spec + Swagger |
-| `/retest-bug` | Retest a bug after a dev fix |
-| `/testing-ticket` | Playwright test for one ticket |
-| `/create-bug` | File bugs on Jira or GitHub |
-
-Other agents: invoke the skill folder directly (e.g. `tc-fe-prep-workflow`) — see [skill-routing.md](references/skill-routing.md).
+The menu offers options 1–6 (TC FE, TC API, retest, testing ticket, create bug, other) and routes to the same workflows as the table above.
 
 ### First run tips
 

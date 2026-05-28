@@ -61,16 +61,18 @@ HELIX_LINK_WORKSPACE=$PWD ~/.helix/tc-fe-prep/scripts/link-skills.sh
 
 ## Usage
 
+**You do not have to start with `/helix`.** Call a workflow directly when you know the goal; use `/helix` or skill **helix** only for the menu.
+
 | Goal | Claude Code | Other agents |
 |------|-------------|--------------|
-| Open menu | `/helix` | skill **helix** |
 | FE test cases | `/tc-fe-prep` | `tc-fe-prep-workflow` |
 | API test cases | `/tc-api-prep` | `tc-api-prep-workflow` |
 | Retest bug | `/retest-bug` | `retest-bug-workflow` |
 | Test ticket | `/testing-ticket` | `testing-ticket-workflow` |
 | Create bug | `/create-bug` | `create-bug-workflow` |
+| Menu (optional) | `/helix` | skill **helix** |
 
-Menu text: [commands/helix.md](https://github.com/Thitic9203/helix/blob/main/commands/helix.md) · Router skill: [skills/helix/SKILL.md](https://github.com/Thitic9203/helix/blob/main/skills/helix/SKILL.md)
+Menu text: [commands/helix.md](https://github.com/Thitic9203/helix/blob/main/commands/helix.md) · Routing: [skill-routing.md](https://github.com/Thitic9203/helix/blob/main/references/skill-routing.md)
 
 ---
 
