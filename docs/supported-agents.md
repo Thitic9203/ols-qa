@@ -12,7 +12,7 @@ Optional — also link skills into the **current project** (for Copilot, team re
 
 ```bash
 cd /path/to/your/project
-HELIX_LINK_WORKSPACE=1 bash ~/.helix/tc-fe-prep/scripts/link-skills.sh
+HELIX_LINK_WORKSPACE=$PWD bash ~/.helix/tc-fe-prep/scripts/link-skills.sh
 ```
 
 ## Global skill directories (auto-linked by `link-skills.sh`)
