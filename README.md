@@ -5,7 +5,7 @@
 Portable skill pack for AI agents: **FE/API manual test-case prep** (with coverage + quality review), **Playwright ticket testing**, **create bug**, and **Jira bug retests** — one entry menu across tools.
 
 > **Scope & expectations**  
-> Helix is built for QA work with **clear boundaries**—a defined ticket, environment, inputs, and what “done” looks like. When scope is vague or still in flux, you may need extra clarification rounds, and the output may require more review. Sharper scope upfront usually means stronger, faster results.
+> Helix is built for QA work with **clear boundaries**—a defined ticket, environment, inputs, and what “done” looks like. When the scope is vague or still in flux, you may need extra clarification rounds, and the output may require more review. Sharper scope upfront usually means stronger, faster results.
 
 ## Why Helix
 
@@ -13,9 +13,9 @@ Portable skill pack for AI agents: **FE/API manual test-case prep** (with covera
 |----------|---------|
 | **TC FE Preparation** | Story AC/EC → coverage review → manual FE TC table + CSV → Jira comment |
 | **TC API Preparation** | API spec + Swagger → coverage review → API TC table → comment or CSV/Excel |
-| **Retest bug** | Verify a fix — API/UI, Swagger, evidence, comment, transition |
-| **Testing ticket** | Intake → Playwright → summary in chat → optional result update elsewhere |
-| **Create bug** | Jira/GitHub target + format + details → confirm → file and verify |
+| **Retest Bug** | Verify a fix — API/UI, Swagger, evidence, comment, transition |
+| **Testing Ticket** | Intake → Playwright → summary in chat → optional result update elsewhere |
+| **Create Bug** | Jira/GitHub target + format + details → confirm → file and verify |
 
 TC prep workflows include **AC/EC or spec/Swagger alignment review** and **ISTQB / ISO/IEC/IEEE 29119-3–aligned** manual test-case quality checks (see skill references).
 
