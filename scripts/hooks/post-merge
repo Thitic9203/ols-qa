@@ -1,0 +1,23 @@
+#!/bin/bash
+# Rename Claude plugin cache symlink when version changes after git pull
+
+PLUGIN_JSON=".claude-plugin/plugin.json"
+MARKETPLACE_NAME="helix-dev"
+PLUGIN_NAME="helix"
+CACHE_BASE="$HOME/.claude/plugins/cache/$MARKETPLACE_NAME/$PLUGIN_NAME"
+
+[ -d "$CACHE_BASE" ] || exit 0
+
+VERSION=$(grep '"version"' "$PLUGIN_JSON" | head -1 | sed 's/.*"\([0-9]*\.[0-9]*\.[0-9]*\)".*/\1/')
+[ -z "$VERSION" ] && exit 0
+[ -L "$CACHE_BASE/$VERSION" ] && exit 0
+
+for OLD_ENTRY in "$CACHE_BASE"/*/; do
+  [ -e "$OLD_ENTRY" ] || continue
+  OLD_VER=$(basename "$OLD_ENTRY")
+  if [ "$OLD_VER" != "$VERSION" ]; then
+    mv "$OLD_ENTRY" "$CACHE_BASE/$VERSION"
+    echo "Cache symlink renamed: $OLD_VER -> $VERSION"
+    break
+  fi
+done

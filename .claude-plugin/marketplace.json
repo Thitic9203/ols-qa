@@ -1,23 +1,25 @@
 {
-  "name": "helix",
+  "name": "helix-dev",
+  "id": "helix-dev",
+  "description": "Development marketplace for helix TC FE Prep plugin",
   "owner": {
-    "name": "<ORG>",
-    "email": "<USER>@<ORG>.com"
+    "name": "QA Lead"
   },
   "metadata": {
-    "description": "Full-cycle project orchestrator — analysis, planning, implementation, testing, deployment, and review. Works with any AI.",
+    "description": "Jira story → FE manual test cases → comment + CSV",
     "version": "1.0.0"
   },
   "plugins": [
     {
       "name": "helix",
-      "source": {
-        "source": "url",
-        "url": "https://github.com/Thitic9203/helix.git"
-      },
-      "description": "Full-cycle project orchestrator — guides any AI through requirements analysis, planning, implementation, testing, deployment, and code review. ISO 25010 test classification with 3-tier functional/non-functional pipeline.",
+      "description": "TC FE Prep — draft manual test cases from AC/EC and publish to Jira",
       "version": "1.0.0",
-      "strict": false
+      "source": "./",
+      "author": {
+        "name": "QA Lead"
+      },
+      "keywords": ["qa", "jira", "test-cases", "manual", "frontend"],
+      "category": "qa"
     }
   ]
 }

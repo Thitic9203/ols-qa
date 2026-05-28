@@ -1,10 +1,11 @@
 {
   "name": "helix",
-  "description": "Full-cycle project orchestrator — analysis, planning, execution, testing, deployment, and review. Supports complete workflow or individual phases via /helix:<phase>.",
   "version": "1.0.0",
+  "description": "Prepare frontend manual test cases from Jira stories (AC/EC), draft table + CSV, publish to the specified story",
   "author": {
-    "name": "<ORG>",
-    "email": "<USER>@<ORG>.com"
+    "name": "QA Lead"
   },
-  "keywords": ["planning", "analysis", "testing", "deployment", "review", "orchestrator", "full-cycle"]
+  "license": "MIT",
+  "keywords": ["qa", "jira", "test-cases", "manual", "frontend", "acceptance-criteria"],
+  "skills": ["./skills/tc-fe-prep-workflow"]
 }
