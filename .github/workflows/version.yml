@@ -10,24 +10,58 @@ permissions:
   contents: write
 
 jobs:
-  verify:
+  auto-bump:
+    if: >-
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      !contains(github.event.head_commit.message, '[automated]')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Auto bump patch when workflow files change without VERSION
+        env:
+          BASE_REF: ${{ github.event.before }}
+          HEAD_REF: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$BASE_REF" = "0000000000000000000000000000000000000000" ] || [ -z "$BASE_REF" ]; then
+            export BASE_REF="HEAD~1"
+            export HEAD_REF="HEAD"
+          fi
+          chmod +x scripts/ci-needs-version-bump.sh scripts/ci-auto-bump-commit.sh scripts/bump-version.sh scripts/sync-version.sh
+          ./scripts/ci-auto-bump-commit.sh
+
+  verify:
+    needs: auto-bump
+    # Skip verify on the same run that auto-bump pushed — the follow-up push run will verify.
+    if: >-
+      always() &&
+      (github.event_name == 'pull_request' ||
+       contains(github.event.head_commit.message, '[automated]') ||
+       needs.auto-bump.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Verify version markers match VERSION
-        run: ./scripts/sync-version.sh --check
-      - name: Require VERSION bump when workflows change
+        run: |
+          chmod +x scripts/sync-version.sh
+          ./scripts/sync-version.sh --check
+      - name: Require VERSION bump on pull requests (or bump before merge)
         if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: origin/${{ github.base_ref }}
+          HEAD_REF: HEAD
         run: |
           set -euo pipefail
           git fetch origin "${{ github.base_ref }}"
-          CHANGED="$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD)"
-          echo "$CHANGED"
-          if echo "$CHANGED" | grep -qE '^(skills/[^/]+/SKILL\.md|commands/[^/]+\.md|references/[^/]+\.md)$'; then
-            if ! echo "$CHANGED" | grep -qx 'VERSION'; then
-              echo "::error::Workflow files changed but VERSION was not bumped. Run: ./scripts/bump-version.sh patch"
-              exit 1
-            fi
+          chmod +x scripts/ci-needs-version-bump.sh
+          if ./scripts/ci-needs-version-bump.sh; then
+            echo "::warning::Workflow files changed without VERSION bump. Merge to main will trigger an automated patch bump."
           fi
 
   release:
@@ -37,6 +71,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
       - name: Read version
         id: ver
@@ -54,7 +89,7 @@ jobs:
           fi
           PREV="$(git tag -l 'v*' --sort=-v:refname | head -1 || true)"
           if [ -n "$PREV" ]; then
-            NOTES="$(git log "${PREV}..HEAD" --pretty=format:'- %s (%h)' -- . ':!*.md' 2>/dev/null | head -50 || true)"
+            NOTES="$(git log "${PREV}..HEAD" --pretty=format:'- %s (%h)' 2>/dev/null | head -50 || true)"
           else
             NOTES="Initial Helix release."
           fi
