@@ -51,7 +51,7 @@ Otherwise:
 1. Ask using `references/project-config-template.md` (one section at a time).
 2. Offer to save answers into `references/{PROJECT}-tc-fe-prep-guide.md` in the user’s repo.
 
-Config should capture: Jira domain, default story vs sub-task policy, portal names, shared login role, CSV column headers (if non-default), and publish method preference.
+Config should capture: Jira domain, default story vs sub-task policy, portal names, shared login role, CSV column headers (if non-default), export format preference (`csv` / `xlsx`; default `csv`), and publish method preference.
 
 ---
 
@@ -154,14 +154,15 @@ State clearly: **Not posted to Jira yet.**
 
 ## Step 6 — Save artifacts in the user's workspace
 
-After approval, write files **inside the user's project** (paths relative to workspace root):
+After approval, determine the export format first (see [csv-export-rules.md](../../references/csv-export-rules.md) — Format detection section), then write files **inside the user's project** (paths relative to workspace root):
 
-| File | Purpose |
-|------|---------|
-| `references/{ISSUE_KEY}_FE_TC.md` | Canonical markdown (prep block + table) |
-| `references/{ISSUE_KEY}_FE_TC.csv` | UTF-8 BOM CSV export of the same rows |
+| File | Condition | Purpose |
+|------|-----------|---------|
+| `references/{ISSUE_KEY}_FE_TC.md` | always | Canonical markdown (prep block + table) |
+| `references/{ISSUE_KEY}_FE_TC.csv` | default (no Excel request) | UTF-8 BOM CSV export |
+| `references/{ISSUE_KEY}_FE_TC.xlsx` | user explicitly requested Excel/xlsx | Excel workbook export |
 
-Generate CSV from the approved markdown table per [csv-export-rules.md](../../references/csv-export-rules.md) (in-agent by default; never assume a Helix install path on the agent host).
+Follow [csv-export-rules.md](../../references/csv-export-rules.md) for the full export procedure — CSV (in-agent default) or xlsx (Python + openpyxl when user requests Excel). Never silently produce a CSV when the user asked for xlsx.
 
 See [references/publish-options.md](references/publish-options.md) for Jira delivery.
 
@@ -176,7 +177,7 @@ See [references/publish-options.md](references/publish-options.md) for Jira deli
 1. Intro line: `Draft TC FE as below`
 2. Shared prep + precondition note
 3. Full table (bold header cells)
-4. Footer: short note that CSV matches the table + **clickable attachment link** on the same issue
+4. Footer: short note that the CSV/Excel file matches the table + **clickable attachment link** on the same issue
 
 **Publish methods** (choose what works in the environment — details in `references/publish-options.md`):
 
@@ -190,7 +191,7 @@ See [references/publish-options.md](references/publish-options.md) for Jira deli
 
 - [ ] All TC rows visible (not header only).
 - [ ] Multi-line cells show separate lines.
-- [ ] CSV attachment present and opens with correct row count.
+- [ ] CSV/Excel attachment present and opens with correct row count.
 - [ ] Comment is on the **story**, not a sub-task.
 
 If any check fails → fix and re-verify (max 2 rounds) before handoff.
@@ -203,7 +204,7 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 
 - [ ] Step 4 review block posted with **Ready for draft: YES** and traceability matrix complete.
 - [ ] AC/EC coverage complete; quality checklist PASS per tc-quality-standards.
-- [ ] CSV row count matches table rows.
+- [ ] Export file row count matches table rows (CSV or xlsx per user's requested format).
 - [ ] Jira UI matches approved draft (not MCP output alone).
 - [ ] Close-out includes `Verified:` after Jira re-open.
 - [ ] Publish fix-verify (Step 7) completed — at least one Jira UI re-read.
@@ -233,7 +234,7 @@ Complete [verify-closing-checklist.md](../../references/verify-closing-checklist
 | [worked-example.md](references/worked-example.md) | On-demand: anonymized sample (read only when format reference needed) |
 | [ac-ec-coverage-review.md](references/ac-ec-coverage-review.md) | AC/EC traceability + scope review |
 | [tc-quality-standards.md](../../references/tc-quality-standards.md) | ISTQB / 29119-3 TC quality |
-| [scripts/README.md](scripts/README.md) | Optional CSV helper pointer |
+| [scripts/README.md](scripts/README.md) | Optional CSV/xlsx helper pointer |
 
 ---
 
