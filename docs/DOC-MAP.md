@@ -23,6 +23,7 @@ Use this map to avoid duplicating content across markdown files.
 | Playwright pre-flight | [references/playwright-preflight.md](../references/playwright-preflight.md) | Testing ticket Phase D |
 | Router intent (Thai/mixed) | [references/intent-shortcuts.md](../references/intent-shortcuts.md) | helix skill + commands/helix |
 | Install health check | [scripts/helix-doctor.sh](../scripts/helix-doctor.sh) | README install section |
+| Claude plugin (helix@helix) | [scripts/claude-plugin-sync.sh](../scripts/claude-plugin-sync.sh) | Legacy helix@local handling |
 | Skill invocation / priority | [references/skill-invocation-discipline.md](../references/skill-invocation-discipline.md) | Full discipline in every skill |
 | Session bootstrap (hooks) | [references/helix-session-bootstrap.md](../references/helix-session-bootstrap.md), [hooks/session-start](../hooks/session-start) | Dumping full SKILL.md in hook |
 | QA evidence gates | [references/qa-evidence-gates.md](../references/qa-evidence-gates.md) | Ad-hoc “done” without proof |
