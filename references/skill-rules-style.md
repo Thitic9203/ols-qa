@@ -2,7 +2,9 @@
 
 All Helix skills MUST follow these patterns. Link this file from every `SKILL.md` instead of copying the full text.
 
-**External reference:** [<ORG> claudeskill5rules](https://github.com/<ORG>/team-pluton-skills/blob/main/docs/claudeskill5rules.md) — Helix adopts the subset that fits a portable QA pack (not full 9arm folder taxonomy).
+**External reference:** [<ORG> claudeskill5rules](https://github.com/<ORG>/team-pluton-skills/blob/main/docs/claudeskill5rules.md) — see [pluton-5rules-mapping.md](pluton-5rules-mapping.md) for rule-by-rule mapping and intentional deviations.
+
+**Pre-merge:** [docs/pluton-ship-checklist.md](../docs/pluton-ship-checklist.md).
 
 **Portable content:** MUST follow [portable-content.md](portable-content.md) — no machine paths, no single-customer project coupling in committed skills.
 
@@ -33,12 +35,14 @@ A skill is **shipped** only when all are true:
 - [ ] Has a `commands/<workflow>.md` entry (except router-only `helix.md`)
 - [ ] `scripts/link-skills.sh` will link it (not under `in-progress/` or `deprecated/`)
 
-## Rule 5 — Bug-hunt / fix-verify mindset
+## Rule 5 — Bug-hunt / fix-verify mindset (Pluton กฎที่ 5)
 
 1. **Assume the first output is wrong** until a checklist passes.
 2. Run a **closing QA** section at the end of the workflow (skill-specific items + shared items below).
-3. After any fix, **re-read the destination** (Jira issue, file, Sheet) before saying done.
-4. Optional: ask for a **fresh-eyes** pass (subagent or second read) on long Jira comments or large TC tables.
+3. **MUST complete at least one fix-verify round** after any **side effect** (Jira comment/post, issue create, CSV write, Sheet/Confluence update): re-read the destination → if mismatch, fix → re-read again. **Maximum 2 rounds** — then report what remains blocked. NEVER declare complete without this round — because the first publish is almost never fully correct.
+4. **Fresh-eyes review** (second read or subagent):
+   - **MUST** before publish when: TC table or result table **> 15 rows**, OR Jira comment body **> 80 lines** / large embedded tables.
+   - **SHOULD** for any approved draft the user will paste to executives.
 
 <a id="qa-closing-doubt-and-fix-verify"></a>
 
@@ -49,7 +53,7 @@ Every `SKILL.md` MUST end with a **QA closing** section that:
 1. States: **Assume the first draft/output is wrong** — name which phase exists to catch that.
 2. Lists **skill-specific** checkboxes (3–5 items).
 3. Points here for the **shared closing checklist** (below).
-4. For long Jira comments or tables (>15 rows): optional **fresh-eyes** re-read before publish.
+4. Apply **fresh-eyes** per Rule 5 thresholds (MUST when >15 rows or long Jira comment).
 
 **Verdict line:** close with a fenced block that includes `Verdict:` or `Verified:` and counts (e.g. `CREATED 2/2`, `Posted and verified`) — never “done” without destination proof.
 

@@ -197,7 +197,8 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
    - [ ] Jira UI matches approved draft (not MCP output alone).
    - [ ] Close-out includes `Verified:` after Jira re-open.
 3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
-4. Optional fresh-eyes: re-read draft comment before Step 6 if table is long.
+4. Publish fix-verify (Step 6) completed — at least one Jira UI re-read.
+5. **Fresh-eyes:** MUST re-read full draft before Step 6 when table **> 15 rows**.
 
 ---
 
@@ -229,10 +230,7 @@ Tell the user:
 
 ## Out of scope
 
-- API manual TC from Swagger only → `tc-api-prep-workflow`
-- Executing tests or Playwright → `testing-ticket-workflow`
-- Retest after dev fix → `retest-bug-workflow`
-- Filing bugs → `create-bug-workflow`
+- API TC prep, Playwright ticket test, retest, create bug — see [skill-routing.md](../../references/skill-routing.md)
 
 ---
 

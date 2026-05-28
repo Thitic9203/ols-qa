@@ -139,13 +139,17 @@ For each bug, if not already validated in a prior test:
 
 ---
 
-## Phase F — Verify and close (mandatory)
+## Phase F — Fix-verify and close (mandatory)
 
-Before “all bugs created”:
+After Phase D create calls:
 
 1. List each issue with **URL or key** from tool output (not guessed).
-2. Open or fetch each link — confirm title/summary visible.
-3. If any create failed → report which succeeded and which failed.
+2. **Fix-verify round 1:** Open or fetch each link — confirm title/summary and body match approved draft.
+3. If mismatch (wrong project, truncated body, wrong severity) → fix via edit API or recreate per user direction → **re-fetch** each link.
+4. **Maximum 2 fix-verify rounds** — then report partial success honestly.
+5. If any create failed → report which succeeded and which failed.
+
+MUST NOT say “all bugs created” until at least one full fix-verify round passes — because create APIs can return success with wrong content.
 
 ```text
 ━━━ Create bug — complete ━━━
@@ -173,9 +177,7 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
 
 ## Out of scope
 
-- Running a full test pass → `testing-ticket-workflow`
-- Retesting an existing bug fix → `retest-bug-workflow`
-- Posting test **results** to Sheets/Confluence → testing ticket Phase G
+- Running a full test pass, retest, TC prep, result updates — see [skill-routing.md](../../references/skill-routing.md)
 
 ---
 

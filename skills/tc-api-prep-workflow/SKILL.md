@@ -168,9 +168,24 @@ Tell the user the **workspace-relative paths** to download.
 3. Post using environment tools (MCP, browser). Match format: [references/delivery-options.md](references/delivery-options.md).
 4. **Verify** on the destination UI: row count, formatting, correct page/issue.
 
+### G-verify — Fix-verify (mandatory)
+
+After G1 and/or G2:
+
+1. Re-open the file path or comment URL on the destination.
+2. Checklist:
+   - [ ] Row count matches approved Phase F table.
+   - [ ] Columns match Phase B confirmation.
+   - [ ] No truncation (Jira) or missing header row (CSV).
+3. If mismatch → fix delivery → re-read. **Max 2 rounds** — then report blockers.
+
+MUST NOT run G3 close until at least one fix-verify round passes — because first export/post is often wrong.
+
+**Fresh-eyes:** MUST re-read the full draft table before G2/G1 when **> 15 rows** ([skill-rules-style.md](../../references/skill-rules-style.md)).
+
 ### G3 — Close
 
-Only after **QA closing** passes:
+Only after **G-verify** and **QA closing** pass:
 
 ```text
 ━━━ TC API prep complete ━━━
@@ -195,15 +210,15 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
    - [ ] If file delivery: CSV opens with header + N data rows.
    - [ ] Close-out block includes `Verified:` and test case count.
 3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
-4. Optional fresh-eyes: re-read draft table before Phase G if >15 rows.
+4. G-verify completed (at least one re-read of destination).
 
 ---
 
 ## Out of scope
 
 - Automated API test scripts (Postman/Playwright API) unless user asks separately
-- Executing tests — use `testing-ticket-workflow` or project tests
-- Opening bugs — use `create-bug-workflow`
+- Executing tests — see [skill-routing.md](../../references/skill-routing.md)
+- Opening bugs — see [skill-routing.md](../../references/skill-routing.md)
 
 ---
 

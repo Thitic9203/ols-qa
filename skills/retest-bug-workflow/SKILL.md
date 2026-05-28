@@ -220,6 +220,21 @@ See `references/gotchas.md` for encoding.
 
 Use **v2** wiki markup and `/rest/api/2/issue/{KEY}/comment`. Attach images before posting.
 
+### 7d — Fix-verify after post (mandatory)
+
+Before Step 8 transition:
+
+1. Re-open `https://{JIRA_DOMAIN}/browse/{ISSUE_KEY}` (or equivalent).
+2. Checklist:
+   - [ ] New comment visible; summary line **PASSED ✅** or **FAILED ❌** correct.
+   - [ ] No truncation; screenshots attached and render (FE).
+   - [ ] API evidence: cURL + response present per row.
+3. If mismatch → edit/add comment per project rules → re-read. **Max 2 rounds** — then report blockers.
+
+MUST NOT transition or assign until 7d passes — because stakeholders trust Jira, not MCP output.
+
+**Fresh-eyes:** MUST re-read full draft from Step 6 before Step 7 when comment **> 80 lines** or table **> 15 rows**.
+
 ---
 
 ## QA closing (mandatory before "done")
@@ -234,7 +249,7 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
    - [ ] API cases: full cURL + response per row (no "same as above").
    - [ ] Jira issue re-opened after post: comment visible, not truncated.
 3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
-4. Optional fresh-eyes: re-read draft comment before Step 7 if comment is long.
+4. Step 7d fix-verify completed.
 
 ---
 
@@ -276,9 +291,7 @@ From changelog: last move into the project's **active development** status (ofte
 
 ## Out of scope
 
-- New manual TC tables → `tc-fe-prep-workflow` / `tc-api-prep-workflow`
-- Exploratory test of a story → `testing-ticket-workflow`
-- Filing new bugs → `create-bug-workflow`
+- TC prep, full ticket Playwright, filing new bugs — see [skill-routing.md](../../references/skill-routing.md)
 
 ---
 
@@ -294,7 +307,8 @@ From changelog: last move into the project's **active development** status (ofte
 | MUST run Step 8 after successful post unless user stopped you | Workflow closure |
 | MUST create test data when possible | "No data" is not an excuse |
 | MUST lock v2/v3 at Step 3; FE → v2 + screenshots | Rewrites waste time |
-| MUST verify Jira UI after post | Truncation / wrong endpoint |
+| MUST verify Jira UI after post (Step 7d) | Truncation / wrong endpoint |
+| MUST complete Step 7d before Step 8 | Transition on wrong comment misleads dev |
 | MUST use English for user chat | [user-communication.md](../../references/user-communication.md) |
 | MUST NOT change COMMENT_FORMAT after Step 3 | v2/v3 rewrite cost |
 | MUST NOT claim retest complete without opening the issue after post | Tool output can lie |
