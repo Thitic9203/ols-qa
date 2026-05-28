@@ -141,7 +141,7 @@ Symlinks point at this folder — **global skills update automatically** after p
 
 | Agent / IDE | Usually enough | Re-run only if… |
 |-------------|----------------|-----------------|
-| **Claude Code** | `git pull` | Plugin cache stale → run `~/.helix/tc-fe-prep/scripts/install.sh` again |
+| **Claude Code** | `git pull` | Plugin cache stale → run `~/.helix/tc-fe-prep/scripts/install.sh` again. **SessionStart** hooks inject Helix routing via `hooks/` (router skill **`helix`**, not a separate meta-skill). |
 | **Cursor / Codex / Copilot / Gemini / Windsurf / Cline / Pi** | `git pull` | You removed `~/.*/skills/*` symlinks → `bash ~/.helix/tc-fe-prep/scripts/link-skills.sh` |
 | **Team repo (`.github/skills/`)** | `git pull` in Helix + pull your project | New Helix skill added → `HELIX_LINK_WORKSPACE=$PWD ~/.helix/tc-fe-prep/scripts/link-skills.sh` |
 

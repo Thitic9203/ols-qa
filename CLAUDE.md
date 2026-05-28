@@ -21,6 +21,8 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 Commands: `commands/helix.md` (canonical menu), plus one file per workflow.
 
+**Session hooks:** `hooks/hooks.json` (Claude Code), `hooks/hooks-cursor.json` (Cursor via `.cursor-plugin/plugin.json`) — inject [references/helix-session-bootstrap.md](references/helix-session-bootstrap.md) on session start.
+
 ## Ship checklist (Rule 2)
 
 Before merging a **new or renamed** workflow skill:

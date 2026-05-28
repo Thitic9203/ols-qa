@@ -24,7 +24,11 @@ Follow [user-communication.md](../../references/user-communication.md).
 
 Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
 
-**Jira bodies** (after approval): neutral English — no "Retested by:", no honorifics. MUST NOT claim success without tool output **and** Jira UI verification — because MCP can report OK while the comment is truncated.
+Follow [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — announce `Using **retest-bug-workflow** to {purpose}.` on first response.
+
+**Jira bodies** (after approval): neutral English — no "Retested by:", no honorifics. MUST NOT claim success without tool output **and** Jira UI verification — because MCP can report OK while the comment is truncated. Apply [qa-evidence-gates.md](../../references/qa-evidence-gates.md).
+
+If reproduction is unclear or results conflict with dev claims, follow [qa-debug-discipline.md](../../references/qa-debug-discipline.md) before posting PASSED/FAILED.
 
 Use plain chat for URLs/credentials; AskUserQuestion only for choices (e.g. approve comment).
 

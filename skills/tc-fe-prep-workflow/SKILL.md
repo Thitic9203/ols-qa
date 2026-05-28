@@ -26,6 +26,8 @@ Follow [user-communication.md](../../references/user-communication.md). Ask one 
 
 Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
 
+Follow [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — announce `Using **tc-fe-prep-workflow** to {purpose}.` on first response.
+
 On first response, recite [helix-session-constraints.md](../../references/helix-session-constraints.md) (**All Helix workflows** block only).
 
 ## Refusal-first (precondition gate)

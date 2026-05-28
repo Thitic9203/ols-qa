@@ -78,6 +78,17 @@ The installer sets this automatically.
 
 Repeated exports (CSV from markdown tables): use [scripts/export-markdown-table-to-csv.py](../scripts/export-markdown-table-to-csv.py).
 
+## Skill pressure tests (before shipping workflow changes)
+
+Helix adapts **agent-workflow discipline** for QA — not a copy of external skill libraries. Before merging substantive skill edits, run a quick **pressure test** (manual or with a second agent):
+
+1. **Scenario** — One realistic user message (include Thai/mixed input if the skill uses [intent-shortcuts.md](../references/intent-shortcuts.md)).
+2. **Expected** — Which skill loads, first gate refused or passed, one `Using **{skill}**` announcement.
+3. **Rationalization trap** — Agent tries to skip Jira approval or claim “posted” without re-read → must hit [agent-rationalizations.md](../references/agent-rationalizations.md) / [qa-evidence-gates.md](../references/qa-evidence-gates.md).
+4. **Evidence** — Verdict block includes counts or paths, not “done” alone.
+
+Record failures in the PR description; fix the skill reference, not the test scenario, unless the scenario was wrong.
+
 ## Documentation rules
 
 - Follow [DOC-MAP.md](DOC-MAP.md) — no copy-paste of the `/helix` menu outside `commands/helix.md`.

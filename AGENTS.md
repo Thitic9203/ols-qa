@@ -2,6 +2,14 @@
 
 Minimal entry for any coding agent (Cursor, Copilot, Gemini CLI, Windsurf, Cline, Codex, …). Full matrix: [docs/supported-agents.md](docs/supported-agents.md).
 
+## Instruction priority
+
+1. **User** — explicit chat instructions and the project’s `AGENTS.md` / `CLAUDE.md`  
+2. **Helix** — workflow `SKILL.md` files and `references/` gates  
+3. **Default agent behavior** — lowest  
+
+When a Helix workflow might apply, **load and follow that skill**; announce once: `Using **{skill-name}** to {purpose}.` Details: [references/skill-invocation-discipline.md](references/skill-invocation-discipline.md).
+
 ## Router
 
 Prefer loading skill **[helix](skills/helix/SKILL.md)** when the user says Helix or needs the menu.

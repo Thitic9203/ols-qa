@@ -23,6 +23,18 @@ Use this map to avoid duplicating content across markdown files.
 | Playwright pre-flight | [references/playwright-preflight.md](../references/playwright-preflight.md) | Testing ticket Phase D |
 | Router intent (Thai/mixed) | [references/intent-shortcuts.md](../references/intent-shortcuts.md) | helix skill + commands/helix |
 | Install health check | [scripts/helix-doctor.sh](../scripts/helix-doctor.sh) | README install section |
+| Skill invocation / priority | [references/skill-invocation-discipline.md](../references/skill-invocation-discipline.md) | Full discipline in every skill |
+| Session bootstrap (hooks) | [references/helix-session-bootstrap.md](../references/helix-session-bootstrap.md), [hooks/session-start](../hooks/session-start) | Dumping full SKILL.md in hook |
+| QA evidence gates | [references/qa-evidence-gates.md](../references/qa-evidence-gates.md) | Ad-hoc “done” without proof |
+| Agent rationalizations | [references/agent-rationalizations.md](../references/agent-rationalizations.md) | Long tables in skills |
+| QA debug discipline | [references/qa-debug-discipline.md](../references/qa-debug-discipline.md) | Full debug flow in retest/ticket |
+| TC API chunked scope | [references/tc-api-chunked-scope.md](../references/tc-api-chunked-scope.md) | tc-api Phase A body |
+| Test execution plan | [references/test-execution-plan-template.md](../references/test-execution-plan-template.md) | testing-ticket Phase B |
+| Subagent QA patterns | [references/subagent-qa-patterns.md](../references/subagent-qa-patterns.md) | — |
+| Parallel prep | [references/parallel-prep.md](../references/parallel-prep.md) | — |
+| Copilot / Codex tool maps | [references/copilot-tools.md](../references/copilot-tools.md), [codex-tools.md](../references/codex-tools.md) | agent-entry |
+| Long workflow todos | [references/long-workflow-todos.md](../references/long-workflow-todos.md) | — |
+| SessionStart hooks | [hooks/hooks.json](../hooks/hooks.json), [hooks/hooks-cursor.json](../hooks/hooks-cursor.json) | — |
 | Skill authoring (Pluton-aligned) | [references/skill-rules-style.md](../references/skill-rules-style.md) | MUST/NEVER tables in every skill |
 | Pluton 5 rules mapping | [references/pluton-5rules-mapping.md](../references/pluton-5rules-mapping.md) | — |
 | Pre-merge ship checklist | [docs/pluton-ship-checklist.md](pluton-ship-checklist.md) | — |
