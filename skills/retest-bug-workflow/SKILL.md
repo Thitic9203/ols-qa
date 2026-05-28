@@ -1,6 +1,15 @@
 ---
 name: retest-bug-workflow
-description: Retest a Jira bug after a dev fix — read the ticket, test API or UI, compare Swagger, draft evidence, post comment (with approval), transition and assign. Use when the user says retest bug, verify fix, check if PROJ-123 is fixed, or chose Retest bug from Helix.
+description: |
+  Retest a Jira bug after a dev fix — read ticket, test API or UI, compare Swagger, draft evidence, post comment (with approval), transition and assign back to dev.
+  Use when the user says retest bug, verify fix, check if an issue is fixed, /retest-bug, or Retest bug from Helix.
+  Do NOT use for writing new FE/API test case tables (tc-fe-prep / tc-api-prep), full ticket Playwright runs (testing-ticket-workflow), or opening new bugs (create-bug-workflow).
+proactive_triggers:
+  - retest bug
+  - verify fix
+  - check if fixed
+  - /retest-bug
+  - Retest bug
 ---
 
 # Retest bug workflow
@@ -13,9 +22,17 @@ End-to-end retest from a Jira bug ticket: fetch ticket → test → compare Swag
 
 Follow [user-communication.md](../../references/user-communication.md).
 
-**Jira bodies** (after approval): neutral English — no "Retested by:", no honorifics. Do not claim success without tool output **and** Jira UI verification.
+Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
+
+**Jira bodies** (after approval): neutral English — no "Retested by:", no honorifics. MUST NOT claim success without tool output **and** Jira UI verification — because MCP can report OK while the comment is truncated.
 
 Use plain chat for URLs/credentials; AskUserQuestion only for choices (e.g. approve comment).
+
+## Refusal-first (precondition gate)
+
+MUST refuse to start Step 2 until the user provides a **Jira bug key or browse URL** — because retest scope is one issue.
+
+MUST refuse to run tests without **reachable environment config** (workspace `*-retest-guide.md` or answers from [project-config-template.md](references/project-config-template.md)) — because URLs and credentials must not be hardcoded in the skill.
 
 ---
 
@@ -205,6 +222,19 @@ Use **v2** wiki markup and `/rest/api/2/issue/{KEY}/comment`. Attach images befo
 
 ---
 
+## QA closing (mandatory before "done")
+
+1. **Assume** the first draft comment or test conclusion is wrong — re-check evidence.
+2. Skill-specific:
+   - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌** (not ambiguous text).
+   - [ ] v2/v3 format matches Step 3 lock; FE bugs have screenshots attached before wiki embed.
+   - [ ] API cases: full cURL + response per row (no "same as above").
+   - [ ] Jira issue re-opened after post: comment visible, not truncated.
+3. Shared: [skill-rules-style.md](../../references/skill-rules-style.md).
+4. Optional fresh-eyes: re-read draft comment before Step 7 if comment is long.
+
+---
+
 ## Step 8 — Close out (after successful post; no second approval unless user asked)
 
 ### 8a. Transition
@@ -238,18 +268,31 @@ From changelog: last move to **In Progress** → that author's `accountId`.
 | Encoding / v2 issues | `references/gotchas.md` |
 | Session handoff | `references/handoff-template.md` |
 | Lessons learned | `references/post-mortem-template.md` |
+| [worked-example.md](references/worked-example.md) | Anonymized end-to-end sample |
 
 ---
 
-## Critical rules
+## Out of scope
 
-1. Read project config before testing.
-2. Draft comment → user approval → post.
-3. Full cURL/response per API case.
-4. Swagger (+ error docs) over ticket guesswork.
-5. **Retest Result: PASSED ✅** or **FAILED ❌** only in summary line.
-6. Step 8 runs right after post unless user stopped you.
-7. Create test data when possible — do not give up on missing data.
-8. Decide v2/v3 at Step 3; FE → v2 + screenshots.
-9. Verify Jira UI after post.
-10. English for user chat; AskUserQuestion widgets English-only.
+- New manual TC tables → `tc-fe-prep-workflow` / `tc-api-prep-workflow`
+- Exploratory test of a story → `testing-ticket-workflow`
+- Filing new bugs → `create-bug-workflow`
+
+---
+
+## MUST / NEVER (critical rules)
+
+| Rule | Because |
+|------|---------|
+| MUST read project config before testing | No hardcoded env URLs |
+| MUST get user approval before post | Irreversible public record |
+| MUST include full cURL/response per API case | Evidence must stand alone |
+| MUST treat Swagger (+ error docs) over stale ticket text | Ticket may be wrong |
+| MUST use **PASSED ✅** or **FAILED ❌** only in summary line | Scanability for dev/QA |
+| MUST run Step 8 after successful post unless user stopped you | Workflow closure |
+| MUST create test data when possible | "No data" is not an excuse |
+| MUST lock v2/v3 at Step 3; FE → v2 + screenshots | Rewrites waste time |
+| MUST verify Jira UI after post | Truncation / wrong endpoint |
+| MUST use English for user chat | [user-communication.md](../../references/user-communication.md) |
+| MUST NOT change COMMENT_FORMAT after Step 3 | v2/v3 rewrite cost |
+| MUST NOT claim retest complete without opening the issue after post | Tool output can lie |

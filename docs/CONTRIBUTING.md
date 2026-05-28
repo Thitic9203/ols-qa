@@ -9,6 +9,7 @@ When you change any of these, the **pre-commit hook** bumps the **patch** versio
 - `skills/*/SKILL.md`
 - `commands/*.md`
 - `references/*.md` (repo root only)
+- `scripts/export-markdown-table-to-csv.py` (when skill docs change)
 
 Manual bump:
 
@@ -61,9 +62,12 @@ The installer sets this automatically.
 
 ## Adding a skill
 
-See [skills/retest-bug-workflow/references/new-skill-template.md](../skills/retest-bug-workflow/references/new-skill-template.md).
+1. Copy [docs/new-skill-template.md](new-skill-template.md) → `skills/<name>/SKILL.md`
+2. Follow [references/skill-rules-style.md](../references/skill-rules-style.md) (`description`, `proactive_triggers`, MUST/NEVER, QA closing)
+3. WIP: `skills/in-progress/<name>/` (excluded from `link-skills.sh` until promoted)
+4. Register in `.claude-plugin/plugin.json` `skills` array and add a row to [docs/DOC-MAP.md](DOC-MAP.md)
 
-Register in `.claude-plugin/plugin.json` `skills` array and add a row to [docs/DOC-MAP.md](DOC-MAP.md).
+Repeated exports (CSV from markdown tables): use [scripts/export-markdown-table-to-csv.py](../scripts/export-markdown-table-to-csv.py).
 
 ## Documentation rules
 

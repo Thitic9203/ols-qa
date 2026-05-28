@@ -1,6 +1,17 @@
 ---
 name: tc-fe-prep-workflow
-description: Prepare frontend manual test cases from a Jira story (AC/EC), draft a reviewable comment with a 9-column table, export matching CSV, and publish to the specified story only. Use when the user asks to write FE test cases, draft TC for a story, prepare manual QA cases from acceptance criteria, post a test-case table to Jira, or export story TCs to CSV. Triggers include "FE test cases", "manual TC", "draft TC comment", "AC/EC test cases", "prepare test cases for Jira".
+description: |
+  Prepare frontend manual test cases from a Jira story (AC/EC), draft a 9-column table in chat, export CSV, and publish one comment on that story only.
+  Use when the user asks for FE test cases, manual TC from acceptance criteria, draft TC comment on Jira, or TC FE Preparation from Helix (/tc-fe-prep).
+  Do NOT use for API-only Swagger test cases (tc-api-prep-workflow), Playwright execution (testing-ticket-workflow), retest-after-fix (retest-bug-workflow), or opening bug tickets (create-bug-workflow).
+proactive_triggers:
+  - FE test cases
+  - manual TC
+  - draft TC comment
+  - AC/EC test cases
+  - prepare test cases for Jira
+  - /tc-fe-prep
+  - TC FE Preparation
 ---
 
 # TC FE Prep Workflow
@@ -13,11 +24,19 @@ Prepare **frontend manual test cases** from a Jira **story** (acceptance criteri
 
 Follow [user-communication.md](../../references/user-communication.md). Ask one focused question at a time when setup is missing.
 
+Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
+
+## Refusal-first (precondition gate)
+
+MUST refuse to start until the user provides a **Jira story key or browse URL** — because TC rows must trace to AC/EC on a specific issue.
+
+If missing, stop with the refusal template from skill-rules-style.md (list missing items; do not invent a story).
+
 ## Prerequisites (read before Step 0)
 
 Read [references/prerequisites.md](references/prerequisites.md) and [references/jira-formatting.md](references/jira-formatting.md).
 
-**Before Step 0:** confirm the **story** issue key with the user; never post to Jira until they approve the draft in chat.
+**Before Step 0:** confirm the **story** issue key with the user; NEVER post to Jira until they approve the draft in chat — because premature comments are hard to retract cleanly.
 
 ---
 
@@ -132,13 +151,15 @@ After approval, write files **inside the user's project** (paths relative to wor
 | `references/{ISSUE_KEY}_FE_TC.md` | Canonical markdown (prep block + table) |
 | `references/{ISSUE_KEY}_FE_TC.csv` | UTF-8 BOM CSV export of the same rows |
 
-Generate CSV from the markdown table:
+Generate CSV from the markdown table (prefer the Helix script when this repo is on disk):
 
-- Header row = column names.
-- Convert `<br>` in cells to newlines in CSV.
-- Strip `**` markdown bold for CSV plain text.
+```bash
+python3 scripts/export-markdown-table-to-csv.py \
+  references/{ISSUE_KEY}_FE_TC.md \
+  -o references/{ISSUE_KEY}_FE_TC.csv
+```
 
-Optional helper scripts may live in the user's repo under `scripts/` — see `references/publish-options.md`. **Do not assume** those scripts exist; create minimal export logic in-agent if needed.
+The script converts `<br>` to newlines and strips `**` bold. If the script is unavailable, export in-agent with the same rules. See [references/publish-options.md](references/publish-options.md).
 
 ---
 
@@ -161,12 +182,25 @@ Optional helper scripts may live in the user's repo under `scripts/` — see `re
 | ADF JSON + browser session | Large tables; upload CSV via authenticated session |
 | User pastes | Fallback if automation unavailable |
 
-**After publish — mandatory verification on Jira UI:**
+**After publish — mandatory fix-verify on Jira UI:**
 
 - [ ] All TC rows visible (not header only).
 - [ ] Multi-line cells show separate lines.
 - [ ] CSV attachment present and opens with correct row count.
 - [ ] Comment is on the **story**, not a sub-task.
+
+If any check fails → fix and re-verify (max 2 rounds) before handoff.
+
+---
+
+## QA closing (mandatory before "done")
+
+1. **Assume** the first draft table had gaps (Step 4 exists for this reason).
+2. Skill-specific:
+   - [ ] Every AC/EC on the story covered; CSV row count matches table rows.
+   - [ ] Jira UI matches approved draft (not MCP output alone).
+3. Shared: [skill-rules-style.md](../../references/skill-rules-style.md).
+4. NEVER say "posted" or "complete" without opening the story in Jira (or equivalent) after publish.
 
 ---
 
@@ -191,16 +225,27 @@ Tell the user:
 | [markdown-template.md](references/markdown-template.md) | Copy-paste skeleton |
 | [project-config-template.md](references/project-config-template.md) | First-time project questions |
 | [publish-options.md](references/publish-options.md) | MCP vs browser vs manual |
+| [worked-example.md](references/worked-example.md) | Anonymized end-to-end sample |
 
 ---
 
-## Must not (summary)
+## Out of scope
 
-| Must not | Why |
-|----------|-----|
-| Post before approval | User gate |
-| Comment on sub-tasks / other issues | Scope |
-| Reference agent-machine absolute paths in Jira | Other users cannot reproduce |
-| Assume MCP success without UI check | Truncation |
-| Add TC outside story AC/EC | Traceability |
-| Use `\n` inside Jira markdown table cells | Renders as one line |
+- API manual TC from Swagger only → `tc-api-prep-workflow`
+- Executing tests or Playwright → `testing-ticket-workflow`
+- Retest after dev fix → `retest-bug-workflow`
+- Filing bugs → `create-bug-workflow`
+
+---
+
+## MUST / NEVER (summary)
+
+| Rule | Because |
+|------|---------|
+| MUST refuse without story key/URL | No traceable AC/EC source |
+| MUST NOT post before user approves draft | Irreversible without edit noise |
+| MUST NOT comment on sub-tasks or other issues | Scope is one story |
+| MUST NOT reference agent-machine absolute paths in Jira | Other users cannot reproduce |
+| MUST NOT claim publish success without Jira UI check | MCP truncation |
+| MUST NOT add TC outside story AC/EC | Traceability |
+| MUST NOT use `\n` inside Jira markdown table cells | Renders as one line |
