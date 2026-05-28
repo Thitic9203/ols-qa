@@ -74,6 +74,7 @@ echo ""
 echo "Workflow shortcuts (Claude Code): /tc-fe-prep /tc-api-prep /retest-bug /testing-ticket /create-bug"
 echo ""
 echo "Supported agents: docs/supported-agents.md"
+echo "Health check:   bash $REPO_DIR/scripts/helix-doctor.sh"
 echo "Update:         cd $REPO_DIR && git pull"
 echo ""
 if [ -z "${HELIX_LINK_WORKSPACE:-}" ]; then

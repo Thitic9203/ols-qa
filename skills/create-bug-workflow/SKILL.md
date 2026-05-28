@@ -25,11 +25,15 @@ Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NE
 
 **Gates:** MUST NOT create issues until Phase C confirm. MUST NOT file without evidence. MUST verify each URL in Phase F before saying done — because create APIs can return IDs for empty bodies.
 
+On first response, recite [helix-session-constraints.md](../../references/helix-session-constraints.md) (**All Helix workflows** block only).
+
 ## Refusal-first (precondition gate)
 
 MUST refuse to reach Phase B until **A1 (target)**, **A2 (format)**, and **A3 (bug details)** are sufficient to draft — because guessing tracker fields produces junk issues.
 
 If pre-flight fails (auth, repo missing), stop — MUST NOT create issues silently.
+
+On first response after constraints, follow [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) for **Create bug**, then show [intake-one-pager.md](../../references/intake-one-pager.md) (Create bug section).
 
 ---
 
@@ -171,7 +175,8 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
    - [ ] Every created issue has URL/key from tool output (not guessed).
    - [ ] Each URL opened or fetched — title visible.
    - [ ] Close-out includes `Verdict: CREATED x/y`.
-3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
+3. Shared checklist: [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Create bug section).
+4. [session-closing.md](../../references/session-closing.md) — artifact index (issue URLs), suggest **retest** after fix, handoff if blocked.
 
 ---
 

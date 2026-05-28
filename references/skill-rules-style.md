@@ -52,7 +52,7 @@ Every `SKILL.md` MUST end with a **QA closing** section that:
 
 1. States: **Assume the first draft/output is wrong** — name which phase exists to catch that.
 2. Lists **skill-specific** checkboxes (3–5 items).
-3. Points here for the **shared closing checklist** (below).
+3. Points to [verify-closing-checklist.md](verify-closing-checklist.md) and [session-closing.md](session-closing.md) (artifact index, next workflow, handoff).
 4. Apply **fresh-eyes** per Rule 5 thresholds (MUST when >15 rows or long Jira comment).
 
 **Verdict line:** close with a fenced block that includes `Verdict:` or `Verified:` and counts (e.g. `CREATED 2/2`, `Posted and verified`) — never “done” without destination proof.
@@ -64,7 +64,7 @@ Every `SKILL.md` MUST end with a **QA closing** section that:
 - [ ] User-facing text is **English only** ([user-communication.md](user-communication.md)).
 - [ ] No success claim without **tool output** and **destination verification**.
 - [ ] Gates were not skipped (approval / confirm / refuse when inputs missing).
-- [ ] Handoff states what was done, what was blocked, and where artifacts live.
+- [ ] [session-closing.md](session-closing.md) completed (artifacts, one-line next step, `Verdict:`).
 
 ## Refusal-first (precondition gates)
 

@@ -73,6 +73,18 @@ HELIX_LINK_WORKSPACE=$PWD ~/.helix/tc-fe-prep/scripts/link-skills.sh
 
 Commit `.github/skills/` if your team uses Copilot on the same repository.
 
+### Health check (`helix doctor`)
+
+After install (or when skills do not appear):
+
+```bash
+bash ~/.helix/tc-fe-prep/scripts/helix-doctor.sh
+# optional: also check project skill folders
+HELIX_LINK_WORKSPACE=$PWD bash ~/.helix/tc-fe-prep/scripts/helix-doctor.sh
+```
+
+Reports Helix version, global skill symlinks per agent, and Claude plugin cache. **Works best with:** Jira (MCP or logged-in browser), Playwright in your app repo, optional `references/*-guide.md` in your project.
+
 ## Usage
 
 **You do not have to start with `/helix`.** If you already know the workflow, call it directly — that skips the menu and is the recommended path. Use `/helix` (or skill **`helix`**) only when you want the menu or are unsure which workflow fits.
@@ -108,8 +120,9 @@ The menu offers options 1–6 (TC FE, TC API, retest, testing ticket, create bug
 
 ### First run tips
 
-- Workflows may ask for Jira URL, environment, or credentials once; answers can be saved under `references/*-guide.md` in **your** repo.
-- Menus and questions are **English only** — [references/user-communication.md](references/user-communication.md).
+- Workflows auto-load **`references/*-guide.md`** in your repo when present ([workspace-guide-discovery.md](references/workspace-guide-discovery.md)) — fewer repeated questions.
+- Long sessions may write **`references/helix-handoff-{KEY}.md`** so you can resume in a new chat ([session-closing.md](references/session-closing.md)).
+- Menus and questions are **English only** — [references/user-communication.md](references/user-communication.md). Jira/Sheet content may follow your project language after you approve.
 - Non–Claude Code agents: read [AGENTS.md](AGENTS.md) if the tool loads repo-level agent instructions.
 
 ## Update (when a new version ships)
@@ -178,6 +191,7 @@ git config core.hooksPath scripts/hooks
 
 ```bash
 ./scripts/install.sh
+./scripts/helix-doctor.sh          # verify symlinks + version
 ./scripts/link-skills.sh
 ./scripts/bump-version.sh patch   # contributor: bump VERSION + sync
 ./scripts/sync-version.sh --check

@@ -30,6 +30,8 @@ Reply with **1**–**6**, or the option name. You can also pass a Jira key or UR
 
 Wait for the user's choice before starting a workflow.
 
+If the user’s message already names a workflow (including Thai phrases), map via [references/intent-shortcuts.md](../references/intent-shortcuts.md) and **skip this menu** — invoke that workflow skill directly.
+
 ## Routing
 
 | User choice | Action |

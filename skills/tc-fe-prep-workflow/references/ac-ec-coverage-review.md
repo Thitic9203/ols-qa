@@ -72,4 +72,6 @@ Ready for draft: YES | NO — {reason}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-MUST NOT post the full draft table until **Ready for draft: YES**.
+Then post the **Coverage delta** table per [coverage-delta-template.md](../../../references/coverage-delta-template.md) (FE section).
+
+MUST NOT post the full draft table until **Ready for draft: YES** and the delta table is posted.

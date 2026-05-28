@@ -24,6 +24,8 @@ Follow [user-communication.md](../../references/user-communication.md).
 
 Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
 
+On first response, recite [helix-session-constraints.md](../../references/helix-session-constraints.md) (**All Helix workflows** block only).
+
 **Gates:** MUST NOT post a comment or write files until the user approves the draft in chat (Phase F) — because delivery is irreversible without rework.
 
 ## Refusal-first (precondition gate)
@@ -36,6 +38,8 @@ MUST refuse to start Phase D (design) until **both** are available:
 | Swagger/OpenAPI (URL or local path) | Source of truth for endpoints and schemas |
 
 If Phase A load fails after user input, stop and report — do not invent endpoints.
+
+On first response after constraints, follow [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) for **TC API prep**, then show [intake-one-pager.md](../../references/intake-one-pager.md) (TC API section).
 
 ---
 
@@ -57,6 +61,10 @@ Load the spec:
 - Note base URL / servers from `servers` or user override.
 
 If load fails → stop and report; ask for export file or VPN.
+
+### Phase A optional — Swagger / spec diff
+
+If the user mentions Swagger **changed**, a **new API version**, or updating existing API TCs, run [swagger-diff-phase.md](../../references/swagger-diff-phase.md) before Phase D.
 
 ---
 
@@ -142,7 +150,11 @@ Post the **API TC coverage review** block from spec-coverage-review.md (with **R
 
 MUST NOT post the full TC table until **Ready for draft: YES**.
 
-If review fails → revise Phase D and re-run E1–E3 (max 2 rounds).
+### E3b — Coverage delta summary
+
+Post the table from [coverage-delta-template.md](../../references/coverage-delta-template.md) (API section).
+
+If review fails → revise Phase D and re-run E1–E3b (max 2 rounds).
 
 ---
 
@@ -204,17 +216,7 @@ MUST NOT run G3 close until at least one fix-verify round passes — because fir
 
 ### G3 — Close
 
-Only after **G-verify** and **QA closing** pass:
-
-```text
-━━━ TC API prep complete ━━━
-Draft: approved in chat
-File: {paths or none}
-Comment: {url or none}
-Test cases: {M}
-Verified: {what you re-read}
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+Only after **G-verify** pass, follow [session-closing.md](../../references/session-closing.md) (artifact index, next workflow, handoff if needed, `Verdict:`).
 
 ---
 
@@ -230,8 +232,9 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
    - [ ] If comment delivery: destination UI shows full table.
    - [ ] If file delivery: CSV opens with header + N data rows.
    - [ ] Close-out block includes `Verified:` and test case count.
-3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
-4. G-verify completed (at least one re-read of destination).
+3. Shared checklist: [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (TC API section).
+4. [session-closing.md](../../references/session-closing.md) steps completed.
+5. G-verify completed (at least one re-read of destination).
 
 ---
 

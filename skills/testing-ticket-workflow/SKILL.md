@@ -38,11 +38,13 @@ If **VPN** is required per user and environment is unreachable in Phase D, stop 
 
 Recite once at the start of Phase A (first response only) from [helix-session-constraints.md](../../references/helix-session-constraints.md) — **All Helix workflows** block, then the **Testing ticket** block.
 
+Then follow [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) for **Testing ticket** and show [intake-one-pager.md](../../references/intake-one-pager.md) (Testing ticket section).
+
 ---
 
 ## Phase A — Session intake (mandatory)
 
-Collect these **seven** items (one grouped message when possible):
+Collect these **seven** items (one grouped message when possible; skip fields already on the one-pager as done):
 
 | Field | Required | What to collect |
 |-------|----------|-----------------|
@@ -88,9 +90,9 @@ Reply **confirm** to start Playwright, or tell me what to change.
 
 ---
 
-## Phase D — Pre-flight
+## Phase D — Pre-flight (mandatory)
 
-VPN reminder, URL reachability, Playwright / browser automation readiness. Stop if blocked.
+Follow [playwright-preflight.md](../../references/playwright-preflight.md) end-to-end. MUST NOT start Phase E until **Ready to run: YES**.
 
 ---
 
@@ -223,9 +225,10 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
    - [ ] Every scenario has PASSED/FAILED/BLOCKED/NOT TESTED with evidence reference.
    - [ ] If Phase G ran: destination re-read matches agreed column formats.
    - [ ] Close-out block includes `Verified:` (or partial-failure honesty per skill Phase F).
-3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
+3. Shared checklist: [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Testing ticket section).
 4. Phase G6 fix-verify completed when Phase G ran.
 5. **Fresh-eyes:** MUST re-read F2 before Phase G when **> 15 scenarios** or long evidence blocks.
+6. [session-closing.md](../../references/session-closing.md) — artifact index, suggest **create-bug** if F3 has defects, handoff if long run.
 
 ---
 

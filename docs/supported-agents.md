@@ -32,7 +32,7 @@ HELIX_LINK_WORKSPACE=$PWD bash ~/.helix/tc-fe-prep/scripts/link-skills.sh
 
 Only directories that exist on your machine are linked (installer skips missing parents).
 
-## Project / team directories (`HELIX_LINK_WORKSPACE=1`)
+## Project / team directories (`HELIX_LINK_WORKSPACE=$PWD`)
 
 | Location | Typical agent |
 |----------|----------------|
