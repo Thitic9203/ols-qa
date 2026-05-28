@@ -14,23 +14,7 @@ elif [ -x "$HOME/.helix/tc-fe-prep/scripts/helix-auto-update.sh" ]; then
   HELIX_QUIET=1 bash "$HOME/.helix/tc-fe-prep/scripts/helix-auto-update.sh" 2>/dev/null || true
 fi
 
-bootstrap_content=$(cat "${PLUGIN_ROOT}/references/helix-session-bootstrap.md" 2>&1 || echo "Error reading helix-session-bootstrap.md")
-discipline_head=$(head -n 40 "${PLUGIN_ROOT}/references/skill-invocation-discipline.md" 2>&1 || echo "")
-
-escape_for_json() {
-    local s="$1"
-    s="${s//\\/\\\\}"
-    s="${s//\"/\\\"}"
-    s="${s//$'\n'/\\n}"
-    s="${s//$'\r'/\\r}"
-    s="${s//$'\t'/\\t}"
-    printf '%s' "$s"
-}
-
-bootstrap_escaped=$(escape_for_json "$bootstrap_content")
-discipline_escaped=$(escape_for_json "$discipline_head")
-
-session_context="<EXTREMELY_IMPORTANT>\nYou have **Helix** QA workflows available.\n\n**Router skill name is \`helix\`** (not using-helix). Claude Code: invoke via **Skill** tool or \`/helix\`; direct: \`/tc-fe-prep\`, \`/tc-api-prep\`, \`/retest-bug\`, \`/testing-ticket\`, \`/create-bug\`.\n\n**Session bootstrap:**\n\n${bootstrap_escaped}\n\n**Invocation discipline (summary):**\n\n${discipline_escaped}\n\nFull references live under the Helix plugin \`references/\` folder.\n</EXTREMELY_IMPORTANT>"
+session_context="<EXTREMELY_IMPORTANT>\n**Helix** QA workflows available. Invoke via **Skill** tool — not ad-hoc procedure.\n\n| Command | Workflow |\n|---------|----------|\n| \`/helix\` | Router menu |\n| \`/tc-fe-prep\` | FE test case prep |\n| \`/tc-api-prep\` | API test case prep |\n| \`/retest-bug\` | Retest a bug fix |\n| \`/testing-ticket\` | Playwright ticket test |\n| \`/create-bug\` | File a new bug |\n\nEvidence before claims: no done/passed without proof. English for user chat.\n</EXTREMELY_IMPORTANT>"
 
 if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
   printf '{\n  "additional_context": "%s"\n}\n' "$session_context"

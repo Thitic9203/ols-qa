@@ -18,15 +18,9 @@ Prepare **API manual test cases** from an **API spec** and **Swagger/OpenAPI**, 
 
 **Portable:** Any agent with this skill. **Project-agnostic:** No hardcoded services or ticket IDs.
 
-## Communication (mandatory)
+## Discipline
 
-Follow [user-communication.md](../../references/user-communication.md).
-
-Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
-
-Follow [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — announce `Using **tc-api-prep-workflow** to {purpose}.` on first response.
-
-On first response, recite [helix-session-constraints.md](../../references/helix-session-constraints.md) (**All Helix workflows** block only).
+Follow [shared-preamble.md](../../references/shared-preamble.md).
 
 **Gates:** MUST NOT post a comment or write files until the user approves the draft in chat (Phase F) — because delivery is irreversible without rework.
 
@@ -226,19 +220,16 @@ Only after **G-verify** pass, follow [session-closing.md](../../references/sessi
 
 ## QA closing (mandatory before "done")
 
-Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-rules-style.md#qa-closing-doubt-and-fix-verify).
+Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
 
-1. **Assume** the first draft missed endpoints or wrong status codes — Phase E exists for this reason.
-2. Skill-specific:
-   - [ ] Phase E review block posted with **Ready for draft: YES** and endpoint matrix complete.
-   - [ ] Spec/Swagger coverage complete; out-of-scope documented; tc-quality-standards PASS.
-   - [ ] Row count and columns match Phase B confirmation.
-   - [ ] If comment delivery: destination UI shows full table.
-   - [ ] If file delivery: CSV opens with header + N data rows.
-   - [ ] Close-out block includes `Verified:` and test case count.
-3. Shared checklist: [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (TC API section).
-4. [session-closing.md](../../references/session-closing.md) steps completed.
-5. G-verify completed (at least one re-read of destination).
+- [ ] Phase E review block posted with **Ready for draft: YES** and endpoint matrix complete.
+- [ ] Spec/Swagger coverage complete; out-of-scope documented; tc-quality-standards PASS.
+- [ ] Row count and columns match Phase B confirmation.
+- [ ] If comment delivery: destination UI shows full table.
+- [ ] If file delivery: CSV opens with header + N data rows.
+- [ ] Close-out includes `Verified:` and test case count.
+- [ ] G-verify completed (at least one re-read of destination).
+- [ ] [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (TC API section).
 
 ---
 
@@ -258,20 +249,21 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
 | [api-tc-guidelines.md](references/api-tc-guidelines.md) | API TC writing rules |
 | [delivery-options.md](references/delivery-options.md) | Jira / Confluence / CSV |
 | [markdown-template.md](references/markdown-template.md) | Table skeleton |
-| [worked-example.md](references/worked-example.md) | Anonymized end-to-end sample |
+| [worked-example.md](references/worked-example.md) | On-demand: anonymized sample (read only when format reference needed) |
 | [spec-coverage-review.md](references/spec-coverage-review.md) | Spec + Swagger traceability review |
 | [tc-quality-standards.md](../../references/tc-quality-standards.md) | ISTQB / 29119-3 TC quality |
 | [scripts/README.md](scripts/README.md) | Optional CSV helper pointer |
 
 ---
 
-## MUST / NEVER (summary)
+## MUST / NEVER
+
+Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Skill-specific:
 
 | Rule | Because |
 |------|---------|
 | MUST refuse without API spec + Swagger | No authoritative coverage |
-| MUST NOT deliver before Phase F approval | User gate |
 | MUST NOT invent endpoints not in spec/Swagger | False coverage |
 | MUST run Phase E review before draft table | Prevents out-of-scope API cases |
 | MUST apply tc-quality-standards on every row | ISTQB / 29119-3 consistency |
-| MUST verify comment destination UI when using delivery A | Truncation |
+| MUST verify destination UI when using delivery A | Truncation |

@@ -55,8 +55,4 @@ Applies to text Helix **authors** for trackers and chat summaries (not product U
 
 ## Examples
 
-| Do | Don’t |
-|----|--------|
-| “Do you want to update test results elsewhere?” | “ต้องการอัปเดตผลทดสอบไหมครับ” |
-| “Reply **confirm** to start Playwright.” | “พิมพ์ confirm เพื่อเริ่มทดสอบ” |
-| Option label: “TC API Preparation” | “เตรียมเทสเคส API” |
+English only: “Do you want to update test results?” — not “ต้องการอัปเดตผลทดสอบไหม”.

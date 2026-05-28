@@ -18,17 +18,11 @@ Run **Playwright-based** testing for a **single ticket** after intake and confir
 
 **This workflow does not open bug reports.** If the user wants bugs filed → route to **`create-bug-workflow`** (`/helix` → Create bug).
 
-## Communication (mandatory)
+## Discipline
 
-Follow [user-communication.md](../../references/user-communication.md).
-
-Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
-
-Follow [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — announce `Using **testing-ticket-workflow** to {purpose}.` on first response.
+Follow [shared-preamble.md](../../references/shared-preamble.md).
 
 **Gates:** MUST NOT start Playwright until Phase C confirm; MUST NOT update external results until Phase G confirm — because runs and writes are costly to undo. Credentials are session-only.
-
-**Evidence:** [qa-evidence-gates.md](../../references/qa-evidence-gates.md) before claiming pass/fail or posted results.
 
 **Long sessions:** optional todos per [long-workflow-todos.md](../../references/long-workflow-todos.md).
 
@@ -230,18 +224,16 @@ If verification failed partially, state what succeeded and what did not — NEVE
 
 ## QA closing (mandatory before session end)
 
-Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-rules-style.md#qa-closing-doubt-and-fix-verify).
+Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
 
-1. **Assume** Phase F summary or Phase G updates have errors — Phase G6 exists for this reason.
-2. Skill-specific:
-   - [ ] F1–F3 posted before any external update.
-   - [ ] Every scenario has PASSED/FAILED/BLOCKED/NOT TESTED with evidence reference.
-   - [ ] If Phase G ran: destination re-read matches agreed column formats.
-   - [ ] Close-out block includes `Verified:` (or partial-failure honesty per skill Phase F).
-3. Shared checklist: [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Testing ticket section).
-4. Phase G6 fix-verify completed when Phase G ran.
-5. **Fresh-eyes:** MUST re-read F2 before Phase G when **> 15 scenarios** or long evidence blocks.
-6. [session-closing.md](../../references/session-closing.md) — artifact index, suggest **create-bug** if F3 has defects, handoff if long run.
+- [ ] F1–F3 posted before any external update.
+- [ ] Every scenario has PASSED/FAILED/BLOCKED/NOT TESTED with evidence reference.
+- [ ] If Phase G ran: destination re-read matches agreed column formats.
+- [ ] Close-out includes `Verified:` (or partial-failure honesty per Phase F).
+- [ ] Phase G6 fix-verify completed when Phase G ran.
+- [ ] **Fresh-eyes:** re-read F2 before Phase G when **> 15 scenarios**.
+- [ ] [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Testing ticket section).
+- [ ] Suggest **create-bug** if F3 has defects; handoff if long run.
 
 ---
 
@@ -265,15 +257,16 @@ See [skill-routing.md](../../references/skill-routing.md) — **Handoffs** after
 | [playwright-discipline.md](references/playwright-discipline.md) | Playwright rules |
 | [result-update-discipline.md](references/result-update-discipline.md) | Sheets, Jira, Confluence update rules |
 | [workspace-guide-template.md](references/workspace-guide-template.md) | Optional non-secret defaults |
-| [worked-example.md](references/worked-example.md) | Anonymized end-to-end sample |
+| [worked-example.md](references/worked-example.md) | On-demand: anonymized sample (read only when format reference needed) |
 
 ---
 
-## MUST / NEVER (summary)
+## MUST / NEVER
+
+Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Skill-specific:
 
 | Rule | Because |
 |------|---------|
 | MUST NOT open Jira/GitHub bugs in this workflow | Use create-bug-workflow |
 | MUST NOT run Playwright before Phase C confirm | Wrong scope/credentials |
-| MUST NOT claim bugs without evidence in chat | False positives |
 | MUST re-read destination after Phase G writes | Silent partial failure |

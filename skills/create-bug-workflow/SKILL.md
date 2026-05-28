@@ -17,17 +17,11 @@ proactive_triggers:
 
 File **one or more bug reports** on the tracker the user names (Jira, GitHub Issues, etc.). Ported from the former full-test **Phase 6** — **self-contained in Helix**; do not invoke `full-test-plugin`.
 
-## Communication (mandatory)
+## Discipline
 
-Follow [user-communication.md](../../references/user-communication.md).
-
-Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
-
-Follow [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — announce `Using **create-bug-workflow** to {purpose}.` on first response. Apply [qa-evidence-gates.md](../../references/qa-evidence-gates.md) before claiming issues created.
+Follow [shared-preamble.md](../../references/shared-preamble.md).
 
 **Gates:** MUST NOT create issues until Phase C confirm. MUST NOT file without evidence. MUST verify each URL in Phase F before saying done — because create APIs can return IDs for empty bodies.
-
-On first response, recite [helix-session-constraints.md](../../references/helix-session-constraints.md) (**All Helix workflows** block only).
 
 ## Refusal-first (precondition gate)
 
@@ -170,15 +164,13 @@ Verdict: CREATED {N}/{N} — verified at destination
 
 ## QA closing (mandatory before "done")
 
-Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-rules-style.md#qa-closing-doubt-and-fix-verify).
+Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
 
-1. **Assume** at least one draft title or body is wrong — run Phase E falsification.
-2. Skill-specific:
-   - [ ] Every created issue has URL/key from tool output (not guessed).
-   - [ ] Each URL opened or fetched — title visible.
-   - [ ] Close-out includes `Verdict: CREATED x/y`.
-3. Shared checklist: [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Create bug section).
-4. [session-closing.md](../../references/session-closing.md) — artifact index (issue URLs), suggest **retest** after fix, handoff if blocked.
+- [ ] Every created issue has URL/key from tool output (not guessed).
+- [ ] Each URL opened or fetched — title visible.
+- [ ] Close-out includes `Verdict: CREATED x/y`.
+- [ ] [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Create bug section).
+- [ ] Suggest **retest** after fix; handoff if blocked.
 
 ---
 
@@ -194,15 +186,16 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
 |------|-----|
 | [bug-draft-template.md](references/bug-draft-template.md) | Default draft layout |
 | [posting-discipline.md](references/posting-discipline.md) | GitHub + Jira posting, JXA rules |
-| [worked-example.md](references/worked-example.md) | Anonymized end-to-end sample |
+| [worked-example.md](references/worked-example.md) | On-demand: anonymized sample (read only when format reference needed) |
 
 ---
 
-## MUST / NEVER (summary)
+## MUST / NEVER
+
+Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Skill-specific:
 
 | Rule | Because |
 |------|---------|
-| MUST NOT call create APIs before Phase C confirm | Irreversible |
 | MUST NOT invent reproduction steps | False bugs |
 | MUST verify each issue URL in Phase F | Silent partial failure |
 | MUST lock Jira v2/v3 per session when user specifies | Rewrite cost |
