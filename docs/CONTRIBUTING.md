@@ -39,11 +39,20 @@ Check consistency:
 | `.claude-plugin/marketplace.json` | `metadata.version`, plugin `version` |
 | `README.md` | `**Version: x.y.z**` line under the title |
 
-### CI / releases
+### CI / releases (fully automatic)
 
-- **Push to `main`:** If workflow files change without a `VERSION` bump, the **auto-bump** job runs `./scripts/ci-auto-bump-commit.sh`, commits `chore(ci): bump version … [automated]`, and pushes to `main` (skips when the commit message already contains `[automated]`).
-- **Pull requests:** CI warns if `VERSION` was not bumped; merging to `main` still triggers auto-bump when needed.
-- **Release:** After verify, creates GitHub **Release** `vx.y.z` when that tag is missing.
+**You do not run** `gh release create`, `workflow_dispatch`, or manual git tags.
+
+On every **push to `main`**, the `publish` job in [.github/workflows/version.yml](../.github/workflows/version.yml):
+
+1. Bumps **patch** in `VERSION` (+ syncs plugin.json / README) if skill/command/workflow files changed without a `VERSION` edit in that push
+2. Pushes that bump commit (if any) in the **same** run
+3. Verifies version markers
+4. Creates [GitHub Release](https://github.com/Thitic9203/helix/releases) `vX.Y.Z` when the tag does not exist yet
+
+**Pull requests:** CI only verifies sync and warns if merge will trigger a patch bump.
+
+Optional local pre-commit hook still bumps patch before you commit; CI covers merges even if you skip the hook.
 
 Workflow path patterns (same as pre-commit):
 

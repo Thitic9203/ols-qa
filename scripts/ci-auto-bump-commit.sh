@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Bump patch version, commit, and push (CI only). No-op if bump not needed.
+# Bump patch version, commit, and push (local/legacy helper).
+# CI uses the single publish job in .github/workflows/version.yml instead (no second push).
 
 set -euo pipefail
 

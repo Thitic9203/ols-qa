@@ -1,6 +1,6 @@
 # Helix — AI QA assistant
 
-**Version: 1.5.2** · [Releases](https://github.com/Thitic9203/helix/releases)
+**Version: 1.5.3** · [Releases](https://github.com/Thitic9203/helix/releases)
 
 Portable skill pack for AI agents: **manual FE test-case prep**, **Playwright ticket testing**, **create bug**, and **Jira bug retests** — one entry command.
 
@@ -63,6 +63,8 @@ cd ~/.helix/tc-fe-prep && git pull
 ```
 
 That is enough — no need to re-run the install script or any other commands.
+
+New versions appear on [GitHub Releases](https://github.com/Thitic9203/helix/releases) automatically when changes land on `main` — no manual release steps.
 
 <details>
 <summary>Manual install (contributors)</summary>
