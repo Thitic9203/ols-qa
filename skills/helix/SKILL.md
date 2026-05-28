@@ -28,6 +28,10 @@ This skill only routes — it does not run tests or post to Jira.
 
 If the user’s goal is already clear (e.g. “write FE TC for PROJ-123”), **skip the menu** and invoke the matching workflow skill directly — because an extra menu round wastes time.
 
+## Intent shortcuts (Thai / mixed input)
+
+When the user writes Thai or informal English, map intent using [intent-shortcuts.md](../../references/intent-shortcuts.md). Still respond in **English only**. Extract issue keys from the same message when present.
+
 ## Routing
 
 | User choice | Invoke skill |
@@ -48,6 +52,8 @@ Router session is complete when:
 - [ ] User selected a workflow (1–6 or named skill).
 - [ ] Child workflow skill is loaded (not just described).
 - [ ] No Jira post or issue create happened in this router skill.
+
+If routing only (user did not start a child workflow), post a one-line hint: direct commands `/tc-fe-prep`, `/retest-bug`, etc. — see [README.md](../../README.md#usage).
 
 ## MUST / NEVER
 

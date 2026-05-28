@@ -13,6 +13,16 @@ Use this map to avoid duplicating content across markdown files.
 | `/helix` menu text | [commands/helix.md](../commands/helix.md) | AGENTS.md (link only), README (summary table OK) |
 | Slash command → skill | [commands/*.md](../commands/) | SKILL.md bodies |
 | English-only chat | [references/user-communication.md](../references/user-communication.md) | Full rule text in every skill (link + 1 line) |
+| Workspace guide discovery | [references/workspace-guide-discovery.md](../references/workspace-guide-discovery.md) | Per-workflow glob tables in skills |
+| Intake one-pager | [references/intake-one-pager.md](../references/intake-one-pager.md) | Long workflows (API, ticket, bug, retest) |
+| Session closing / handoff | [references/session-closing.md](../references/session-closing.md), [handoff-file-template.md](../references/handoff-file-template.md) | End of every workflow |
+| Verify closing checklist | [references/verify-closing-checklist.md](../references/verify-closing-checklist.md) | Unified QA close |
+| Coverage delta (post-review) | [references/coverage-delta-template.md](../references/coverage-delta-template.md) | TC FE + API prep |
+| Swagger diff (optional) | [references/swagger-diff-phase.md](../references/swagger-diff-phase.md) | TC API when spec changes |
+| Retest fix vs verify plan | [references/retest-fix-intake.md](../references/retest-fix-intake.md) | Before retest execution |
+| Playwright pre-flight | [references/playwright-preflight.md](../references/playwright-preflight.md) | Testing ticket Phase D |
+| Router intent (Thai/mixed) | [references/intent-shortcuts.md](../references/intent-shortcuts.md) | helix skill + commands/helix |
+| Install health check | [scripts/helix-doctor.sh](../scripts/helix-doctor.sh) | README install section |
 | Skill authoring (Pluton-aligned) | [references/skill-rules-style.md](../references/skill-rules-style.md) | MUST/NEVER tables in every skill |
 | Pluton 5 rules mapping | [references/pluton-5rules-mapping.md](../references/pluton-5rules-mapping.md) | — |
 | Pre-merge ship checklist | [docs/pluton-ship-checklist.md](pluton-ship-checklist.md) | — |

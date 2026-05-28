@@ -28,11 +28,15 @@ Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NE
 
 Use plain chat for URLs/credentials; AskUserQuestion only for choices (e.g. approve comment).
 
+On first response, recite [helix-session-constraints.md](../../references/helix-session-constraints.md) (**All Helix workflows** block only).
+
 ## Refusal-first (precondition gate)
 
 MUST refuse to start Step 2 until the user provides a **Jira bug key or browse URL** — because retest scope is one issue.
 
 MUST refuse to run tests without **reachable environment config** (workspace `*-retest-guide.md` or answers from [project-config-template.md](references/project-config-template.md)) — because URLs and credentials must not be hardcoded in the skill.
+
+On first response after constraints, follow [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) for **Retest bug**, then show [intake-one-pager.md](../../references/intake-one-pager.md) (Retest section).
 
 ---
 
@@ -78,6 +82,12 @@ Use Atlassian integration (`getJiraIssue` or equivalent):
 - Prefer markdown or rendered fields
 
 Capture: environment, test steps, expected/actual results, API endpoint, bug type hints (`[API]`, `[FE]`, admin vs user portal).
+
+---
+
+## Step 2b — Fix claim vs verification plan (mandatory)
+
+Follow [retest-fix-intake.md](../../references/retest-fix-intake.md). Post the retest plan block before executing tests.
 
 ---
 
@@ -248,8 +258,9 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
    - [ ] v2/v3 format matches Step 3 lock; FE bugs have screenshots attached before wiki embed.
    - [ ] API cases: full cURL + response per row (no "same as above").
    - [ ] Jira issue re-opened after post: comment visible, not truncated.
-3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
+3. Shared checklist: [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Retest section).
 4. Step 7d fix-verify completed.
+5. [session-closing.md](../../references/session-closing.md) — artifact index, next workflow, handoff if needed.
 
 ---
 

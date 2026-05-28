@@ -26,6 +26,8 @@ Follow [user-communication.md](../../references/user-communication.md). Ask one 
 
 Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
 
+On first response, recite [helix-session-constraints.md](../../references/helix-session-constraints.md) (**All Helix workflows** block only).
+
 ## Refusal-first (precondition gate)
 
 MUST refuse to start until the user provides a **Jira story key or browse URL** — because TC rows must trace to AC/EC on a specific issue.
@@ -37,6 +39,8 @@ If missing, stop with the refusal template from skill-rules-style.md (list missi
 Read [references/prerequisites.md](references/prerequisites.md) and [references/jira-formatting.md](references/jira-formatting.md).
 
 **Before Step 0:** confirm the **story** issue key with the user; NEVER post to Jira until they approve the draft in chat — because premature comments are hard to retract cleanly.
+
+On first response after constraints, follow [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) for **TC FE prep**.
 
 ---
 
@@ -52,13 +56,14 @@ If the user did not provide a ticket key or URL:
 
 ## Step 1 — Load or create project config
 
-Search the **current workspace** (not fixed paths on the agent host):
+If workspace-guide-discovery already loaded a guide → use it and go to Step 2.
 
-1. Look for `references/*-tc-fe-prep-guide.md` or `references/*-fe-tc-guide.md`.
-2. If found → read it and skip to Step 2.
-3. If not found → ask the user the questions in `references/project-config-template.md` (one section at a time) and offer to save answers into `references/{PROJECT}-tc-fe-prep-guide.md` in their repo.
+Otherwise:
 
-Config should capture: Jira domain, default story vs sub-task policy, portal names, shared login role, CSV example column headers (if different from default), and optional publish method preference.
+1. Ask using `references/project-config-template.md` (one section at a time).
+2. Offer to save answers into `references/{PROJECT}-tc-fe-prep-guide.md` in the user’s repo.
+
+Config should capture: Jira domain, default story vs sub-task policy, portal names, shared login role, CSV column headers (if non-default), and publish method preference.
 
 ---
 
@@ -127,7 +132,11 @@ Post the **FE TC coverage review** block from ac-ec-coverage-review.md (with **R
 
 MUST NOT show the full TC table until **Ready for draft: YES** — because stakeholders approve coverage before row-level editing.
 
-If review fails → fix Step 3 design and re-run 4a–4c (max 2 rounds).
+### 4d — Coverage delta summary
+
+Post the table from [coverage-delta-template.md](../../references/coverage-delta-template.md) (FE section) — even when all rows are `OK`.
+
+If review fails → fix Step 3 design and re-run 4a–4d (max 2 rounds).
 
 ---
 
@@ -211,20 +220,18 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
    - [ ] CSV row count matches table rows.
    - [ ] Jira UI matches approved draft (not MCP output alone).
    - [ ] Close-out includes `Verified:` after Jira re-open.
-3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
-4. Publish fix-verify (Step 6) completed — at least one Jira UI re-read.
-5. **Fresh-eyes:** MUST re-read full draft before Step 6 when table **> 15 rows**.
+3. Shared checklist: [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (TC FE section).
+4. Publish fix-verify (Step 7) completed — at least one Jira UI re-read.
+5. **Fresh-eyes:** MUST re-read full draft before publish when table **> 15 rows**.
+6. Step 8 [session-closing.md](../../references/session-closing.md) completed.
 
 ---
 
-## Step 8 — Handoff
+## Step 8 — Session closing
 
-Tell the user:
+Follow [session-closing.md](../../references/session-closing.md) — artifact index, one-line next workflow (e.g. `/testing-ticket` on same story), handoff file if long session, `Verdict:` block.
 
-- Issue key and that the comment was updated or created.
-- Number of test cases.
-- Where artifacts were saved in **their** repo (`references/...`).
-- Anything blocked (Jira auth, truncation, missing data).
+Complete [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (TC FE section).
 
 ---
 
