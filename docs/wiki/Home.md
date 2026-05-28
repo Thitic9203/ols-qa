@@ -21,6 +21,7 @@ Details: [README — Quick install](https://github.com/Thitic9203/helix#quick-in
 | Option | Doc |
 |--------|-----|
 | TC FE Preparation | [tc-fe-prep-workflow/SKILL.md](https://github.com/Thitic9203/helix/blob/main/skills/tc-fe-prep-workflow/SKILL.md) |
+| TC API Preparation | [tc-api-prep-workflow/SKILL.md](https://github.com/Thitic9203/helix/blob/main/skills/tc-api-prep-workflow/SKILL.md) |
 | Retest bug | [retest-bug-workflow/SKILL.md](https://github.com/Thitic9203/helix/blob/main/skills/retest-bug-workflow/SKILL.md) |
 | Testing ticket | [testing-ticket-workflow/SKILL.md](https://github.com/Thitic9203/helix/blob/main/skills/testing-ticket-workflow/SKILL.md) |
 | Create bug | [create-bug-workflow/SKILL.md](https://github.com/Thitic9203/helix/blob/main/skills/create-bug-workflow/SKILL.md) |

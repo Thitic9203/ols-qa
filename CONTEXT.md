@@ -6,10 +6,19 @@ Terms used across Helix skills. For install, menu, and versioning see [README.md
 
 | Term | Meaning |
 |------|---------|
-| **Story** | Default Jira target for TC comments (not sub-tasks) |
+| **Story** | Default Jira target for FE TC comments (not sub-tasks) |
 | **Shared data prep** | Numbered steps above the TC table |
 | **Precondition column** | After shared prep, before Test Steps |
 | **ADF** | Jira rich comment format for large tables |
+
+## TC API prep
+
+| Term | Meaning |
+|------|---------|
+| **API Spec** | Scope doc, Confluence, or narrative beyond raw Swagger |
+| **Swagger** | OpenAPI URL or file — primary source for paths and schemas |
+| **Default columns** | Test Case ID, Module/Feature, Services Impacted, Title, Precondition, Test Data, Expected Result, Priority |
+| **Delivery** | Comment at user link and/or CSV/Excel in workspace |
 
 ## Retest bug
 

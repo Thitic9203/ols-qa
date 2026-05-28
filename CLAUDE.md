@@ -14,6 +14,7 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).
 | Skill | Path |
 |-------|------|
 | TC FE prep | `skills/tc-fe-prep-workflow/` |
+| TC API prep | `skills/tc-api-prep-workflow/` |
 | Retest bug | `skills/retest-bug-workflow/` |
 | Testing ticket | `skills/testing-ticket-workflow/` |
 | Create bug | `skills/create-bug-workflow/` |

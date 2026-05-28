@@ -10,7 +10,8 @@ Works with **Claude Code**, **Cursor**, **Codex**, and any tool that reads `SKIL
 
 | Workflow | Summary |
 |----------|---------|
-| **TC FE Preparation** | Story AC/EC → 9-column manual TC table + CSV → one Jira comment on the story you name |
+| **TC FE Preparation** | Story AC/EC → manual FE TC table + CSV → Jira comment on the story you name |
+| **TC API Preparation** | API spec + Swagger → API TC table → comment link or CSV/Excel download |
 | **Retest bug** | Verify a fix — API/UI, Swagger, evidence, comment, transition |
 | **Testing ticket** | Intake → Playwright → summary in chat → optional result update elsewhere |
 | **Create bug** | Jira/GitHub target + format + details → confirm → file and verify |
@@ -41,6 +42,7 @@ Run **`/helix`** for the English menu and routing ([commands/helix.md](commands/
 |----------|--------|
 | `/helix` | Router |
 | `/tc-fe-prep ISSUE-123` | `tc-fe-prep-workflow` |
+| `/tc-api-prep` | `tc-api-prep-workflow` |
 | `/retest-bug ISSUE-456` | `retest-bug-workflow` |
 | `/testing-ticket ISSUE-789` | `testing-ticket-workflow` |
 | `/create-bug` | `create-bug-workflow` |
@@ -54,6 +56,7 @@ Other agents: read [AGENTS.md](AGENTS.md), then invoke the skill by name.
 | Skill | Description |
 |-------|-------------|
 | [tc-fe-prep-workflow](skills/tc-fe-prep-workflow/SKILL.md) | FE manual TC from story AC/EC |
+| [tc-api-prep-workflow](skills/tc-api-prep-workflow/SKILL.md) | API manual TC from spec + Swagger |
 | [retest-bug-workflow](skills/retest-bug-workflow/SKILL.md) | Bug retest with evidence |
 | [testing-ticket-workflow](skills/testing-ticket-workflow/SKILL.md) | Playwright ticket test + optional result update |
 | [create-bug-workflow](skills/create-bug-workflow/SKILL.md) | File bugs on Jira/GitHub |

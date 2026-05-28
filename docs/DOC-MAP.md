@@ -33,6 +33,7 @@ Deep detail lives under `skills/<name>/references/`. The parent `SKILL.md` shoul
 | Skill | References |
 |-------|------------|
 | tc-fe-prep-workflow | prerequisites, jira-formatting, publish-options, gotchas, templates |
+| tc-api-prep-workflow | default-columns, api-tc-guidelines, delivery-options, markdown-template |
 | retest-bug-workflow | project-config-template, gotchas, debug-discipline |
 | testing-ticket-workflow | session-intake, playwright-discipline, result-update-discipline |
 | create-bug-workflow | bug-draft-template, posting-discipline |

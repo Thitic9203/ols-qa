@@ -15,6 +15,7 @@ Do **not** paraphrase the menu in another language.
 | Skill | When |
 |-------|------|
 | [tc-fe-prep-workflow](skills/tc-fe-prep-workflow/SKILL.md) | FE manual TC from a Jira **story** |
+| [tc-api-prep-workflow](skills/tc-api-prep-workflow/SKILL.md) | API manual TC from spec + **Swagger** |
 | [retest-bug-workflow](skills/retest-bug-workflow/SKILL.md) | Retest a **bug** fix |
 | [testing-ticket-workflow](skills/testing-ticket-workflow/SKILL.md) | Playwright test for a ticket |
 | [create-bug-workflow](skills/create-bug-workflow/SKILL.md) | Open bug(s) on Jira/GitHub |

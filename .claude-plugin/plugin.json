@@ -9,6 +9,7 @@
   "keywords": ["qa", "jira", "test-cases", "retest", "playwright", "create-bug", "github", "helix"],
   "skills": [
     "./skills/tc-fe-prep-workflow",
+    "./skills/tc-api-prep-workflow",
     "./skills/retest-bug-workflow",
     "./skills/testing-ticket-workflow",
     "./skills/create-bug-workflow"
