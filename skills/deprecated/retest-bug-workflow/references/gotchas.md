@@ -36,4 +36,4 @@
 
 Chrome decodes `\uXXXX` before `fetch` → Jira receives correct Unicode.
 
-See Step 7b in `SKILL.md` and `publish-options.md` patterns in the TC prep skill for the same idea.
+See Step 7b in `WORKFLOW.md` and `publish-options.md` patterns in the TC prep skill for the same idea.

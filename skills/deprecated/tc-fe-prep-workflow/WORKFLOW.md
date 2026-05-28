@@ -4,14 +4,6 @@ description: |
   Prepare frontend manual test cases from a Jira story (AC/EC) with mandatory AC/EC coverage review and ISTQB/29119-3 quality check, then draft table in chat, export CSV, and publish one comment on that story only.
   Use when the user asks for FE test cases, manual TC from acceptance criteria, draft TC comment on Jira, or TC FE Preparation from Helix (/tc-fe-prep).
   Do NOT use for API-only Swagger test cases (tc-api-prep-workflow), Playwright execution (testing-ticket-workflow), retest-after-fix (retest-bug-workflow), or opening bug tickets (create-bug-workflow).
-proactive_triggers:
-  - FE test cases
-  - manual TC
-  - draft TC comment
-  - AC/EC test cases
-  - prepare test cases for Jira
-  - /tc-fe-prep
-  - TC FE Preparation
 ---
 
 # TC FE Prep Workflow

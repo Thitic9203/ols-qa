@@ -136,14 +136,14 @@ Full detail: [README — Update](https://github.com/Thitic9203/helix/blob/main/R
 
 ## Workflow docs
 
-| Workflow | SKILL.md |
+| Workflow | Source |
 |----------|----------|
 | Router | [helix](https://github.com/Thitic9203/helix/blob/main/skills/helix/SKILL.md) |
-| TC FE | [tc-fe-prep-workflow](https://github.com/Thitic9203/helix/blob/main/skills/deprecated/tc-fe-prep-workflow/SKILL.md) |
-| TC API | [tc-api-prep-workflow](https://github.com/Thitic9203/helix/blob/main/skills/deprecated/tc-api-prep-workflow/SKILL.md) |
-| Retest | [retest-bug-workflow](https://github.com/Thitic9203/helix/blob/main/skills/deprecated/retest-bug-workflow/SKILL.md) |
-| Testing ticket | [testing-ticket-workflow](https://github.com/Thitic9203/helix/blob/main/skills/deprecated/testing-ticket-workflow/SKILL.md) |
-| Create bug | [create-bug-workflow](https://github.com/Thitic9203/helix/blob/main/skills/deprecated/create-bug-workflow/SKILL.md) |
+| TC FE | [tc-fe-prep-workflow](https://github.com/Thitic9203/helix/blob/main/skills/deprecated/tc-fe-prep-workflow/WORKFLOW.md) |
+| TC API | [tc-api-prep-workflow](https://github.com/Thitic9203/helix/blob/main/skills/deprecated/tc-api-prep-workflow/WORKFLOW.md) |
+| Retest | [retest-bug-workflow](https://github.com/Thitic9203/helix/blob/main/skills/deprecated/retest-bug-workflow/WORKFLOW.md) |
+| Testing ticket | [testing-ticket-workflow](https://github.com/Thitic9203/helix/blob/main/skills/deprecated/testing-ticket-workflow/WORKFLOW.md) |
+| Create bug | [create-bug-workflow](https://github.com/Thitic9203/helix/blob/main/skills/deprecated/create-bug-workflow/WORKFLOW.md) |
 
 ---
 
