@@ -7,13 +7,13 @@
   },
   "metadata": {
     "description": "TC FE prep, testing ticket, create bug, and retest for Jira/GitHub",
-    "version": "1.5.13"
+    "version": "1.5.14"
   },
   "plugins": [
     {
       "name": "helix",
       "description": "Helix — TC FE prep, Testing ticket, Create bug, Retest, routing via /helix",
-      "version": "1.5.13",
+      "version": "1.5.14",
       "source": "./",
       "author": {
         "name": "QA Lead"
