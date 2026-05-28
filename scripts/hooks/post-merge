@@ -25,3 +25,8 @@ for OLD_ENTRY in "$CACHE_BASE"/*/; do
     break
   fi
 done
+
+# Sync Claude marketplace plugin (helix@helix; retire helix@local)
+if [ -x "scripts/claude-plugin-sync.sh" ]; then
+  HELIX_QUIET=1 bash scripts/claude-plugin-sync.sh || true
+fi

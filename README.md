@@ -133,15 +133,16 @@ Releases: [github.com/Thitic9203/helix/releases](https://github.com/Thitic9203/h
 
 ```bash
 cd ~/.helix/tc-fe-prep && git pull
+bash ~/.helix/tc-fe-prep/scripts/claude-plugin-sync.sh   # Claude Code only
 ```
 
-Symlinks point at this folder — **global skills update automatically** after pull. No need to re-run the curl installer unless you deleted the repo.
+Symlinks point at this folder — **global skills update automatically** after pull. **Claude Code** users should run `claude-plugin-sync.sh` (or full `install.sh`) so the marketplace plugin stays on **`helix@helix`**, not the old **`helix@local`** id. No need to re-run the curl installer unless you deleted the repo.
 
 ### Step 2 — By agent (if needed)
 
 | Agent / IDE | Usually enough | Re-run only if… |
 |-------------|----------------|-----------------|
-| **Claude Code** | `git pull` | Plugin cache stale → run `~/.helix/tc-fe-prep/scripts/install.sh` again. **SessionStart** hooks inject Helix routing via `hooks/` (router skill **`helix`**, not a separate meta-skill). |
+| **Claude Code** | `git pull` then `bash ~/.helix/tc-fe-prep/scripts/claude-plugin-sync.sh` (or re-run `install.sh`) | Keeps **`helix@helix`** updated and disables legacy **`helix@local`**. SessionStart hooks via `hooks/`. |
 | **Cursor / Codex / Copilot / Gemini / Windsurf / Cline / Pi** | `git pull` | You removed `~/.*/skills/*` symlinks → `bash ~/.helix/tc-fe-prep/scripts/link-skills.sh` |
 | **Team repo (`.github/skills/`)** | `git pull` in Helix + pull your project | New Helix skill added → `HELIX_LINK_WORKSPACE=$PWD ~/.helix/tc-fe-prep/scripts/link-skills.sh` |
 

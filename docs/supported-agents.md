@@ -19,7 +19,7 @@ HELIX_LINK_WORKSPACE=$PWD bash ~/.helix/tc-fe-prep/scripts/link-skills.sh
 
 | Agent / IDE | Global path | Menu entry |
 |-------------|-------------|------------|
-| **Claude Code** | `~/.claude/skills/` | `/helix` + plugin; or skill `helix` |
+| **Claude Code** | `~/.claude/skills/` + plugin **`helix@helix`** | `/helix` — installer runs `scripts/claude-plugin-sync.sh` (disables legacy `helix@local`) |
 | **Cursor** | `~/.cursor/skills/` | `@helix` or ask to run `helix` skill |
 | **OpenAI Codex** | `~/.codex/skills/` | Skill discovery per Codex CLI |
 | **GitHub Copilot** (VS Code) | `~/.copilot/skills/` | Agent picks skill from description |

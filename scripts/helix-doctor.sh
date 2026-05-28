@@ -108,6 +108,44 @@ else
   warn "Claude plugin cache not found (Claude Code only)"
 fi
 
+echo ""
+echo "--- Claude Code marketplace plugin ---"
+if command -v claude >/dev/null 2>&1; then
+  PLIST="$(claude plugin list 2>/dev/null || true)"
+  if echo "$PLIST" | grep -qF "helix@helix"; then
+    if echo "$PLIST" | grep -A4 "helix@helix" | grep -q "Status: ✔ enabled"; then
+      ok "helix@helix enabled"
+    else
+      warn "helix@helix installed but not enabled — run: bash $REPO/scripts/claude-plugin-sync.sh"
+    fi
+    if [ -n "${VER:-}" ] && echo "$PLIST" | grep -A3 "helix@helix" | grep -q "Version: $VER"; then
+      ok "helix@helix version matches repo ($VER)"
+    elif [ -n "${VER:-}" ]; then
+      warn "helix@helix version may be stale (repo $VER) — run: bash $REPO/scripts/claude-plugin-sync.sh"
+    fi
+  else
+    warn "helix@helix not installed — run: bash $REPO/scripts/claude-plugin-sync.sh"
+  fi
+  if echo "$PLIST" | grep -A4 "helix@local" | grep -q "Status: ✔ enabled"; then
+    bad "Legacy helix@local is still enabled — run: bash $REPO/scripts/claude-plugin-sync.sh"
+  elif echo "$PLIST" | grep -qF "helix@local"; then
+    warn "Legacy helix@local still listed (should be disabled) — run: bash $REPO/scripts/claude-plugin-sync.sh"
+  fi
+else
+  warn "Claude CLI not on PATH — skip marketplace plugin check"
+fi
+
+if [ -n "${HELIX_DOCTOR_FIX:-}" ]; then
+  echo ""
+  echo "--- Auto-fix (HELIX_DOCTOR_FIX) ---"
+  bash "$REPO/scripts/claude-plugin-sync.sh" || warn "claude-plugin-sync failed"
+  bash "$REPO/scripts/link-skills.sh" 2>/dev/null || true
+  if [ -n "${HELIX_LINK_WORKSPACE:-}" ]; then
+    export HELIX_LINK_WORKSPACE
+    bash "$REPO/scripts/link-skills.sh" 2>/dev/null || true
+  fi
+fi
+
 if [ -n "${HELIX_LINK_WORKSPACE:-}" ]; then
   echo ""
   echo "--- Workspace: $HELIX_LINK_WORKSPACE ---"

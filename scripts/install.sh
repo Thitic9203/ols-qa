@@ -14,6 +14,7 @@ REPO_URL="https://github.com/Thitic9203/helix.git"
 REPO_DIR="${HELIX_REPO_DIR:-$HOME/.helix/tc-fe-prep}"
 MARKETPLACE_NAME="helix-dev"
 PLUGIN_NAME="helix"
+CANONICAL="helix@helix"
 CACHE_BASE="$HOME/.claude/plugins/cache/$MARKETPLACE_NAME/$PLUGIN_NAME"
 
 echo "=== Helix QA assistant installer ==="
@@ -21,10 +22,10 @@ echo ""
 
 # 1. Clone or pull
 if [ -d "$REPO_DIR/.git" ]; then
-  echo "[1/4] Repo exists — pulling latest..."
+  echo "[1/5] Repo exists — pulling latest..."
   git -C "$REPO_DIR" pull origin main --quiet
 else
-  echo "[1/4] Cloning repo..."
+  echo "[1/5] Cloning repo..."
   mkdir -p "$(dirname "$REPO_DIR")"
   git clone "$REPO_URL" "$REPO_DIR" --quiet
 fi
@@ -40,7 +41,7 @@ else
 fi
 bash "$REPO_DIR/scripts/sync-version.sh" --check 2>/dev/null || bash "$REPO_DIR/scripts/sync-version.sh"
 
-echo "[2/4] Claude plugin cache symlink (v$VERSION)..."
+echo "[2/5] Claude plugin cache symlink (v$VERSION)..."
 mkdir -p "$CACHE_BASE"
 for OLD_ENTRY in "$CACHE_BASE"/*/; do
   [ -e "$OLD_ENTRY" ] || continue
@@ -49,15 +50,19 @@ done
 ln -sfn "$REPO_DIR" "$CACHE_BASE/$VERSION"
 
 # 3. Link skills for all supported agents
-echo "[3/4] Linking skills (global + optional workspace)..."
+echo "[3/5] Linking skills (global + optional workspace)..."
 if [ -n "${HELIX_LINK_WORKSPACE:-}" ]; then
   export HELIX_LINK_WORKSPACE
 fi
 bash "$REPO_DIR/scripts/link-skills.sh"
 
 # 4. Git hooks for cache rename on pull
-echo "[4/4] Enabling auto-update hooks..."
+echo "[4/5] Enabling auto-update hooks..."
 git config core.hooksPath scripts/hooks
+
+# 5. Claude Code: helix@helix (not legacy helix@local)
+echo "[5/5] Claude Code plugin ($CANONICAL via scripts/claude-plugin-sync.sh)..."
+bash "$REPO_DIR/scripts/claude-plugin-sync.sh" || true
 
 echo ""
 echo "=== Install complete ==="
@@ -75,7 +80,8 @@ echo "Workflow shortcuts (Claude Code): /tc-fe-prep /tc-api-prep /retest-bug /te
 echo ""
 echo "Supported agents: docs/supported-agents.md"
 echo "Health check:   bash $REPO_DIR/scripts/helix-doctor.sh"
-echo "Update:         cd $REPO_DIR && git pull"
+echo "Claude plugin:  bash $REPO_DIR/scripts/claude-plugin-sync.sh  (helix@helix only)"
+echo "Update:         cd $REPO_DIR && git pull && bash $REPO_DIR/scripts/install.sh"
 echo ""
 if [ -z "${HELIX_LINK_WORKSPACE:-}" ]; then
   echo "Tip: link into current project (Copilot team):"
