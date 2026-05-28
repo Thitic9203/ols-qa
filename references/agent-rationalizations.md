@@ -32,7 +32,7 @@ When you notice these thoughts, **stop** and follow the linked reference or skil
 
 | Rationalization | Correct action |
 |-----------------|----------------|
-| “I remember Helix from last chat” | Invoke skill again; load workspace `*-guide.md` |
+| “I remember Helix from last chat” | Load workflow via command again; load workspace `*-guide.md` |
 | “Menu is overhead” | Skip menu only when intent is explicit — [skill-invocation-discipline.md](skill-invocation-discipline.md) |
 | “English is hard for user, use Thai in menu” | English only in chat — [user-communication.md](user-communication.md) |
 

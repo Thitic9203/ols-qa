@@ -3,7 +3,7 @@ name: helix
 description: |
   Helix QA assistant menu — route to TC FE prep, TC API prep, retest bug, testing ticket, or create bug.
   Use when the user says Helix, /helix, QA assistant menu, or is unsure which QA workflow to run.
-  Do NOT use when the user already chose a specific workflow (invoke tc-fe-prep-workflow, tc-api-prep-workflow, retest-bug-workflow, testing-ticket-workflow, or create-bug-workflow directly).
+  Do NOT use when the user already chose a specific workflow — use the matching command (/tc-fe-prep, /tc-api-prep, /retest-bug, /testing-ticket, /create-bug) directly.
 proactive_triggers:
   - Helix
   - /helix
@@ -24,7 +24,7 @@ Follow [shared-preamble.md](../../references/shared-preamble.md).
 
 This skill only routes — it does not run tests or post to Jira.
 
-If the user’s goal is already clear (e.g. “write FE TC for PROJ-123”), **skip the menu** and invoke the matching workflow skill directly — because an extra menu round wastes time.
+If the user’s goal is already clear (e.g. “write FE TC for PROJ-123”), **skip the menu** and read the matching workflow SKILL.md directly — because an extra menu round wastes time.
 
 ## Intent shortcuts (Thai / mixed input)
 
@@ -32,13 +32,13 @@ When the user writes Thai or informal English, map intent using [intent-shortcut
 
 ## Routing
 
-| User choice | Invoke skill |
-|-------------|----------------|
-| 1, TC FE, FE test cases | `tc-fe-prep-workflow` |
-| 2, TC API, Swagger API TC | `tc-api-prep-workflow` |
-| 3, retest, verify fix | `retest-bug-workflow` |
-| 4, testing ticket, Playwright | `testing-ticket-workflow` |
-| 5, create bug, file bug | `create-bug-workflow` |
+| User choice | Action |
+|-------------|--------|
+| 1, TC FE, FE test cases | Read and follow [tc-fe-prep-workflow](../tc-fe-prep-workflow/SKILL.md) |
+| 2, TC API, Swagger API TC | Read and follow [tc-api-prep-workflow](../tc-api-prep-workflow/SKILL.md) |
+| 3, retest, verify fix | Read and follow [retest-bug-workflow](../retest-bug-workflow/SKILL.md) |
+| 4, testing ticket, Playwright | Read and follow [testing-ticket-workflow](../testing-ticket-workflow/SKILL.md) |
+| 5, create bug, file bug | Read and follow [create-bug-workflow](../create-bug-workflow/SKILL.md) |
 | 6, other | Clarify; suggest closest workflow |
 
 Handoffs: [skill-routing.md](../../references/skill-routing.md).

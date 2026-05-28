@@ -16,7 +16,7 @@ Or: `/tc-fe-prep`, `/tc-api-prep`, `/retest-bug`, `/testing-ticket`, `/create-bu
 Use the helix skill and show the QA menu, then route to the workflow I choose.
 ```
 
-Or invoke a workflow directly: `tc-fe-prep-workflow`, `tc-api-prep-workflow`, etc.
+Or name a workflow directly: `tc-fe-prep`, `tc-api-prep`, etc.
 
 ## GitHub Copilot (VS Code)
 

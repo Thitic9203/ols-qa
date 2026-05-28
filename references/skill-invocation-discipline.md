@@ -14,20 +14,18 @@ If the user says “skip Jira post,” that overrides a skill’s default gate.
 
 If there is even a **small chance** a Helix workflow applies (TC prep, retest, Playwright ticket, create bug, or menu via **`helix`**):
 
-1. **Invoke the skill** through the platform’s skill mechanism (Claude Code: **Skill** tool — do not only `Read` the file and improvise).  
-2. **Announce once:** `Using **{skill-name}** to {purpose}.`  
-3. Follow the skill’s gates and references.
+1. **Load the workflow** — Claude Code: use the slash-command (`/retest-bug`, etc.) or invoke the **`helix`** skill and let it route. Each command reads and follows the matching workflow SKILL.md.  
+2. **Announce once:** `Using **{workflow}** to {purpose}.`  
+3. Follow the workflow’s gates and references.
 
-| Situation | Skill |
-|-----------|--------|
-| Unsure which QA task | `helix` |
-| FE manual TC | `tc-fe-prep-workflow` |
-| API manual TC | `tc-api-prep-workflow` |
-| Retest bug | `retest-bug-workflow` |
-| Playwright ticket | `testing-ticket-workflow` |
-| File bugs | `create-bug-workflow` |
-
-Claude Code shortcuts: `/helix`, `/tc-fe-prep`, `/tc-api-prep`, `/retest-bug`, `/testing-ticket`, `/create-bug` — each loads the matching workflow.
+| Situation | Command |
+|-----------|---------|
+| Unsure which QA task | `/helix` |
+| FE manual TC | `/tc-fe-prep` |
+| API manual TC | `/tc-api-prep` |
+| Retest bug | `/retest-bug` |
+| Playwright ticket | `/testing-ticket` |
+| File bugs | `/create-bug` |
 
 ## Red flags
 

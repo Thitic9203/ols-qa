@@ -49,7 +49,7 @@ Commit `.github/skills/` (symlinks) if your team uses Copilot in the same repo.
 | Platform | Helix menu | Workflows |
 |----------|------------|-----------|
 | Claude Code | `/helix`, `/tc-fe-prep`, … in `commands/` | Same + skills |
-| Others | No native `/helix` | Invoke skill **`helix`** or workflow skill by name |
+| Others | No native `/helix` | Ask agent to read **`helix`** skill or workflow SKILL.md by name |
 
 See [references/agent-entry.md](../references/agent-entry.md) for copy-paste prompts per platform.
 

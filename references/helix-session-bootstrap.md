@@ -6,7 +6,7 @@ Compact context for new sessions. Full router: skill **`helix`**. Discipline: [s
 
 **Helix** is your QA assistant skill pack (TC FE/API prep, Playwright ticket test, retest bug, create bug).
 
-**Before QA work:** If a Helix workflow might apply, **invoke that skill** (Claude Code: use the **Skill** tool for `helix` or the workflow skill — not ad-hoc procedure). Announce: `Using **{skill}** to {purpose}.`
+**Before QA work:** If a Helix workflow might apply, use the matching slash-command — not ad-hoc procedure. Announce: `Using **{workflow}** to {purpose}.`
 
 **Direct entry (Claude Code):** `/tc-fe-prep`, `/tc-api-prep`, `/retest-bug`, `/testing-ticket`, `/create-bug` — or `/helix` for the menu. You do **not** have to open the menu when the goal is already clear.
 

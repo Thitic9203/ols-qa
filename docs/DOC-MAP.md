@@ -52,7 +52,7 @@ Use this map to avoid duplicating content across markdown files.
 | New skill template | [docs/new-skill-template.md](new-skill-template.md) | `skills/retest-bug-workflow/references/new-skill-template.md` (stub only) |
 | Markdown table → CSV | [scripts/export-markdown-table-to-csv.py](../scripts/export-markdown-table-to-csv.py) | Inline CSV logic in tc-fe/tc-api skills |
 | Domain glossary | [CONTEXT.md](../CONTEXT.md) | README, skills |
-| Workflow steps | `skills/*/SKILL.md` | commands/*.md (invoke only) |
+| Workflow steps | `skills/*/SKILL.md` | commands/*.md (read and follow) |
 
 ## Wiki (GitHub)
 
@@ -80,5 +80,5 @@ Deep detail lives under `skills/<name>/references/`. The parent `SKILL.md` shoul
 
 ## Commands vs skills
 
-- **commands/** — thin frontmatter: invoke skill X, English only, 3–10 lines.
+- **commands/** — thin frontmatter: read and follow workflow SKILL.md, English only, 3–10 lines.
 - **skills/** — full procedure and gates.
