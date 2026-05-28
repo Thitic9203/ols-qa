@@ -18,21 +18,13 @@ End-to-end retest from a Jira bug ticket: fetch ticket → test → compare Swag
 
 **Project-agnostic:** Load URLs, credentials, and transitions from `references/*-retest-guide.md` in the user's workspace.
 
-## Communication (mandatory)
+## Discipline
 
-Follow [user-communication.md](../../references/user-communication.md).
+Follow [shared-preamble.md](../../references/shared-preamble.md).
 
-Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
-
-Follow [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — announce `Using **retest-bug-workflow** to {purpose}.` on first response.
-
-**Jira bodies** (after approval): neutral English — no "Retested by:", no honorifics. MUST NOT claim success without tool output **and** Jira UI verification — because MCP can report OK while the comment is truncated. Apply [qa-evidence-gates.md](../../references/qa-evidence-gates.md).
-
-If reproduction is unclear or results conflict with dev claims, follow [qa-debug-discipline.md](../../references/qa-debug-discipline.md) before posting PASSED/FAILED.
+**Jira bodies** (after approval): neutral English — no "Retested by:", no honorifics. If reproduction is unclear or results conflict with dev claims, follow [qa-debug-discipline.md](../../references/qa-debug-discipline.md) before posting PASSED/FAILED.
 
 Use plain chat for URLs/credentials; AskUserQuestion only for choices (e.g. approve comment).
-
-On first response, recite [helix-session-constraints.md](../../references/helix-session-constraints.md) (**All Helix workflows** block only).
 
 ## Refusal-first (precondition gate)
 
@@ -253,18 +245,15 @@ MUST NOT transition or assign until 7d passes — because stakeholders trust Jir
 
 ## QA closing (mandatory before "done")
 
-Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-rules-style.md#qa-closing-doubt-and-fix-verify).
+Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
 
-1. **Assume** the first draft comment or test conclusion is wrong — re-check evidence.
-2. Skill-specific:
-   - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌** (not ambiguous text).
-   - [ ] Close-out includes `Verdict: PASSED` or `Verdict: FAILED` with issue link.
-   - [ ] v2/v3 format matches Step 3 lock; FE bugs have screenshots attached before wiki embed.
-   - [ ] API cases: full cURL + response per row (no "same as above").
-   - [ ] Jira issue re-opened after post: comment visible, not truncated.
-3. Shared checklist: [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Retest section).
-4. Step 7d fix-verify completed.
-5. [session-closing.md](../../references/session-closing.md) — artifact index, next workflow, handoff if needed.
+- [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌** (not ambiguous text).
+- [ ] `Verdict: PASSED` or `Verdict: FAILED` with issue link.
+- [ ] v2/v3 format matches Step 3 lock; FE bugs have screenshots attached before wiki embed.
+- [ ] API cases: full cURL + response per row (no "same as above").
+- [ ] Jira issue re-opened after post: comment visible, not truncated.
+- [ ] Step 7d fix-verify completed.
+- [ ] [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Retest section).
 
 ---
 
@@ -300,7 +289,7 @@ From changelog: last move into the project's **active development** status (ofte
 | Encoding / v2 issues | `references/gotchas.md` |
 | Session handoff | `references/handoff-template.md` |
 | Lessons learned | `references/post-mortem-template.md` |
-| [worked-example.md](references/worked-example.md) | Anonymized end-to-end sample |
+| [worked-example.md](references/worked-example.md) | On-demand: anonymized sample (read only when format reference needed) |
 
 ---
 
@@ -310,20 +299,18 @@ From changelog: last move into the project's **active development** status (ofte
 
 ---
 
-## MUST / NEVER (critical rules)
+## MUST / NEVER
+
+Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Skill-specific:
 
 | Rule | Because |
 |------|---------|
 | MUST read project config before testing | No hardcoded env URLs |
-| MUST get user approval before post | Irreversible public record |
 | MUST include full cURL/response per API case | Evidence must stand alone |
 | MUST treat Swagger (+ error docs) over stale ticket text | Ticket may be wrong |
 | MUST use **PASSED ✅** or **FAILED ❌** only in summary line | Scanability for dev/QA |
+| MUST lock v2/v3 at Step 3; FE → v2 + screenshots | Rewrites waste time |
+| MUST verify Jira UI after post (Step 7d) before Step 8 | Truncation / wrong endpoint |
 | MUST run Step 8 after successful post unless user stopped you | Workflow closure |
 | MUST create test data when possible | "No data" is not an excuse |
-| MUST lock v2/v3 at Step 3; FE → v2 + screenshots | Rewrites waste time |
-| MUST verify Jira UI after post (Step 7d) | Truncation / wrong endpoint |
-| MUST complete Step 7d before Step 8 | Transition on wrong comment misleads dev |
-| MUST use English for user chat | [user-communication.md](../../references/user-communication.md) |
 | MUST NOT change COMMENT_FORMAT after Step 3 | v2/v3 rewrite cost |
-| MUST NOT claim retest complete without opening the issue after post | Tool output can lie |

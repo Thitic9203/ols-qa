@@ -16,13 +16,9 @@ proactive_triggers:
 
 Show the menu and route to the correct workflow skill. Full text: [commands/helix.md](../../commands/helix.md).
 
-## Communication (mandatory)
+## Discipline
 
-Follow [user-communication.md](../../references/user-communication.md).
-
-Follow [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — announce `Using **helix** to {purpose}.` on first response when this skill is active.
-
-On first response, recite [helix-session-constraints.md](../../references/helix-session-constraints.md) (All Helix block only).
+Follow [shared-preamble.md](../../references/shared-preamble.md).
 
 ## Refusal-first (precondition gate)
 
@@ -49,18 +45,20 @@ Handoffs: [skill-routing.md](../../references/skill-routing.md).
 
 ## QA closing (mandatory before "done")
 
-Router session is complete when:
+Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + router-specific:
 
 - [ ] User selected a workflow (1–6 or named skill).
 - [ ] Child workflow skill is loaded (not just described).
 - [ ] No Jira post or issue create happened in this router skill.
 
-If routing only (user did not start a child workflow), post a one-line hint: direct commands `/tc-fe-prep`, `/retest-bug`, etc. — see [README.md](../../README.md#usage).
+If routing only, hint: `/tc-fe-prep`, `/retest-bug`, etc.
 
 ## MUST / NEVER
+
+Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Router-specific:
 
 | Rule | Because |
 |------|---------|
 | MUST show English menu from commands/helix.md | Consistent UX across agents |
 | MUST NOT start a workflow without user picking 1–6 or naming one | Avoid wrong scope |
-| MUST NOT post to Jira or create issues from this router skill | Side effects belong in child workflows |
+| MUST NOT post to Jira or create issues from this router | Side effects belong in child workflows |

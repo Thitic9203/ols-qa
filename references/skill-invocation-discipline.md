@@ -29,17 +29,9 @@ If there is even a **small chance** a Helix workflow applies (TC prep, retest, P
 
 Claude Code shortcuts: `/helix`, `/tc-fe-prep`, `/tc-api-prep`, `/retest-bug`, `/testing-ticket`, `/create-bug` — each loads the matching workflow.
 
-## Red flags (stop and invoke a skill)
+## Red flags
 
-| Thought | Reality |
-|---------|---------|
-| “I can draft TC without the workflow” | Use `tc-fe-prep-workflow` or `tc-api-prep-workflow` — review gates are mandatory |
-| “Jira MCP succeeded, we’re done” | Use [qa-evidence-gates.md](qa-evidence-gates.md) — verify destination |
-| “Quick retest, skip plan” | Use `retest-bug-workflow` + [retest-fix-intake.md](retest-fix-intake.md) |
-| “I'll just run Playwright” | Use `testing-ticket-workflow` — preflight + confirm gates |
-| “Reading SKILL.md is enough” | **Invoke** the skill so the platform tracks the workflow |
-
-More QA-specific rationalizations: [agent-rationalizations.md](agent-rationalizations.md).
+If tempted to skip a workflow skill (“I can draft TC without it”, “quick retest”), stop and invoke — review gates are mandatory. More: [agent-rationalizations.md](agent-rationalizations.md).
 
 ## Long workflows and todos
 

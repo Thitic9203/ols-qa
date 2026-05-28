@@ -20,15 +20,9 @@ Prepare **frontend manual test cases** from a Jira **story** (acceptance criteri
 
 **Portable:** Works in any AI agent that can read this skill. **Project-agnostic:** No hardcoded repos, paths, or ticket numbers.
 
-## Communication (mandatory)
+## Discipline
 
-Follow [user-communication.md](../../references/user-communication.md). Ask one focused question at a time when setup is missing.
-
-Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
-
-Follow [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — announce `Using **tc-fe-prep-workflow** to {purpose}.` on first response.
-
-On first response, recite [helix-session-constraints.md](../../references/helix-session-constraints.md) (**All Helix workflows** block only).
+Follow [shared-preamble.md](../../references/shared-preamble.md). Ask one focused question at a time when setup is missing.
 
 ## Refusal-first (precondition gate)
 
@@ -213,19 +207,16 @@ If any check fails → fix and re-verify (max 2 rounds) before handoff.
 
 ## QA closing (mandatory before "done")
 
-Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-rules-style.md#qa-closing-doubt-and-fix-verify).
+Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
 
-1. **Assume** the first draft table had gaps (Step 4 exists for this reason).
-2. Skill-specific:
-   - [ ] Step 4 review block posted with **Ready for draft: YES** and traceability matrix complete.
-   - [ ] AC/EC coverage: ไม่ขาด ไม่เกิน; quality checklist PASS per tc-quality-standards.
-   - [ ] CSV row count matches table rows.
-   - [ ] Jira UI matches approved draft (not MCP output alone).
-   - [ ] Close-out includes `Verified:` after Jira re-open.
-3. Shared checklist: [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (TC FE section).
-4. Publish fix-verify (Step 7) completed — at least one Jira UI re-read.
-5. **Fresh-eyes:** MUST re-read full draft before publish when table **> 15 rows**.
-6. Step 8 [session-closing.md](../../references/session-closing.md) completed.
+- [ ] Step 4 review block posted with **Ready for draft: YES** and traceability matrix complete.
+- [ ] AC/EC coverage complete; quality checklist PASS per tc-quality-standards.
+- [ ] CSV row count matches table rows.
+- [ ] Jira UI matches approved draft (not MCP output alone).
+- [ ] Close-out includes `Verified:` after Jira re-open.
+- [ ] Publish fix-verify (Step 7) completed — at least one Jira UI re-read.
+- [ ] **Fresh-eyes:** re-read full draft before publish when table **> 15 rows**.
+- [ ] [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (TC FE section).
 
 ---
 
@@ -247,7 +238,7 @@ Complete [verify-closing-checklist.md](../../references/verify-closing-checklist
 | [markdown-template.md](references/markdown-template.md) | Copy-paste skeleton |
 | [project-config-template.md](references/project-config-template.md) | First-time project questions |
 | [publish-options.md](references/publish-options.md) | MCP vs browser vs manual |
-| [worked-example.md](references/worked-example.md) | Anonymized end-to-end sample |
+| [worked-example.md](references/worked-example.md) | On-demand: anonymized sample (read only when format reference needed) |
 | [ac-ec-coverage-review.md](references/ac-ec-coverage-review.md) | AC/EC traceability + scope review |
 | [tc-quality-standards.md](../../references/tc-quality-standards.md) | ISTQB / 29119-3 TC quality |
 | [scripts/README.md](scripts/README.md) | Optional CSV helper pointer |
@@ -260,16 +251,16 @@ Complete [verify-closing-checklist.md](../../references/verify-closing-checklist
 
 ---
 
-## MUST / NEVER (summary)
+## MUST / NEVER
+
+Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Skill-specific:
 
 | Rule | Because |
 |------|---------|
 | MUST refuse without story key/URL | No traceable AC/EC source |
-| MUST NOT post before user approves draft | Irreversible without edit noise |
 | MUST NOT comment on sub-tasks or other issues | Scope is one story |
-| MUST NOT reference agent-machine absolute paths in Jira | Other users cannot reproduce |
-| MUST NOT claim publish success without Jira UI check | MCP truncation |
 | MUST NOT add TC outside story AC/EC | Traceability |
-| MUST run Step 4 review and post summary before draft table | Prevents กาว/เพ้อ cases reaching Jira |
+| MUST NOT reference agent-machine absolute paths in Jira | Other users cannot reproduce |
+| MUST run Step 4 review before draft table | Prevents out-of-scope cases reaching Jira |
 | MUST apply tc-quality-standards on every row | ISTQB / 29119-3 consistency |
 | MUST NOT use `\n` inside Jira markdown table cells | Renders as one line |
