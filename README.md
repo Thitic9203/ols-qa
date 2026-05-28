@@ -65,7 +65,7 @@ Read `AGENTS.md` or invoke:
 - `testing-ticket-workflow`
 - `create-bug-workflow`
 
-**User-facing replies:** concise **English**.
+**User-facing replies:** **English only** (questions, menus, confirmations) — not Thai. See [references/user-communication.md](references/user-communication.md).
 
 ## Skills
 

@@ -23,7 +23,7 @@ All must stay **portable**: no machine-specific paths, no real ticket IDs in com
 
 ## User language
 
-Helix speaks **concise English** to users (defined in `commands/helix.md` and both skills).
+Helix speaks **English only** to users — no Thai in chat, menus, or questions. Canonical rule: [references/user-communication.md](references/user-communication.md). Every skill’s **Communication** section must match.
 
 ## Version
 

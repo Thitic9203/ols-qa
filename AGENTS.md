@@ -15,7 +15,7 @@ When the user invokes **Helix** or asks for QA help without a specific workflow:
    - **Other** (please specify)
 3. Route to the skill below based on their choice.
 
-Respond in **concise English**.
+Respond in **concise English only** — questions, options, menus, confirmations. Do not chat in Thai even if the user writes Thai. See [references/user-communication.md](references/user-communication.md).
 
 ## Skills
 
@@ -28,6 +28,7 @@ Respond in **concise English**.
 
 ## Shared rules
 
+- **User communication:** English only ([user-communication.md](references/user-communication.md)).
 - Work only on the **issue key the user specifies** (story for TC prep; bug for retest unless they say otherwise).
 - **Do not post to Jira** until the user approves the draft (unless they waive approval).
 - Do not reference fixed paths on the agent host in Jira bodies.

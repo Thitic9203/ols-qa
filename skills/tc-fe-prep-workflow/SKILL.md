@@ -11,9 +11,12 @@ Prepare **frontend manual test cases** from a Jira **story** (acceptance criteri
 
 ## Communication (mandatory)
 
-- Respond to the user in **clear English** for this entire workflow.
+Read [user-communication.md](../../references/user-communication.md).
+
+- **English only** for all questions, options, confirmations, and summaries — **never Thai**, even if the user writes in Thai.
 - Use plain language suitable for QA and developers.
 - Ask one focused question at a time when setup is missing.
+- **AskUserQuestion / popups:** every field English only.
 
 ## Prerequisites (read before Step 0)
 

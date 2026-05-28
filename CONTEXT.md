@@ -2,7 +2,7 @@
 
 ## Helix
 
-**Helix:** QA assistant persona — routes to TC prep, testing ticket, create bug, or retest. User-facing language: English.
+**Helix:** QA assistant persona — routes to TC prep, testing ticket, create bug, or retest. **User-facing language: English only** — all questions, menu options, and chat replies; never Thai unless the user explicitly requests another language. See `references/user-communication.md`.
 
 ## TC FE prep
 

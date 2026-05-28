@@ -41,7 +41,8 @@ If the user invoked `/helix PROJ-123` with no mode:
 
 ## Rules
 
-- **English only** when talking to the user.
+- **English only** for all user-facing chat: questions, menu options, confirmations, and summaries. Never reply in Thai (or mix languages) unless the user explicitly asks for another language. See [references/user-communication.md](../references/user-communication.md).
+- **AskUserQuestion / popups:** English-only labels and descriptions (Thai breaks widgets).
 - Do **not** post to Jira without approval (each workflow states when posting is allowed).
 - Work only on the **issue key the user specifies** unless they redirect you.
 - Read the chosen skill file in this repo and follow it completely.

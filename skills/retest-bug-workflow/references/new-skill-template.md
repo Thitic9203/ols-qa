@@ -14,7 +14,7 @@ What this skill does.
 
 ## Communication
 
-- English only for user-facing text.
+- English only for user-facing text — never Thai in chat/questions/options. See `references/user-communication.md` at repo root.
 
 ## Steps
 

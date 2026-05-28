@@ -6,4 +6,4 @@ Invoke the `create-bug-workflow` skill.
 
 If the user pasted bug details or evidence from a prior test in this chat, reuse them. Otherwise start Phase A intake (target link, format, bug information).
 
-Respond in English. Do not create issues until the user confirms the summary and drafts.
+Respond in English only (never Thai in user-facing text). Do not create issues until the user confirms the summary and drafts.

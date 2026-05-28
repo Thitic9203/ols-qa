@@ -11,14 +11,13 @@ Run **Playwright-based** testing for a **single ticket** after intake and confir
 
 ## Communication (mandatory)
 
-- Speak to the user in **concise English**.
+Read [user-communication.md](../../references/user-communication.md).
+
+- **English only** for all questions, options, confirmations, and summaries in chat — **never Thai**, even if the user writes in Thai.
 - **No Playwright run** until intake summary is confirmed (Phase C).
 - **No external update** (Jira, Sheets, Confluence, etc.) until the user approves destination + mapping (Phase G).
 - Credentials are **session-only** — never commit passwords.
-
-## AskUserQuestion rules
-
-If your UI supports structured multiple-choice prompts, **all** AskUserQuestion fields must be **English only**.
+- **AskUserQuestion / popups:** every field English only (Thai breaks widgets).
 
 ---
 

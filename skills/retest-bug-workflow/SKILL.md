@@ -11,13 +11,12 @@ End-to-end retest from a Jira bug ticket: fetch ticket → test → compare Swag
 
 ## Communication (mandatory)
 
-- Speak to the user in **concise English**.
-- Jira comments: neutral tone — no "Retested by:", no honorifics.
+Read [user-communication.md](../../references/user-communication.md).
+
+- **English only** for all questions, options, confirmations, and summaries in chat — **never Thai**, even if the user writes in Thai.
+- Jira comments (after approval): neutral English — no "Retested by:", no honorifics, no Thai particles in posted bodies unless the ticket already uses Thai.
 - Do not claim success without tool output **and** Jira UI verification where applicable.
-
-## AskUserQuestion rules
-
-If your UI supports structured multiple-choice prompts, **all** AskUserQuestion fields must be **English only** (Thai and some scripts render broken in those widgets).
+- **AskUserQuestion / popups:** every field English only (Thai breaks widgets).
 
 Use plain chat for open-ended setup (URLs, credentials). Use AskUserQuestion only for choices (test approach, approve comment).
 
