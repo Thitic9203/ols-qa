@@ -149,10 +149,10 @@ Before “all bugs created”:
 
 ```text
 ━━━ Create bug — complete ━━━
+Verdict: CREATED {N}/{N} — verified at destination
 | # | Target  | Issue              | Severity |
 |---|---------|--------------------|----------|
 | 1 | Jira    | PROJ-456 (link)    | High     |
-Created: {N}/{N} — verified at destination.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -160,11 +160,14 @@ Created: {N}/{N} — verified at destination.
 
 ## QA closing (mandatory before "done")
 
+Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-rules-style.md#qa-closing-doubt-and-fix-verify).
+
 1. **Assume** at least one draft title or body is wrong — run Phase E falsification.
 2. Skill-specific:
    - [ ] Every created issue has URL/key from tool output (not guessed).
    - [ ] Each URL opened or fetched — title visible.
-3. Shared: [skill-rules-style.md](../../references/skill-rules-style.md).
+   - [ ] Close-out includes `Verdict: CREATED x/y`.
+3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
 
 ---
 
@@ -182,6 +185,7 @@ Created: {N}/{N} — verified at destination.
 |------|-----|
 | [bug-draft-template.md](references/bug-draft-template.md) | Default draft layout |
 | [posting-discipline.md](references/posting-discipline.md) | GitHub + Jira posting, JXA rules |
+| [worked-example.md](references/worked-example.md) | Anonymized end-to-end sample |
 
 ---
 

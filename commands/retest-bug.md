@@ -1,5 +1,7 @@
 ---
-description: Retest a Jira bug — verify fix, collect evidence, post comment, transition ticket
+description: |
+  Retest a Jira bug — verify fix, collect evidence, post comment, transition ticket.
+  Do NOT use for filing new bugs (create-bug), drafting TC tables (tc-fe-prep / tc-api-prep), or first-time ticket testing (testing-ticket).
 ---
 
 Invoke the **`retest-bug-workflow`** skill.

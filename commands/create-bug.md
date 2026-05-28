@@ -1,5 +1,7 @@
 ---
-description: Create bug reports on Jira or GitHub — collect target link, format, and bug details, confirm, then file
+description: |
+  Create bug reports on Jira or GitHub — collect target link, format, and bug details, confirm, then file.
+  Do NOT use for full Playwright test passes (testing-ticket) or retest comments on an existing bug (retest-bug).
 ---
 
 Invoke the `create-bug-workflow` skill.

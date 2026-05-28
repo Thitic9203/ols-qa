@@ -1,5 +1,7 @@
 ---
-description: Test a Jira ticket with Playwright — collect Ticket, URL, credentials, VPN, Confluence, Swagger, confirm, then run
+description: |
+  Test a Jira ticket with Playwright — collect Ticket, URL, credentials, VPN, Confluence, Swagger, confirm, then run.
+  Do NOT use for opening bugs (create-bug), retest-after-fix on a bug (retest-bug), or drafting manual TC tables (tc-fe-prep / tc-api-prep).
 ---
 
 Invoke the `testing-ticket-workflow` skill.

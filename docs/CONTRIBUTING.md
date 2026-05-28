@@ -72,9 +72,9 @@ The installer sets this automatically.
 ## Adding a skill
 
 1. Copy [docs/new-skill-template.md](new-skill-template.md) → `skills/<name>/SKILL.md`
-2. Follow [references/skill-rules-style.md](../references/skill-rules-style.md) (`description`, `proactive_triggers`, MUST/NEVER, QA closing)
+2. Follow [references/skill-rules-style.md](../references/skill-rules-style.md) — aligned with [<ORG> claudeskill5rules](https://github.com/<ORG>/team-pluton-skills/blob/main/docs/claudeskill5rules.md) where applicable (`description`, `proactive_triggers`, MUST/NEVER, QA closing)
 3. WIP: `skills/in-progress/<name>/` (excluded from `link-skills.sh` until promoted)
-4. Register in `.claude-plugin/plugin.json` `skills` array and add a row to [docs/DOC-MAP.md](DOC-MAP.md)
+4. **Ship checklist (Rule 2):** README workflow list + `.claude-plugin/plugin.json` + `commands/<name>.md` + row in [references/skill-routing.md](../references/skill-routing.md) + [docs/DOC-MAP.md](DOC-MAP.md)
 
 Repeated exports (CSV from markdown tables): use [scripts/export-markdown-table-to-csv.py](../scripts/export-markdown-table-to-csv.py).
 
@@ -84,10 +84,11 @@ Repeated exports (CSV from markdown tables): use [scripts/export-markdown-table-
 - User-facing language: [references/user-communication.md](../references/user-communication.md).
 - Portable skills: [references/portable-content.md](../references/portable-content.md) — no real ticket IDs, no `/Users/...`, no `~/.helix` in `skills/` or `commands/`, no one-product env/commands (e.g. `pd3`, customer Playwright paths).
 
-Quick check before commit:
+Quick check before commit (same as CI):
 
 ```bash
-rg -n '/Users/|~/.helix|~/.cursor|pd3-|pw:login:pd3|CP-[0-9]{3,}|mycreditport' skills commands references/portable-content.md || true
+chmod +x scripts/ci-check-portable-skills.sh
+./scripts/ci-check-portable-skills.sh
 ```
 
-(README/install scripts may mention `~/.helix` for humans only.)
+(README/install scripts may mention `~/.helix` for humans only — not in `skills/` or `commands/`.)

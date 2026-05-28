@@ -36,14 +36,7 @@ If **VPN** is required per user and environment is unreachable in Phase D, stop 
 
 ## Core constraints
 
-Recite once at the start of Phase A (first response only):
-
-> **Testing ticket constraints:**
-> 1. No evidence = no bug claim in chat
-> 2. No test data = create it, never skip
-> 3. No run without user confirmation on the intake summary
-> 4. No “update complete” without re-reading the destination and verifying every planned write
-> 5. Do not open bugs here — use Create bug workflow
+Recite once at the start of Phase A (first response only) from [helix-session-constraints.md](../../references/helix-session-constraints.md) — **All Helix workflows** block, then the **Testing ticket** block.
 
 ---
 
@@ -222,12 +215,16 @@ If verification failed partially, state what succeeded and what did not — NEVE
 
 ## QA closing (mandatory before session end)
 
+Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-rules-style.md#qa-closing-doubt-and-fix-verify).
+
 1. **Assume** Phase F summary or Phase G updates have errors — Phase G6 exists for this reason.
 2. Skill-specific:
    - [ ] F1–F3 posted before any external update.
    - [ ] Every scenario has PASSED/FAILED/BLOCKED/NOT TESTED with evidence reference.
    - [ ] If Phase G ran: destination re-read matches agreed column formats.
-3. Shared: [skill-rules-style.md](../../references/skill-rules-style.md).
+   - [ ] Close-out block includes `Verified:` (or partial-failure honesty per skill Phase F).
+3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
+4. Optional fresh-eyes: re-read F2 table before Phase G if many scenarios.
 
 ---
 
@@ -241,11 +238,7 @@ If verification failed partially, state what succeeded and what did not — NEVE
 
 ## Handoff
 
-| User need | Skill |
-|-----------|--------|
-| File bugs | `create-bug-workflow` |
-| Retest a fix | `retest-bug-workflow` |
-| FE manual TC table | `tc-fe-prep-workflow` |
+See [skill-routing.md](../../references/skill-routing.md) — especially **Handoffs** after this workflow.
 
 ---
 
@@ -257,6 +250,7 @@ If verification failed partially, state what succeeded and what did not — NEVE
 | [playwright-discipline.md](references/playwright-discipline.md) | Playwright rules |
 | [result-update-discipline.md](references/result-update-discipline.md) | Sheets, Jira, Confluence update rules |
 | [workspace-guide-template.md](references/workspace-guide-template.md) | Optional non-secret defaults |
+| [worked-example.md](references/worked-example.md) | Anonymized end-to-end sample |
 
 ---
 

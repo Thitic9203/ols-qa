@@ -189,12 +189,15 @@ If any check fails → fix and re-verify (max 2 rounds) before handoff.
 
 ## QA closing (mandatory before "done")
 
+Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-rules-style.md#qa-closing-doubt-and-fix-verify).
+
 1. **Assume** the first draft table had gaps (Step 4 exists for this reason).
 2. Skill-specific:
    - [ ] Every AC/EC on the story covered; CSV row count matches table rows.
    - [ ] Jira UI matches approved draft (not MCP output alone).
-3. Shared: [skill-rules-style.md](../../references/skill-rules-style.md).
-4. NEVER say "posted" or "complete" without opening the story in Jira (or equivalent) after publish.
+   - [ ] Close-out includes `Verified:` after Jira re-open.
+3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
+4. Optional fresh-eyes: re-read draft comment before Step 6 if table is long.
 
 ---
 
@@ -220,6 +223,7 @@ Tell the user:
 | [project-config-template.md](references/project-config-template.md) | First-time project questions |
 | [publish-options.md](references/publish-options.md) | MCP vs browser vs manual |
 | [worked-example.md](references/worked-example.md) | Anonymized end-to-end sample |
+| [scripts/README.md](scripts/README.md) | Optional CSV helper pointer |
 
 ---
 
