@@ -6,7 +6,7 @@
 
 ## What is Helix?
 
-Portable QA skills for AI agents: TC preparation, ticket testing (Playwright), bug retest, and create bug — one router command `/helix`.
+Portable QA skills for AI agents: TC preparation, ticket testing (Playwright), bug retest, and create bug — start with `/helix` (Claude Code), `@helix`, or skill **helix** on other agents. See [supported-agents.md](https://github.com/Thitic9203/helix/blob/main/docs/supported-agents.md).
 
 ## Install
 

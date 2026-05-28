@@ -1,8 +1,12 @@
 #!/bin/bash
-# One-command install: clone + symlinks for Claude Code and Cursor skills
+# One-command install: clone + symlinks for major agent skill directories
 #
 # Usage:
 #   curl -sL https://raw.githubusercontent.com/Thitic9203/helix/main/scripts/install.sh | bash
+#
+# Optional (from your project root):
+#   HELIX_LINK_WORKSPACE=1 curl -sL .../install.sh | bash
+#   — or after install: HELIX_LINK_WORKSPACE=$PWD ~/.helix/tc-fe-prep/scripts/link-skills.sh
 
 set -e
 
@@ -44,8 +48,11 @@ for OLD_ENTRY in "$CACHE_BASE"/*/; do
 done
 ln -sfn "$REPO_DIR" "$CACHE_BASE/$VERSION"
 
-# 3. Link skills for Claude + Cursor
-echo "[3/4] Linking skills..."
+# 3. Link skills for all supported agents
+echo "[3/4] Linking skills (global + optional workspace)..."
+if [ -n "${HELIX_LINK_WORKSPACE:-}" ]; then
+  export HELIX_LINK_WORKSPACE
+fi
 bash "$REPO_DIR/scripts/link-skills.sh"
 
 # 4. Git hooks for cache rename on pull
@@ -57,9 +64,19 @@ echo "=== Install complete ==="
 echo "Repo:    $REPO_DIR"
 echo "Plugin:  $CACHE_BASE/$VERSION -> $REPO_DIR"
 echo ""
-echo "Version:     $VERSION"
-echo "Claude Code:  /helix  |  /tc-fe-prep  |  /tc-api-prep  |  /retest-bug  |  /testing-ticket  |  /create-bug"
-echo "Cursor:       all skills under ~/.cursor/skills (symlinked)"
-echo "Any agent:    AGENTS.md"
+echo "Version: $VERSION"
 echo ""
-echo "Update: cd $REPO_DIR && git pull"
+echo "Start Helix:"
+echo "  Claude Code     /helix"
+echo "  Cursor/Windsurf @helix  (skill: helix)"
+echo "  Copilot/Cline   use skill helix — see references/agent-entry.md"
+echo ""
+echo "Workflow shortcuts (Claude Code): /tc-fe-prep /tc-api-prep /retest-bug /testing-ticket /create-bug"
+echo ""
+echo "Supported agents: docs/supported-agents.md"
+echo "Update:         cd $REPO_DIR && git pull"
+echo ""
+if [ -z "${HELIX_LINK_WORKSPACE:-}" ]; then
+  echo "Tip: link into current project (Copilot team):"
+  echo "  HELIX_LINK_WORKSPACE=\$PWD $REPO_DIR/scripts/link-skills.sh"
+fi

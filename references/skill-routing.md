@@ -11,7 +11,7 @@ Canonical map for `/helix`, [commands/helix.md](../commands/helix.md), and [AGEN
 | Retest a bug after dev fix | `retest-bug-workflow` | `/retest-bug` |
 | Playwright test for one ticket | `testing-ticket-workflow` | `/testing-ticket` |
 | File bug(s) on Jira/GitHub | `create-bug-workflow` | `/create-bug` |
-| Unsure / multi-step | Start with `/helix` | `/helix` |
+| Unsure / multi-step | `helix` skill or `/helix` (Claude Code) | `/helix` or `@helix` |
 
 ## Handoffs (after a workflow ends)
 

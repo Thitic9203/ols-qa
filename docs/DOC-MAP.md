@@ -7,6 +7,8 @@ Use this map to avoid duplicating content across markdown files.
 | Topic | Canonical file | Do not duplicate in |
 |-------|----------------|---------------------|
 | Install / update | [README.md](../README.md) | AGENTS.md, wiki |
+| Supported AI agents | [docs/supported-agents.md](supported-agents.md) | README (summary table only) |
+| Per-agent start prompts | [references/agent-entry.md](../references/agent-entry.md) | — |
 | Version number | [VERSION](../VERSION) + README line | Manual edits to plugin.json only via `sync-version.sh` |
 | `/helix` menu text | [commands/helix.md](../commands/helix.md) | AGENTS.md (link only), README (summary table OK) |
 | Slash command → skill | [commands/*.md](../commands/) | SKILL.md bodies |

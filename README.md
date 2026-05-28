@@ -1,10 +1,10 @@
 # Helix — AI QA assistant
 
-**Version: 1.5.6** · [Releases](https://github.com/Thitic9203/helix/releases)
+**Version: 1.5.7** · [Releases](https://github.com/Thitic9203/helix/releases)
 
 Portable skill pack for AI agents: **manual FE test-case prep**, **Playwright ticket testing**, **create bug**, and **Jira bug retests** — one entry command.
 
-Works with **Claude Code**, **Cursor**, **Codex**, and any tool that reads `SKILL.md` or `AGENTS.md`.
+Works with **Claude Code**, **Cursor**, **Codex**, **GitHub Copilot**, **Gemini CLI**, **Windsurf**, **Cline**, and other agents that discover `SKILL.md` — see [docs/supported-agents.md](docs/supported-agents.md).
 
 > **Scope & expectations**  
 > Helix is built for QA work with **clear boundaries**—a defined ticket, environment, inputs, and what “done” looks like. When scope is vague or still in flux, you may need extra clarification rounds, and the output may require more review. Sharper scope upfront usually means stronger, faster results.
@@ -27,17 +27,19 @@ Open a terminal and run:
 curl -sL https://raw.githubusercontent.com/Thitic9203/helix/main/scripts/install.sh | bash
 ```
 
-This clones Helix to `~/.helix/tc-fe-prep`, links skills for Claude / Cursor / Codex, and registers the Claude plugin cache.
+This clones Helix to `~/.helix/tc-fe-prep`, links skills into standard agent directories (Claude, Cursor, Copilot, Gemini, Windsurf, Cline, Codex, …), and registers the Claude Code plugin cache.
 
 ## Usage
 
-Open **Claude Code** (or your agent) and run:
+Open your agent and start Helix:
 
-```text
-/helix
-```
+| Agent | How to start |
+|-------|----------------|
+| **Claude Code** | `/helix` |
+| **Cursor / Windsurf** | `@helix` or skill `helix` |
+| **Copilot / Cline / Gemini / Codex** | Ask to use skill **`helix`** (see [references/agent-entry.md](references/agent-entry.md)) |
 
-Pick a workflow from the English menu ([commands/helix.md](commands/helix.md)).
+Pick a workflow from the English menu ([commands/helix.md](commands/helix.md) · skill [helix](skills/helix/SKILL.md)).
 
 | Shortcut | What it does |
 |----------|----------------|
@@ -50,7 +52,9 @@ Pick a workflow from the English menu ([commands/helix.md](commands/helix.md)).
 
 **First run:** many workflows ask for project details once (Jira domain, URLs, credentials) and can save a guide under `references/` in your repo — answer step by step when prompted.
 
-**Other agents:** read [AGENTS.md](AGENTS.md) and invoke the skill by name.
+**Team / Copilot in repo:** `HELIX_LINK_WORKSPACE=1 bash ~/.helix/tc-fe-prep/scripts/link-skills.sh` from your project root → `.github/skills/`, etc.
+
+**All platforms:** [docs/supported-agents.md](docs/supported-agents.md) · [AGENTS.md](AGENTS.md)
 
 **Language:** English only for questions, menus, and confirmations — [references/user-communication.md](references/user-communication.md).
 
@@ -82,6 +86,7 @@ git config core.hooksPath scripts/hooks
 
 | Skill | Description |
 |-------|-------------|
+| [helix](skills/helix/SKILL.md) | Router menu (all agents without `/helix`) |
 | [tc-fe-prep-workflow](skills/tc-fe-prep-workflow/SKILL.md) | FE manual TC from story AC/EC |
 | [tc-api-prep-workflow](skills/tc-api-prep-workflow/SKILL.md) | API manual TC from spec + Swagger |
 | [retest-bug-workflow](skills/retest-bug-workflow/SKILL.md) | Bug retest with evidence |
@@ -98,6 +103,7 @@ git config core.hooksPath scripts/hooks
 
 | Doc | Purpose |
 |-----|---------|
+| [docs/supported-agents.md](docs/supported-agents.md) | Per-platform install paths and entry |
 | [docs/DOC-MAP.md](docs/DOC-MAP.md) | Where each topic lives (avoid duplicate md) |
 | [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | Version bump, hooks, releases |
 | [docs/wiki/Home.md](docs/wiki/Home.md) | Wiki entry (mirror to GitHub Wiki) |

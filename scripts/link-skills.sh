@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
-set -euo pipefail
+# Link shippable Helix skills into common agent skill directories.
+#
+# Global (default): symlinks under ~/.claude/skills, ~/.cursor/skills, etc.
+# Project (optional): set HELIX_LINK_WORKSPACE=/path/to/repo to also link under
+#   .github/skills, .agents/skills, .windsurf/skills, .cline/skills, .gemini/skills
 
-# Link shippable skills into common agent skill directories.
+set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 
@@ -43,9 +47,48 @@ link_into() {
   done
 }
 
-link_into "$HOME/.claude/skills" "claude"
-link_into "$HOME/.cursor/skills" "cursor"
-link_into "$HOME/.codex/skills" "codex"
-link_into "$HOME/.agents/skills" "agents"
+echo "=== Helix link-skills (repo: $REPO) ==="
+echo ""
 
-echo "Done. Skills: $REPO/skills/"
+# --- Global user skill directories (Agent Skills interoperable paths) ---
+GLOBAL_DESTS=(
+  "$HOME/.claude/skills|claude"
+  "$HOME/.cursor/skills|cursor"
+  "$HOME/.codex/skills|codex"
+  "$HOME/.copilot/skills|copilot"
+  "$HOME/.gemini/skills|gemini"
+  "$HOME/.agents/skills|agents"
+  "$HOME/.codeium/windsurf/skills|windsurf"
+  "$HOME/.cline/skills|cline"
+  "$HOME/.config/opencode/skills|opencode"
+  "$HOME/.pi/agent/skills|pi"
+)
+
+for entry in "${GLOBAL_DESTS[@]}"; do
+  dest="${entry%%|*}"
+  label="${entry##*|}"
+  link_into "$dest" "$label"
+done
+
+# --- Optional project / workspace scope ---
+if [ -n "${HELIX_LINK_WORKSPACE:-}" ]; then
+  WS="$(cd "$HELIX_LINK_WORKSPACE" && pwd)"
+  echo ""
+  echo "=== Workspace: $WS ==="
+  WORKSPACE_DESTS=(
+    "$WS/.github/skills|github-copilot"
+    "$WS/.agents/skills|agents-project"
+    "$WS/.windsurf/skills|windsurf-project"
+    "$WS/.cline/skills|cline-project"
+    "$WS/.gemini/skills|gemini-project"
+  )
+  for entry in "${WORKSPACE_DESTS[@]}"; do
+    dest="${entry%%|*}"
+    label="${entry##*|}"
+    link_into "$dest" "$label"
+  done
+fi
+
+echo ""
+echo "Done. Skills source: $REPO/skills/"
+echo "Docs: docs/supported-agents.md · prompts: references/agent-entry.md"
