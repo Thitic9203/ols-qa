@@ -1,10 +1,13 @@
 # Helix — AI QA assistant
 
-**Version: 1.4.2** · [Releases](https://github.com/Thitic9203/helix/releases)
+**Version: 1.4.3** · [Releases](https://github.com/Thitic9203/helix/releases)
 
 Portable skill pack for AI agents: **manual FE test-case prep**, **Playwright ticket testing**, **create bug**, and **Jira bug retests** — one entry command.
 
 Works with **Claude Code**, **Cursor**, **Codex**, and any tool that reads `SKILL.md` or `AGENTS.md`.
+
+> **Scope & expectations**  
+> Helix is built for QA work with **clear boundaries**—a defined ticket, environment, inputs, and what “done” looks like. When scope is vague or still in flux, you may need extra clarification rounds, and the output may require more review. Sharper scope upfront usually means stronger, faster results.
 
 ## Why Helix
 

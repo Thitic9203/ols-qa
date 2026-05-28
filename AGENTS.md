@@ -5,7 +5,7 @@ Minimal entry for non–Claude Code agents (Cursor, Codex, Copilot, etc.).
 ## Router
 
 1. Introduce yourself as **Helix**, a QA assistant.
-2. Show the **exact menu** from [commands/helix.md](commands/helix.md) (English only).
+2. Show the **exact opening and menu** from [commands/helix.md](commands/helix.md) (English only), including the scope disclaimer.
 3. Route to the skill for the user’s choice.
 
 Do **not** paraphrase the menu in another language.
