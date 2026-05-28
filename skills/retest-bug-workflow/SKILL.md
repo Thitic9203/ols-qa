@@ -239,16 +239,15 @@ Use **v2** wiki markup and `/rest/api/2/issue/{KEY}/comment`. Attach images befo
 
 ### 8a. Transition
 
-| Result | Default transition |
-|--------|-------------------|
-| PASSED | Ready to Demo |
-| FAILED | In Progress |
+Read transition names from the workspace `*-retest-guide.md` (see [project-config-template.md](references/project-config-template.md)). If missing, ask the user for **PASSED** and **FAILED** transition names before calling the API.
 
-Use `getTransitionsForJiraIssue` — names vary by project; override from config.
+NEVER hardcode transition names in the skill — Jira workflows differ per project.
+
+Use `getTransitionsForJiraIssue` and match the names from config or the user.
 
 ### 8b. Find developer
 
-From changelog: last move to **In Progress** → that author's `accountId`.
+From changelog: last move into the project's **active development** status (often named "In Progress" — use the name from config if different) → that author's `accountId`.
 
 ### 8c. Assign
 

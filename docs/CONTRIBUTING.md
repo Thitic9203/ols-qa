@@ -73,4 +73,12 @@ Repeated exports (CSV from markdown tables): use [scripts/export-markdown-table-
 
 - Follow [DOC-MAP.md](DOC-MAP.md) — no copy-paste of the `/helix` menu outside `commands/helix.md`.
 - User-facing language: [references/user-communication.md](../references/user-communication.md).
-- No real ticket IDs or machine paths in committed skills.
+- Portable skills: [references/portable-content.md](../references/portable-content.md) — no real ticket IDs, no `/Users/...`, no `~/.helix` in `skills/` or `commands/`, no one-product env/commands (e.g. `pd3`, customer Playwright paths).
+
+Quick check before commit:
+
+```bash
+rg -n '/Users/|~/.helix|~/.cursor|pd3-|pw:login:pd3|CP-[0-9]{3,}|mycreditport' skills commands references/portable-content.md || true
+```
+
+(README/install scripts may mention `~/.helix` for humans only.)

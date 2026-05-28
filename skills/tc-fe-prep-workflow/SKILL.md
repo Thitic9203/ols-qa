@@ -151,15 +151,9 @@ After approval, write files **inside the user's project** (paths relative to wor
 | `references/{ISSUE_KEY}_FE_TC.md` | Canonical markdown (prep block + table) |
 | `references/{ISSUE_KEY}_FE_TC.csv` | UTF-8 BOM CSV export of the same rows |
 
-Generate CSV from the markdown table (prefer the Helix script when this repo is on disk):
+Generate CSV from the approved markdown table per [csv-export-rules.md](../../references/csv-export-rules.md) (in-agent by default; never assume a Helix install path on the agent host).
 
-```bash
-python3 scripts/export-markdown-table-to-csv.py \
-  references/{ISSUE_KEY}_FE_TC.md \
-  -o references/{ISSUE_KEY}_FE_TC.csv
-```
-
-The script converts `<br>` to newlines and strips `**` bold. If the script is unavailable, export in-agent with the same rules. See [references/publish-options.md](references/publish-options.md).
+See [references/publish-options.md](references/publish-options.md) for Jira delivery.
 
 ---
 

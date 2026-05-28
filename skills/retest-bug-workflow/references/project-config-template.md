@@ -55,12 +55,12 @@ Short note: which portal calls which gateway, auth headers, etc.
 2. Message vs error docs if Swagger is silent.
 3. Both match → PASSED; code mismatch → FAILED; ambiguous → BLOCKED.
 
-## Jira transitions (override defaults if needed)
+## Jira transitions (required — project-specific)
 
-| Retest result | Transition name |
-|---------------|-------------------|
-| PASSED | Ready to Demo |
-| FAILED | In Progress |
+| Retest result | Transition name (your Jira workflow) |
+|---------------|--------------------------------------|
+| PASSED | e.g. `Done`, `Ready for QA`, … |
+| FAILED | e.g. `In Progress`, `Reopened`, … |
 
 ## Project-specific gotchas
 

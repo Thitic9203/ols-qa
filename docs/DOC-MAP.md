@@ -12,6 +12,8 @@ Use this map to avoid duplicating content across markdown files.
 | Slash command → skill | [commands/*.md](../commands/) | SKILL.md bodies |
 | English-only chat | [references/user-communication.md](../references/user-communication.md) | Full rule text in every skill (link + 1 line) |
 | Skill authoring (Pluton-aligned) | [references/skill-rules-style.md](../references/skill-rules-style.md) | MUST/NEVER tables in every skill |
+| Portable skills (no host/project lock-in) | [references/portable-content.md](../references/portable-content.md) | Machine paths, PD3, one-repo Playwright layout |
+| CSV export | [references/csv-export-rules.md](../references/csv-export-rules.md) | tc-fe / tc-api skills (in-agent default) |
 | New skill template | [docs/new-skill-template.md](new-skill-template.md) | `skills/retest-bug-workflow/references/new-skill-template.md` (stub only) |
 | Markdown table → CSV | [scripts/export-markdown-table-to-csv.py](../scripts/export-markdown-table-to-csv.py) | Inline CSV logic in tc-fe/tc-api skills |
 | Domain glossary | [CONTEXT.md](../CONTEXT.md) | README, skills |

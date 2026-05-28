@@ -2,6 +2,8 @@
 
 All Helix skills MUST follow these patterns. Link this file from every `SKILL.md` instead of copying the full text.
 
+**Portable content:** MUST follow [portable-content.md](portable-content.md) — no machine paths, no single-customer project coupling in committed skills.
+
 ## Rule 1 — `description` = trigger instruction
 
 - **Verb + scenario + edge cases** in `description`.
@@ -45,7 +47,10 @@ Please provide these, then I will continue.
 
 ## Scripts (Rule 4)
 
-If an action repeats **more than three times** across sessions (CSV export, version sync), prefer a repo script under `scripts/` or `skills/<name>/scripts/` and document the exact command in the skill.
+Helix ships helpers under the **Helix repository** `scripts/` (for install/CI). Skills MUST NOT assume that directory is the current working directory.
+
+- **CSV export:** [csv-export-rules.md](csv-export-rules.md) — in-agent by default; script only if the user provides `HELIX_INSTALL_ROOT`.
+- **Version sync / install:** contributor docs only — not workflow steps inside skills.
 
 ## File layout
 

@@ -154,15 +154,8 @@ State clearly: **Not posted / no file written yet.**
 ### G1 — File export (if user chose B)
 
 1. Write markdown with the table to `references/{SCOPE}_API_TC.md` (or user path).
-2. **CSV:** prefer Helix script when available:
-
-```bash
-python3 scripts/export-markdown-table-to-csv.py \
-  references/{SCOPE}_API_TC.md \
-  -o references/{SCOPE}_API_TC.csv
-```
-
-3. **Excel:** `.xlsx` only if user asked Excel or `both` (in-agent or project tool).
+2. **CSV:** export per [csv-export-rules.md](../../references/csv-export-rules.md) to `references/{SCOPE}_API_TC.csv` (in-agent by default).
+3. **Excel:** `.xlsx` only if user asked Excel or `both` (in-agent or tool available in the **user’s** project).
 
 `{SCOPE}` = user-provided name, ticket key, or short slug from API title.
 

@@ -49,3 +49,7 @@ Terms used across Helix skills. For install, menu, and versioning see [README.md
 ## Placeholders
 
 `{ISSUE_KEY}`, `{JIRA_DOMAIN}`, `{PORTAL}` — never commit real customer keys in skill files.
+
+## Portable content
+
+Committed skills/commands MUST NOT reference agent machine paths, default Helix install directories, or one customer's repo layout. Full rules: [references/portable-content.md](references/portable-content.md).

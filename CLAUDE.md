@@ -23,7 +23,7 @@ Commands: `commands/helix.md` (canonical menu), plus one file per workflow.
 
 ## Quality bar
 
-- Portable: no machine paths, no real ticket IDs in committed skills.
+- Portable: [references/portable-content.md](references/portable-content.md) — no machine paths, no single-project coupling, no assumed Helix install cwd in skills.
 - User chat: [references/user-communication.md](references/user-communication.md) — link from skills; do not paste the full rule in four places.
 - Pluton-aligned skills: [references/skill-rules-style.md](references/skill-rules-style.md) — `proactive_triggers`, MUST/NEVER + reason, refusal-first, QA closing.
 - Doc map: [docs/DOC-MAP.md](docs/DOC-MAP.md) — avoid duplicating README/helix menu in other md files.

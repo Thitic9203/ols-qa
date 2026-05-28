@@ -55,6 +55,6 @@ Ask **one section at a time**. Wait for answers before the next section.
 - Comment target: story only
 - Portal: Back Office — Section Management
 - Shared login: BackOffice Admin
-- Seed reference: `PROJ-9495` for scheduled entity creation
+- Seed reference: `{OTHER_STORY_KEY}` for data created in another story (if applicable)
 - Artifacts: `references/{ISSUE_KEY}_FE_TC.md` + `.csv`
 ```

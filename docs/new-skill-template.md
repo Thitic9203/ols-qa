@@ -25,7 +25,7 @@ proactive_triggers:
 
 Follow [user-communication.md](../../references/user-communication.md).
 
-Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
+Follow [skill-rules-style.md](../../references/skill-rules-style.md) and [portable-content.md](../../references/portable-content.md) for MUST/NEVER, refusal-first, QA closing, and no host/project lock-in.
 
 ## Refusal-first (precondition gate)
 
@@ -76,7 +76,7 @@ If anything is missing, stop with the refusal template from skill-rules-style.md
 
 ## Scripts
 
-If you add `skills/<name>/scripts/`, document the exact invocation in `SKILL.md` (e.g. `python3 ../../scripts/export-markdown-table-to-csv.py`).
+Helpers live in the Helix repo `scripts/` for install/CI. In **skills**, use in-agent steps by default; only reference a script when the **user provides** `HELIX_INSTALL_ROOT` — see [csv-export-rules.md](../references/csv-export-rules.md).
 
 ## Lifecycle
 
