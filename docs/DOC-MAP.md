@@ -16,6 +16,9 @@ Use this map to avoid duplicating content across markdown files.
 | Pre-merge ship checklist | [docs/pluton-ship-checklist.md](pluton-ship-checklist.md) | — |
 | Portable skills (no host/project lock-in) | [references/portable-content.md](../references/portable-content.md) | Machine paths, PD3, one-repo Playwright layout |
 | CSV export | [references/csv-export-rules.md](../references/csv-export-rules.md) | tc-fe / tc-api skills (in-agent default) |
+| TC quality (ISTQB / 29119-3) | [references/tc-quality-standards.md](../references/tc-quality-standards.md) | Full checklist duplicated in skills |
+| FE AC/EC coverage review | [skills/tc-fe-prep-workflow/references/ac-ec-coverage-review.md](../skills/tc-fe-prep-workflow/references/ac-ec-coverage-review.md) | Step 4 body |
+| API spec/Swagger review | [skills/tc-api-prep-workflow/references/spec-coverage-review.md](../skills/tc-api-prep-workflow/references/spec-coverage-review.md) | Phase E body |
 | Skill routing / handoffs | [references/skill-routing.md](../references/skill-routing.md) | Per-skill Handoff tables |
 | Session constraint recital | [references/helix-session-constraints.md](../references/helix-session-constraints.md) | Full block pasted in every skill |
 | CI portable-content guard | [scripts/ci-check-portable-skills.sh](../scripts/ci-check-portable-skills.sh) | Ad-hoc grep in skills |

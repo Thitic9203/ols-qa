@@ -1,7 +1,7 @@
 ---
 name: tc-fe-prep-workflow
 description: |
-  Prepare frontend manual test cases from a Jira story (AC/EC), draft a 9-column table in chat, export CSV, and publish one comment on that story only.
+  Prepare frontend manual test cases from a Jira story (AC/EC) with mandatory AC/EC coverage review and ISTQB/29119-3 quality check, then draft table in chat, export CSV, and publish one comment on that story only.
   Use when the user asks for FE test cases, manual TC from acceptance criteria, draft TC comment on Jira, or TC FE Preparation from Helix (/tc-fe-prep).
   Do NOT use for API-only Swagger test cases (tc-api-prep-workflow), Playwright execution (testing-ticket-workflow), retest-after-fix (retest-bug-workflow), or opening bug tickets (create-bug-workflow).
 proactive_triggers:
@@ -105,16 +105,29 @@ Add a **Precondition column note** above the table explaining that the column me
 
 ---
 
-## Step 4 — QA self-review (1–2 rounds)
+## Step 4 — Coverage & quality review (mandatory; 1–2 rounds)
 
-Before showing the user:
+MUST complete **before** Step 5. Do not skip because the first draft “looks fine.”
 
-- [ ] Every AC and EC on the story covered at least once.
-- [ ] No orphan cases (no AC/EC mapping).
-- [ ] Steps are executable manually without jargon.
-- [ ] Expected results are observable (UI text, toast, status, column values).
-- [ ] Schedule/status invariants included where AC requires (e.g. status unchanged after edit).
-- [ ] No duplicate cases unless intentional boundary splits.
+### 4a — AC / EC coverage (FE scope)
+
+Follow [ac-ec-coverage-review.md](references/ac-ec-coverage-review.md):
+
+- Build the **traceability matrix** (every AC and EC → one or more `TC_*`).
+- Confirm **ไม่ขาด** (full AC/EC outcomes covered), **ไม่เกิน / ไม่กาว / ไม่เพ้อ** (no orphan or invented cases).
+- Row count **need not** equal AC+EC count; alignment matters, not 1:1 rows.
+
+### 4b — International TC quality (ISTQB + ISO/IEC/IEEE 29119-3)
+
+Follow [tc-quality-standards.md](../../references/tc-quality-standards.md) on every row (objective, preconditions, steps, expected results, priority, observability).
+
+### 4c — Post review summary in chat
+
+Post the **FE TC coverage review** block from ac-ec-coverage-review.md (with **Ready for draft: YES**).
+
+MUST NOT show the full TC table until **Ready for draft: YES** — because stakeholders approve coverage before row-level editing.
+
+If review fails → fix Step 3 design and re-run 4a–4c (max 2 rounds).
 
 ---
 
@@ -193,7 +206,9 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
 
 1. **Assume** the first draft table had gaps (Step 4 exists for this reason).
 2. Skill-specific:
-   - [ ] Every AC/EC on the story covered; CSV row count matches table rows.
+   - [ ] Step 4 review block posted with **Ready for draft: YES** and traceability matrix complete.
+   - [ ] AC/EC coverage: ไม่ขาด ไม่เกิน; quality checklist PASS per tc-quality-standards.
+   - [ ] CSV row count matches table rows.
    - [ ] Jira UI matches approved draft (not MCP output alone).
    - [ ] Close-out includes `Verified:` after Jira re-open.
 3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
@@ -224,6 +239,8 @@ Tell the user:
 | [project-config-template.md](references/project-config-template.md) | First-time project questions |
 | [publish-options.md](references/publish-options.md) | MCP vs browser vs manual |
 | [worked-example.md](references/worked-example.md) | Anonymized end-to-end sample |
+| [ac-ec-coverage-review.md](references/ac-ec-coverage-review.md) | AC/EC traceability + scope review |
+| [tc-quality-standards.md](../../references/tc-quality-standards.md) | ISTQB / 29119-3 TC quality |
 | [scripts/README.md](scripts/README.md) | Optional CSV helper pointer |
 
 ---
@@ -244,4 +261,6 @@ Tell the user:
 | MUST NOT reference agent-machine absolute paths in Jira | Other users cannot reproduce |
 | MUST NOT claim publish success without Jira UI check | MCP truncation |
 | MUST NOT add TC outside story AC/EC | Traceability |
+| MUST run Step 4 review and post summary before draft table | Prevents กาว/เพ้อ cases reaching Jira |
+| MUST apply tc-quality-standards on every row | ISTQB / 29119-3 consistency |
 | MUST NOT use `\n` inside Jira markdown table cells | Renders as one line |
