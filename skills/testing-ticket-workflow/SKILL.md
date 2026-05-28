@@ -224,21 +224,20 @@ Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-ru
    - [ ] If Phase G ran: destination re-read matches agreed column formats.
    - [ ] Close-out block includes `Verified:` (or partial-failure honesty per skill Phase F).
 3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
-4. Optional fresh-eyes: re-read F2 table before Phase G if many scenarios.
+4. Phase G6 fix-verify completed when Phase G ran.
+5. **Fresh-eyes:** MUST re-read F2 before Phase G when **> 15 scenarios** or long evidence blocks.
 
 ---
 
 ## Out of scope
 
-- Opening GitHub/Jira **bug** issues → `create-bug-workflow`
-- Full-app regression across all routes/roles
-- Performance, pen-test, pixel-diff against design files
+- Filing bugs, retest, TC prep, full-app regression — see [skill-routing.md](../../references/skill-routing.md)
 
 ---
 
-## Handoff
+## Next workflows
 
-See [skill-routing.md](../../references/skill-routing.md) — especially **Handoffs** after this workflow.
+See [skill-routing.md](../../references/skill-routing.md) — **Handoffs** after this workflow.
 
 ---
 

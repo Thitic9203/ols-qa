@@ -30,6 +30,11 @@ jobs:
           set -o pipefail
           chmod +x scripts/ci-check-portable-skills.sh
           ./scripts/ci-check-portable-skills.sh
+      - name: Check skill structure (Pluton ship requirements)
+        run: |
+          set -o pipefail
+          chmod +x scripts/ci-check-skill-structure.sh
+          ./scripts/ci-check-skill-structure.sh
       - name: Warn if merge will trigger CI patch bump
         env:
           BASE_REF: origin/${{ github.base_ref }}
@@ -87,6 +92,12 @@ jobs:
           set -o pipefail
           chmod +x scripts/ci-check-portable-skills.sh
           ./scripts/ci-check-portable-skills.sh
+
+      - name: Check skill structure (Pluton ship requirements)
+        run: |
+          set -o pipefail
+          chmod +x scripts/ci-check-skill-structure.sh
+          ./scripts/ci-check-skill-structure.sh
 
       - name: Push version bump to main
         if: steps.bump.outputs.bumped == 'true'

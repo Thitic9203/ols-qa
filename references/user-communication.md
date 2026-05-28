@@ -41,6 +41,18 @@ Thai and some scripts **break** in AskUserQuestion widgets — never use them th
 - **Product UI** under test — assert on real app copy regardless of language.
 - **Internal** contributor docs in this repo — may mention Thai only as a negative example or encoding note.
 
+## Tone for deliverables (bugs, Jira comments, summaries)
+
+Applies to text Helix **authors** for trackers and chat summaries (not product UI under test).
+
+| Rule | Because |
+|------|---------|
+| **Active voice** | “Login failed” not “Login was observed to fail” — faster triage |
+| **No hedging** on verified facts | Avoid “might”, “possibly”, “seems” when evidence is attached |
+| **Hedge only when uncertain** | Use “Needs Review” / “BLOCKED” status instead of guessing PASS/FAIL |
+| **Blameless** in bug bodies | Describe mechanism and gap — never blame a person by name |
+| **Mechanism over narrative** | Steps + expected/actual + evidence link — not long story paragraphs |
+
 ## Examples
 
 | Do | Don’t |

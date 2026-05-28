@@ -72,9 +72,9 @@ The installer sets this automatically.
 ## Adding a skill
 
 1. Copy [docs/new-skill-template.md](new-skill-template.md) → `skills/<name>/SKILL.md`
-2. Follow [references/skill-rules-style.md](../references/skill-rules-style.md) — aligned with [SkillLane claudeskill5rules](https://github.com/SkillLane/team-pluton-skills/blob/main/docs/claudeskill5rules.md) where applicable (`description`, `proactive_triggers`, MUST/NEVER, QA closing)
+2. Follow [references/skill-rules-style.md](../references/skill-rules-style.md) and [references/pluton-5rules-mapping.md](../references/pluton-5rules-mapping.md)
 3. WIP: `skills/in-progress/<name>/` (excluded from `link-skills.sh` until promoted)
-4. **Ship checklist (Rule 2):** README workflow list + `.claude-plugin/plugin.json` + `commands/<name>.md` + row in [references/skill-routing.md](../references/skill-routing.md) + [docs/DOC-MAP.md](DOC-MAP.md)
+4. Complete [pluton-ship-checklist.md](pluton-ship-checklist.md) before merge
 
 Repeated exports (CSV from markdown tables): use [scripts/export-markdown-table-to-csv.py](../scripts/export-markdown-table-to-csv.py).
 
@@ -87,8 +87,9 @@ Repeated exports (CSV from markdown tables): use [scripts/export-markdown-table-
 Quick check before commit (same as CI):
 
 ```bash
-chmod +x scripts/ci-check-portable-skills.sh
+chmod +x scripts/ci-check-portable-skills.sh scripts/ci-check-skill-structure.sh
 ./scripts/ci-check-portable-skills.sh
+./scripts/ci-check-skill-structure.sh
 ```
 
 (README/install scripts may mention `~/.helix` for humans only — not in `skills/` or `commands/`.)

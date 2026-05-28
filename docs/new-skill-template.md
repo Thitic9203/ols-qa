@@ -1,8 +1,8 @@
 # New Helix skill template
 
-Copy to `skills/<your-skill-name>/SKILL.md`. Register in `.claude-plugin/plugin.json` and [DOC-MAP.md](DOC-MAP.md).
+Copy to `skills/<your-skill-name>/SKILL.md`. Complete [pluton-ship-checklist.md](pluton-ship-checklist.md) before merge.
 
-Authoring rules: [references/skill-rules-style.md](../references/skill-rules-style.md).
+Authoring rules: [references/skill-rules-style.md](../references/skill-rules-style.md) · Mapping: [references/pluton-5rules-mapping.md](../references/pluton-5rules-mapping.md).
 
 ```markdown
 ---
@@ -25,7 +25,7 @@ proactive_triggers:
 
 Follow [user-communication.md](../../references/user-communication.md).
 
-Follow [skill-rules-style.md](../../references/skill-rules-style.md) and [portable-content.md](../../references/portable-content.md) for MUST/NEVER, refusal-first, QA closing, and no host/project lock-in.
+Follow [skill-rules-style.md](../../references/skill-rules-style.md) and [portable-content.md](../../references/portable-content.md) for MUST/NEVER, refusal-first, QA closing, fix-verify, and no host/project lock-in.
 
 ## Refusal-first (precondition gate)
 
@@ -51,19 +51,38 @@ If anything is missing, stop with the refusal template from skill-rules-style.md
 
 ---
 
+## Step N+1 — Fix-verify (mandatory after side effect)
+
+After {post / create / write}:
+
+1. Re-read the destination (Jira UI, file, Sheet, issue URL).
+2. Checklist: {skill-specific checks}
+3. If mismatch → fix → re-read. **Max 2 rounds** — then report blockers.
+
+NEVER say complete without at least one successful fix-verify round — see [skill-rules-style.md](../../references/skill-rules-style.md#qa-closing-doubt-and-fix-verify).
+
+---
+
 ## QA closing (mandatory before "done")
 
-1. Assume defects in the first draft; run 1–2 fix-verify rounds.
-2. Skill-specific checklist:
+Follow [skill-rules-style.md — doubt and fix-verify](../../references/skill-rules-style.md#qa-closing-doubt-and-fix-verify).
+
+1. **Assume** the first draft/output is wrong — {which phase catches it}.
+2. Skill-specific:
    - [ ] …
-3. Shared checklist: [skill-rules-style.md](../../references/skill-rules-style.md).
-4. NEVER say complete without verifying the destination.
+   - [ ] Close-out includes `Verdict:` or `Verified:` with counts.
+3. Shared checklist: [skill-rules-style.md#shared-closing-checklist-every-workflow](../../references/skill-rules-style.md#shared-closing-checklist-every-workflow).
+4. Fresh-eyes: **MUST** per Rule 5 if table >15 rows or Jira comment >80 lines; otherwise SHOULD before publish.
 
 ---
 
 ## Out of scope
 
-- … → `other-skill-name`
+- … (name other Helix skill)
+
+## Next workflows
+
+Handoffs: [skill-routing.md](../../references/skill-routing.md).
 
 ---
 
@@ -71,14 +90,11 @@ If anything is missing, stop with the refusal template from skill-rules-style.md
 
 | File | Use |
 |------|-----|
-| [worked-example.md](references/worked-example.md) | Anonymized end-to-end sample (add when skill is non-trivial) |
+| [worked-example.md](references/worked-example.md) | Anonymized end-to-end sample (required for non-trivial skills) |
 ```
 
 ## Scripts
 
 Helpers live in the Helix repo `scripts/` for install/CI. In **skills**, use in-agent steps by default; only reference a script when the **user provides** `HELIX_INSTALL_ROOT` — see [csv-export-rules.md](../references/csv-export-rules.md).
 
-## Lifecycle
-
-- **WIP:** `skills/in-progress/<name>/` — not linked by `link-skills.sh`
-- **Retired:** move to `skills/deprecated/<name>/` — not linked
+Optional: `skills/<name>/scripts/README.md` pointing at shared helpers (no install path in the skill body).

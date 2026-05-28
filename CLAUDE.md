@@ -37,7 +37,7 @@ WIP: `skills/in-progress/` only until the checklist passes.
 
 - Portable: [references/portable-content.md](references/portable-content.md) — no machine paths, no single-project coupling, no assumed Helix install cwd in skills.
 - User chat: [references/user-communication.md](references/user-communication.md) — link from skills; do not paste the full rule in four places.
-- Pluton-aligned skills: [references/skill-rules-style.md](references/skill-rules-style.md) — `proactive_triggers`, MUST/NEVER + reason, refusal-first, QA closing.
+- Pluton-aligned skills: [references/skill-rules-style.md](references/skill-rules-style.md) — fix-verify, fresh-eyes thresholds, QA closing; map: [references/pluton-5rules-mapping.md](references/pluton-5rules-mapping.md); ship: [docs/pluton-ship-checklist.md](docs/pluton-ship-checklist.md).
 - Doc map: [docs/DOC-MAP.md](docs/DOC-MAP.md) — avoid duplicating README/helix menu in other md files.
 - WIP/retired skills: `skills/in-progress/`, `skills/deprecated/` (excluded from `link-skills.sh`).
 
