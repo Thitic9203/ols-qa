@@ -28,11 +28,13 @@ fi
 cd "$REPO_DIR"
 
 # 2. Claude Code plugin cache symlink
-VERSION=$(grep '"version"' .claude-plugin/plugin.json | head -1 | sed 's/.*"\([0-9]*\.[0-9]*\.[0-9]*\)".*/\1/')
-if [ -z "$VERSION" ]; then
-  echo "Error: cannot read version from plugin.json"
+if [ -f VERSION ]; then
+  VERSION="$(tr -d '[:space:]' < VERSION)"
+else
+  echo "Error: missing VERSION file"
   exit 1
 fi
+bash "$REPO_DIR/scripts/sync-version.sh" --check 2>/dev/null || bash "$REPO_DIR/scripts/sync-version.sh"
 
 echo "[2/4] Claude plugin cache symlink (v$VERSION)..."
 mkdir -p "$CACHE_BASE"
@@ -55,8 +57,9 @@ echo "=== Install complete ==="
 echo "Repo:    $REPO_DIR"
 echo "Plugin:  $CACHE_BASE/$VERSION -> $REPO_DIR"
 echo ""
-echo "Claude Code:  /helix   (menu)  |  /tc-fe-prep  |  /retest-bug"
-echo "Cursor:       skills tc-fe-prep-workflow + retest-bug-workflow"
-echo "Any agent:    read AGENTS.md"
+echo "Version:     $VERSION"
+echo "Claude Code:  /helix  |  /tc-fe-prep  |  /retest-bug  |  /testing-ticket  |  /create-bug"
+echo "Cursor:       all skills under ~/.cursor/skills (symlinked)"
+echo "Any agent:    AGENTS.md"
 echo ""
 echo "Update: cd $REPO_DIR && git pull"

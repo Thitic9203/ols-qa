@@ -6,4 +6,4 @@ Invoke the `tc-fe-prep-workflow` skill.
 
 Pass any arguments after `/tc-fe-prep` as the Jira issue key or URL. If none were provided, ask the user which story to use.
 
-Respond in English only (never Thai in user-facing text). Do not post to Jira until the user approves the draft.
+Follow [references/user-communication.md](../references/user-communication.md). Do not post to Jira until the user approves the draft.

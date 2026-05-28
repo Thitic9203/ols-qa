@@ -11,29 +11,13 @@ Prepare **frontend manual test cases** from a Jira **story** (acceptance criteri
 
 ## Communication (mandatory)
 
-Read [user-communication.md](../../references/user-communication.md).
-
-- **English only** for all questions, options, confirmations, and summaries — **never Thai**, even if the user writes in Thai.
-- Use plain language suitable for QA and developers.
-- Ask one focused question at a time when setup is missing.
-- **AskUserQuestion / popups:** every field English only.
+Follow [user-communication.md](../../references/user-communication.md). Ask one focused question at a time when setup is missing.
 
 ## Prerequisites (read before Step 0)
 
-1. **Confirm the target issue key** with the user (usually the **story**, not a sub-task) before posting anything to Jira.
-2. **Scope = AC/EC on that story only** — do not add cases from other tickets unless they map to an AC/EC row on this story.
-3. **Never post to Jira** until the user approves the draft in chat (unless they explicitly waive approval).
-4. **Never comment on or attach files to** sub-tasks, linked issues, or other tickets without explicit permission.
-5. Read the **full story**: description, AC table, EC, UI constraints (buttons shown/hidden), data preconditions.
-6. Align UI labels with the **actual product** (repo POMs, specs, or user-provided names) — do not invent button text.
-7. **Two-layer preconditions:**
-   - **Above the table:** shared data-prep steps (numbered list) for every TC.
-   - **Precondition column:** item 1 = confirm shared prep is done; items 2+ = what to do before Test Steps for that row.
-8. **Multi-item cells:** use `1.` `2.` `3.` on **separate lines** (in markdown tables use `<br>` between items — Jira does not honor `\n` inside table cells).
-9. **One markdown table row = one test case** — do not wrap multiple TC rows inside one cell.
-10. Split cases per **QA practice** (happy / boundary / negative) — not required to be 1:1 with AC rows.
-11. **Jira long comments** may be truncated via some APIs — verify row count and formatting on Jira after publish (see `references/publish-options.md`).
-12. Do **not** read or exfiltrate `.env` / secrets; use the user's authenticated browser session or approved integrations for Jira.
+Read [references/prerequisites.md](references/prerequisites.md) and [references/jira-formatting.md](references/jira-formatting.md).
+
+**Before Step 0:** confirm the **story** issue key with the user; never post to Jira until they approve the draft in chat.
 
 ---
 

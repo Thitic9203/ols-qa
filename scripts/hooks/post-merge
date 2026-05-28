@@ -8,7 +8,11 @@ CACHE_BASE="$HOME/.claude/plugins/cache/$MARKETPLACE_NAME/$PLUGIN_NAME"
 
 [ -d "$CACHE_BASE" ] || exit 0
 
-VERSION=$(grep '"version"' "$PLUGIN_JSON" | head -1 | sed 's/.*"\([0-9]*\.[0-9]*\.[0-9]*\)".*/\1/')
+if [ -f VERSION ]; then
+  VERSION="$(tr -d '[:space:]' < VERSION)"
+else
+  VERSION=$(grep '"version"' "$PLUGIN_JSON" | head -1 | sed 's/.*"\([0-9]*\.[0-9]*\.[0-9]*\)".*/\1/')
+fi
 [ -z "$VERSION" ] && exit 0
 [ -L "$CACHE_BASE/$VERSION" ] && exit 0
 

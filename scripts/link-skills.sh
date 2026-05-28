@@ -48,4 +48,4 @@ link_into "$HOME/.cursor/skills" "cursor"
 link_into "$HOME/.codex/skills" "codex"
 link_into "$HOME/.agents/skills" "agents"
 
-echo "Done. Skill source: $REPO/skills/tc-fe-prep-workflow"
+echo "Done. Skills: $REPO/skills/"

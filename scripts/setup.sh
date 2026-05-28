@@ -15,11 +15,8 @@ MARKETPLACE_NAME="helix-dev"
 PLUGIN_NAME="helix"
 CACHE_BASE="$HOME/.claude/plugins/cache/$MARKETPLACE_NAME/$PLUGIN_NAME"
 
-VERSION=$(grep '"version"' .claude-plugin/plugin.json | head -1 | sed 's/.*"\([0-9]*\.[0-9]*\.[0-9]*\)".*/\1/')
-if [ -z "$VERSION" ]; then
-  echo "Error: cannot read version"
-  exit 1
-fi
+bash "$REPO_ROOT/scripts/sync-version.sh"
+VERSION="$(tr -d '[:space:]' < VERSION)"
 
 mkdir -p "$CACHE_BASE"
 for OLD_ENTRY in "$CACHE_BASE"/*/; do

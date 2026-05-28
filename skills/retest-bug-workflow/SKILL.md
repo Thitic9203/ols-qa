@@ -11,14 +11,11 @@ End-to-end retest from a Jira bug ticket: fetch ticket → test → compare Swag
 
 ## Communication (mandatory)
 
-Read [user-communication.md](../../references/user-communication.md).
+Follow [user-communication.md](../../references/user-communication.md).
 
-- **English only** for all questions, options, confirmations, and summaries in chat — **never Thai**, even if the user writes in Thai.
-- Jira comments (after approval): neutral English — no "Retested by:", no honorifics, no Thai particles in posted bodies unless the ticket already uses Thai.
-- Do not claim success without tool output **and** Jira UI verification where applicable.
-- **AskUserQuestion / popups:** every field English only (Thai breaks widgets).
+**Jira bodies** (after approval): neutral English — no "Retested by:", no honorifics. Do not claim success without tool output **and** Jira UI verification.
 
-Use plain chat for open-ended setup (URLs, credentials). Use AskUserQuestion only for choices (test approach, approve comment).
+Use plain chat for URLs/credentials; AskUserQuestion only for choices (e.g. approve comment).
 
 ---
 

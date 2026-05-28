@@ -6,4 +6,4 @@ Invoke the **`retest-bug-workflow`** skill.
 
 Pass arguments after `/retest-bug` as the Jira issue key or URL. If none, ask which bug to retest.
 
-Respond in **English only** (never Thai in user-facing text). Draft the Jira comment before posting; get user approval unless they waive it.
+Follow [references/user-communication.md](../references/user-communication.md). Draft the Jira comment before posting; get user approval unless they waive it.
