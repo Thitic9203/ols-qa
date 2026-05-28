@@ -6,7 +6,8 @@ Use this map to avoid duplicating content across markdown files.
 
 | Topic | Canonical file | Do not duplicate in |
 |-------|----------------|---------------------|
-| Install / update | [README.md](../README.md) | AGENTS.md, wiki |
+| Install / update / auto-update | [README.md](../README.md) | AGENTS.md, wiki |
+| Wiki home (mirror README update topics) | [docs/wiki/Home.md](wiki/Home.md) | Duplicate full README |
 | Supported AI agents | [docs/supported-agents.md](supported-agents.md) | README (summary table only) |
 | Per-agent start prompts | [references/agent-entry.md](../references/agent-entry.md) | — |
 | Version number | [VERSION](../VERSION) + README line | Manual edits to plugin.json only via `sync-version.sh` |

@@ -50,7 +50,7 @@ Web-only chat without skill discovery is not supported — use an agent that loa
 curl -sL https://raw.githubusercontent.com/Thitic9203/helix/main/scripts/install.sh | bash
 ```
 
-This clones Helix to `~/.helix/tc-fe-prep`, symlinks all workflow skills into the global folders above (skips paths that do not exist on your OS yet), and registers the **Claude Code** plugin cache.
+This clones Helix to `~/.helix/tc-fe-prep`, symlinks all workflow skills into the global folders above (skips paths that do not exist on your OS yet), registers the **Claude Code** plugin cache, enables **`helix@helix`** (and disables legacy `helix@local`), and wires **SessionStart** hooks for bootstrap + **auto-update**.
 
 ### Step 2 — By agent (what you do next)
 
@@ -127,49 +127,86 @@ The menu offers options 1–6 (TC FE, TC API, retest, testing ticket, create bug
 
 ## Update (when a new version ships)
 
-Releases: [github.com/Thitic9203/helix/releases](https://github.com/Thitic9203/helix/releases) (automatic on every `main` push).
+Releases: [github.com/Thitic9203/helix/releases](https://github.com/Thitic9203/helix/releases) (tagged on every `main` push that bumps [VERSION](VERSION)).
 
-### Step 1 — Everyone
+### Default: auto-update (recommended)
+
+After a **one-time** [install](#install-one-time), you usually **do not** run `git pull` yourself. When we publish a new version on `main`, your machine catches up on the **next agent session** (throttled to at most once every **4 hours**):
+
+| Trigger | What runs |
+|---------|-----------|
+| New **Claude Code** session (`helix@helix` enabled) | [hooks/session-start](hooks/session-start) → [scripts/helix-auto-update.sh](scripts/helix-auto-update.sh) |
+| New **Cursor** session (Helix hooks active) | same |
+| You run `git pull` in `~/.helix/tc-fe-prep` | [scripts/hooks/post-merge](scripts/hooks/post-merge) → refresh symlinks + [claude-plugin-sync](scripts/claude-plugin-sync.sh) |
+
+**Auto-update steps (when `VERSION` on GitHub is newer):**
+
+1. `git pull --ff-only` in `~/.helix/tc-fe-prep` (skill symlinks pick up new `SKILL.md` immediately)
+2. `link-skills.sh` (refresh global + optional workspace symlinks)
+3. `claude plugin update helix@helix` (Claude Code marketplace plugin + hooks)
+
+Log file: `~/.helix/auto-update.log` · Doctor: [helix-doctor.sh](scripts/helix-doctor.sh)
+
+| Opt out / tune | Environment variable |
+|----------------|----------------------|
+| Disable auto-update | `HELIX_AUTO_UPDATE=0` |
+| Force check now | `HELIX_FORCE_UPDATE=1` |
+| Check interval (seconds) | `HELIX_AUTO_UPDATE_INTERVAL_SEC` (default `14400` = 4h) |
+| Print progress to terminal | `HELIX_AUTO_UPDATE_VERBOSE=1` |
+
+```bash
+# Manual check (same as the hook, useful for debugging)
+HELIX_FORCE_UPDATE=1 HELIX_AUTO_UPDATE_VERBOSE=1 bash ~/.helix/tc-fe-prep/scripts/helix-auto-update.sh
+```
+
+**Notes**
+
+- Needs **network** when the session starts; offline → skip (no error).
+- **Cursor / Copilot / Codex / …** — skills update via symlinks after pull; **Reload window** (Cursor) if the agent still shows old skill text.
+- **Claude Code** — after a plugin version jump, **start a new session** once if `/helix` or slash commands look stale (skills via `~/.claude/skills` are usually current sooner).
+
+### Claude Code plugin id
+
+| Plugin | Status |
+|--------|--------|
+| **`helix@helix`** | Canonical — install/update/enable (installer + auto-update) |
+| **`helix@local`** | Legacy — **disabled** automatically (do not enable; uninstall can break `helix@helix`) |
+
+`install.sh` and `claude-plugin-sync.sh` keep the marketplace plugin aligned with [VERSION](VERSION).
+
+### Manual update (fallback)
+
+Use if auto-update is off, you deleted `~/.helix/tc-fe-prep`, or you want to force sync now:
 
 ```bash
 cd ~/.helix/tc-fe-prep && git pull
-bash ~/.helix/tc-fe-prep/scripts/claude-plugin-sync.sh   # Claude Code only
+bash ~/.helix/tc-fe-prep/scripts/claude-plugin-sync.sh   # Claude Code: helix@helix
+bash ~/.helix/tc-fe-prep/scripts/link-skills.sh            # if symlinks missing
 ```
 
-Symlinks point at this folder — **global skills update automatically** after pull.
+Or re-run the full installer:
 
-### Auto-update (no manual step for most users)
+```bash
+curl -sL https://raw.githubusercontent.com/Thitic9203/helix/main/scripts/install.sh | bash
+```
 
-If you ran **`install.sh`** once (`~/.helix/tc-fe-prep` exists), Helix checks GitHub **`main`** for a newer `VERSION`:
-
-| Trigger | What happens |
-|---------|----------------|
-| New **Claude Code** session (plugin enabled) | `hooks/session-start` → `helix-auto-update.sh` |
-| New **Cursor** session (Helix plugin / hook) | same |
-| `git pull` in `~/.helix/tc-fe-prep` | `post-merge` hook → pull artifacts + `claude-plugin-sync` |
-
-When a new version is published, the next session (at most every **4 hours** per machine) can **git pull**, refresh skill symlinks, and **`claude plugin update helix@helix`** — users do not need to run `git pull` themselves for day-to-day use.
-
-| Opt out / tune | Value |
-|----------------|-------|
-| Disable auto-update | `HELIX_AUTO_UPDATE=0` |
-| Force check now | `HELIX_FORCE_UPDATE=1 bash ~/.helix/tc-fe-prep/scripts/helix-auto-update.sh` |
-| Check interval (seconds) | `HELIX_AUTO_UPDATE_INTERVAL_SEC` (default `14400`) |
-| Verbose log | `HELIX_AUTO_UPDATE_VERBOSE=1` → also prints; log file `~/.helix/auto-update.log` |
-
-**Marketplace-only** (never ran `install.sh`): `helix@helix` updates via the same hook calling `claude-plugin-sync.sh` (marketplace refresh). Skill folders under `~/.claude/skills` still need **`install.sh`** once for symlink-based agents.
-
-**Claude Code** marketplace plugin stays on **`helix@helix`** (legacy **`helix@local`** is disabled, not uninstalled). No need to re-run the curl installer unless you deleted the repo.
-
-### Step 2 — By agent (if needed)
+### By agent (when something still looks old)
 
 | Agent / IDE | Usually enough | Re-run only if… |
 |-------------|----------------|-----------------|
-| **Claude Code** | `git pull` then `bash ~/.helix/tc-fe-prep/scripts/claude-plugin-sync.sh` (or re-run `install.sh`) | Keeps **`helix@helix`** updated and disables legacy **`helix@local`**. SessionStart hooks via `hooks/`. |
-| **Cursor / Codex / Copilot / Gemini / Windsurf / Cline / Pi** | `git pull` | You removed `~/.*/skills/*` symlinks → `bash ~/.helix/tc-fe-prep/scripts/link-skills.sh` |
-| **Team repo (`.github/skills/`)** | `git pull` in Helix + pull your project | New Helix skill added → `HELIX_LINK_WORKSPACE=$PWD ~/.helix/tc-fe-prep/scripts/link-skills.sh` |
+| **Claude Code** | Open a **new session** (auto-update) | `/helix` still old → `bash ~/.helix/tc-fe-prep/scripts/claude-plugin-sync.sh` or full `install.sh` |
+| **Cursor** | New session + Reload Window | Skills missing → `link-skills.sh` |
+| **Codex / Copilot / Gemini / Windsurf / Cline / Pi** | New session | Symlinks removed → `link-skills.sh` |
+| **Team `.github/skills/`** | Auto-update of clone + pull your app repo | New Helix skill added → `HELIX_LINK_WORKSPACE=$PWD …/link-skills.sh` |
 
-You do **not** need to bump anything manually — check **README version** or [Releases](https://github.com/Thitic9203/helix/releases) for the current tag.
+### Marketplace-only install (no `~/.helix` clone)
+
+If you only installed **`helix@helix`** from Claude marketplace (never ran `curl …/install.sh`):
+
+- **Plugin + hooks** can still update via SessionStart → `claude-plugin-sync.sh`
+- **Global skills** (`~/.cursor/skills`, etc.) need **`install.sh` once** so symlinks point at `~/.helix/tc-fe-prep`
+
+Current release: **README version line above** or [Releases](https://github.com/Thitic9203/helix/releases).
 
 <details>
 <summary>Manual install (contributors)</summary>
@@ -213,14 +250,15 @@ git config core.hooksPath scripts/hooks
 
 ## Scripts
 
-```bash
-./scripts/install.sh
-./scripts/helix-doctor.sh          # verify symlinks + version
-./scripts/link-skills.sh
-./scripts/bump-version.sh patch   # contributor: bump VERSION + sync
-./scripts/sync-version.sh --check
-./scripts/list-skills.sh
-```
+| Script | Purpose |
+|--------|---------|
+| [install.sh](scripts/install.sh) | One-time setup: clone, symlinks, `helix@helix`, hooks |
+| [helix-auto-update.sh](scripts/helix-auto-update.sh) | Check GitHub `VERSION`, pull, sync (SessionStart / manual) |
+| [claude-plugin-sync.sh](scripts/claude-plugin-sync.sh) | Update/enable `helix@helix`, disable `helix@local` |
+| [helix-doctor.sh](scripts/helix-doctor.sh) | Health check; `HELIX_DOCTOR_FIX=1` to repair |
+| [link-skills.sh](scripts/link-skills.sh) | Refresh global + workspace skill symlinks |
+
+Contributor: `bump-version.sh`, `sync-version.sh --check`, `list-skills.sh`
 
 ## License
 
