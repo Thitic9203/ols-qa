@@ -26,6 +26,8 @@ Ensure skills are linked (`~/.copilot/skills/` or project `.github/skills/`).
 Follow the helix skill: show the English QA menu from Helix, wait for my choice, then run the matching workflow skill.
 ```
 
+Tool mapping: [copilot-tools.md](copilot-tools.md).
+
 ## Windsurf Cascade
 
 ```text
@@ -53,6 +55,8 @@ Use the helix skill — show the Helix QA menu in English and wait for my workfl
 ## Codex CLI
 
 Skills under `~/.codex/skills/`. Ask the agent to load `helix` or a specific `*-workflow` skill.
+
+Tool mapping: [codex-tools.md](codex-tools.md).
 
 ## Any agent with `AGENTS.md`
 

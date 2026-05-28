@@ -20,6 +20,8 @@ Show the menu and route to the correct workflow skill. Full text: [commands/heli
 
 Follow [user-communication.md](../../references/user-communication.md).
 
+Follow [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — announce `Using **helix** to {purpose}.` on first response when this skill is active.
+
 On first response, recite [helix-session-constraints.md](../../references/helix-session-constraints.md) (All Helix block only).
 
 ## Refusal-first (precondition gate)

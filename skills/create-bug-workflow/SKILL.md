@@ -23,6 +23,8 @@ Follow [user-communication.md](../../references/user-communication.md).
 
 Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
 
+Follow [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — announce `Using **create-bug-workflow** to {purpose}.` on first response. Apply [qa-evidence-gates.md](../../references/qa-evidence-gates.md) before claiming issues created.
+
 **Gates:** MUST NOT create issues until Phase C confirm. MUST NOT file without evidence. MUST verify each URL in Phase F before saying done — because create APIs can return IDs for empty bodies.
 
 On first response, recite [helix-session-constraints.md](../../references/helix-session-constraints.md) (**All Helix workflows** block only).

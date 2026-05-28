@@ -24,7 +24,13 @@ Follow [user-communication.md](../../references/user-communication.md).
 
 Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
 
+Follow [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — announce `Using **testing-ticket-workflow** to {purpose}.` on first response.
+
 **Gates:** MUST NOT start Playwright until Phase C confirm; MUST NOT update external results until Phase G confirm — because runs and writes are costly to undo. Credentials are session-only.
+
+**Evidence:** [qa-evidence-gates.md](../../references/qa-evidence-gates.md) before claiming pass/fail or posted results.
+
+**Long sessions:** optional todos per [long-workflow-todos.md](../../references/long-workflow-todos.md).
 
 ## Refusal-first (precondition gate)
 
@@ -62,9 +68,12 @@ Collect these **seven** items (one grouped message when possible; skip fields al
 
 ## Phase B — Load context
 
+Use [parallel-prep.md](../../references/parallel-prep.md) when Jira fetch and Confluence/Swagger are independent.
+
 1. Fetch **Ticket** (Jira or user paste).
 2. **Confluence** / **Swagger** if provided.
 3. Build numbered **test plan** (in-scope, out-of-scope, API vs UI).
+4. Fill [test-execution-plan-template.md](../../references/test-execution-plan-template.md) in chat (environment, auth, in-scope table, pass criteria, risks).
 
 ---
 
@@ -82,11 +91,15 @@ Swagger:     {url or none}
 Test plan ({N} scenarios):
   1. ...
 Out of scope: ...
+
+Execution plan: see filled template (preflight, evidence, pass criteria).
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Reply **confirm** to start Playwright, or tell me what to change.
 ```
 
 **Do not start Phase D until confirmed.**
+
+If results contradict expectations or tests are flaky, follow [qa-debug-discipline.md](../../references/qa-debug-discipline.md) before changing pass/fail wording.
 
 ---
 

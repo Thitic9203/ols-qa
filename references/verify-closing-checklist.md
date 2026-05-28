@@ -2,10 +2,12 @@
 
 Use with [session-closing.md](session-closing.md). Check all that apply.
 
+Apply [qa-evidence-gates.md](qa-evidence-gates.md) before any pass/post/done claim.
+
 ## All workflows
 
 - [ ] English only in user-facing messages ([user-communication.md](user-communication.md))
-- [ ] No success claim without tool output **and** destination re-read where applicable
+- [ ] No success claim without tool output **and** destination re-read where applicable ([qa-evidence-gates.md](qa-evidence-gates.md))
 - [ ] Approval gates were not skipped
 - [ ] Artifact index posted
 - [ ] One-line next-workflow suggestion offered (or “none” stated)

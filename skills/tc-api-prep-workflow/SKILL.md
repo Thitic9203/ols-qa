@@ -24,6 +24,8 @@ Follow [user-communication.md](../../references/user-communication.md).
 
 Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
 
+Follow [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — announce `Using **tc-api-prep-workflow** to {purpose}.` on first response.
+
 On first response, recite [helix-session-constraints.md](../../references/helix-session-constraints.md) (**All Helix workflows** block only).
 
 **Gates:** MUST NOT post a comment or write files until the user approves the draft in chat (Phase F) — because delivery is irreversible without rework.
@@ -61,6 +63,8 @@ Load the spec:
 - Note base URL / servers from `servers` or user override.
 
 If load fails → stop and report; ask for export file or VPN.
+
+If the API surface is **large** (~15+ operations or whole-service scope), follow [tc-api-chunked-scope.md](../../references/tc-api-chunked-scope.md) before Phase D — agree chunks with the user.
 
 ### Phase A optional — Swagger / spec diff
 

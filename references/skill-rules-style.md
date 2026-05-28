@@ -25,6 +25,8 @@ All Helix skills MUST follow these patterns. Link this file from every `SKILL.md
 
 Avoid soft-only wording (`should consider`, `might want to`) for safety gates.
 
+When you catch yourself rationalizing past a gate, use [agent-rationalizations.md](agent-rationalizations.md). Evidence before claims: [qa-evidence-gates.md](qa-evidence-gates.md).
+
 ## Rule 2 — Ship registration
 
 A skill is **shipped** only when all are true:
