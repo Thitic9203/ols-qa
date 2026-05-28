@@ -1,6 +1,6 @@
 # Helix — AI QA assistant
 
-**Version: 1.4.3** · [Releases](https://github.com/Thitic9203/helix/releases)
+**Version: 1.5.0** · [Releases](https://github.com/Thitic9203/helix/releases)
 
 Portable skill pack for AI agents: **manual FE test-case prep**, **Playwright ticket testing**, **create bug**, and **Jira bug retests** — one entry command.
 
@@ -19,40 +19,62 @@ Works with **Claude Code**, **Cursor**, **Codex**, and any tool that reads `SKIL
 | **Testing ticket** | Intake → Playwright → summary in chat → optional result update elsewhere |
 | **Create bug** | Jira/GitHub target + format + details → confirm → file and verify |
 
-## Quick install
+## Install (one-time)
+
+Open a terminal and run:
 
 ```bash
 curl -sL https://raw.githubusercontent.com/Thitic9203/helix/main/scripts/install.sh | bash
 ```
 
-Clones to `~/.helix/tc-fe-prep`, links skills for Claude/Cursor/Codex, registers the Claude plugin cache, and enables git hooks for version sync.
+This clones Helix to `~/.helix/tc-fe-prep`, links skills for Claude / Cursor / Codex, and registers the Claude plugin cache.
 
-### Manual install
+## Usage
+
+Open **Claude Code** (or your agent) and run:
+
+```text
+/helix
+```
+
+Pick a workflow from the English menu ([commands/helix.md](commands/helix.md)).
+
+| Shortcut | What it does |
+|----------|----------------|
+| `/helix` | Menu + routing |
+| `/tc-fe-prep` | FE manual test cases from a Jira story |
+| `/tc-api-prep` | API manual test cases from spec + Swagger |
+| `/retest-bug` | Retest a bug after a dev fix |
+| `/testing-ticket` | Playwright test for one ticket |
+| `/create-bug` | File bugs on Jira or GitHub |
+
+**First run:** many workflows ask for project details once (Jira domain, URLs, credentials) and can save a guide under `references/` in your repo — answer step by step when prompted.
+
+**Other agents:** read [AGENTS.md](AGENTS.md) and invoke the skill by name.
+
+**Language:** English only for questions, menus, and confirmations — [references/user-communication.md](references/user-communication.md).
+
+## Update (when a new version ships)
+
+Open a terminal and run:
+
+```bash
+cd ~/.helix/tc-fe-prep && git pull
+```
+
+That is enough — no need to re-run the install script or any other commands.
+
+<details>
+<summary>Manual install (contributors)</summary>
 
 ```bash
 git clone https://github.com/Thitic9203/helix.git
 cd helix
 ./scripts/setup.sh
-./scripts/link-skills.sh
 git config core.hooksPath scripts/hooks
 ```
 
-## Usage
-
-Run **`/helix`** for the English menu and routing ([commands/helix.md](commands/helix.md)).
-
-| Shortcut | Skill |
-|----------|--------|
-| `/helix` | Router |
-| `/tc-fe-prep ISSUE-123` | `tc-fe-prep-workflow` |
-| `/tc-api-prep` | `tc-api-prep-workflow` |
-| `/retest-bug ISSUE-456` | `retest-bug-workflow` |
-| `/testing-ticket ISSUE-789` | `testing-ticket-workflow` |
-| `/create-bug` | `create-bug-workflow` |
-
-Other agents: read [AGENTS.md](AGENTS.md), then invoke the skill by name.
-
-**Language:** English only for questions, menus, and confirmations — [references/user-communication.md](references/user-communication.md).
+</details>
 
 ## Skills
 
@@ -86,12 +108,6 @@ Other agents: read [AGENTS.md](AGENTS.md), then invoke the skill by name.
 ./scripts/bump-version.sh patch   # contributor: bump VERSION + sync
 ./scripts/sync-version.sh --check
 ./scripts/list-skills.sh
-```
-
-## Update
-
-```bash
-cd ~/.helix/tc-fe-prep && git pull
 ```
 
 ## License

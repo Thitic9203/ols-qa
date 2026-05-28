@@ -1,6 +1,15 @@
 ---
 name: tc-api-prep-workflow
-description: Prepare API manual test cases from API spec and Swagger/OpenAPI — confirm column format and delivery (Jira comment link or CSV/Excel file). Use when the user chooses TC API Preparation from Helix, invokes /tc-api-prep, or asks for API test cases from Swagger.
+description: |
+  Prepare API manual test cases from API spec and Swagger/OpenAPI — confirm columns and delivery (Jira comment link and/or CSV/Excel in workspace).
+  Use when the user chooses TC API Preparation from Helix, invokes /tc-api-prep, or asks for API test cases from Swagger/OpenAPI.
+  Do NOT use for frontend story AC/EC tables (tc-fe-prep-workflow), Playwright or test execution (testing-ticket-workflow), retest-after-fix (retest-bug-workflow), or opening bugs (create-bug-workflow).
+proactive_triggers:
+  - API test cases
+  - Swagger test cases
+  - OpenAPI manual TC
+  - /tc-api-prep
+  - TC API Preparation
 ---
 
 # TC API Prep Workflow
@@ -13,7 +22,20 @@ Prepare **API manual test cases** from an **API spec** and **Swagger/OpenAPI**, 
 
 Follow [user-communication.md](../../references/user-communication.md).
 
-**Gates:** no comment post and no file write until the user approves the draft in chat (Phase F).
+Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
+
+**Gates:** MUST NOT post a comment or write files until the user approves the draft in chat (Phase F) — because delivery is irreversible without rework.
+
+## Refusal-first (precondition gate)
+
+MUST refuse to start Phase D (design) until **both** are available:
+
+| Input | Because |
+|-------|---------|
+| API spec (link, file, or pasted scope) | Defines in-scope behavior |
+| Swagger/OpenAPI (URL or local path) | Source of truth for endpoints and schemas |
+
+If Phase A load fails after user input, stop and report — do not invent endpoints.
 
 ---
 
@@ -40,31 +62,16 @@ If load fails → stop and report; ask for export file or VPN.
 
 ## Phase B — Test case table format (mandatory)
 
-Show the **default columns** and ask whether to add more:
+Show the **default column list** from [references/default-columns.md](references/default-columns.md) (summary table only — do not duplicate the full definitions here).
+
+Ask:
 
 ```text
-Default API test case table columns:
-
-| Column | Purpose |
-|--------|---------|
-| Test Case ID | Stable id, e.g. TC_API_{Module}_01 |
-| Module / Feature | Functional area or tag group |
-| Services Impacted | Backend service(s) touched |
-| Test Title | Method + path + scenario (happy/negative) |
-| Precondition | Auth, data state, env, headers |
-| Test Data | Body, query, path params, headers (sample values) |
-| Expected Result | Status code + key response fields / error body |
-| Priority | High / Medium / Low |
-
-Do you want to add any columns? If yes, list each column name and what it should contain.
+Do you want to add any columns beyond the default API set?
 If the default set is fine, reply **default** or **no changes**.
 ```
 
 **Wait for an answer.** Record final column list for Phase D–G.
-
-Optional columns users often add (only if requested): **Test Steps**, **Endpoint**, **HTTP Method**, **Acceptance Criteria**, **Notes**.
-
-Details: [references/default-columns.md](references/default-columns.md).
 
 ---
 
@@ -146,21 +153,20 @@ State clearly: **Not posted / no file written yet.**
 
 ### G1 — File export (if user chose B)
 
-Write under the user’s workspace:
+1. Write markdown with the table to `references/{SCOPE}_API_TC.md` (or user path).
+2. **CSV:** prefer Helix script when available:
 
-| Format | File |
-|--------|------|
-| CSV | UTF-8 with BOM; `<br>` → newline in cells |
-| Excel | `.xlsx` if user asked Excel or `both` |
+```bash
+python3 scripts/export-markdown-table-to-csv.py \
+  references/{SCOPE}_API_TC.md \
+  -o references/{SCOPE}_API_TC.csv
+```
 
-Default paths:
-
-- `references/{SCOPE}_API_TC.csv`
-- `references/{SCOPE}_API_TC.xlsx`
+3. **Excel:** `.xlsx` only if user asked Excel or `both` (in-agent or project tool).
 
 `{SCOPE}` = user-provided name, ticket key, or short slug from API title.
 
-Tell the user the **absolute or workspace-relative paths** to download.
+Tell the user the **workspace-relative paths** to download.
 
 ### G2 — Comment on link (if user chose A)
 
@@ -171,14 +177,29 @@ Tell the user the **absolute or workspace-relative paths** to download.
 
 ### G3 — Close
 
+Only after **QA closing** passes:
+
 ```text
 ━━━ TC API prep complete ━━━
 Draft: approved in chat
 File: {paths or none}
 Comment: {url or none}
 Test cases: {M}
+Verified: {what you re-read}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+---
+
+## QA closing (mandatory before "done")
+
+1. **Assume** the first draft missed endpoints or wrong status codes — Phase E exists for this reason.
+2. Skill-specific:
+   - [ ] Row count and columns match Phase B confirmation.
+   - [ ] If comment delivery: destination UI shows full table.
+   - [ ] If file delivery: CSV opens with header + N data rows.
+3. Shared: [skill-rules-style.md](../../references/skill-rules-style.md).
+4. NEVER say complete without re-reading the file or comment URL.
 
 ---
 
@@ -198,3 +219,14 @@ Test cases: {M}
 | [api-tc-guidelines.md](references/api-tc-guidelines.md) | API TC writing rules |
 | [delivery-options.md](references/delivery-options.md) | Jira / Confluence / CSV |
 | [markdown-template.md](references/markdown-template.md) | Table skeleton |
+
+---
+
+## MUST / NEVER (summary)
+
+| Rule | Because |
+|------|---------|
+| MUST refuse without API spec + Swagger | No authoritative coverage |
+| MUST NOT deliver before Phase F approval | User gate |
+| MUST NOT invent endpoints not in spec/Swagger | False coverage |
+| MUST verify comment destination UI when using delivery A | Truncation |

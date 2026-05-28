@@ -1,6 +1,15 @@
 ---
 name: testing-ticket-workflow
-description: Test a Jira ticket with Playwright after intake and confirmation — summarize results in chat, then optionally update an external results destination. Does not open bugs (use create-bug-workflow). Use for Testing ticket from Helix or /testing-ticket.
+description: |
+  Test one Jira ticket with Playwright after intake and confirmation — summarize results in chat, then optionally update an external results destination.
+  Use for Testing ticket from Helix, /testing-ticket, or when the user wants automated UI/API checks for a single ticket.
+  Do NOT use for opening bug tickets (create-bug-workflow), retest-after-fix on a bug (retest-bug-workflow), or drafting manual TC tables (tc-fe-prep / tc-api-prep). Does not run full-app regression.
+proactive_triggers:
+  - testing ticket
+  - test this ticket
+  - Playwright ticket test
+  - /testing-ticket
+  - Testing ticket
 ---
 
 # Testing ticket workflow
@@ -13,7 +22,15 @@ Run **Playwright-based** testing for a **single ticket** after intake and confir
 
 Follow [user-communication.md](../../references/user-communication.md).
 
-**Gates:** no Playwright until Phase C confirm; no external result update until Phase G confirm. Credentials are session-only.
+Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
+
+**Gates:** MUST NOT start Playwright until Phase C confirm; MUST NOT update external results until Phase G confirm — because runs and writes are costly to undo. Credentials are session-only.
+
+## Refusal-first (precondition gate)
+
+MUST refuse to reach Phase B until **Ticket** and **URL** are provided — because the test plan has no target.
+
+If **VPN** is required per user and environment is unreachable in Phase D, stop and report — do not mark scenarios PASSED without evidence.
 
 ---
 
@@ -199,7 +216,18 @@ Verified: {what you re-read}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-If verification failed partially, state what succeeded and what did not — never say “complete” for unverified work.
+If verification failed partially, state what succeeded and what did not — NEVER say “complete” for unverified work — because partial writes look finished to stakeholders.
+
+---
+
+## QA closing (mandatory before session end)
+
+1. **Assume** Phase F summary or Phase G updates have errors — Phase G6 exists for this reason.
+2. Skill-specific:
+   - [ ] F1–F3 posted before any external update.
+   - [ ] Every scenario has PASSED/FAILED/BLOCKED/NOT TESTED with evidence reference.
+   - [ ] If Phase G ran: destination re-read matches agreed column formats.
+3. Shared: [skill-rules-style.md](../../references/skill-rules-style.md).
 
 ---
 
@@ -229,3 +257,14 @@ If verification failed partially, state what succeeded and what did not — neve
 | [playwright-discipline.md](references/playwright-discipline.md) | Playwright rules |
 | [result-update-discipline.md](references/result-update-discipline.md) | Sheets, Jira, Confluence update rules |
 | [workspace-guide-template.md](references/workspace-guide-template.md) | Optional non-secret defaults |
+
+---
+
+## MUST / NEVER (summary)
+
+| Rule | Because |
+|------|---------|
+| MUST NOT open Jira/GitHub bugs in this workflow | Use create-bug-workflow |
+| MUST NOT run Playwright before Phase C confirm | Wrong scope/credentials |
+| MUST NOT claim bugs without evidence in chat | False positives |
+| MUST re-read destination after Phase G writes | Silent partial failure |

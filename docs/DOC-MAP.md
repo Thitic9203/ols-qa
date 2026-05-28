@@ -11,6 +11,9 @@ Use this map to avoid duplicating content across markdown files.
 | `/helix` menu text | [commands/helix.md](../commands/helix.md) | AGENTS.md (link only), README (summary table OK) |
 | Slash command → skill | [commands/*.md](../commands/) | SKILL.md bodies |
 | English-only chat | [references/user-communication.md](../references/user-communication.md) | Full rule text in every skill (link + 1 line) |
+| Skill authoring (Pluton-aligned) | [references/skill-rules-style.md](../references/skill-rules-style.md) | MUST/NEVER tables in every skill |
+| New skill template | [docs/new-skill-template.md](new-skill-template.md) | `skills/retest-bug-workflow/references/new-skill-template.md` (stub only) |
+| Markdown table → CSV | [scripts/export-markdown-table-to-csv.py](../scripts/export-markdown-table-to-csv.py) | Inline CSV logic in tc-fe/tc-api skills |
 | Domain glossary | [CONTEXT.md](../CONTEXT.md) | README, skills |
 | Workflow steps | `skills/*/SKILL.md` | commands/*.md (invoke only) |
 
@@ -32,9 +35,9 @@ Deep detail lives under `skills/<name>/references/`. The parent `SKILL.md` shoul
 
 | Skill | References |
 |-------|------------|
-| tc-fe-prep-workflow | prerequisites, jira-formatting, publish-options, gotchas, templates |
+| tc-fe-prep-workflow | prerequisites, jira-formatting, publish-options, gotchas, templates, worked-example |
 | tc-api-prep-workflow | default-columns, api-tc-guidelines, delivery-options, markdown-template |
-| retest-bug-workflow | project-config-template, gotchas, debug-discipline |
+| retest-bug-workflow | project-config-template, gotchas, debug-discipline, worked-example |
 | testing-ticket-workflow | session-intake, playwright-discipline, result-update-discipline |
 | create-bug-workflow | bug-draft-template, posting-discipline |
 

@@ -1,6 +1,16 @@
 ---
 name: create-bug-workflow
-description: Open bug reports on Jira or GitHub after collecting target link, format template, and bug details — confirm before creating. Use when user chooses Create bug from Helix or invokes /create-bug. Separate from testing-ticket-workflow.
+description: |
+  Open bug reports on Jira or GitHub after collecting target link, format template, and bug details — confirm before creating.
+  Use when the user chooses Create bug from Helix, invokes /create-bug, or wants issues filed from test findings.
+  Do NOT use for Playwright test runs (testing-ticket-workflow), retest-after-fix (retest-bug-workflow), posting manual TC tables (tc-fe-prep / tc-api-prep), or updating test result sheets without filing bugs.
+proactive_triggers:
+  - create bug
+  - file a bug
+  - open Jira bug
+  - gh issue create
+  - /create-bug
+  - Create bug
 ---
 
 # Create bug workflow
@@ -11,7 +21,15 @@ File **one or more bug reports** on the tracker the user names (Jira, GitHub Iss
 
 Follow [user-communication.md](../../references/user-communication.md).
 
-**Gates:** no issue created until Phase C confirm. No evidence, no issue. Verify each URL in Phase F before saying done.
+Follow [skill-rules-style.md](../../references/skill-rules-style.md) for MUST/NEVER, refusal-first, and QA closing.
+
+**Gates:** MUST NOT create issues until Phase C confirm. MUST NOT file without evidence. MUST verify each URL in Phase F before saying done — because create APIs can return IDs for empty bodies.
+
+## Refusal-first (precondition gate)
+
+MUST refuse to reach Phase B until **A1 (target)**, **A2 (format)**, and **A3 (bug details)** are sufficient to draft — because guessing tracker fields produces junk issues.
+
+If pre-flight fails (auth, repo missing), stop — MUST NOT create issues silently.
 
 ---
 
@@ -140,6 +158,16 @@ Created: {N}/{N} — verified at destination.
 
 ---
 
+## QA closing (mandatory before "done")
+
+1. **Assume** at least one draft title or body is wrong — run Phase E falsification.
+2. Skill-specific:
+   - [ ] Every created issue has URL/key from tool output (not guessed).
+   - [ ] Each URL opened or fetched — title visible.
+3. Shared: [skill-rules-style.md](../../references/skill-rules-style.md).
+
+---
+
 ## Out of scope
 
 - Running a full test pass → `testing-ticket-workflow`
@@ -154,3 +182,14 @@ Created: {N}/{N} — verified at destination.
 |------|-----|
 | [bug-draft-template.md](references/bug-draft-template.md) | Default draft layout |
 | [posting-discipline.md](references/posting-discipline.md) | GitHub + Jira posting, JXA rules |
+
+---
+
+## MUST / NEVER (summary)
+
+| Rule | Because |
+|------|---------|
+| MUST NOT call create APIs before Phase C confirm | Irreversible |
+| MUST NOT invent reproduction steps | False bugs |
+| MUST verify each issue URL in Phase F | Silent partial failure |
+| MUST lock Jira v2/v3 per session when user specifies | Rewrite cost |

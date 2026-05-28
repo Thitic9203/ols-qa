@@ -1,28 +1,7 @@
-# New skill template (Helix contributors)
+# New skill template
 
-```markdown
----
-name: your-skill-name
-description: One line for discovery. Include trigger phrases users might say.
----
+**Canonical template:** [docs/new-skill-template.md](../../../docs/new-skill-template.md)
 
-# Your skill title
+**Authoring rules:** [references/skill-rules-style.md](../../../references/skill-rules-style.md) (repo root).
 
-## Overview
-
-What this skill does.
-
-## Communication
-
-- English only for user-facing text — never Thai in chat/questions/options. See `references/user-communication.md` at repo root.
-
-## Steps
-
-### Step 0 — …
-
-## Critical rules
-
-1. …
-```
-
-Add path to `.claude-plugin/plugin.json` → `skills` array and link in `README.md`.
+Register new skills in `.claude-plugin/plugin.json` and [docs/DOC-MAP.md](../../../docs/DOC-MAP.md).
