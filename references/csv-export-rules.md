@@ -20,8 +20,9 @@ MUST use this path unless the user explicitly requested Excel **or** gave an exp
 1. Header row = column names from the approved table.
 2. Convert `<br>` / `<br/>` in cells to newlines.
 3. Strip `**` markdown bold for plain CSV text.
-4. Write **UTF-8 with BOM** (Excel-friendly).
-5. Row count must match the approved markdown table (excluding header).
+4. Write **UTF-8 with BOM** — the BOM (`﻿`) is mandatory so Excel opens the file with UTF-8 encoding; without it, Thai and other non-ASCII characters render as garbled symbols.
+5. **Do NOT alter, escape, or transliterate any Thai or non-ASCII characters** — preserve them exactly as they appear in the approved table.
+6. Row count must match the approved markdown table (excluding header).
 
 ### Optional CSV script (user-provided install root only)
 
@@ -49,7 +50,8 @@ Use this path when format detection resolves to `.xlsx`.
 1. Parse the approved markdown table into header row + data rows.
 2. Convert `<br>` / `<br/>` in cells to `\n`.
 3. Strip `**` markdown bold for plain text.
-4. Ensure `openpyxl` is available — if not, install it first:
+4. **Do NOT alter, escape, or transliterate any Thai or non-ASCII characters** — openpyxl handles Unicode natively; pass Thai strings as-is into `ws.append()`.
+5. Ensure `openpyxl` is available — if not, install it first:
    ```bash
    pip install openpyxl
    ```
