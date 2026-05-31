@@ -1,0 +1,48 @@
+{
+  "//": "Shared project settings for Helix CONTRIBUTORS. Auto-applied when you open this repo in Claude Code and trust the folder. Ships via git, auto-updates on pull. Intentionally conservative for a public repo: read-only permissions + context hooks only. For the fuller productivity config (acceptEdits, exec permissions, global CLAUDE.md rules) run scripts/helix-setup-devenv.sh once.",
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(rg *)",
+      "Bash(grep *)",
+      "Bash(find *)",
+      "Bash(wc *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(which *)",
+      "Bash(basename *)",
+      "Bash(dirname *)",
+      "Bash(bash scripts/helix-regression-check.sh)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/inject-context.sh\""
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}
