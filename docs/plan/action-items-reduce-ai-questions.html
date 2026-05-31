@@ -556,7 +556,7 @@
   </p>
   <div class="meta-bar">
     <span>Project: Thitic9203/helix</span>
-    <span>Version: 1.5.19</span>
+    <span>Version: 1.5.23</span>
     <span>Date: 2026-05-31</span>
     <span>11 Action Items</span>
     <span style="background:var(--green-dim); color:var(--green); border-color:var(--green);">✓ All Done — code-reviewed</span>
@@ -1458,6 +1458,84 @@ DECISIONS</code></pre>
       <td>#9 Slash command</td>
       <td>New file</td>
     </tr>
+  </table>
+</section>
+
+<!-- ====== Distribution & Auto-Update ====== -->
+<section>
+  <h2>Distribution &amp; Auto-Update &mdash; ผู้ใช้ได้รับอัตโนมัติ</h2>
+  <p style="color:var(--text-muted); font-size:.9rem; margin-bottom:1rem;">
+    config "ลดการถาม" กระจายแบบ <strong>2 ชั้น</strong> ผ่านกลไก auto-update เดิมของ Helix
+    &mdash; ปลอดภัยสำหรับ public repo (ไม่ auto-push exec permissions ให้ทุกคนที่ clone)
+  </p>
+
+  <div class="check-grid">
+    <div class="check-card" style="border-color:var(--green);">
+      <h4><span class="icon-shield">&#9632;</span> Layer 1 &mdash; อัตโนมัติ 100% (zero setup)</h4>
+      <ul>
+        <li>ไฟล์: <code>.claude/settings.json</code> (committed)</li>
+        <li>Trigger: clone repo + trust folder &rarr; ได้ทันที</li>
+        <li>Hooks: SessionStart (branch/version/WIP) + PreCompact (รักษา decisions)</li>
+        <li>Permissions: read-only เท่านั้น (git status/diff/log, ls, cat, rg, find)</li>
+        <li>อัปเดต: ผ่าน <code>git pull</code> ของ auto-update เดิม</li>
+        <li><strong style="color:var(--green);">ปลอดภัย public:</strong> ไม่มี acceptEdits, ไม่ auto-approve exec</li>
+      </ul>
+    </div>
+    <div class="check-card" style="border-color:var(--accent);">
+      <h4><span class="icon-route">&#9632;</span> Layer 2 &mdash; opt-in (คำสั่งเดียว)</h4>
+      <ul>
+        <li>ไฟล์: <code>scripts/helix-setup-devenv.sh</code></li>
+        <li>กระทบ global <code>~/.claude/</code>: acceptEdits + allowlist กว้างขึ้น + Rule #8/#9</li>
+        <li>Idempotent + backup ก่อนแก้ + reversible (<code>--uninstall</code>)</li>
+        <li>Merge ไม่ทับ &mdash; rules/settings เดิมของ user รอด</li>
+        <li>เมื่อ opt-in แล้ว &rarr; <code>helix-auto-update.sh</code> re-sync ให้ทุกครั้งที่อัปเดต</li>
+        <li>ต้องมี <code>jq</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <h4 style="margin-top:1.25rem; font-size:.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em;">
+    ใครได้อะไร
+  </h4>
+  <table class="helix-table">
+    <tr>
+      <th>กลุ่มผู้ใช้</th>
+      <th>ได้รับอัตโนมัติ</th>
+      <th>ต้อง opt-in เอง</th>
+    </tr>
+    <tr>
+      <td><strong>Contributor</strong> (clone repo มาพัฒนา Helix)</td>
+      <td>Layer 1: hooks + read-only perms + helix/CLAUDE.md rules (auto-update ผ่าน git)</td>
+      <td>Layer 2: <code>bash scripts/helix-setup-devenv.sh</code> สำหรับ global config</td>
+    </tr>
+    <tr>
+      <td><strong>End user</strong> (ใช้ skills ทำ QA ผ่าน plugin)</td>
+      <td>Skills + commands อัปเดตอัตโนมัติ (กลไกเดิม)</td>
+      <td>&mdash; ไม่ต้อง (dev hooks/perms ไม่เกี่ยวกับงาน QA)</td>
+    </tr>
+  </table>
+
+  <div class="warn-box">
+    <strong>ทำไมแยก 2 ชั้น (judgment call):</strong>
+    repo เป็น <strong>public</strong> &mdash; ถ้า auto-push <code>acceptEdits</code> + exec permissions
+    (<code>python3 *</code>, <code>node *</code>, <code>bash scripts/*</code>) เข้า committed settings
+    ใครก็ตามที่ clone + trust folder จะได้ auto-approve การรันโค้ดทันที (supply-chain risk)
+    จึงให้ของแรงเป็น opt-in มี consent gate ชัดเจน ส่วนของปลอดภัย (hooks + read-only) แจกอัตโนมัติได้
+  </div>
+
+  <h4 style="margin-top:1.25rem; font-size:.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em;">
+    Verified (tested in isolated HOME)
+  </h4>
+  <table class="checklist-table">
+    <thead>
+      <tr><th>Test</th><th>ผล</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Merge เข้า settings.json ที่มีของเดิม (theme, allow rule)</td><td style="color:var(--green); font-weight:600;">PASS &mdash; ของเดิมรอดหมด</td></tr>
+      <tr><td>รันซ้ำ (idempotent)</td><td style="color:var(--green); font-weight:600;">PASS &mdash; 46 rules ไม่ซ้ำ, 1 marker block</td></tr>
+      <tr><td>Inject CLAUDE.md ที่มี "my rules" อยู่แล้ว</td><td style="color:var(--green); font-weight:600;">PASS &mdash; my rules รอด</td></tr>
+      <tr><td><code>--uninstall</code></td><td style="color:var(--green); font-weight:600;">PASS &mdash; ลบเฉพาะของ Helix คืนสภาพเดิม</td></tr>
+    </tbody>
   </table>
 </section>
 
