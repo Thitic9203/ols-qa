@@ -32,7 +32,20 @@ if [ "${HELIX_DEVENV_NOTICE:-1}" != "0" ] && [ ! -f "$_optin" ]; then
   fi
 fi
 
-session_context="<EXTREMELY_IMPORTANT>\n**Helix** QA workflows available via slash-commands below. Each command loads its workflow — not ad-hoc procedure.\n\n| Command | Workflow |\n|---------|----------|\n| \`/helix\` | Router menu |\n| \`/tc-fe-prep\` | FE test case prep |\n| \`/tc-api-prep\` | API test case prep |\n| \`/retest-bug\` | Retest a bug fix |\n| \`/testing-ticket\` | Playwright ticket test |\n| \`/create-bug\` | File a new bug |\n\nEvidence before claims: no done/passed without proof. English for user chat.\n</EXTREMELY_IMPORTANT>${devenv_tip}"
+# Proactive QA hint (suggest-only; opt-out HELIX_PROACTIVE=0). Woven into the context
+# JSON below — NEVER echoed separately (would corrupt the single JSON object).
+# Rules: references/proactive-qa-triggers.md. Never auto-runs a workflow (Rule #5).
+proactive_tip=""
+if [ "${HELIX_PROACTIVE:-1}" != "0" ] && command -v git >/dev/null 2>&1; then
+  _pqa_dir="${CLAUDE_PROJECT_DIR:-$PWD}"
+  _pqa_branch="$(git -C "$_pqa_dir" branch --show-current 2>/dev/null || true)"
+  case "$_pqa_branch" in
+    feat/*|feature/*) proactive_tip="\n\n---\n**Helix proactive hint (suggest-only):** Branch \`${_pqa_branch}\` may suit **TC FE prep** (\`/tc-fe-prep\`), or TC API prep if API-only. Suggestion only — nothing runs until the user picks from /helix. Silence: HELIX_PROACTIVE=0." ;;
+    fix/*|bugfix/*|hotfix/*) proactive_tip="\n\n---\n**Helix proactive hint (suggest-only):** Branch \`${_pqa_branch}\` may suit **Retest bug** (\`/retest-bug\`). Suggestion only — nothing runs until the user picks from /helix. Silence: HELIX_PROACTIVE=0." ;;
+  esac
+fi
+
+session_context="<EXTREMELY_IMPORTANT>\n**Helix** QA workflows available via slash-commands below. Each command loads its workflow — not ad-hoc procedure.\n\n| Command | Workflow |\n|---------|----------|\n| \`/helix\` | Router menu |\n| \`/tc-fe-prep\` | FE test case prep |\n| \`/tc-api-prep\` | API test case prep |\n| \`/retest-bug\` | Retest a bug fix |\n| \`/testing-ticket\` | Playwright ticket test |\n| \`/create-bug\` | File a new bug |\n\nEvidence before claims: no done/passed without proof. English for user chat.\n</EXTREMELY_IMPORTANT>${devenv_tip}${proactive_tip}"
 
 if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
   printf '{\n  "additional_context": "%s"\n}\n' "$session_context"
