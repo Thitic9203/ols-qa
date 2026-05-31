@@ -156,6 +156,8 @@ Full detail: [README — Update](https://github.com/Thitic9203/helix/blob/main/R
 | [claude-plugin-sync.sh](https://github.com/Thitic9203/helix/blob/main/scripts/claude-plugin-sync.sh) | `helix@helix` marketplace sync |
 | [helix-doctor.sh](https://github.com/Thitic9203/helix/blob/main/scripts/helix-doctor.sh) | Verify install |
 | [link-skills.sh](https://github.com/Thitic9203/helix/blob/main/scripts/link-skills.sh) | Refresh symlinks |
+| [helix-regression-check.sh](https://github.com/Thitic9203/helix/blob/main/scripts/helix-regression-check.sh) | Contributor: pre-merge regression gate (`/helix-check`) |
+| [helix-setup-devenv.sh](https://github.com/Thitic9203/helix/blob/main/scripts/helix-setup-devenv.sh) | Contributor opt-in: fewer agent questions ([CONTRIBUTING](https://github.com/Thitic9203/helix/blob/main/docs/CONTRIBUTING.md#dev-environment--fewer-agent-questions-two-layers)) |
 
 ---
 

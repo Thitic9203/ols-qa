@@ -218,6 +218,19 @@ cd helix
 git config core.hooksPath scripts/hooks
 ```
 
+**Fewer agent questions while developing Helix** (optional). Opening the repo in
+Claude Code already gives you read-only command allows + context hooks (committed
+`.claude/settings.json`). For the fuller global config (`acceptEdits`, wider safe
+allowlist, "bias toward action" rules in `~/.claude/CLAUDE.md`):
+
+```bash
+bash scripts/helix-setup-devenv.sh             # opt-in, idempotent, backs up first
+bash scripts/helix-setup-devenv.sh --uninstall # revert (keeps your own rules)
+```
+
+Idempotent and re-synced by auto-update once opted in. Requires `jq`.
+Details: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md#dev-environment--fewer-agent-questions-two-layers).
+
 </details>
 
 ## Skills
@@ -258,7 +271,7 @@ git config core.hooksPath scripts/hooks
 | [helix-doctor.sh](scripts/helix-doctor.sh) | Health check; `HELIX_DOCTOR_FIX=1` to repair |
 | [link-skills.sh](scripts/link-skills.sh) | Refresh global + workspace skill symlinks |
 
-Contributor: `bump-version.sh`, `sync-version.sh --check`, `list-skills.sh`
+Contributor: `bump-version.sh`, `sync-version.sh --check`, `list-skills.sh`, `helix-regression-check.sh` (pre-merge gate), `helix-setup-devenv.sh` (opt-in: fewer agent questions)
 
 ## License
 
