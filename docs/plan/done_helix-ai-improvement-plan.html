@@ -553,7 +553,7 @@
   <div class="header">
     <h1>Helix AI Improvement Plan</h1>
     <p class="subtitle">นำ AI News พฤษภาคม 2026 มาปรับใช้กับ QA Skill Pack</p>
-    <span class="version">Helix v1.5.22 &middot; Plan Date: 31 May 2026</span>
+    <span class="version">Helix v1.5.24 &middot; Plan Date: 31 May 2026 &middot; &#10003; Implemented &mdash; regression 18/18 PASS</span>
   </div>
 
   <!-- Summary -->
@@ -1203,6 +1203,44 @@ echo "=== All checks passed ==="</code></pre>
         </tr>
       </tbody>
     </table>
+
+    <!-- Verified regression results -->
+    <h4 class="sub">Verified Regression Results (31 May 2026 &mdash; post-implementation)</h4>
+    <table class="checklist-table">
+      <thead>
+        <tr>
+          <th style="width:2.5rem;">#</th>
+          <th>Dimension</th>
+          <th>Result</th>
+          <th>Detail</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="num">1</td><td>Skill files (6)</td><td style="color:var(--green);font-weight:600;">PASS</td><td>[1/8] OK</td></tr>
+        <tr><td class="num">2</td><td>Portable content</td><td style="color:var(--green);font-weight:600;">PASS</td><td>CI guard green</td></tr>
+        <tr><td class="num">3</td><td>Skill structure</td><td style="color:var(--green);font-weight:600;">PASS</td><td>CI guard green</td></tr>
+        <tr><td class="num">4</td><td>Reference links</td><td style="color:var(--green);font-weight:600;">PASS</td><td>All <code>@references/</code> resolve</td></tr>
+        <tr><td class="num">5</td><td>VERSION sync</td><td style="color:var(--green);font-weight:600;">PASS</td><td>1.5.24 = plugin.json = README</td></tr>
+        <tr><td class="num">6</td><td>Script permissions</td><td style="color:var(--green);font-weight:600;">PASS</td><td>All <code>.sh</code> + <code>.py</code> have +x</td></tr>
+        <tr><td class="num">7</td><td>Menu consistency</td><td style="color:var(--green);font-weight:600;">PASS</td><td>8 commands</td></tr>
+        <tr><td class="num">8</td><td>Test.md self-test</td><td style="color:var(--green);font-weight:600;">PASS</td><td><code>export-test-md.py --self-test OK</code></td></tr>
+        <tr><td class="num">9</td><td>JSON validity (4 files)</td><td style="color:var(--green);font-weight:600;">PASS</td><td>hooks.json, hooks-cursor.json, plugin.json, marketplace.json</td></tr>
+        <tr><td class="num">10</td><td>Hook syntax</td><td style="color:var(--green);font-weight:600;">PASS</td><td><code>bash -n hooks/session-start</code> exit 0</td></tr>
+        <tr><td class="num">11</td><td>Hook JSON feat/*</td><td style="color:var(--green);font-weight:600;">PASS</td><td>Valid JSON, hint=True, /tc-fe-prep</td></tr>
+        <tr><td class="num">12</td><td>Hook JSON fix/*</td><td style="color:var(--green);font-weight:600;">PASS</td><td>Valid JSON, hint=True, /retest-bug</td></tr>
+        <tr><td class="num">13</td><td>Hook opt-out</td><td style="color:var(--green);font-weight:600;">PASS</td><td>HELIX_PROACTIVE=0 &rarr; no hint</td></tr>
+        <tr><td class="num">14</td><td>Hook main (no trigger)</td><td style="color:var(--green);font-weight:600;">PASS</td><td>Valid JSON, no hint</td></tr>
+        <tr><td class="num">15</td><td>Link integrity (11 files)</td><td style="color:var(--green);font-weight:600;">PASS</td><td>0 broken</td></tr>
+        <tr><td class="num">16</td><td>Git sync</td><td style="color:var(--green);font-weight:600;">PASS</td><td>HEAD = origin/main</td></tr>
+        <tr><td class="num">17</td><td>Working tree</td><td style="color:var(--green);font-weight:600;">PASS</td><td>0 uncommitted</td></tr>
+        <tr><td class="num">18</td><td>.gitignore __pycache__</td><td style="color:var(--green);font-weight:600;">PASS</td><td>Present</td></tr>
+      </tbody>
+    </table>
+    <div class="note-box">
+      <strong>18/18 PASS</strong> &mdash; tested empirically after all fixes
+      (link depth fix <code>6e5ef2b</code>, Test.md spec alignment <code>a62d826</code>,
+      hook fix <code>6048d96</code>). No item skipped or untested.
+    </div>
   </div>
 
   <!-- Footer -->
