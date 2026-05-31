@@ -29,6 +29,15 @@ Complete **every** item before starting Phase E. Stop on first hard failure and 
 - [ ] Screenshot folder convention agreed (e.g. `screenshots/{KEY}/`)
 - [ ] Trace on failure: user project supports `--trace on` or equivalent
 
+## 6 — Selector resilience gate
+
+Per [resilient-selectors.md](resilient-selectors.md) — verify **before** running, not after a flake.
+
+- [ ] Selectors use tier 1–3 (`data-testid` → role+name → label/text), not absolute XPath / nth-child
+- [ ] Fallback chain is bounded (**max 3** strategies, then fail) — no infinite retry
+- [ ] Failure-mode plan agreed: selector-drift vs real-UI-bug vs timing handled distinctly
+- [ ] If app lacks `data-testid`: noted for the ticket (do not patch product code unless asked)
+
 ## Pre-flight result (post in chat)
 
 ```text
@@ -37,6 +46,7 @@ URL: reachable | blocked ({reason})
 VPN: OK | N/A | FAIL
 Playwright: OK ({config}) | FAIL ({reason})
 Auth: storageState | login each run | guest
+Selectors: resilient (tier 1–3) | risky ({reason})
 Ready to run: YES | NO
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

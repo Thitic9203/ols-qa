@@ -149,3 +149,9 @@ print(f"Saved {len(rows)} rows to {ISSUE_KEY}_FE_TC.xlsx")
 ### Fallback
 
 If xlsx generation fails (missing Python, permission error, etc.) → warn the user and offer to fall back to UTF-8 BOM CSV instead. **Do not silently produce a CSV when the user asked for xlsx.**
+
+---
+
+## Sibling format — Test.md (agent-native)
+
+For hand-off to a Playwright/CLI agent, offer **Test.md** alongside CSV — see [test-md-format.md](test-md-format.md). Test.md is **additive**, never a replacement for CSV/Excel; both read the same reviewed chat table. Generator: [scripts/export-test-md.py](../scripts/export-test-md.py).

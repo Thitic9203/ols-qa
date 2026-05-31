@@ -13,6 +13,10 @@ Canonical map for `/helix`, [commands/helix.md](../commands/helix.md), and [AGEN
 | File bug(s) on Jira/GitHub | `create-bug-workflow` | `/create-bug` |
 | Unsure / multi-step | `helix` skill or `/helix` (Claude Code) | `/helix` or `@helix` |
 
+## Proactive suggestion (suggest-only)
+
+From context (branch, linked ticket, defects in chat) the router MAY **suggest** one workflow instead of showing the full menu — rules in [proactive-qa-triggers.md](proactive-qa-triggers.md). Suggestion only, never auto-run (Rule #5); honor `HELIX_PROACTIVE=0`.
+
 ## Handoffs (after a workflow ends)
 
 | User says next | Route to |

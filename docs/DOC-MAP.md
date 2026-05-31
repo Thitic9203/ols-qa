@@ -22,6 +22,7 @@ Use this map to avoid duplicating content across markdown files.
 | Swagger diff (optional) | [references/swagger-diff-phase.md](../references/swagger-diff-phase.md) | TC API when spec changes |
 | Retest fix vs verify plan | [references/retest-fix-intake.md](../references/retest-fix-intake.md) | Before retest execution |
 | Playwright pre-flight | [references/playwright-preflight.md](../references/playwright-preflight.md) | Testing ticket Phase D |
+| Resilient selectors (anti-flaky) | [references/resilient-selectors.md](../references/resilient-selectors.md) | playwright-preflight, qa-debug-discipline, testing-ticket |
 | Router intent (Thai/mixed) | [references/intent-shortcuts.md](../references/intent-shortcuts.md) | helix skill + commands/helix |
 | Install health check | [scripts/helix-doctor.sh](../scripts/helix-doctor.sh) | README install section |
 | Claude plugin (helix@helix) | [scripts/claude-plugin-sync.sh](../scripts/claude-plugin-sync.sh) | Legacy helix@local handling |
@@ -43,14 +44,17 @@ Use this map to avoid duplicating content across markdown files.
 | Pre-merge ship checklist | [docs/pluton-ship-checklist.md](pluton-ship-checklist.md) | — |
 | Portable skills (no host/project lock-in) | [references/portable-content.md](../references/portable-content.md) | Machine paths, PD3, one-repo Playwright layout |
 | CSV export | [references/csv-export-rules.md](../references/csv-export-rules.md) | tc-fe / tc-api skills (in-agent default) |
+| Test.md format (agent-native) | [references/test-md-format.md](../references/test-md-format.md) | tc-fe / tc-api delivery options, csv-export-rules |
 | TC quality (ISTQB / 29119-3) | [references/tc-quality-standards.md](../references/tc-quality-standards.md) | Full checklist duplicated in skills |
 | FE AC/EC coverage review | [skills/deprecated/tc-fe-prep-workflow/references/ac-ec-coverage-review.md](../skills/deprecated/tc-fe-prep-workflow/references/ac-ec-coverage-review.md) | Step 4 body |
 | API spec/Swagger review | [skills/deprecated/tc-api-prep-workflow/references/spec-coverage-review.md](../skills/deprecated/tc-api-prep-workflow/references/spec-coverage-review.md) | Phase E body |
 | Skill routing / handoffs | [references/skill-routing.md](../references/skill-routing.md) | Per-skill Handoff tables |
+| Proactive QA triggers (suggest-only) | [references/proactive-qa-triggers.md](../references/proactive-qa-triggers.md) | helix SKILL.md, skill-routing |
 | Session constraint recital | [references/helix-session-constraints.md](../references/helix-session-constraints.md) | Full block pasted in every skill |
 | CI portable-content guard | [scripts/ci-check-portable-skills.sh](../scripts/ci-check-portable-skills.sh) | Ad-hoc grep in skills |
 | New skill template | [docs/new-skill-template.md](new-skill-template.md) | `skills/deprecated/retest-bug-workflow/references/new-skill-template.md` (stub only) |
 | Markdown table → CSV | [scripts/export-markdown-table-to-csv.py](../scripts/export-markdown-table-to-csv.py) | Inline CSV logic in tc-fe/tc-api skills |
+| Markdown table → Test.md | [scripts/export-test-md.py](../scripts/export-test-md.py) | Inline Test.md logic; spec lives in test-md-format.md |
 | Domain glossary | [CONTEXT.md](../CONTEXT.md) | README, skills |
 | Workflow steps | `skills/*/SKILL.md` | commands/*.md (read and follow) |
 

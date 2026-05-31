@@ -49,6 +49,22 @@ Blocked on: {user action if any}
 
 Link failures to **testing-ticket** Phase F or **retest** comment only after user approves wording.
 
+## Flaky selector diagnosis (Playwright)
+
+When a Playwright step fails on locating an element, classify before fixing — see [resilient-selectors.md](resilient-selectors.md).
+
+```text
+H1: selector drift  — falsify by: element present via higher tier (data-testid/role)?
+H2: real UI bug     — falsify by: element truly absent / wrong state in trace + screenshot?
+H3: timing          — falsify by: element appears after auto-wait / network idle?
+```
+
+- **Drift** → update to a higher-tier selector, re-run. Not a bug.
+- **Real bug** → report via testing-ticket Phase F / create-bug. Do not mask as flake.
+- **Timing** → use `expect().toBeVisible()` auto-wait, not a selector swap or raw timeout bump.
+
+Fallback is **bounded to 3 strategies** (resilient-selectors.md). A miss after 3 tiers is a genuine failure, not noise — escalate, do not keep guessing.
+
 ## When to use subagents
 
 If trace/network analysis is large, see [subagent-qa-patterns.md](subagent-qa-patterns.md) — delegate analysis, not Jira posts.

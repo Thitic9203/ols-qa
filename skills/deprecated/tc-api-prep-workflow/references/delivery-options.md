@@ -20,6 +20,14 @@ Follow [csv-export-rules.md](../../../references/csv-export-rules.md) — Excel/
 - Cells with `\n`: set `Alignment(wrap_text=True)`
 - **Never silently produce CSV when user asked for xlsx** — if openpyxl fails, warn and ask
 
+## Test.md (agent-native, additive)
+
+For hand-off to a Playwright/CLI agent or PR reading. Offer **alongside** CSV/Excel — never as a replacement.
+
+- Format spec: [test-md-format.md](../../../references/test-md-format.md) (single source of truth)
+- Same reviewed table feeds it; emit exactly the approved rows (no fabricated cases)
+- File: `{ISSUE_KEY}.test.md` in workspace
+
 ## Jira comment / chat draft
 
 - **Bold every header cell**: `| **Test Case ID** | **Module / Feature** | **Test Title** | ... |` — ALL columns, not just one

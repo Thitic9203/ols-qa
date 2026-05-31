@@ -55,6 +55,20 @@ If the user’s goal is already clear (e.g. “write FE TC for PROJ-123”), **s
 
 When the user writes Thai or informal English, map intent using [intent-shortcuts.md](../../references/intent-shortcuts.md). Still respond in **English only**. Extract issue keys from the same message when present.
 
+## Proactive suggestion (suggest-only, opt-out)
+
+When the session context already hints at a workflow (git branch, linked Jira ticket, defects mentioned in chat), you MAY offer **one** suggestion instead of the full menu — following [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md).
+
+- **Suggest only — never auto-run** a workflow (Rule #5).
+- Respect `HELIX_PROACTIVE=0` — if set, skip suggestions and show the normal menu.
+- One suggestion per turn, then wait for the user to pick (number/name) before loading anything.
+- No Jira MCP? Infer from branch + last commit and say so, so the user can correct.
+
+```text
+Based on branch {branch} and {linked ticket or commit}, you may want **{workflow}** (`/{command}`).
+Say the number/name to start, or ignore. (Set HELIX_PROACTIVE=0 to silence.)
+```
+
 ## Routing
 
 | User choice | Action |

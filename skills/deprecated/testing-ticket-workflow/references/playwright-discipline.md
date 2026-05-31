@@ -2,15 +2,28 @@
 
 ## Selectors (priority)
 
-1. `data-testid`
-2. `getByRole`, `getByLabel`
+Full hierarchy + failure-mode rules: [resilient-selectors.md](../../../../references/resilient-selectors.md).
+
+1. `data-testid` / `data-test`
+2. `getByRole` (role + accessible name), `getByLabel`
 3. `getByText` (stable copy only)
-4. Avoid brittle CSS (`nth-child`, deep chains)
+4. Avoid brittle CSS (`nth-child`, deep chains); never absolute XPath
+
+## Retry with bounded fallback
+
+When a selector misses, drop **one tier** and retry — then stop. **Max 3 strategies**, then report a genuine failure (do not loop).
+
+```text
+data-testid → role+name → label/text → STOP & report
+```
+
+Log which tier was used when falling back, so drift is visible over runs.
 
 ## Waits
 
 - Use `expect(locator).toBeVisible()` / `expect.poll()` for async UI.
 - Do not increase timeouts to mask flakes — fix selector or environment.
+- Classify a miss before fixing: selector drift vs real UI bug vs timing (see resilient-selectors.md).
 
 ## Evidence per failure
 
