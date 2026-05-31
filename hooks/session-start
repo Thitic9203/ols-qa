@@ -14,7 +14,25 @@ elif [ -x "$HOME/.helix/tc-fe-prep/scripts/helix-auto-update.sh" ]; then
   HELIX_QUIET=1 bash "$HOME/.helix/tc-fe-prep/scripts/helix-auto-update.sh" 2>/dev/null || true
 fi
 
-session_context="<EXTREMELY_IMPORTANT>\n**Helix** QA workflows available via slash-commands below. Each command loads its workflow — not ad-hoc procedure.\n\n| Command | Workflow |\n|---------|----------|\n| \`/helix\` | Router menu |\n| \`/tc-fe-prep\` | FE test case prep |\n| \`/tc-api-prep\` | API test case prep |\n| \`/retest-bug\` | Retest a bug fix |\n| \`/testing-ticket\` | Playwright ticket test |\n| \`/create-bug\` | File a new bug |\n\nEvidence before claims: no done/passed without proof. English for user chat.\n</EXTREMELY_IMPORTANT>"
+# One-time, consent-gated notice about the opt-in "fewer prompts" devenv config.
+# We do NOT silently change anyone's global ~/.claude settings — we only surface the
+# command so the user can choose. Shown at most 3 times, never once opted in.
+# Silence with HELIX_DEVENV_NOTICE=0.
+devenv_tip=""
+_optin="$HOME/.helix/.devenv-opted-in"
+_ncfile="$HOME/.helix/.devenv-notice-count"
+if [ "${HELIX_DEVENV_NOTICE:-1}" != "0" ] && [ ! -f "$_optin" ]; then
+  _n=0
+  [ -f "$_ncfile" ] && _n=$(tr -dc '0-9' <"$_ncfile" 2>/dev/null || echo 0)
+  _n=${_n:-0}
+  if [ "$_n" -lt 3 ]; then
+    devenv_tip="\n\n---\n**Helix tip (optional, dev-only):** If you write code with this agent, you can cut confirmation prompts. Tell the user ONCE, briefly: they may run \`bash ~/.helix/tc-fe-prep/scripts/helix-setup-devenv.sh\` (opt-in, backs up first, reversible via \`--uninstall\`) to enable acceptEdits + a safe command allowlist globally. Pure-QA users can ignore. Silence: HELIX_DEVENV_NOTICE=0."
+    mkdir -p "$HOME/.helix" 2>/dev/null || true
+    echo $((_n + 1)) >"$_ncfile" 2>/dev/null || true
+  fi
+fi
+
+session_context="<EXTREMELY_IMPORTANT>\n**Helix** QA workflows available via slash-commands below. Each command loads its workflow — not ad-hoc procedure.\n\n| Command | Workflow |\n|---------|----------|\n| \`/helix\` | Router menu |\n| \`/tc-fe-prep\` | FE test case prep |\n| \`/tc-api-prep\` | API test case prep |\n| \`/retest-bug\` | Retest a bug fix |\n| \`/testing-ticket\` | Playwright ticket test |\n| \`/create-bug\` | File a new bug |\n\nEvidence before claims: no done/passed without proof. English for user chat.\n</EXTREMELY_IMPORTANT>${devenv_tip}"
 
 if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
   printf '{\n  "additional_context": "%s"\n}\n' "$session_context"
