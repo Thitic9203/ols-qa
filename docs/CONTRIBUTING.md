@@ -1,5 +1,34 @@
 # Contributing to Helix
 
+## Dev environment — fewer agent questions (two layers)
+
+To reduce how often the AI agent asks you to confirm things while working on Helix:
+
+**Layer 1 — automatic, zero setup (committed `.claude/settings.json`).**
+When you clone this repo and open it in Claude Code (and trust the folder), you
+automatically get: read-only Bash allowlist (git status/diff/log, ls, cat, rg…) +
+two context hooks (SessionStart injects branch/version/WIP; PreCompact preserves key
+decisions across auto-compaction). Ships and updates via git — no manual steps.
+Intentionally conservative because this is a public repo: no `acceptEdits`, no code
+execution is auto-approved.
+
+**Layer 2 — opt-in, one command (`scripts/helix-setup-devenv.sh`).**
+For the fuller productivity config that touches your **global** `~/.claude/`:
+`defaultMode: acceptEdits`, a wider safe Bash allowlist (node/python/gh-read/…), and
+"bias toward action" + "memory discipline" rules in `~/.claude/CLAUDE.md`.
+
+```bash
+bash scripts/helix-setup-devenv.sh            # install (idempotent, backs up first)
+bash scripts/helix-setup-devenv.sh --uninstall # revert (keeps your own rules)
+```
+
+It merges (never clobbers), is safe to re-run, and once opted in,
+`helix-auto-update.sh` keeps it in sync on future updates. Requires `jq`.
+The narrowed git/`gh` allowlist deliberately leaves destructive/outward verbs
+(`git push --force`, `git reset --hard`, `gh pr merge`, `gh repo delete`) to prompt.
+
+See the full rationale: [docs/plan/action-items-reduce-ai-questions.html](plan/action-items-reduce-ai-questions.html).
+
 ## Versioning (automatic)
 
 **Source of truth:** [VERSION](../VERSION) at repo root.

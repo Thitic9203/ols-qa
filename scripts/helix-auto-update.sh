@@ -159,6 +159,13 @@ else
   update_marketplace_only "$REMOTE"
 fi
 
+# If the user opted into the global devenv config (via scripts/helix-setup-devenv.sh),
+# keep it in sync after a successful update. Opt-in only: skipped unless the marker exists.
+if [ "$UPDATED" -eq 1 ] && [ -f "$STATE_DIR/.devenv-opted-in" ] && [ -x "$REPO/scripts/helix-setup-devenv.sh" ]; then
+  log "re-syncing opted-in devenv config..."
+  bash "$REPO/scripts/helix-setup-devenv.sh" >>"$LOG_FILE" 2>&1 || log "devenv re-sync failed (non-fatal)"
+fi
+
 # Export hint for session-start (optional one-line user notice)
 if [ "$UPDATED" -eq 1 ] && [ -n "${HELIX_AUTO_UPDATE_NOTIFY:-}" ]; then
   echo "Helix updated to v$REMOTE (skills active; restart Claude Code once for plugin hooks if /helix looks old)." >&2
