@@ -559,6 +559,7 @@
     <span>Version: 1.5.19</span>
     <span>Date: 2026-05-31</span>
     <span>11 Action Items</span>
+    <span style="background:var(--green-dim); color:var(--green); border-color:var(--green);">✓ All Done — code-reviewed</span>
   </div>
 </header>
 
@@ -607,7 +608,7 @@
             <span class="file-chip">~/.claude/settings.json</span>
           </div>
         </td>
-        <td><span class="status-chip status-not-started">Not Started</span></td>
+        <td><span class="status-chip status-done">Done</span></td>
       </tr>
       <tr>
         <td class="row-num">2</td>
@@ -622,7 +623,7 @@
             <span class="file-chip">~/.claude/settings.json</span>
           </div>
         </td>
-        <td><span class="status-chip status-not-started">Not Started</span></td>
+        <td><span class="status-chip status-done">Done</span></td>
       </tr>
       <tr>
         <td class="row-num">3</td>
@@ -637,7 +638,7 @@
             <span class="file-chip">~/.claude/CLAUDE.md</span>
           </div>
         </td>
-        <td><span class="status-chip status-not-started">Not Started</span></td>
+        <td><span class="status-chip status-done">Done</span></td>
       </tr>
       <tr>
         <td class="row-num">4</td>
@@ -652,7 +653,7 @@
             <span class="file-chip">helix/CLAUDE.md</span>
           </div>
         </td>
-        <td><span class="status-chip status-not-started">Not Started</span></td>
+        <td><span class="status-chip status-done">Done</span></td>
       </tr>
       <tr>
         <td class="row-num">5</td>
@@ -667,7 +668,7 @@
             <span class="file-chip">helix/CLAUDE.md</span>
           </div>
         </td>
-        <td><span class="status-chip status-not-started">Not Started</span></td>
+        <td><span class="status-chip status-done">Done</span></td>
       </tr>
       <tr>
         <td class="row-num">6</td>
@@ -682,7 +683,7 @@
             <span class="file-chip">~/.claude/CLAUDE.md</span>
           </div>
         </td>
-        <td><span class="status-chip status-not-started">Not Started</span></td>
+        <td><span class="status-chip status-done">Done</span></td>
       </tr>
       <tr>
         <td class="row-num">7</td>
@@ -698,7 +699,7 @@
             <span class="file-chip">.claude/settings.json</span>
           </div>
         </td>
-        <td><span class="status-chip status-not-started">Not Started</span></td>
+        <td><span class="status-chip status-done">Done</span></td>
       </tr>
       <tr>
         <td class="row-num">8</td>
@@ -713,7 +714,7 @@
             <span class="file-chip">helix/CLAUDE.md</span>
           </div>
         </td>
-        <td><span class="status-chip status-not-started">Not Started</span></td>
+        <td><span class="status-chip status-done">Done</span></td>
       </tr>
       <tr>
         <td class="row-num">9</td>
@@ -729,7 +730,7 @@
             <span class="file-chip">commands/helix-release.md</span>
           </div>
         </td>
-        <td><span class="status-chip status-not-started">Not Started</span></td>
+        <td><span class="status-chip status-done">Done</span></td>
       </tr>
       <tr>
         <td class="row-num">10</td>
@@ -745,7 +746,7 @@
             <span class="file-chip">.claude/settings.json</span>
           </div>
         </td>
-        <td><span class="status-chip status-not-started">Not Started</span></td>
+        <td><span class="status-chip status-done">Done</span></td>
       </tr>
       <tr>
         <td class="row-num">11</td>
@@ -760,7 +761,7 @@
             <span class="file-chip">references/workspace-guide-discovery.md</span>
           </div>
         </td>
-        <td><span class="status-chip status-not-started">Not Started</span></td>
+        <td><span class="status-chip status-done">Done</span></td>
       </tr>
     </tbody>
   </table>
@@ -824,33 +825,41 @@
       <h4>ไฟล์ที่แก้</h4>
       <p><code class="file-ref">~/.claude/settings.json</code></p>
 
-      <h4>เพิ่ม rules เหล่านี้</h4>
+      <h4>เพิ่ม rules เหล่านี้ (narrowed หลัง code review)</h4>
+      <p style="font-size:.82rem; color:var(--text-muted); margin-bottom:.4rem;">
+        <strong style="color:var(--yellow);">หมายเหตุ:</strong> <code>git *</code> และ <code>gh *</code>
+        แบบ wildcard กว้างไป &mdash; จะ auto-approve <code>git push --force</code>, <code>git reset --hard</code>,
+        <code>gh repo delete</code>, <code>gh pr merge</code> โดยไม่ถาม จึงแคบลงเหลือเฉพาะ verb ปลอดภัย
+        (permission อยู่ layer ล่างกว่า CLAUDE.md rules &mdash; prose re-gate ไม่ได้)
+      </p>
 <pre><code>"permissions": {
+  "defaultMode": "acceptEdits",
   "allow": [
-    "Bash(git *)",
-    "Bash(rtk *)",
-    "Bash(ls *)",
-    "Bash(cat *)",
-    "Bash(find *)",
-    "Bash(grep *)",
-    "Bash(rg *)",
-    "Bash(which *)",
-    "Bash(node *)",
-    "Bash(npx *)",
-    "Bash(npm run *)",
-    "Bash(python3 *)",
-    "Bash(wc *)",
-    "Bash(head *)",
-    "Bash(tail *)",
-    "Bash(sort *)",
-    "Bash(diff *)",
-    "Bash(mkdir *)",
-    "Bash(basename *)",
-    "Bash(dirname *)",
-    "Bash(realpath *)",
-    "Bash(stat *)"
+    "Bash(git status)", "Bash(git status *)",
+    "Bash(git diff *)", "Bash(git log *)", "Bash(git show *)",
+    "Bash(git add *)", "Bash(git commit *)",
+    "Bash(git branch)", "Bash(git branch *)",
+    "Bash(git checkout -b *)", "Bash(git stash *)",
+    "Bash(git fetch *)", "Bash(git pull --rebase *)",
+    "Bash(rtk *)", "Bash(ls *)", "Bash(cat *)", "Bash(find *)",
+    "Bash(grep *)", "Bash(rg *)", "Bash(which *)",
+    "Bash(node *)", "Bash(npx *)", "Bash(npm run *)", "Bash(python3 *)",
+    "Bash(wc *)", "Bash(head *)", "Bash(tail *)", "Bash(sort *)",
+    "Bash(diff *)", "Bash(mkdir *)", "Bash(basename *)",
+    "Bash(dirname *)", "Bash(realpath *)", "Bash(stat *)",
+    "Bash(chmod +x *)",
+    "Bash(gh pr view *)", "Bash(gh pr list *)", "Bash(gh pr diff *)",
+    "Bash(gh issue view *)", "Bash(gh issue list *)",
+    "Bash(gh run view *)", "Bash(gh run list *)",
+    "Bash(gh repo view *)", "Bash(gh api *)",
+    "Bash(bash scripts/*)"
   ]
 }</code></pre>
+      <p style="font-size:.82rem; color:var(--text-muted); margin-top:.4rem;">
+        ที่กันไว้ให้ถามก่อน: <code>git push --force</code>, <code>git reset --hard</code>,
+        <code>git clean</code>, <code>git checkout -- .</code>, <code>gh pr merge</code>,
+        <code>gh repo delete</code>, <code>gh release</code>, <code>gh secret</code>
+      </p>
 
       <h4>Helix-specific commands ที่ควรเพิ่ม</h4>
       <table class="helix-table">
