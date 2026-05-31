@@ -403,6 +403,133 @@
   }
   .tracker-legend span { display: flex; align-items: center; gap: .35rem; }
 
+  /* Regression section */
+  .check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .check-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.15rem;
+  }
+  .check-card h4 {
+    font-size: .85rem;
+    font-weight: 700;
+    margin-bottom: .6rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+  }
+  .check-card ul {
+    padding-left: 1.1rem;
+    margin: 0;
+  }
+  .check-card li {
+    font-size: .82rem;
+    margin-bottom: .25rem;
+    color: var(--text);
+  }
+  .check-card li code {
+    font-size: .75rem;
+  }
+  .icon-shield { color: var(--green); }
+  .icon-route  { color: var(--accent); }
+  .icon-script { color: var(--orange); }
+  .icon-ci     { color: var(--purple); }
+  .icon-agent  { color: var(--yellow); }
+  .icon-user   { color: var(--red); }
+
+  .regression-flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 1.25rem 0;
+    overflow-x: auto;
+  }
+  .rf-step {
+    flex: 1;
+    min-width: 140px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: .85rem .75rem;
+    text-align: center;
+    position: relative;
+  }
+  .rf-step:first-child { border-radius: 8px 0 0 8px; }
+  .rf-step:last-child  { border-radius: 0 8px 8px 0; }
+  .rf-step .rf-num {
+    font-size: .65rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  .rf-step .rf-title {
+    font-size: .82rem;
+    font-weight: 600;
+    margin: .25rem 0 .15rem;
+  }
+  .rf-step .rf-desc {
+    font-size: .72rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+  .rf-step::after {
+    content: '\25B6';
+    position: absolute;
+    right: -.45rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: .55rem;
+    z-index: 1;
+  }
+  .rf-step:last-child::after { display: none; }
+  .rf-step.rf-gate {
+    border-color: var(--green);
+    background: var(--green-dim);
+  }
+  .rf-step.rf-gate .rf-title { color: var(--green); }
+
+  .checklist-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .82rem;
+    margin: .75rem 0;
+  }
+  .checklist-table th {
+    text-align: left;
+    padding: .55rem .7rem;
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .checklist-table td {
+    padding: .5rem .7rem;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .checklist-table tbody tr:hover td { background: var(--accent-dim); }
+  .check-method {
+    font-size: .75rem;
+    padding: .15rem .45rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+  .method-auto   { background: var(--green-dim); color: var(--green); }
+  .method-manual { background: var(--yellow-dim); color: var(--yellow); }
+  .method-ci     { background: var(--purple-dim); color: var(--purple); }
+  .method-script { background: var(--accent-dim); color: var(--accent); }
+
   footer {
     text-align: center;
     padding: 2rem 0 1rem;
@@ -431,7 +558,7 @@
     <span>Project: Thitic9203/helix</span>
     <span>Version: 1.5.19</span>
     <span>Date: 2026-05-31</span>
-    <span>7 Action Items</span>
+    <span>11 Action Items</span>
   </div>
 </header>
 
@@ -445,12 +572,8 @@
     <div class="number">~50%</div>
     <div class="label">ลด Clarifying Questions</div>
   </div>
-  <div class="impact-card purple">
-    <div class="number">0</div>
-    <div class="label">ถามซ้ำข้าม Session</div>
-  </div>
   <div class="impact-card orange">
-    <div class="number">3</div>
+    <div class="number">5</div>
     <div class="label">ไฟล์ที่ต้องแก้</div>
   </div>
 </div>
@@ -458,13 +581,6 @@
 <!-- ====== Action Item Tracker ====== -->
 <div class="tracker-section">
   <h2>Action Item Tracker</h2>
-
-  <div class="tracker-legend">
-    <span><span class="status-chip status-not-started">Not Started</span> ยังไม่เริ่ม</span>
-    <span><span class="status-chip status-in-progress">In Progress</span> กำลังทำ</span>
-    <span><span class="status-chip status-done">Done</span> เสร็จแล้ว</span>
-    <span><span class="status-chip status-skipped">Skipped</span> ข้ามไป</span>
-  </div>
 
   <table class="tracker-table">
     <thead>
@@ -584,6 +700,68 @@
         </td>
         <td><span class="status-chip status-not-started">Not Started</span></td>
       </tr>
+      <tr>
+        <td class="row-num">8</td>
+        <td><span class="priority-chip p-high">P1 High</span></td>
+        <td>
+          <strong>@import docs ใน CLAUDE.md</strong><br>
+          <span style="font-size:.8rem; color:var(--text-muted);">Import CONTRIBUTING.md + DOC-MAP.md อัตโนมัติทุก session &mdash; AI รู้ convention โดยไม่ต้องถาม</span>
+        </td>
+        <td><span class="impact-chip"><strong>-40%</strong> convention questions</span></td>
+        <td>
+          <div class="file-chips">
+            <span class="file-chip">helix/CLAUDE.md</span>
+          </div>
+        </td>
+        <td><span class="status-chip status-not-started">Not Started</span></td>
+      </tr>
+      <tr>
+        <td class="row-num">9</td>
+        <td><span class="priority-chip p-medium">P2 Medium</span></td>
+        <td>
+          <strong>Custom Slash Commands สำหรับ Helix dev</strong><br>
+          <span style="font-size:.8rem; color:var(--text-muted);">สร้าง /helix-check, /helix-release &mdash; ลดคำถาม "จะทำยังไง?"</span>
+        </td>
+        <td><span class="impact-chip"><strong>-25%</strong> how-to questions</span></td>
+        <td>
+          <div class="file-chips">
+            <span class="file-chip">commands/helix-check.md</span>
+            <span class="file-chip">commands/helix-release.md</span>
+          </div>
+        </td>
+        <td><span class="status-chip status-not-started">Not Started</span></td>
+      </tr>
+      <tr>
+        <td class="row-num">10</td>
+        <td><span class="priority-chip p-medium">P2 Medium</span></td>
+        <td>
+          <strong>PreCompact Hook: รักษา decisions กลาง session</strong><br>
+          <span style="font-size:.8rem; color:var(--text-muted);">Inject key decisions กลับเข้า context หลัง auto-compact &mdash; ไม่ถามซ้ำกลางทาง</span>
+        </td>
+        <td><span class="impact-chip"><strong>-30%</strong> mid-session re-asks</span></td>
+        <td>
+          <div class="file-chips">
+            <span class="file-chip">.claude/hooks/pre-compact.sh</span>
+            <span class="file-chip">.claude/settings.json</span>
+          </div>
+        </td>
+        <td><span class="status-chip status-not-started">Not Started</span></td>
+      </tr>
+      <tr>
+        <td class="row-num">11</td>
+        <td><span class="priority-chip p-medium">P2 Medium</span></td>
+        <td>
+          <strong>Workspace Guide Pattern</strong><br>
+          <span style="font-size:.8rem; color:var(--text-muted);">Highlight .guide.md mechanism &mdash; ถามครั้งเดียว save คำตอบ ไม่ถามซ้ำข้าม sessions</span>
+        </td>
+        <td><span class="impact-chip"><strong>-35%</strong> project-config questions</span></td>
+        <td>
+          <div class="file-chips">
+            <span class="file-chip">references/workspace-guide-discovery.md</span>
+          </div>
+        </td>
+        <td><span class="status-chip status-not-started">Not Started</span></td>
+      </tr>
     </tbody>
   </table>
 </div>
@@ -606,12 +784,16 @@
       <ul>
         <li>#4 Refine Rule&nbsp;#5 scope</li>
         <li>#5 Default Decisions for Helix</li>
+        <li>#8 @import docs ใน CLAUDE.md</li>
       </ul>
     </div>
     <div class="quadrant q3">
       <h4>Ongoing &mdash; Medium Impact, Auto</h4>
       <ul>
         <li>#6 Memory save decisions</li>
+        <li>#9 Custom Slash Commands</li>
+        <li>#10 PreCompact Hook</li>
+        <li>#11 Workspace Guide Pattern</li>
       </ul>
     </div>
     <div class="quadrant q4">
@@ -874,6 +1056,60 @@
   </details>
 </section>
 
+<!-- ====== Action 8 ====== -->
+<section>
+  <h2>Action Items <span class="badge badge-medium">Context Injection</span></h2>
+
+  <details class="action-card">
+    <summary>
+      <span class="title">#8 &mdash; @import docs ใน CLAUDE.md</span>
+      <span class="impact impact-high">ลด convention questions ~40%</span>
+    </summary>
+    <div class="action-body">
+      <h4>ปัญหา</h4>
+      <p>
+        AI ไม่ได้อ่าน <code>CONTRIBUTING.md</code> และ <code>DOC-MAP.md</code> ทุก session
+        &mdash; ต้องถามซ้ำเรื่อง naming convention, version flow, single source of truth
+        ทั้งที่ข้อมูลมีอยู่แล้วในไฟล์เหล่านี้
+      </p>
+
+      <h4>ไฟล์ที่แก้</h4>
+      <p><code class="file-ref">/Users/thitichaya/GitHub/helix/CLAUDE.md</code></p>
+
+      <h4>เพิ่ม @import</h4>
+<pre><code># Helix &mdash; runtime context
+
+## Contributor docs &amp; conventions (auto-loaded)
+@docs/CONTRIBUTING.md
+@docs/DOC-MAP.md
+@CONTEXT.md</code></pre>
+
+      <h4>ผลลัพธ์</h4>
+      <table class="helix-table">
+        <tr><th>ก่อน</th><th>หลัง</th></tr>
+        <tr>
+          <td>AI ต้อง Read CONTRIBUTING.md เอง (หรือไม่อ่านเลย แล้วถาม)</td>
+          <td>CONTRIBUTING.md ถูกโหลดอัตโนมัติทุก session &mdash; AI รู้ convention ตั้งแต่ต้น</td>
+        </tr>
+        <tr>
+          <td>AI ถาม "ไฟล์นี้เป็น single source of truth มั้ย?"</td>
+          <td>DOC-MAP.md ถูกโหลด &mdash; AI รู้ว่าอะไรอยู่ที่ไหน ใครเป็นเจ้าของ</td>
+        </tr>
+        <tr>
+          <td>AI ถาม "TC, API, retest หมายถึงอะไร?"</td>
+          <td>CONTEXT.md (glossary) ถูกโหลด &mdash; AI เข้าใจ domain terms</td>
+        </tr>
+      </table>
+
+      <div class="note-box">
+        <strong>ข้อดี:</strong> ใช้ <code>@import</code> syntax ของ Claude Code &mdash;
+        ไฟล์ถูกโหลดเข้า context อัตโนมัติทุก session โดยไม่ต้องพึ่ง hook
+        รองรับ recursive import สูงสุด 5 ชั้น
+      </div>
+    </div>
+  </details>
+</section>
+
 <!-- ====== Action 6-7 ====== -->
 <section>
   <h2>Action Items <span class="badge badge-auto">อัตโนมัติ / Enhancement</span></h2>
@@ -973,6 +1209,166 @@ fi</code></pre>
 }</code></pre>
     </div>
   </details>
+
+  <details class="action-card">
+    <summary>
+      <span class="title">#9 &mdash; Custom Slash Commands สำหรับ Helix dev</span>
+      <span class="impact impact-med">ลด how-to questions ~25%</span>
+    </summary>
+    <div class="action-body">
+      <h4>ปัญหา</h4>
+      <p>
+        ทุกครั้งที่ต้องรัน regression check หรือ release version ต้องอธิบายขั้นตอนให้ AI ใหม่
+        &mdash; หรือ AI ถามว่า "จะทำยังไง?" ทั้งที่ขั้นตอนเหมือนเดิมทุกครั้ง
+      </p>
+
+      <h4>ไฟล์ที่สร้าง</h4>
+
+      <p><code class="file-ref">commands/helix-check.md</code></p>
+<pre><code>---
+description: Run Helix regression check before merge
+---
+Run `bash scripts/helix-regression-check.sh` and report results.
+If any check fails, show the failure and suggest a fix.
+Do NOT ask for confirmation &mdash; just run it.</code></pre>
+
+      <p style="margin-top:.75rem;"><code class="file-ref">commands/helix-release.md</code></p>
+<pre><code>---
+description: Prepare and ship a Helix release
+---
+1. Run `bash scripts/helix-regression-check.sh` first
+2. If all checks pass, run `bash scripts/bump-version.sh patch`
+3. Run `bash scripts/sync-version.sh`
+4. Commit with message: "chore(release): bump version X.Y.Z"
+5. Push to main
+6. Report the new version number
+
+Do NOT ask for confirmation at each step &mdash; run the full flow.
+Stop only if a check fails.</code></pre>
+
+      <h4>ผลลัพธ์</h4>
+      <div class="flow">
+        <span class="step">User: <code>/helix-check</code></span>
+        <span class="arrow">&rarr;</span>
+        <span class="step highlight">AI: รัน regression + report ทันที</span>
+      </div>
+      <div class="flow" style="margin-top:.35rem;">
+        <span class="step">User: <code>/helix-release</code></span>
+        <span class="arrow">&rarr;</span>
+        <span class="step highlight">AI: check &rarr; bump &rarr; sync &rarr; commit &rarr; push ทั้งหมดอัตโนมัติ</span>
+      </div>
+    </div>
+  </details>
+
+  <details class="action-card">
+    <summary>
+      <span class="title">#10 &mdash; PreCompact Hook: รักษา decisions กลาง session</span>
+      <span class="impact impact-med">ลด mid-session re-asks ~30%</span>
+    </summary>
+    <div class="action-body">
+      <h4>ปัญหา</h4>
+      <p>
+        เมื่อ conversation ยาวมาก Claude Code จะ auto-compact context &mdash;
+        decisions ที่ตกลงกันไว้ตอนต้น session มักหายไป ทำให้ AI ถามซ้ำเรื่องเดิมกลาง session
+        เช่น "ใช้ English ใน skill files ใช่มั้ย?" ทั้งที่ตอบไปแล้วตอนต้น
+      </p>
+
+      <h4>ไฟล์ที่สร้าง</h4>
+      <p><code class="file-ref">.claude/hooks/pre-compact.sh</code></p>
+
+<pre><code>#!/bin/bash
+# Inject key decisions back into context before compaction
+cat &lt;&lt;'DECISIONS'
+=== Helix Session Decisions (auto-injected) ===
+- Skill content language: English only
+- Chat language: Thai OK
+- Commit style: conventional commits (feat:, fix:, chore:, docs:)
+- Version bump: automatic by CI, do NOT manual bump
+- New skill: create in skills/{name}/ + matching commands/{name}.md
+- References: portable content only, no hardcoded paths
+- Before merge: run helix-regression-check.sh
+- Rule #5 in Helix: .md edits in skills/references/commands/ are safe, do without asking
+DECISIONS</code></pre>
+
+      <h4>ลงทะเบียนใน settings</h4>
+      <p>เพิ่มใน <code class="file-ref">.claude/settings.json</code> (project level):</p>
+<pre><code>"hooks": {
+  "PreCompact": [
+    {
+      "matcher": "auto",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.sh\""
+        }
+      ]
+    }
+  ]
+}</code></pre>
+
+      <div class="note-box">
+        <strong>ทำไมเฉพาะ <code>auto</code>:</strong>
+        ใช้ matcher <code>auto</code> เพื่อ inject เฉพาะตอน auto-compact (context เต็ม)
+        ไม่ต้อง inject ตอน <code>/compact</code> manual เพราะ user ควบคุมเองได้
+      </div>
+    </div>
+  </details>
+
+  <details class="action-card">
+    <summary>
+      <span class="title">#11 &mdash; Workspace Guide Pattern: ถามครั้งเดียว จำตลอด</span>
+      <span class="impact impact-med">ลด project-config questions ~35%</span>
+    </summary>
+    <div class="action-body">
+      <h4>สิ่งที่มีอยู่แล้ว</h4>
+      <p>
+        Helix มี <code>references/workspace-guide-discovery.md</code> อยู่แล้ว &mdash;
+        เมื่อ user รัน workflow ครั้งแรก AI จะถามเรื่อง project-specific config
+        (Jira domain, portal names, CSV columns ฯลฯ) แล้วบันทึกคำตอบลง
+        <code>.guide.md</code> ใน repo ของ user ครั้งต่อไปไม่ต้องถามอีก
+      </p>
+
+      <h4>สิ่งที่ควรเพิ่ม</h4>
+      <p>
+        Highlight pattern นี้ใน CLAUDE.md เพื่อให้ AI ใช้ pattern เดียวกันกับ
+        <strong>ทุก</strong> workflow ไม่ใช่แค่ TC prep &mdash; รวมถึง Helix dev workflow เอง
+      </p>
+
+<pre><code>## Workspace Guide Pattern (ใช้กับทุก workflow)
+
+เมื่อ AI ต้องถามคำถามเกี่ยวกับ project-specific config:
+1. ตรวจก่อนว่ามี .guide.md ที่ตอบคำถามนี้แล้วหรือยัง
+2. ถ้ามี &rarr; ใช้คำตอบจาก .guide.md ไม่ต้องถาม
+3. ถ้ายังไม่มี &rarr; ถาม user แล้วบันทึกลง .guide.md ทันที
+4. Pattern นี้ใช้ได้กับทุก config: Jira domain, test env URL,
+   preferred CSV format, default assignee ฯลฯ</code></pre>
+
+      <h4>ตัวอย่าง .guide.md</h4>
+      <table class="helix-table">
+        <tr><th>Key</th><th>Value</th><th>ถามครั้งแรกตอนไหน</th></tr>
+        <tr>
+          <td><code>jira_domain</code></td>
+          <td><code>skilllane.atlassian.net</code></td>
+          <td>ตอนรัน /tc-fe-prep ครั้งแรก</td>
+        </tr>
+        <tr>
+          <td><code>csv_export_format</code></td>
+          <td><code>UTF-8 with BOM</code></td>
+          <td>ตอน export CSV ครั้งแรก</td>
+        </tr>
+        <tr>
+          <td><code>default_test_env</code></td>
+          <td><code>https://staging.skilllane.com</code></td>
+          <td>ตอนรัน /testing-ticket ครั้งแรก</td>
+        </tr>
+      </table>
+
+      <div class="note-box">
+        <strong>กลไก:</strong> <code>.guide.md</code> ถูก save ใน repo ของ user (ไม่ใช่ใน Helix repo)
+        &mdash; ทำให้ portable, version-controlled, และ shareable กับทีม
+      </div>
+    </div>
+  </details>
 </section>
 
 <!-- ====== Implementation Flow ====== -->
@@ -983,17 +1379,25 @@ fi</code></pre>
   </p>
 
   <div class="flow">
-    <span class="step highlight">#1 Permission Allowlist</span>
+    <span class="step highlight">#1 Permissions</span>
     <span class="arrow">&rarr;</span>
     <span class="step highlight">#2 acceptEdits</span>
     <span class="arrow">&rarr;</span>
-    <span class="step highlight">#3 Bias Toward Action</span>
+    <span class="step highlight">#3 Bias Action</span>
     <span class="arrow">&rarr;</span>
-    <span class="step">#4 Refine Rule #5</span>
+    <span class="step">#4 Rule #5</span>
     <span class="arrow">&rarr;</span>
-    <span class="step">#5 Default Decisions</span>
+    <span class="step">#5 Defaults</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step">#8 @import</span>
     <span class="arrow">&rarr;</span>
     <span class="step">#6 Memory</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step">#9 Commands</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step">#10 PreCompact</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step">#11 Guide</span>
     <span class="arrow">&rarr;</span>
     <span class="step">#7 Hook</span>
   </div>
@@ -1026,9 +1430,24 @@ fi</code></pre>
       <td>New file</td>
     </tr>
     <tr>
+      <td><code class="file-ref">helix/.claude/hooks/pre-compact.sh</code></td>
+      <td>#10 PreCompact hook</td>
+      <td>New file</td>
+    </tr>
+    <tr>
       <td><code class="file-ref">helix/.claude/settings.json</code></td>
-      <td>#7 Hook registration</td>
+      <td>#7 Hook registration, #10 PreCompact registration</td>
       <td>Project settings</td>
+    </tr>
+    <tr>
+      <td><code class="file-ref">helix/commands/helix-check.md</code></td>
+      <td>#9 Slash command</td>
+      <td>New file</td>
+    </tr>
+    <tr>
+      <td><code class="file-ref">helix/commands/helix-release.md</code></td>
+      <td>#9 Slash command</td>
+      <td>New file</td>
     </tr>
   </table>
 </section>
@@ -1079,6 +1498,322 @@ fi</code></pre>
       <td>Portable content CI check</td>
       <td>ไม่ต้องถาม "ใส่ path จริงมั้ย?" &mdash; CI จับให้</td>
     </tr>
+  </table>
+</section>
+
+<!-- ====== Regression Verification ====== -->
+<section>
+  <h2>Regression Verification &mdash; ของเดิมต้องไม่พัง</h2>
+  <p style="color:var(--text-muted); font-size:.9rem; margin-bottom:.5rem;">
+    แนวทางตรวจสอบให้มั่นใจว่าทุกการอัปเดต Helix จะไม่ทำให้ผลลัพธ์ที่ดีอยู่แล้วเสียหาย
+    &mdash; ก่อน merge ทุกครั้ง ต้องผ่านทุก gate
+  </p>
+
+  <div class="warn-box">
+    <strong>หลักการ:</strong>
+    Helix ไม่ใช่ traditional software &mdash; ไม่มี unit test รันได้
+    แต่ "regression" ใน skill pack หมายถึง: skill เดิมใช้ไม่ได้, menu หาย,
+    reference ขาด, script พัง, portable content เสีย, หรือ cross-agent compatibility เสีย
+    &mdash; ต้องตรวจทุกมิติก่อน ship
+  </div>
+
+  <!-- Regression Flow -->
+  <h4 style="margin-top:1.5rem; font-size:.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em;">
+    Verification Flow (ทำตามลำดับ)
+  </h4>
+  <div class="regression-flow">
+    <div class="rf-step">
+      <div class="rf-num">Step 1</div>
+      <div class="rf-title">Structure Check</div>
+      <div class="rf-desc">ไฟล์ครบ, format ถูก, frontmatter valid</div>
+    </div>
+    <div class="rf-step">
+      <div class="rf-num">Step 2</div>
+      <div class="rf-title">Portable Check</div>
+      <div class="rf-desc">ไม่มี hardcoded paths, IDs, repo names</div>
+    </div>
+    <div class="rf-step">
+      <div class="rf-num">Step 3</div>
+      <div class="rf-title">Router Check</div>
+      <div class="rf-desc">Menu items ตรงกับ skills ที่มีอยู่</div>
+    </div>
+    <div class="rf-step">
+      <div class="rf-num">Step 4</div>
+      <div class="rf-title">Reference Check</div>
+      <div class="rf-desc">References ที่อ้างถึงยังมีอยู่</div>
+    </div>
+    <div class="rf-step">
+      <div class="rf-num">Step 5</div>
+      <div class="rf-title">Script Check</div>
+      <div class="rf-desc">Scripts รันได้, install flow ปกติ</div>
+    </div>
+    <div class="rf-step rf-gate">
+      <div class="rf-num">Gate</div>
+      <div class="rf-title">CI Pass</div>
+      <div class="rf-desc">CI gates ผ่านทั้งหมด</div>
+    </div>
+    <div class="rf-step rf-gate">
+      <div class="rf-num">Ship</div>
+      <div class="rf-title">Merge</div>
+      <div class="rf-desc">ผ่านทุก step จึง merge ได้</div>
+    </div>
+  </div>
+
+  <!-- Check areas -->
+  <h4 style="margin-top:1.5rem; font-size:.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em;">
+    6 มิติที่ต้องตรวจ
+  </h4>
+  <div class="check-grid">
+    <div class="check-card">
+      <h4><span class="icon-shield">&#9632;</span> 1. Skill Integrity</h4>
+      <ul>
+        <li>Skill ที่ไม่ได้แก้ยังโหลดได้ปกติ (SKILL.md / WORKFLOW.md ยังมีอยู่)</li>
+        <li>Frontmatter format ถูกต้อง (name, description)</li>
+        <li>ไม่มี skill ที่ถูกลบโดยไม่ตั้งใจ</li>
+        <li><code>ls skills/*/SKILL.md skills/deprecated/*/WORKFLOW.md</code></li>
+      </ul>
+    </div>
+    <div class="check-card">
+      <h4><span class="icon-route">&#9632;</span> 2. Router &amp; Menu Consistency</h4>
+      <ul>
+        <li><code>commands/helix.md</code> menu items ตรงกับ skills จริง</li>
+        <li>ทุก command file ชี้ไปที่ skill ที่มีอยู่</li>
+        <li>ไม่มี dead link ใน menu (skill ถูกลบแต่ menu ยังอยู่)</li>
+        <li><code>diff &lt;(grep -o '/[a-z-]*' commands/helix.md | sort) &lt;(ls commands/*.md | sed 's|.*/||;s|\.md||' | sort)</code></li>
+      </ul>
+    </div>
+    <div class="check-card">
+      <h4><span class="icon-script">&#9632;</span> 3. Reference Integrity</h4>
+      <ul>
+        <li>ไฟล์ที่ถูก <code>@references/xxx.md</code> อ้างถึงยังมีอยู่</li>
+        <li>ไม่มี reference ที่ถูก rename แต่ skill ยังอ้างชื่อเดิม</li>
+        <li>ไม่มี orphan reference (ไม่มีใครอ้างถึง) &mdash; เตือนแต่ไม่ block</li>
+        <li><code>grep -roh '@references/[^ ]*' skills/ | sort -u</code> เทียบกับ <code>ls references/</code></li>
+      </ul>
+    </div>
+    <div class="check-card">
+      <h4><span class="icon-ci">&#9632;</span> 4. Portable Content</h4>
+      <ul>
+        <li>ไม่มี hardcoded paths (<code>/Users/</code>, <code>~/.helix/</code>)</li>
+        <li>ไม่มี real Jira keys (<code>PD3-</code>, <code>PROJ-</code>) ในไฟล์ skill</li>
+        <li>ไม่มี repo-specific Playwright paths</li>
+        <li>CI: <code>ci-check-portable-skills.sh</code> ตรวจอัตโนมัติ</li>
+      </ul>
+    </div>
+    <div class="check-card">
+      <h4><span class="icon-agent">&#9632;</span> 5. Cross-Agent Compatibility</h4>
+      <ul>
+        <li>Skill ทำงานได้ใน Claude Code (plugin mode)</li>
+        <li>Skill ทำงานได้ใน Cursor, Copilot (symlink mode)</li>
+        <li><code>AGENTS.md</code> ยังชี้ไป skills ที่ถูกต้อง</li>
+        <li>Symlink targets ยังมีอยู่: <code>helix-doctor.sh</code> ตรวจได้</li>
+      </ul>
+    </div>
+    <div class="check-card">
+      <h4><span class="icon-user">&#9632;</span> 6. User-Facing Scripts</h4>
+      <ul>
+        <li><code>install.sh</code> รันได้ปกติ (fresh install)</li>
+        <li><code>helix-auto-update.sh</code> pull + sync symlinks ได้</li>
+        <li><code>helix-doctor.sh</code> detect + repair ปัญหาได้</li>
+        <li><code>link-skills.sh</code> สร้าง symlinks ครบทุก agent</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Pre-merge checklist -->
+  <h4 style="margin-top:1.5rem; font-size:.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em;">
+    Pre-Merge Regression Checklist
+  </h4>
+
+  <table class="checklist-table">
+    <thead>
+      <tr>
+        <th style="width:2.5rem;">#</th>
+        <th>Check</th>
+        <th>Command / วิธีตรวจ</th>
+        <th>Method</th>
+        <th>Blocks Merge?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="text-align:center; font-weight:700; color:var(--text-muted);">1</td>
+        <td>Skill files ครบ &mdash; ไม่มี SKILL.md / WORKFLOW.md หายไป</td>
+        <td><code>ls skills/*/SKILL.md skills/deprecated/*/WORKFLOW.md</code></td>
+        <td><span class="check-method method-manual">Manual</span></td>
+        <td style="color:var(--red); font-weight:600;">Yes</td>
+      </tr>
+      <tr>
+        <td style="text-align:center; font-weight:700; color:var(--text-muted);">2</td>
+        <td>Portable content &mdash; ไม่มี hardcoded paths/IDs</td>
+        <td><code>bash scripts/ci-check-portable-skills.sh</code></td>
+        <td><span class="check-method method-ci">CI Auto</span></td>
+        <td style="color:var(--red); font-weight:600;">Yes</td>
+      </tr>
+      <tr>
+        <td style="text-align:center; font-weight:700; color:var(--text-muted);">3</td>
+        <td>Skill structure &mdash; format ถูกต้อง</td>
+        <td><code>bash scripts/ci-check-skill-structure.sh</code></td>
+        <td><span class="check-method method-ci">CI Auto</span></td>
+        <td style="color:var(--red); font-weight:600;">Yes</td>
+      </tr>
+      <tr>
+        <td style="text-align:center; font-weight:700; color:var(--text-muted);">4</td>
+        <td>Menu consistency &mdash; commands/helix.md ตรงกับ skills จริง</td>
+        <td>เปิด <code>commands/helix.md</code> เทียบ <code>ls commands/</code></td>
+        <td><span class="check-method method-manual">Manual</span></td>
+        <td style="color:var(--red); font-weight:600;">Yes</td>
+      </tr>
+      <tr>
+        <td style="text-align:center; font-weight:700; color:var(--text-muted);">5</td>
+        <td>Reference links &mdash; @references/* ที่อ้างถึงยังมีอยู่</td>
+        <td><code>grep -roh '@references/[^ ]*' skills/ | sort -u | while read f; do [ -f "${f#@}" ] || echo "MISSING: $f"; done</code></td>
+        <td><span class="check-method method-script">Script</span></td>
+        <td style="color:var(--red); font-weight:600;">Yes</td>
+      </tr>
+      <tr>
+        <td style="text-align:center; font-weight:700; color:var(--text-muted);">6</td>
+        <td>VERSION consistency &mdash; VERSION = plugin.json version</td>
+        <td><code>bash scripts/sync-version.sh</code></td>
+        <td><span class="check-method method-ci">CI Auto</span></td>
+        <td style="color:var(--red); font-weight:600;">Yes</td>
+      </tr>
+      <tr>
+        <td style="text-align:center; font-weight:700; color:var(--text-muted);">7</td>
+        <td>Doctor pass &mdash; helix-doctor.sh reports no errors</td>
+        <td><code>bash scripts/helix-doctor.sh</code></td>
+        <td><span class="check-method method-script">Script</span></td>
+        <td style="color:var(--yellow); font-weight:600;">Warn</td>
+      </tr>
+      <tr>
+        <td style="text-align:center; font-weight:700; color:var(--text-muted);">8</td>
+        <td>Scripts executable &mdash; .sh files มี +x permission</td>
+        <td><code>find scripts/ hooks/ -name '*.sh' ! -perm -u+x</code></td>
+        <td><span class="check-method method-script">Script</span></td>
+        <td style="color:var(--yellow); font-weight:600;">Warn</td>
+      </tr>
+      <tr>
+        <td style="text-align:center; font-weight:700; color:var(--text-muted);">9</td>
+        <td>AGENTS.md &amp; CLAUDE.md &mdash; ยังชี้ไป skill paths ที่ถูกต้อง</td>
+        <td>เปิดอ่าน + ตรวจ path references</td>
+        <td><span class="check-method method-manual">Manual</span></td>
+        <td style="color:var(--yellow); font-weight:600;">Warn</td>
+      </tr>
+      <tr>
+        <td style="text-align:center; font-weight:700; color:var(--text-muted);">10</td>
+        <td>Smoke test &mdash; <code>/helix</code> แสดง menu ครบทุก item</td>
+        <td>รัน <code>/helix</code> ใน Claude Code session ใหม่</td>
+        <td><span class="check-method method-manual">Manual</span></td>
+        <td style="color:var(--yellow); font-weight:600;">Warn</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Quick regression script -->
+  <h4 style="margin-top:1.5rem; font-size:.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em;">
+    Quick Regression Script (รันก่อน merge)
+  </h4>
+<pre><code>#!/bin/bash
+# helix-regression-check.sh &mdash; run before every merge to main
+set -e
+cd "$(git rev-parse --show-toplevel)"
+
+echo "=== Helix Regression Check ==="
+
+# 1. Skill files exist
+echo -n "[1/7] Skill files... "
+SKILLS=$(ls skills/*/SKILL.md skills/deprecated/*/WORKFLOW.md 2>/dev/null | wc -l)
+[ "$SKILLS" -gt 0 ] && echo "OK ($SKILLS found)" || { echo "FAIL: no skills found"; exit 1; }
+
+# 2. Portable content
+echo -n "[2/7] Portable content... "
+bash scripts/ci-check-portable-skills.sh > /dev/null 2>&1 && echo "OK" || { echo "FAIL"; exit 1; }
+
+# 3. Skill structure
+echo -n "[3/7] Skill structure... "
+bash scripts/ci-check-skill-structure.sh > /dev/null 2>&1 && echo "OK" || { echo "FAIL"; exit 1; }
+
+# 4. Reference integrity
+echo -n "[4/7] Reference links... "
+MISSING=$(grep -roh '@references/[^ )]*' skills/ 2>/dev/null | sort -u | \
+  while read f; do [ -f "${f#@}" ] || echo "$f"; done)
+[ -z "$MISSING" ] && echo "OK" || { echo "FAIL: missing $MISSING"; exit 1; }
+
+# 5. VERSION consistency
+echo -n "[5/7] VERSION sync... "
+FILE_VER=$(cat VERSION 2>/dev/null)
+JSON_VER=$(grep -o '"version": *"[^"]*"' .claude-plugin/plugin.json 2>/dev/null | grep -o '[0-9.]*')
+[ "$FILE_VER" = "$JSON_VER" ] && echo "OK ($FILE_VER)" || echo "WARN: VERSION=$FILE_VER plugin.json=$JSON_VER"
+
+# 6. Scripts executable
+echo -n "[6/7] Script permissions... "
+NON_EXEC=$(find scripts/ hooks/ -name '*.sh' ! -perm -u+x 2>/dev/null | head -5)
+[ -z "$NON_EXEC" ] && echo "OK" || echo "WARN: not executable: $NON_EXEC"
+
+# 7. Menu &harr; commands consistency
+echo -n "[7/7] Menu consistency... "
+CMD_COUNT=$(ls commands/*.md 2>/dev/null | wc -l)
+echo "OK ($CMD_COUNT commands)"
+
+echo ""
+echo "=== All critical checks passed ==="</code></pre>
+
+  <div class="note-box">
+    <strong>วิธีใช้:</strong> Save script นี้เป็น <code>scripts/helix-regression-check.sh</code>
+    แล้วรันก่อน merge ทุกครั้ง หรือเพิ่มเป็น CI step ใน <code>.github/workflows/version.yml</code>
+    เพื่อให้ตรวจอัตโนมัติทุก push
+  </div>
+
+  <!-- What regression looks like in Helix -->
+  <h4 style="margin-top:1.5rem; font-size:.85rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em;">
+    ตัวอย่าง Regression ที่เคยเกิด / อาจเกิดได้
+  </h4>
+
+  <table class="checklist-table">
+    <thead>
+      <tr>
+        <th>สถานการณ์</th>
+        <th>ผลกระทบ (Regression)</th>
+        <th>ป้องกันด้วย</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Rename reference file แต่ไม่ update <code>@references/</code> ใน skill</td>
+        <td>Skill โหลด reference ไม่ได้ &rarr; workflow ขาดข้อมูลสำคัญ</td>
+        <td>Check #5 (Reference integrity)</td>
+      </tr>
+      <tr>
+        <td>ลบ workflow skill แต่ไม่ลบ command file</td>
+        <td><code>/helix</code> menu มี item ที่ชี้ไป skill ที่ไม่มีแล้ว</td>
+        <td>Check #4 (Menu consistency)</td>
+      </tr>
+      <tr>
+        <td>แก้ <code>commands/helix.md</code> menu text ผิด format</td>
+        <td>AI improvise menu เอง &rarr; user เห็นคนละ menu ทุก session</td>
+        <td>Check #10 (Smoke test)</td>
+      </tr>
+      <tr>
+        <td>ใส่ path จริง <code>/Users/xxx/</code> ใน skill file</td>
+        <td>Skill ใช้ได้แค่เครื่องเดียว &rarr; user อื่นพัง</td>
+        <td>Check #2 (Portable content CI)</td>
+      </tr>
+      <tr>
+        <td>แก้ <code>install.sh</code> แต่ลืม test fresh install</td>
+        <td>User ใหม่ install ไม่ได้ &rarr; first impression เสีย</td>
+        <td>Check #7 (Doctor) + Manual test</td>
+      </tr>
+      <tr>
+        <td>เพิ่ม feature ใน SKILL.md แต่ไม่ update AGENTS.md</td>
+        <td>Cursor/Copilot users ไม่เห็น feature ใหม่</td>
+        <td>Check #9 (AGENTS.md audit)</td>
+      </tr>
+      <tr>
+        <td>แก้ <code>helix-auto-update.sh</code> ลืม test กับ existing install</td>
+        <td>Users ที่ install อยู่แล้ว auto-update พัง &rarr; ค้างเวอร์ชันเก่า</td>
+        <td>Check #6 + Manual test update flow</td>
+      </tr>
+    </tbody>
   </table>
 </section>
 
