@@ -36,7 +36,7 @@ Deliver to the user:
 **Use when:** the TCs will be handed to a Playwright/CLI agent, or read in a PR.
 
 - Offer **alongside** CSV/Excel — never instead of (existing spreadsheet users must not break).
-- Format spec: [test-md-format.md](../../../references/test-md-format.md) (single source of truth).
+- Format spec: [test-md-format.md](../../../../references/test-md-format.md) (single source of truth).
 - Same reviewed chat table feeds it; emit exactly the rows shown (no fabricated cases).
 - File: `{ISSUE_KEY}.test.md` in workspace `references/`.
 
