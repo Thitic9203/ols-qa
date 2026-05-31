@@ -1,81 +1,96 @@
 # Test.md format (agent-native test cases)
 
-**Single source of truth** for Helix's Test.md export — a structured Markdown that is both human-readable and directly runnable by another agent (no parsing of prose tables needed).
+**Single source of truth** for Helix's Test.md export. Test.md is TestMu AI's Markdown-based, **agent-native** test format for **Kane CLI**: plain-language steps interpreted and replayed by an AI agent at runtime — no selectors, no code.
 
-> **Status:** Helix-defined interpretation. An official "Test.md" spec (announced May 2026, TestMu) could not be verified at authoring time, so this file defines a concrete, ISTQB-grounded format. **If/when the official spec lands, update only this file + [scripts/export-test-md.py](../scripts/export-test-md.py)** — every workflow links here, so the change is one place.
+> **Source (official, content verified):** `LambdaTest/agent-skills` › [playwright-skill/reference/test-md-format.md](https://github.com/LambdaTest/agent-skills/blob/main/playwright-skill/reference/test-md-format.md) (TestMu AI / Kane CLI, announced 14 May 2026). This file records that spec verbatim-in-substance + how Helix maps a reviewed TC table onto it. If upstream changes, update **only** this file + [scripts/export-test-md.py](../scripts/export-test-md.py).
 
-## Why (not a replacement)
+## Why (additive, not a replacement)
 
-Test.md is an **additive** delivery option alongside CSV / Excel / Jira comment — never a replacement. CSV stays the default for spreadsheets; Test.md is for agent hand-off (Playwright agent, CLI runner) and PR-review reading.
+Test.md is an **additive** delivery option alongside CSV / Excel / Jira comment — never a replacement. CSV stays the default for spreadsheets; Test.md is for agent hand-off (Kane CLI, Playwright agent) and PR-review reading.
 
-## Mapping: ISTQB attribute → Test.md field
+## Official anatomy
 
-Source attributes from [tc-quality-standards.md](tc-quality-standards.md).
+A Test.md file has two parts: **YAML frontmatter** + a **Markdown body of steps written as plain-English prose**.
 
-| ISTQB attribute | Test.md field |
-|-----------------|---------------|
-| Unique ID | `## {id}` heading + `id:` |
-| Title | heading text after `—` |
-| Precondition | `precondition:` |
-| Test Steps | `**Steps:**` numbered list |
-| Test Data | `test_data:` |
-| Expected Result | `**Expected:**` list |
-| Priority | `priority:` |
-| Traceability | `traceability:` |
-| Module/Feature (API) | `module:` |
-| Services Impacted (API) | `services:` |
-
-Unmapped TC columns are emitted as extra `key: value` lines (lower-cased, spaces→`_`) so no data is lost.
-
-## Structure
+Minimal example (verbatim shape from the spec):
 
 ```markdown
 ---
-suite: {ISSUE_KEY or feature}
-format: test.md/v0 (helix)
-source: {jira key / spec ref}
-count: {N}
+name: Login Test
+url: https://example.com/login
 ---
 
-## TC-LOGIN-001 — Submit valid credentials logs the user in
+# Login Test
 
-- id: TC-LOGIN-001
-- priority: High
-- traceability: JIRA-123 / AC-1
-- precondition: User account exists and is active
-- test_data: user=valid@example.com, password=valid
-
-**Steps:**
-1. Open the login page.
-2. Enter the email and password.
-3. Click Submit.
-
-**Expected:**
-- User lands on the dashboard.
-- Session cookie is set.
+1. Type "user@test.com" in the email field
+2. Type "password123" in the password field
+3. Click the "Sign In" button
+4. Verify the dashboard is visible
 ```
+
+### Frontmatter fields (official)
+
+| Field | Required | Meaning |
+|-------|----------|---------|
+| `name` | yes | Human-readable test name |
+| `url` | yes | Starting URL for the test |
+| `tags` | no | List of labels, e.g. `[smoke, login]` |
+| `config` | no | Per-test overrides — `viewport: { width: 1280, height: 720 }`, `timeout: 30000` |
+
+(Only these four. `config` sub-keys are overrides; if omitted, Kane uses defaults.)
+
+### Writing steps (official)
+
+- Steps are a **numbered or bulleted Markdown list** in plain English; **one action or assertion per step**.
+- **Actions:** `Click ...`, `Type ... in ...`, `Navigate to ...`
+- **Assertions:** `Verify ...`, `Expect ...`, `Check that ...`
+- Optionally group related steps under **H2 section headings** (`## Setup`, `## Purchase`) — these are readability groups, not required.
+- **Data capture/reuse:** `Store the order number as orderId` … later `Verify the confirmation shows orderId`.
+- **Imports:** `@import ./flows/login.test.md` reuses a shared flow.
+
+### Naming, layout, running (official)
+
+- Suffix `.test.md`; group by feature under `tests/` (e.g. `tests/auth/login.test.md`).
+- Run: `kane-cli testmd run tests/auth/login.test.md` or `kane-cli testmd run tests/ --tag smoke`.
+- Steps record on first run, replay deterministically after; pass/fail is binary from a real browser run.
+
+## Helix mapping: reviewed TC table → Test.md
+
+A Helix TC table is a *suite* of cases. Helix maps **one reviewed TC row → one `## {title}` section** whose steps are a numbered plain-English list (source attributes from [tc-quality-standards.md](tc-quality-standards.md)):
+
+| TC table column | Test.md target |
+|-----------------|----------------|
+| Test Case ID / Title | `## {title} ({id})` section heading (id kept for traceability) |
+| Precondition | first numbered step: `Ensure {…}` |
+| Test Data | numbered step: `Use test data: {…}` |
+| Test Steps | numbered action steps (plain English, as written) |
+| Expected Result | numbered assertion steps: `Verify {…}` |
+| Priority / Module | frontmatter `tags` |
+| (suite / ISSUE_KEY) | frontmatter `name` + `# {name}` H1 |
+| (environment URL) | frontmatter `url` — from intake/guide or `--url`; if unknown, a `REPLACE_ME` placeholder the user must fill |
+
+`url` is **required** by the spec but TC tables often lack it — the exporter takes `--url` and otherwise writes a `REPLACE_ME` placeholder so the gap is visible, never silently wrong. `config` is omitted by default (optional).
 
 ## Rules
 
-- One `##` block per test case; heading = `## {id} — {title}`.
-- Field lines are `- key: value`; keep `—` for empty (matches table).
-- `**Steps:**` = numbered list, one imperative action per line (atomic).
-- `**Expected:**` = bullet list, one observable result per line.
+- Emit **exactly** the reviewed rows shown in chat — never invent cases (same rule as CSV).
 - UTF-8, `.test.md` suffix (e.g. `{ISSUE_KEY}.test.md`).
-- Emit **exactly** the rows shown in chat — never invent cases (same rule as CSV).
 - Portable: no host paths, secrets, or real customer keys.
+- Keep the format spec only here — one edit point if upstream changes.
 
 ## MUST / NEVER
 
 | Rule | Because |
 |------|---------|
+| MUST follow the official anatomy (frontmatter `name`/`url` + `# title` + numbered plain-English steps) | So Kane CLI / agents can actually replay it |
+| MUST use action/assertion phrasing (`Click`, `Type`, `Verify`, `Expect`, `Check that`) | Kane interprets steps by their verbs |
 | MUST keep Test.md additive to CSV/Excel | Existing spreadsheet users must not break |
 | MUST source rows from the reviewed chat table | No fabricated cases (parity with csv-export-rules) |
-| MUST keep format spec only here | One edit point when the official spec ships |
-| NEVER drop a TC column on conversion | Unmapped columns become `key: value` lines |
+| MUST surface a missing `url` as `REPLACE_ME`, not guess | `url` is required; a silent wrong value breaks the run |
+| NEVER invent frontmatter fields beyond name/url/tags/config | Stay byte-faithful to the spec |
 
 ## Delivery & script
 
-- Generator: [scripts/export-test-md.py](../scripts/export-test-md.py) — reads the same one-table Markdown that [export-markdown-table-to-csv.py](../scripts/export-markdown-table-to-csv.py) reads.
+- Generator: [scripts/export-test-md.py](../scripts/export-test-md.py) — reads the same one-table Markdown that [export-markdown-table-to-csv.py](../scripts/export-markdown-table-to-csv.py) reads; `--url` sets the entry URL, `--self-test` runs an internal check.
 - Offered alongside CSV/Excel in tc-fe-prep and tc-api-prep delivery options.
-- See also [csv-export-rules.md](csv-export-rules.md) (sibling export path).
+- Sibling export path: [csv-export-rules.md](csv-export-rules.md).
