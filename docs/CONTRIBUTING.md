@@ -24,6 +24,11 @@ bash scripts/helix-setup-devenv.sh --uninstall # revert (keeps your own rules)
 
 It merges (never clobbers), is safe to re-run, and once opted in,
 `helix-auto-update.sh` keeps it in sync on future updates. Requires `jq`.
+
+Existing installs are **auto-notified**: the SessionStart hook surfaces a one-line
+tip about this command up to 3 times (never once opted in). It does **not** silently
+change your global config — applying Layer 2 is always your explicit choice. Silence
+the tip with `HELIX_DEVENV_NOTICE=0`.
 The narrowed git/`gh` allowlist deliberately leaves destructive/outward verbs
 (`git push --force`, `git reset --hard`, `gh pr merge`, `gh repo delete`) to prompt.
 
