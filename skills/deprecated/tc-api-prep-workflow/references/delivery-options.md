@@ -2,7 +2,7 @@
 
 ## CSV
 
-Follow [csv-export-rules.md](../../../references/csv-export-rules.md) — CSV export section. Key points:
+Follow [csv-export-rules.md](../../../../references/csv-export-rules.md) — CSV export section. Key points:
 
 - Apply **Cell text cleaning**: `<br>` variants → `\n`, strip ALL HTML tags, strip `**`
 - UTF-8 with BOM (`encoding='utf-8-sig'`) — mandatory for Thai and non-ASCII to render correctly
@@ -12,7 +12,7 @@ Follow [csv-export-rules.md](../../../references/csv-export-rules.md) — CSV ex
 
 ## Excel (.xlsx)
 
-Follow [csv-export-rules.md](../../../references/csv-export-rules.md) — Excel/xlsx section. Key points:
+Follow [csv-export-rules.md](../../../../references/csv-export-rules.md) — Excel/xlsx section. Key points:
 
 - Use Python + openpyxl inline script (see csv-export-rules.md for full script template)
 - Apply **Cell text cleaning** same as CSV
@@ -24,7 +24,7 @@ Follow [csv-export-rules.md](../../../references/csv-export-rules.md) — Excel/
 
 For hand-off to a Playwright/CLI agent or PR reading. Offer **alongside** CSV/Excel — never as a replacement.
 
-- Format spec: [test-md-format.md](../../../references/test-md-format.md) (single source of truth)
+- Format spec: [test-md-format.md](../../../../references/test-md-format.md) (single source of truth)
 - Same reviewed table feeds it; emit exactly the approved rows (no fabricated cases)
 - File: `{ISSUE_KEY}.test.md` in workspace
 
