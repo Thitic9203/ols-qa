@@ -19,6 +19,9 @@ Apply [qa-evidence-gates.md](qa-evidence-gates.md) before any pass/post/done cla
 - [ ] Coverage delta table posted ([coverage-delta-template.md](coverage-delta-template.md))
 - [ ] File row count matches approved table (if files written)
 - [ ] Jira/destination UI matches draft (not API response alone)
+- [ ] **Post-publish review passed** ([jira-comment-post-review.md](jira-comment-post-review.md)): no literal `<br>`/HTML tags, numbered items on separate lines, attachment present
+- [ ] **CSV/Excel attached to Jira issue** (not just saved in workspace) — footer link verified working
+- [ ] Agent did NOT report "commented" / "done" before all checks passed
 
 ## Testing ticket
 
@@ -26,6 +29,7 @@ Apply [qa-evidence-gates.md](qa-evidence-gates.md) before any pass/post/done cla
 - [ ] F1–F3 summary posted before Phase G
 - [ ] Every scenario has result + evidence reference
 - [ ] Phase G6 re-read completed if external update ran
+- [ ] If Jira/Confluence update: no literal `<br>`/HTML tags, numbered items on separate lines
 
 ## Retest bug
 
@@ -33,6 +37,7 @@ Apply [qa-evidence-gates.md](qa-evidence-gates.md) before any pass/post/done cla
 - [ ] Comment format v2/v3 not switched mid-session
 - [ ] Screenshots attached before v2 wiki embed (FE)
 - [ ] Transition names match workspace guide
+- [ ] Post-publish review passed: no stray HTML/markup tags, numbered items on separate lines ([jira-comment-post-review.md](jira-comment-post-review.md))
 
 ## Create bug
 

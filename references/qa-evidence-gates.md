@@ -20,7 +20,7 @@ Skip a step → treat as unverified.
 |-------|----------|----------------|
 | Playwright / tests passed | Test runner exit 0 + summary shows 0 failed for in-scope tests | “Should pass”, prior run, agent said success |
 | Playwright failed | Failing test name + log/trace path or screenshot | Vague “broken” |
-| Jira comment posted | GET issue or open UI — comment body visible, row/table count matches draft | POST API 201 only, MCP “success” |
+| Jira comment posted | GET issue or open UI — comment body visible, row count matches draft, **no literal `<br>`/HTML tags**, numbered items on separate lines, CSV attached | POST API 201 only, MCP “success”, unchecked comment |
 | Jira transition done | Issue status in UI/API matches target transition | Transition API called once |
 | CSV/Excel exported | File exists in workspace + row count = approved table | Wrote path without opening file |
 | Retest PASSED | Evidence in comment matches checks in [retest-fix-intake.md](retest-fix-intake.md) plan | Dev said fixed |

@@ -174,11 +174,13 @@ See [references/publish-options.md](references/publish-options.md) for Jira deli
 
 **Target:** `{ISSUE_KEY}` story the user specified.
 
+**Pre-post conversion (mandatory):** Before building the comment body, convert every `<br>` in table cells to Jira-native line breaks. Full rules: [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md). **Never copy the chat draft directly — it contains `<br>` that Jira renders as literal text.**
+
 **Content:** Single comment (unless user asked otherwise) containing:
 
 1. Intro line: `Draft TC FE as below`
 2. Shared prep + precondition note
-3. Full table (bold header cells)
+3. Full table (bold header cells) — **with `<br>` already converted**
 4. Footer: short note that the CSV/Excel file matches the table + **clickable attachment link** on the same issue
 
 **Publish methods** (choose what works in the environment — details in `references/publish-options.md`):
@@ -189,14 +191,20 @@ See [references/publish-options.md](references/publish-options.md) for Jira deli
 | ADF JSON + browser session | Large tables; upload CSV/xlsx via authenticated session |
 | User pastes | Fallback if automation unavailable |
 
-**After publish — mandatory fix-verify on Jira UI:**
+**After publish — mandatory post-publish review on Jira UI:**
 
-- [ ] All TC rows visible (not header only).
-- [ ] Multi-line cells show separate lines.
-- [ ] CSV/Excel attachment present and opens with correct row count.
+Run the **full review checklist** from [jira-comment-post-review.md](../../references/jira-comment-post-review.md). Key checks:
+
+- [ ] All TC rows visible (not header only) — count must match approved draft.
+- [ ] **No literal `<br>`, HTML tags, or `**` markers** visible as text in any cell (zero tolerance).
+- [ ] Numbered items (`1. ` `2. ` `3. `) each on a **separate line** — not running together.
+- [ ] Cell content matches approved draft (spot-check first, middle, last rows).
+- [ ] CSV/Excel **attached to the same issue** (not just in workspace) and footer link works.
 - [ ] Comment is on the **story**, not a sub-task.
 
-If any check fails → fix and re-verify (max 2 rounds) before handoff.
+If any check fails → fix and re-post → re-verify on Jira UI (max 3 rounds).
+
+**MUST NOT tell user "commented" or "done" until all checks pass.** See [jira-comment-post-review.md](../../references/jira-comment-post-review.md) for fix procedures and reporting templates.
 
 ---
 
@@ -208,6 +216,7 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 - [ ] AC/EC coverage complete; quality checklist PASS per tc-quality-standards.
 - [ ] Export file row count matches table rows (CSV or xlsx per user's requested format).
 - [ ] Jira UI matches approved draft (not MCP output alone).
+- [ ] Post-publish review passed per [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — no stray tags, numbered items on separate lines, attachment present.
 - [ ] Close-out includes `Verified:` after Jira re-open.
 - [ ] Publish fix-verify (Step 7) completed — at least one Jira UI re-read.
 - [ ] **Fresh-eyes:** re-read full draft before publish when table **> 15 rows**.
@@ -258,4 +267,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST NOT reference agent-machine absolute paths in Jira | Other users cannot reproduce |
 | MUST run Step 4 review before draft table | Prevents out-of-scope cases reaching Jira |
 | MUST apply tc-quality-standards on every row | ISTQB / 29119-3 consistency |
-| MUST NOT use `\n` inside Jira markdown table cells | Renders as one line |
+| MUST convert `<br>` to Jira-native line breaks before posting (see [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md)) | `<br>` renders as literal text on Jira |
+| MUST pass post-publish review ([jira-comment-post-review.md](../../references/jira-comment-post-review.md)) before reporting "commented" or "done" to user | Prevents false success claims with broken formatting |
+| MUST attach CSV/Excel to Jira issue when file was generated (not just workspace) | User expects downloadable file on the issue |
+| MUST NOT use `\n` inside **chat draft** markdown table cells | Breaks table row in markdown renderers |

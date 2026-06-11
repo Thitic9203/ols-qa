@@ -220,18 +220,20 @@ See `references/gotchas.md` for encoding.
 
 Use **v2** wiki markup and `/rest/api/2/issue/{KEY}/comment`. Attach images before posting.
 
-### 7d — Fix-verify after post (mandatory)
+### 7d — Post-publish review (mandatory)
 
-Before Step 8 transition:
+Before Step 8 transition, run review per [jira-comment-post-review.md](../../references/jira-comment-post-review.md):
 
 1. Re-open `https://{JIRA_DOMAIN}/browse/{ISSUE_KEY}` (or equivalent).
 2. Checklist:
    - [ ] New comment visible; summary line **PASSED ✅** or **FAILED ❌** correct.
+   - [ ] **No literal `<br>`, HTML tags, or stray markup** visible as text.
+   - [ ] **Numbered items** (`1. ` `2. ` `3. `) each on a separate line — not running together.
    - [ ] No truncation; screenshots attached and render (FE).
    - [ ] API evidence: cURL + response present per row.
-3. If mismatch → edit/add comment per project rules → re-read. **Max 2 rounds** — then report blockers.
+3. If any check fails → fix → re-post → re-verify on Jira UI. **Max 3 rounds** — then report specific failures with best available workaround.
 
-MUST NOT transition or assign until 7d passes — because stakeholders trust Jira, not MCP output.
+MUST NOT transition, assign, or report "done" until 7d passes — because stakeholders trust Jira, not MCP output.
 
 **Fresh-eyes:** MUST re-read full draft from Step 6 before Step 7 when comment **> 80 lines** or table **> 15 rows**.
 

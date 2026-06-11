@@ -186,23 +186,30 @@ Tell the user the **workspace-relative paths** to download.
 
 ### G2 — Comment on link (if user chose A)
 
-1. Draft comment body in chat (same table; Jira use `<br>` in cells; **bold every header cell** — e.g. `| **Test Case ID** | **Module / Feature** | **Test Title** | ...`).
+1. Draft comment body in chat (same table; chat draft uses `<br>` in cells; **bold every header cell** — e.g. `| **Test Case ID** | **Module / Feature** | **Test Title** | ...`).
 2. Show draft comment → user may waive second approval if they already approved Phase F table.
-3. Post using environment tools (MCP, browser). Match format: [references/delivery-options.md](references/delivery-options.md).
-4. **Verify** on the destination UI: row count, formatting, correct page/issue.
+3. **Pre-post conversion (mandatory):** Convert every `<br>` in table cells to Jira-native line breaks before posting. Full rules: [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md). **Never copy the chat draft directly — it contains `<br>` that Jira renders as literal text.**
+4. Post using environment tools (MCP, browser). Match format: [references/delivery-options.md](references/delivery-options.md).
+5. **Verify** on the destination UI: row count, formatting, correct page/issue, **no literal `<br>` in any cell**.
 
-### G-verify — Fix-verify (mandatory)
+### G-verify — Post-publish review (mandatory)
 
-After G1 and/or G2:
+After G1 and/or G2, run the **full review checklist** from [jira-comment-post-review.md](../../references/jira-comment-post-review.md):
 
 1. Re-open the file path or comment URL on the destination.
 2. Checklist:
    - [ ] Row count matches approved Phase F table.
    - [ ] Columns match Phase B confirmation.
+   - [ ] **No literal `<br>`, HTML tags, or `**` markers** visible as text in any cell (zero tolerance).
+   - [ ] Numbered items (`1. ` `2. ` `3. `) each on a **separate line** — not running together.
+   - [ ] Cell content matches approved draft (spot-check first, middle, last rows).
+   - [ ] CSV/Excel **attached to the same issue** (not just in workspace) and footer link works.
    - [ ] No truncation (Jira) or missing header row (CSV/xlsx).
-3. If mismatch → fix delivery → re-read. **Max 2 rounds** — then report blockers.
+3. If any check fails → fix → re-post → re-verify on Jira UI. **Max 3 rounds** — then report specific failures to user.
 
-MUST NOT run G3 close until at least one fix-verify round passes — because first export/post is often wrong.
+**MUST NOT tell user "commented" or "done" until all checks pass.** If a problem cannot be auto-fixed, report the exact issue and propose the best available workaround — never give up with "can't do it."
+
+MUST NOT run G3 close until post-publish review passes — because first export/post is often wrong.
 
 **Fresh-eyes:** MUST re-read the full draft table before G2/G1 when **> 15 rows** ([skill-rules-style.md](../../references/skill-rules-style.md)).
 
@@ -219,8 +226,10 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 - [ ] Phase E review block posted with **Ready for draft: YES** and endpoint matrix complete.
 - [ ] Spec/Swagger coverage complete; out-of-scope documented; tc-quality-standards PASS.
 - [ ] Row count and columns match Phase B confirmation.
-- [ ] If comment delivery: destination UI shows full table.
+- [ ] If comment delivery: destination UI shows full table, no stray HTML/markup tags, numbered items on separate lines.
+- [ ] If comment delivery: CSV/Excel attached to the same issue and footer link works.
 - [ ] If file delivery: CSV/xlsx opens with bold header row + N data rows.
+- [ ] Post-publish review passed per [jira-comment-post-review.md](../../references/jira-comment-post-review.md).
 - [ ] Close-out includes `Verified:` and test case count.
 - [ ] G-verify completed (at least one re-read of destination).
 - [ ] [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (TC API section).
@@ -260,4 +269,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST NOT invent endpoints not in spec/Swagger | False coverage |
 | MUST run Phase E review before draft table | Prevents out-of-scope API cases |
 | MUST apply tc-quality-standards on every row | ISTQB / 29119-3 consistency |
-| MUST verify destination UI when using delivery A | Truncation |
+| MUST convert `<br>` to Jira-native line breaks before posting (see [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md)) | `<br>` renders as literal text on Jira |
+| MUST pass post-publish review ([jira-comment-post-review.md](../../references/jira-comment-post-review.md)) before reporting "commented" or "done" to user | Prevents false success claims with broken formatting |
+| MUST attach CSV/Excel to Jira issue when file was generated and user chose delivery A (not just workspace) | User expects downloadable file on the issue |
+| MUST verify destination UI when using delivery A | Truncation + literal `<br>` |

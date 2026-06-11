@@ -46,9 +46,23 @@ Draft TC FE as below
 | Cell newlines | Real `\n` inside quoted CSV fields \u2014 use `csv.writer` |
 | HTML tags | Strip all; `<br>` variants \u2192 `\n` |
 
+## Mandatory `<br>` conversion before Jira post
+
+**MUST** convert `<br>` to Jira-native line breaks before posting. Raw `<br>` renders as **literal text** in Jira table cells — not a line break.
+
+Full rules: [jira-linebreak-conversion.md](../../../../references/jira-linebreak-conversion.md).
+
+| Delivery | Convert `<br>` to |
+|----------|-------------------|
+| MCP / REST markdown | `\n` in body string |
+| ADF JSON | `{"type": "hardBreak"}` |
+| Wiki (v2) | `\\` |
+
+**Chat draft keeps `<br>`** (readable in markdown). **Jira body MUST NOT contain `<br>`.**
+
 ## ADF notes (when using API/browser ADF)
 
-- Map `<br>` to hard breaks in paragraph content.
+- Map `<br>` to `{"type": "hardBreak"}` nodes in paragraph content — never literal `<br>` text.
 - Large tables may require ADF instead of markdown API.
 - Some ADF node types for inline attachments return HTTP 400 — use a text link to `secure/attachment/{id}/{filename}` instead.
 

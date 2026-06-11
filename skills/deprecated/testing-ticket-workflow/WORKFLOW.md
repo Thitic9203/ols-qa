@@ -198,7 +198,9 @@ Before telling the user updates are done:
    - [ ] Column values match agreed formats.
    - [ ] No partial rows, empty required cells, or wrong ticket/sheet tab.
    - [ ] Jira/Confluence: comment or table visible as intended (not draft-only unless user asked draft).
-3. If any mismatch → fix and re-check. **Maximum 2 fix rounds** — then report what remains blocked.
+   - [ ] **No literal `<br>`, HTML tags, or stray markup** visible as text in any cell.
+   - [ ] **Numbered items** each on a separate line — not running together on one line.
+3. If any mismatch → fix and re-check. **Maximum 3 fix rounds** — then report specific failures with best available workaround (see [jira-comment-post-review.md](../../references/jira-comment-post-review.md)).
 
 ### G7 — Close
 
