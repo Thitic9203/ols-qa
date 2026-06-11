@@ -31,9 +31,19 @@ For hand-off to a Playwright/CLI agent or PR reading. Offer **alongside** CSV/Ex
 ## Jira comment / chat draft
 
 - **Bold every header cell**: `| **Test Case ID** | **Module / Feature** | **Test Title** | ... |` — ALL columns, not just one
-- Multi-line cells: `<br>` between numbered items
+- **Chat draft**: use `<br>` between numbered items (readable in markdown)
+- **Jira comment body**: MUST convert `<br>` to Jira-native line breaks **before posting** — raw `<br>` renders as literal text on Jira. Full rules: [jira-linebreak-conversion.md](../../../../references/jira-linebreak-conversion.md)
+
+  | Method | `<br>` becomes |
+  |--------|----------------|
+  | MCP / REST markdown | `\n` (literal newline) |
+  | ADF JSON | `{"type": "hardBreak"}` |
+  | Wiki (v2) | `\\` |
+
+- **Never copy chat draft directly to Jira body** — always run conversion first
 - Wrap issue keys in `{{PROJ-123}}` if auto-link is unwanted
 - Large tables: verify row count on Jira UI after post; consider CSV/xlsx attachment + table summary
+- After post: confirm **no literal `<br>` in any cell** on Jira UI
 
 ## Confluence
 

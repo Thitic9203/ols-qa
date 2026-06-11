@@ -11,6 +11,12 @@
 **Cause:** Comment body too large for MCP/markdown path.  
 **Fix:** Publish via ADF + full body, or split only if user allows (default is single comment).
 
+## Literal `<br>` tags visible in Jira cells
+
+**Symptom:** Jira comment shows `<br>` as text (e.g. `1. Step one<br>2. Step two`) instead of separate lines.  
+**Cause:** Chat draft (which uses `<br>` for markdown readability) was copied directly to Jira comment body without conversion.  
+**Fix:** Before posting, convert all `<br>` to Jira-native line breaks per [jira-linebreak-conversion.md](../../../../references/jira-linebreak-conversion.md) (MCP: `\n`, ADF: hardBreak node, wiki: `\\`). **Never copy chat draft directly to Jira body.**
+
 ## Flattened cell text
 
 **Symptom:** Steps run together on one line.  

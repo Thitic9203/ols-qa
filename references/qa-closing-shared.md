@@ -16,4 +16,5 @@ Follow [skill-rules-style.md — doubt and fix-verify](skill-rules-style.md#qa-c
 - [ ] User-facing text is **English only**.
 - [ ] No success claim without **tool output** and **destination verification**.
 - [ ] Gates were not skipped (approval / confirm / refuse when inputs missing).
+- [ ] If Jira comment posted: **post-publish review passed** ([jira-comment-post-review.md](jira-comment-post-review.md)) — no literal `<br>`/HTML tags, numbered items on separate lines, CSV/Excel attached.
 - [ ] `Verdict:` or `Verified:` line with counts in close-out block.
