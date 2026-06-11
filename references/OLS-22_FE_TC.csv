@@ -1,0 +1,97 @@
+Acceptance Criteria,Services Impacted,Test Case ID,Test Title,Precondition,Test Data,Test Steps,Expected Result,Priority
+"AC_01 — Upload valid video + Save Draft","Media Service
+Video Transcoding Service",TC_Video_01,Upload valid MP4/MOV → Save as DRAFT,"1. On media creation page
+2. ""เพิ่มวิดีโอใหม่"" option visible","[TBD] MP4 or MOV file: ≤5 GB, >1 min, 16:9 ratio
+Required metadata values [TBD]","1. Select ""เพิ่มวิดีโอใหม่""
+2. Attach and upload valid MP4 or MOV file
+3. Wait for file validation and upload progress to finish
+4. Fill all required metadata: Title, Learning Goal, Sub Learning Goal (1 Primary / up to 3 Secondary / 2 Mentioned), Level, Thumbnail
+5. Click ""บันทึกร่าง""","1. File passes Type / Size / Ratio validation checks
+2. Upload completes successfully
+3. System saves media with status = DRAFT
+4. Confirmation message displayed to Creator
+5. Media appears in My Media Dashboard with DRAFT status",High
+"AC_02 — Upload → Transcoding success → Submit → Consent → PENDING_APPROVE","Media Service
+Video Transcoding Service
+Community Approval Service",TC_Video_02,Upload valid MP4/MOV → Transcoding completes → Submit for Approval → PENDING_APPROVE,"1. On media creation page
+2. ""เพิ่มวิดีโอใหม่"" option visible","[TBD] Same valid MP4/MOV file
+Full metadata values [TBD]","1. Select ""เพิ่มวิดีโอใหม่"" and upload valid file
+2. Wait until Transcoding completion notification appears
+3. Fill all required metadata fields completely
+4. Confirm ""ส่งเพื่อขออนุมัติ"" button is now enabled
+5. Click ""ส่งเพื่อขออนุมัติ""
+6. Accept Consent page appears — click Accept / Agree
+7. Observe status update","1. Transcoding completion notification shown after upload
+2. ""ส่งเพื่อขออนุมัติ"" is enabled when all metadata complete
+3. Accept Consent page appears before submission proceeds
+4. Automatic Checklist validation passes
+5. Media status = PENDING_APPROVE
+6. Media visible in Community Review queue",High
+"EC_07 — Partial metadata → Submit disabled, Draft enabled",Media Service,TC_Video_03,"Partial metadata → ""ส่งเพื่อขออนุมัติ"" disabled, ""บันทึกร่าง"" enabled","1. On media creation page
+2. Valid video file uploaded and ready","[TBD] Valid video file
+Metadata with ≥1 required field intentionally left empty [TBD]","1. Upload valid video file, wait for success
+2. Fill some but not all required metadata — leave at least one required field empty
+3. Observe state of ""ส่งเพื่อขออนุมัติ"" button
+4. Click ""บันทึกร่าง""","1. ""ส่งเพื่อขออนุมัติ"" button is disabled (not clickable)
+2. ""บันทึกร่าง"" button remains enabled and clickable
+3. Clicking ""บันทึกร่าง"" successfully saves media as DRAFT without requiring complete metadata",High
+"AC_04 / EC_01 — File > 5 GB → Error before upload",Media Service,TC_Video_04,"Upload video file >5 GB → Error message, upload never starts","1. On media creation page
+2. ""เพิ่มวิดีโอใหม่"" selected","[TBD] MP4 or MOV file >5 GB","1. Attach a video file larger than 5 GB
+2. Attempt to start upload","1. System validates file size before upload begins
+2. Error message: ""ไฟล์มีขนาดเกินที่กำหนด กรุณาเลือกไฟล์ขนาดไม่เกิน 5 GB""
+3. Upload does not start — no upload progress shown",High
+"AC_05 / EC_02 — Unsupported file type → Error",Media Service,TC_Video_05,"Upload unsupported video format (.avi / .mkv) → Error message, upload never starts","1. On media creation page
+2. ""เพิ่มวิดีโอใหม่"" selected","[TBD] Video file in .avi or .mkv format","1. Attach a video file with unsupported format (.avi or .mkv)
+2. Attempt to start upload","1. System validates file type before upload begins
+2. Error message: ""ประเภทไฟล์นี้ไม่รองรับ กรุณาอัปโหลด MP4 / MOV เท่านั้น""
+3. Upload does not start",High
+"EC_03 — Transcoding fails ≤3 times → Silent Auto Retry",Video Transcoding Service,TC_Video_06,Transcoding fails ≤3 times → Auto Retry with no notification to Creator,"1. On media creation page
+2. Valid video uploaded successfully
+3. Dev has enabled Transcoding failure simulation toggle for this session (≤3 failures)","[TBD] Valid video file","1. Upload valid video file
+2. Observe system behavior as Transcoding fails on 1st attempt (and up to 3rd)
+3. Monitor the UI for any notification, alert, or interruption shown to Creator","1. System performs Auto Retry automatically after each failure
+2. No alert, toast, or notification shown to Creator during retry attempts
+3. Creator UI remains on the creation page without interruption
+4. After successful retry, Transcoding completion notification appears normally",Medium
+"AC_06 / EC_04 — Transcoding fails >3 times → Notification + Retry button",Video Transcoding Service,TC_Video_07,Transcoding fails >3 times → Error notification + Retry button displayed,"1. On media creation page
+2. Valid video uploaded successfully
+3. Dev has enabled Transcoding failure simulation toggle for this session (>3 consecutive failures)","[TBD] Valid video file","1. Upload valid video file
+2. Observe as Transcoding fails and all 3 Auto Retry attempts are exhausted
+3. Observe system notification after 3rd failure","1. After 3rd Auto Retry fails, notification: ""ไม่สามารถอัปโหลดได้ กรุณาลองใหม่อีกครั้ง""
+2. Retry button appears and is clickable
+3. No further automatic retry occurs beyond 3 attempts",High
+"AC_03 (Draft path) — YouTube valid URL + own channel → Save Draft","Media Service
+YouTube URL Validation",TC_YT_01,Valid YouTube URL (Creator owns channel) + full metadata → Save as DRAFT,"1. On media creation page
+2. ""เพิ่มลิงก์ YouTube/embed"" selected","[TBD] Valid YouTube URL where logged-in Creator is channel owner
+Full metadata values [TBD]","1. Select ""เพิ่มลิงก์ YouTube/embed""
+2. Enter valid YouTube URL from Creator's own channel
+3. Wait for URL validation result
+4. Fill all required metadata fields
+5. Click ""บันทึกร่าง""","1. URL validation passes — success notification shown
+2. No file upload required
+3. Media saved as DRAFT
+4. DRAFT media appears in My Media Dashboard",High
+"AC_03 (Submit path) — YouTube valid URL + own channel → PENDING_APPROVE","Media Service
+YouTube URL Validation
+Community Approval Service",TC_YT_02,Valid YouTube URL (Creator owns channel) + full metadata → Submit → PENDING_APPROVE,"1. On media creation page
+2. ""เพิ่มลิงก์ YouTube/embed"" selected","[TBD] Same valid YouTube URL (own channel)
+Full metadata values [TBD]","1. Select ""เพิ่มลิงก์ YouTube/embed""
+2. Enter valid YouTube URL from Creator's own channel
+3. Wait for URL validation success notification
+4. Fill all required metadata fields
+5. Click ""ส่งเพื่อขออนุมัติ""
+6. Accept Consent page — click Accept","1. URL validation passes — success notification shown
+2. ""ส่งเพื่อขออนุมัติ"" enabled when metadata complete
+3. Accept Consent page appears
+4. Media status = PENDING_APPROVE
+5. Appears in Community Review queue — no file upload required",High
+"AC_07 / EC_05 — Invalid YouTube URL → Error",YouTube URL Validation,TC_YT_03,Invalid YouTube URL format → Error message,"1. On media creation page
+2. ""เพิ่มลิงก์ YouTube/embed"" selected","[TBD] URL with invalid format (e.g., non-YouTube domain or malformed YouTube link)","1. Enter invalid YouTube URL
+2. Trigger URL validation (submit field or unfocus)","1. System validates the URL
+2. Error message: ""URL ไม่ถูกต้อง กรุณาตรวจสอบลิงก์ YouTube อีกครั้ง""
+3. Embed rejected — Creator cannot proceed with this URL",High
+"AC_07 / EC_06 — YouTube URL not owned by Creator → Rejected",YouTube URL Validation,TC_YT_04,YouTube URL from another creator's channel → Embed rejected + notification,"1. On media creation page
+2. ""เพิ่มลิงก์ YouTube/embed"" selected","[TBD] Valid YouTube URL format but belongs to a channel NOT owned by the logged-in Creator","1. Enter a valid-format YouTube URL from a channel not owned by this Creator
+2. Trigger ownership validation","1. System rejects the embed
+2. Notification displayed indicating Creator does not own this channel
+3. Creator cannot proceed with submission using this URL",High
