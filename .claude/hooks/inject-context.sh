@@ -1,18 +1,17 @@
 #!/bin/bash
-# Inject Helix dev context at session start
+# Inject OLS QA workspace context at session start
 cd "$CLAUDE_PROJECT_DIR" 2>/dev/null || exit 0
 
-echo "=== Helix Dev Context ==="
-echo "Branch: $(git branch --show-current 2>/dev/null)"
-echo "Version: $(cat VERSION 2>/dev/null)"
-echo "Last 3 commits:"
-git log --oneline -3 2>/dev/null
+echo "=== OLS QA Workspace ==="
+echo "Jira:       https://skilllane.atlassian.net/jira/software/projects/OLS/boards/818/backlog"
+echo "Confluence: https://skilllane.atlassian.net/wiki/spaces/PLUT/folder/3592814638"
+echo "Figma:      https://www.figma.com/design/EzwBjyCfqCCof1MuPdQUsq/OLS_Working-file"
 echo ""
-echo "Modified files:"
-git status --short 2>/dev/null | head -10
+echo "Helix commands: /helix  /tc-fe-prep  /tc-api-prep  /retest-bug  /testing-ticket  /create-bug"
 echo ""
 
 # Show WIP context if exists
 if [ -f .claude/session-context.md ]; then
+  echo "=== WIP Context ==="
   cat .claude/session-context.md
 fi

@@ -1,5 +1,5 @@
 {
-  "//": "Shared project settings for Helix CONTRIBUTORS. Auto-applied when you open this repo in Claude Code and trust the folder. Ships via git, auto-updates on pull. Intentionally conservative for a public repo: read-only permissions + context hooks only. For the fuller productivity config (acceptEdits, exec permissions, global CLAUDE.md rules) run scripts/helix-setup-devenv.sh once.",
+  "//": "OLS QA workspace settings. Auto-applied when you open this repo in Claude Code and trust the folder.",
   "permissions": {
     "allow": [
       "Bash(git status)",
@@ -19,7 +19,9 @@
       "Bash(which *)",
       "Bash(basename *)",
       "Bash(dirname *)",
-      "Bash(bash scripts/helix-regression-check.sh)"
+      "Bash(curl *)",
+      "Bash(python3 *)",
+      "Bash(npx playwright *)"
     ]
   },
   "hooks": {
