@@ -78,3 +78,66 @@ references/                    ← shared rule fragments, linked by skills (not 
 
 **Never ask for a link that is already recorded in `references/ols-project-guide.md`.**
 When a new link is provided by the user → add it to `references/ols-project-guide.md` immediately.
+
+## Jira comment formatting rules (learned from OLS-22 session)
+
+Jira markdown ใน table cells มีพฤติกรรมแปลกหลายอย่าง — ต้องทำตามกฎนี้เสมอ:
+
+### ห้ามใช้ `<br>` ใน table cells
+
+Jira render `<br>` เป็น literal text ไม่ใช่ line break ใน markdown table cells
+- **ห้าม:** `Step 1<br>Step 2` → แสดง "Step 1<br>Step 2" เป็นตัวอักษร
+- **ใช้แทน:** `**1.** Step 1 **2.** Step 2` (inline bold numbering)
+
+### ห้ามขึ้นต้น cell ด้วย `1.` (bare numbered list)
+
+Jira ตีความ `1.` ที่ขึ้นต้น cell เป็น ordered list แล้ว strip เลขออก
+- **ห้าม:** `| 1. Do this 2. Do that |` → "1." หายไป แสดงแค่ "Do this 2. Do that"
+- **ใช้แทน:** `| **1.** Do this **2.** Do that |` → bold format ป้องกัน list parsing
+
+### Multi-line content ใน cells
+
+เนื่องจาก `<br>` ใช้ไม่ได้ และ newline ใน table cell ก็ไม่ render → ใช้วิธีเหล่านี้:
+- **Bold numbering:** `**1.** text **2.** text` — ดีสุดสำหรับ steps/results
+- **Slash separator:** `value A / value B` — ดีสำหรับ short lists (services, test data)
+- **Avoid:** `\n`, `<br>`, actual newlines ใน cell content
+
+### Comment footer ต้อง link ไปไฟล์แนบ
+
+ใช้ markdown link ไป attachment URL: `[filename.csv](https://domain.atlassian.net/secure/attachment/{ID}/filename.csv)`
+
+## Jira file attachment via browser JS (workaround)
+
+Atlassian MCP `addCommentToJiraIssue` ไม่รองรับ file upload — ต้องใช้ browser JS แทน:
+
+```javascript
+// ใช้ mcp__Control_Chrome__execute_javascript (ไม่ใช่ Claude_in_Chrome)
+// Claude_in_Chrome javascript_tool จะ error "Cannot access chrome-extension://"
+var blob = new Blob(["﻿", csvContent], {type: 'text/csv;charset=utf-8'});
+var file = new File([blob], 'ISSUE-KEY_FE_TC.csv', {type: 'text/csv'});
+var fd = new FormData();
+fd.append('file', file);
+fetch('/rest/api/3/issue/ISSUE-KEY/attachments', {
+  method: 'POST',
+  headers: {'X-Atlassian-Token': 'no-check'},
+  body: fd
+}).then(function(r){return r.text()}).then(function(t){
+  window.__result = t;
+});
+```
+
+**สำคัญ:**
+- ต้อง navigate ไปหน้า Jira issue ก่อน (ใช้ browser auth session)
+- ใช้ `mcp__Control_Chrome__execute_javascript` เท่านั้น — `Claude_in_Chrome__javascript_tool` ใช้กับ Jira ไม่ได้ (extension sandbox)
+- Control Chrome ไม่รองรับ async/await — ใช้ `.then()` chain แล้วเก็บผลใน `window.*`
+- อ่านผลด้วย `window.__result || "pending"` ในครั้งถัดไป
+- หลัง upload เสร็จ ลบไฟล์ซ้ำ/test ออกด้วย `fetch('/rest/api/3/attachment/{id}', {method:'DELETE', headers:{'X-Atlassian-Token':'no-check'}})`
+
+## Chrome MCP tool selection
+
+| Tool | ใช้เมื่อ | ข้อจำกัด |
+|------|---------|----------|
+| `Claude_in_Chrome__navigate` | Navigate, screenshot, click, find elements | JS execution ใช้กับ Jira ไม่ได้ |
+| `Claude_in_Chrome__file_upload` | Upload ไฟล์จาก session shared folder เท่านั้น | ไม่สามารถ upload ไฟล์จาก repo/local path |
+| `Control_Chrome__execute_javascript` | Run JS บน Jira pages (upload, API calls) | ไม่รองรับ async/await, ใช้ `.then()` |
+| `Control_Chrome__get_current_tab` | ดู tab ID ที่ต่างจาก Claude_in_Chrome | tab ID คนละชุดกัน |
