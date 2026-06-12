@@ -26,4 +26,4 @@ Draft TC FE as below
 
 ---
 *Source: OLS-22 | Confluence PRD OLS-3 UC-2 | Generated: 2026-06-11*
-*CSV export: references/OLS-22_FE_TC.csv*
+*CSV: attached on [OLS-22](https://skilllane.atlassian.net/browse/OLS-22) Jira comment (no local copy)*
