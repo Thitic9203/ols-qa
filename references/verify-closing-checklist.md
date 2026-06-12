@@ -21,7 +21,8 @@ Apply [qa-evidence-gates.md](qa-evidence-gates.md) before any pass/post/done cla
 - [ ] Jira/destination UI matches draft (not API response alone)
 - [ ] **Post-publish review passed** ([jira-comment-post-review.md](jira-comment-post-review.md)): no literal `<br>`/HTML tags, numbered items on separate lines, attachment present
 - [ ] **CSV/Excel attached to Jira issue** (not just saved in workspace) — footer link verified working
-- [ ] Agent did NOT report "commented" / "done" before all checks passed
+- [ ] **Final TC review report posted** ([tc-final-review-report.md](../skills/deprecated/tc-fe-prep-workflow/references/tc-final-review-report.md)): four axes **PASS** (AC/EC alignment, spelling, numbering, scope)
+- [ ] Agent did NOT report "commented" / "done" / "TC prep complete" before all checks passed
 
 ## Testing ticket
 
