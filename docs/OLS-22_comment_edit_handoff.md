@@ -1,4 +1,4 @@
-# OLS-22 Comment Edit — Handoff (in-progress)
+# OLS-22 Comment Edit — Handoff (DONE ✓)
 
 **Goal:** Edit Jira comment **ID 75215** on [OLS-22](https://skilllane.atlassian.net/browse/OLS-22) to add Test Type column, reorder rows, renumber TCs.
 
@@ -11,7 +11,7 @@
 | `references/OLS-22_FE_TC.csv` | Updated — 10 columns, TC_01–TC_11, ordered Unit→Integration→System |
 | Jira attachment **87928** | New CSV uploaded to OLS-22 ✓ |
 | Jira attachments 87873, 87921 | Deleted ✓ |
-| Jira comment 75215 | **NOT YET UPDATED** — blocked, see below |
+| Jira comment 75215 | **Updated 2026-06-12** via Control Chrome browser fetch ✓ |
 
 ### TC column order (new)
 
@@ -49,70 +49,16 @@
 
 ---
 
-## Blocker — cannot PUT comment via browser JS
+## Resolution
 
-### Symptom
+Comment updated 2026-06-12 via **Control Chrome `execute_javascript`** — embedded full ADF JSON (33 KB) as JS object literal in single `fetch` PUT call. Response confirmed `"updated":"2026-06-12T16:12:46.516+0700"`.
 
-```
-fetch('http://localhost:PORT/adf_body2.json')  // from https://skilllane.atlassian.net
-→ XHR: readyState 4, status 0, ontimeout after 3s
-→ Server log: zero requests received
-→ Neither .then() nor .catch() fires
-```
+**Why previous approaches failed:**
+- Base64 chunk append: LLM transcription errors (~4 chars corrupted per 3000-char chunk)
+- `fetch(http://localhost)` from HTTPS Jira: Chrome PNA block
+- Atlassian MCP: only `humanintelligence.atlassian.net` auth, not `skilllane.atlassian.net`
 
-### Root cause (suspected)
-
-**Chrome Private Network Access (PNA) policy** silently drops HTTPS→HTTP localhost requests.  
-Browser never sends the request — server receives nothing — Promise hangs.
-
-Tried: CORS server with `Access-Control-Allow-Private-Network: true` header — same result.  
-Console: no error messages captured (Chrome security blocks don't always surface to JS console).
-
-### Approaches tried / not yet tried
-
-| Approach | Result |
-|----------|--------|
-| Single large JS string (15K chars) → `window.__p1 = "..."` | `"missing value"` — Control Chrome string size limit |
-| `fetch(http://localhost)` from HTTPS Jira page | Timeout — PNA block, server gets nothing |
-| Atlassian MCP `fetch` tool | ARI-only, not HTTP client |
-| Atlassian MCP `addCommentToJiraIssue` | Adds new comment only, no edit/delete |
-
-### Recommended next steps (pick one)
-
-**Option A — Progressive append via Control Chrome JS (no localhost needed)**
-```javascript
-// Call 1
-window.__b = "";
-// Calls 2–N  (each chunk ~3 000 chars, safe for Control Chrome)
-window.__b += "<chunk_n>";
-// Final call
-var body = JSON.parse(new TextDecoder().decode(
-  Uint8Array.from(atob(window.__b), c => c.charCodeAt(0))
-));
-fetch('/rest/api/3/issue/OLS-22/comment/75215', {
-  method: 'PUT',
-  headers: {'Content-Type':'application/json','X-Atlassian-Token':'no-check'},
-  body: JSON.stringify({body: body})
-}).then(r=>r.text()).then(t=>window.__editResult=t);
-```
-Split `/tmp/adf_body2.json` base64 into ~3 000-char pieces from `bash`:
-```bash
-fold -w 3000 /tmp/adf_p1.txt   # then p2, p3
-```
-
-**Option B — Jira API token + curl**
-```bash
-curl -X PUT \
-  -H "Authorization: Bearer <API_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d @/tmp/adf_body2.json \
-  "https://skilllane.atlassian.net/rest/api/3/issue/OLS-22/comment/75215"
-```
-Ask user for API token from [Jira profile → API tokens](https://id.atlassian.com/manage-profile/security/api-tokens).
-
-**Option C — Regenerate ADF + use Atlassian MCP addCommentToJiraIssue**  
-Post as new comment, then manually delete old comment 75215 from Jira UI.  
-Downside: comment history shows two comments.
+**What worked:** Embed full ADF as JS object literal directly in `execute_javascript` `code` parameter — no transcription risk since the MCP framework JSON-encodes the parameter automatically.
 
 ---
 
