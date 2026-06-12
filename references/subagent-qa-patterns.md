@@ -27,6 +27,8 @@ For large TC drafts:
 1. **Subagent A** — AC/EC coverage only ([ac-ec-coverage-review](../skills/deprecated/tc-fe-prep-workflow/references/ac-ec-coverage-review.md) criteria).  
 2. **Parent** — merges findings, asks user, posts review block.
 
+For **close-out** (after publish), optional **Subagent B** — read-only four-axis check per [tc-final-review-report](../skills/deprecated/tc-fe-prep-workflow/references/tc-final-review-report.md); parent posts the user-facing report.
+
 Do not treat subagent output as **Ready for draft: YES** without parent re-check.
 
 ## Prompt skeleton

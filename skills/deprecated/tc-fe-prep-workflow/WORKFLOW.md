@@ -1,7 +1,7 @@
 ---
 name: tc-fe-prep-workflow
 description: |
-  Prepare frontend manual test cases from a Jira story (AC/EC) with mandatory AC/EC coverage review and ISTQB/29119-3 quality check, then draft table in chat, export CSV/Excel, and publish one comment on that story only.
+  Prepare frontend manual test cases from a Jira story (AC/EC) with mandatory AC/EC coverage review and ISTQB/29119-3 quality check, then draft table in chat, export CSV/Excel, publish one comment on that story only, and close with a four-axis final TC review report (AC/EC alignment, spelling, numbering, scope).
   Use when the user asks for FE test cases, manual TC from acceptance criteria, draft TC comment on Jira, or TC FE Preparation from Helix (/tc-fe-prep).
   Do NOT use for API-only Swagger test cases (tc-api-prep-workflow), Playwright execution (testing-ticket-workflow), retest-after-fix (retest-bug-workflow), or opening bug tickets (create-bug-workflow).
 ---
@@ -279,6 +279,21 @@ If any check fails → fix and re-post → re-verify on Jira UI (max 3 rounds).
 
 ---
 
+## Step 7.5 — Final TC review report (mandatory before "done")
+
+After Step 7 post-publish review **passes** (or after final approved draft when publish was skipped), run the **four-axis final review** on the TC set the user will keep.
+
+Follow [tc-final-review-report.md](references/tc-final-review-report.md):
+
+1. Compare **published** Jira comment + attachment (or final approved draft + export) against the **story** AC, EC, description, and deferred-scope notes.
+2. Score all four dimensions: **AC/EC alignment**, **spelling**, **numbering order**, **content / scope**.
+3. Post the **user-facing report** from that reference (summary table + sections 1–4 + optional improvements).
+4. Overall **PASS** required before Step 8. On **FAIL** → fix TC → re-publish or re-show draft → re-run (max 2 rounds).
+
+**MUST NOT** say TC prep is complete, post the Step 8 `Verdict:` block, or offer the next workflow until this report is posted with overall **PASS**.
+
+---
+
 ## QA closing (mandatory before "done")
 
 Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
@@ -290,6 +305,7 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 - [ ] Export file row count matches table rows (CSV or xlsx per user's requested format).
 - [ ] Jira UI matches approved draft (not MCP output alone).
 - [ ] Post-publish review passed per [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — no stray tags, numbered items on separate lines, attachment present.
+- [ ] Step 7.5 final TC review report posted per [tc-final-review-report.md](references/tc-final-review-report.md) — all four axes **PASS**.
 - [ ] Close-out includes `Verified:` after Jira re-open.
 - [ ] Publish fix-verify (Step 7) completed — at least one Jira UI re-read.
 - [ ] **Fresh-eyes:** re-read full draft before publish when table **> 15 rows**.
@@ -298,6 +314,8 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 ---
 
 ## Step 8 — Session closing
+
+**Prerequisite:** Step 7.5 final review report posted with overall **PASS**.
 
 Follow [session-closing.md](../../references/session-closing.md) — artifact index, one-line next workflow (e.g. `/testing-ticket` on same story), handoff file if long session, `Verdict:` block.
 
@@ -316,7 +334,8 @@ Complete [verify-closing-checklist.md](../../references/verify-closing-checklist
 | [project-config-template.md](references/project-config-template.md) | First-time project questions |
 | [publish-options.md](references/publish-options.md) | MCP vs browser vs manual |
 | [worked-example.md](references/worked-example.md) | On-demand: anonymized sample (read only when format reference needed) |
-| [ac-ec-coverage-review.md](references/ac-ec-coverage-review.md) | AC/EC traceability + scope review |
+| [ac-ec-coverage-review.md](references/ac-ec-coverage-review.md) | AC/EC traceability + scope review (pre-draft) |
+| [tc-final-review-report.md](references/tc-final-review-report.md) | Four-axis final review + close-out report template |
 | [tc-quality-standards.md](../../references/tc-quality-standards.md) | ISTQB / 29119-3 TC quality |
 | [scripts/README.md](scripts/README.md) | Optional CSV/xlsx helper pointer |
 
@@ -346,5 +365,6 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST apply tc-quality-standards on every row | ISTQB / 29119-3 consistency |
 | MUST convert `<br>` to Jira-native line breaks before posting (see [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md)) | `<br>` renders as literal text on Jira |
 | MUST pass post-publish review ([jira-comment-post-review.md](../../references/jira-comment-post-review.md)) before reporting "commented" or "done" to user | Prevents false success claims with broken formatting |
+| MUST post Step 7.5 final review report ([tc-final-review-report.md](references/tc-final-review-report.md)) with overall **PASS** before Step 8 or any "TC prep complete" message | User receives certified four-axis review of final TC |
 | MUST attach CSV/Excel to Jira issue when file was generated (not just workspace) | User expects downloadable file on the issue |
 | MUST NOT use `\n` inside **chat draft** markdown table cells | Breaks table row in markdown renderers |

@@ -42,7 +42,7 @@ Do not use without fresh evidence in the **same** turn:
 
 | Workflow | Extra gate |
 |----------|------------|
-| TC FE / API | Coverage review YES + delta before full draft |
+| TC FE / API | Coverage review YES + delta before full draft; TC FE also requires Step 7.5 four-axis final report **PASS** before close |
 | Testing ticket | [playwright-preflight.md](playwright-preflight.md) YES before run; F1–F3 before external update |
 | Retest | Plan posted before execute; v2/v3 format locked |
 | Create bug | Phase C confirm before create; URL verify after |
