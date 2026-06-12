@@ -20,6 +20,24 @@ Draft TC FE as below
 | AC_01: {AC_SUMMARY} | - {SERVICE} | TC_{Feature}_01 | {TITLE} | 1. Shared prep (items 1–5) completed.<br>2. {EXTRA_PRE} | 1. {DATA} | 1. {STEP}<br>2. {STEP} | 1. {EXPECTED}<br>2. {EXPECTED} | High |
 ```
 
+## Optional: Test Type column
+
+If the user requested a **Test Type** column (Step 3a of WORKFLOW.md), add it after Priority and append the Remark block after the table:
+
+```markdown
+| **Acceptance Criteria** | **Services Impacted** | **Test Case ID** | **Test Title** | **Precondition** | **Test Data** | **Test Steps** | **Expected Result** | **Priority** | **Test Type** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| AC_01: {AC_SUMMARY} | - {SERVICE} | TC_{Feature}_01 | {TITLE} | 1. Shared prep (items 1–5) completed.<br>2. {EXTRA_PRE} | 1. {DATA} | 1. {STEP}<br>2. {STEP} | 1. {EXPECTED}<br>2. {EXPECTED} | High | System |
+
+**Remark — Test Type coverage:**
+- No *Integration* test cases for this ticket.
+- No *Unit* test cases for this ticket.
+```
+
+Allowed values: `System` | `Integration` | `Unit` | `[custom type]`. List only absent types in the Remark.
+
+---
+
 ## Precondition examples
 
 **List-only case (menu):**

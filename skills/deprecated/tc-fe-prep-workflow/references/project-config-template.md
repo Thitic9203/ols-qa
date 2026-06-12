@@ -41,8 +41,9 @@ Ask **one section at a time**. Wait for answers before the next section.
 ## Section E — Deliverables
 
 1. Column list if not the default nine columns.
-2. Preferred publish method: MCP / browser session / manual paste.
-3. Should CSV be attached to the same comment? (default yes)
+2. Include **Test Type** column by default? If yes, which types: System / Integration / Unit / custom? (default: ask per ticket)
+3. Preferred publish method: MCP / browser session / manual paste.
+4. Should CSV be attached to the same comment? (default yes)
 
 ---
 

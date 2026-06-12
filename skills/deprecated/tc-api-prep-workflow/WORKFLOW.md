@@ -116,6 +116,18 @@ Writing rules: [references/api-tc-guidelines.md](references/api-tc-guidelines.md
 
 Optional: if user gave a Jira story key in the same session, map cases to AC only when they asked — default is **API coverage from spec**, not story AC.
 
+### Row ordering within each module
+
+Within each module/feature group, order rows as follows:
+
+1. **Happy path / success cases** (2xx) — listed first
+2. Auth / permission failures (401, 403)
+3. Validation / bad request (400)
+4. Not found / conflict (404, 409)
+5. Other error scenarios
+
+This order puts verifiable success criteria at the top, making the table easier to review and execute in sequence.
+
 ---
 
 ## Phase E — Coverage & quality review (mandatory; 1–2 rounds)
@@ -266,6 +278,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | Rule | Because |
 |------|---------|
 | MUST refuse without API spec + Swagger | No authoritative coverage |
+| MUST order rows: success (2xx) first within each module | Reviewers verify happy path before error paths |
 | MUST NOT invent endpoints not in spec/Swagger | False coverage |
 | MUST run Phase E review before draft table | Prevents out-of-scope API cases |
 | MUST apply tc-quality-standards on every row | ISTQB / 29119-3 consistency |
