@@ -70,6 +70,105 @@ From the Jira story, build a checklist:
 
 ---
 
+## Step 2.5 — Conflict check against PRD and Figma (pre-design gate)
+
+**Must complete before Step 3.** Do not skip even if requirements look complete — conflicts caught here prevent rework after TCs are drafted.
+
+### 2.5a — Locate PRD and Figma links
+
+Check the ticket's description and linked documents for a **PRD link** and **Figma link**.
+
+If either is missing, ask the user once:
+
+> Before I start designing test cases, I'd like to cross-check the ticket against the PRD and Figma design to catch any conflicts early.
+>
+> Could you share links to any that are missing?
+> - **PRD:** [found at {link} / not found — please share if available]
+> - **Figma:** [found at {link} / not found — please share if available]
+>
+> If neither exists for this story, reply "no PRD / no Figma" and I'll proceed with ticket content only.
+
+**Wait for the user's response.** If the user confirms no PRD/Figma exists, post a one-line note ("No PRD/Figma — proceeding from ticket only.") and go to Step 3.
+
+### 2.5b — Collect source metadata (recency)
+
+For each source that is available, record its **last-updated datetime** before comparing content:
+
+| Source | What to look for |
+|--------|-----------------|
+| Jira ticket | "Updated" timestamp in issue detail; story status (Open / In Progress / Done) |
+| PRD | Page last-modified datetime (Confluence footer); version number in page title if present |
+| Figma | Frame or page last-edited datetime shown in Figma (hover the file or frame); version label in page/frame name if present |
+
+**Timezone:** All datetimes MUST be displayed in **Bangkok time (ICT, UTC+7)**. Convert from UTC or any other timezone before displaying — never show UTC or raw platform timestamps.
+
+Format: `DD Mon YYYY HH.MM AM/PM` (e.g. `05 Jun 2026 02.30 PM`)
+
+If a datetime cannot be determined, mark it **"ไม่ทราบวันที่"** — do not guess.
+
+**Recency rule:** The most recently updated source is the **stronger default truth**. When two sources conflict, the newer one takes precedence unless the user says otherwise. Always surface recency in the report so the user can override this default.
+
+### 2.5c — Cross-reference and conflict detection
+
+Compare against the story's AC/EC and description across these areas:
+
+| Check area | What to look for |
+|-----------|-----------------|
+| AC/EC vs PRD | AC/EC items absent from PRD, or PRD requirements not reflected in any AC/EC |
+| AC/EC vs Figma | UI flows, field labels, error messages, or states in Figma that differ from the AC/EC description |
+| Description vs Figma | Status names, tabs, field limits, or forbidden actions in the ticket description vs Figma |
+| Scope gaps | Features visible in Figma/PRD that no AC/EC covers |
+| Contradictions | Conflicting expected results between ticket and PRD/Figma |
+
+### 2.5d — Report findings in chat
+
+Post the conflict report block in chat (always post, even when no conflicts).
+
+**Column detail rules — every cell must be fully written out, never summarised or abbreviated:**
+
+| Column | What to put in it |
+|--------|------------------|
+| **AC/EC** | Label + full text of the acceptance/edge criterion as written in the ticket (e.g. `AC_02: When the user clicks Save, the system saves the record and shows a success toast`) |
+| **Area** | Specific UI element, field, flow, or rule being compared — not a generic category (e.g. `Save button → post-save feedback` not just `Save`) |
+| **Ticket says** | Exact wording or behavior from the ticket — quote verbatim where possible; include field names, error texts, UI labels as written |
+| **PRD/Figma says** | Exact wording, label, or behavior from PRD/Figma; include frame name/number or PRD section for traceability (e.g. `Figma frame P-14: modal titled "ยืนยันการบันทึก?" with "ตกลง" and "ยกเลิก" buttons`) |
+| **Newer source (ICT)** | Source name + its last-updated datetime in `DD Mon YYYY HH.MM AM/PM` |
+| **Severity** | High = blocks TC design or changes core flow; Medium = affects expected result wording or label; Low = cosmetic / minor label difference |
+
+```
+**Conflict Check — {ISSUE_KEY} vs PRD/Figma**
+
+**Source recency** *(Bangkok time, ICT UTC+7)*
+| Source | Last updated (ICT) | Notes |
+|--------|-------------------|-------|
+| Ticket ({ISSUE_KEY}) | {DD Mon YYYY HH.MM AM/PM or "Unknown"} | Status: {Open/In Progress/Done} |
+| PRD | {DD Mon YYYY HH.MM AM/PM or "Unknown"} | {version label if any} |
+| Figma | {DD Mon YYYY HH.MM AM/PM or "Unknown"} | {version/frame label if any} |
+
+**Most recently updated:** {source name} ({DD Mon YYYY HH.MM AM/PM ICT}) → treated as stronger truth by default.
+
+---
+
+**Conflicts found: YES / NO**
+
+| # | AC/EC | Area | Ticket says | PRD/Figma says | Newer source (ICT) | Severity |
+|---|-------|------|-------------|----------------|-------------------|----------|
+| 1 | {label}: {full AC/EC text from ticket} | {specific UI element / field / flow / rule} | {exact wording or behavior from ticket — quote verbatim} | {exact wording, label, or behavior from PRD/Figma — include frame or section ref} | {Source name} — {DD Mon YYYY HH.MM AM/PM} | High / Medium / Low |
+
+**Scope gaps (in PRD/Figma but no AC/EC covers it):**
+| # | Source | Where | What is shown | Why it may matter |
+|---|--------|-------|---------------|------------------|
+| 1 | {Figma frame {ref} / PRD section {ref}} | {screen / page / section name} | {full description of the feature or element shown} | {impact on TC scope if included or excluded} |
+
+**Recommendation:** {resolve before designing TCs — list conflict numbers that need user answer / proceed and note gaps in TC remarks / proceed — no conflicts}
+```
+
+**If NO conflicts and no gaps:** set `Conflicts found: NO`, write "—" in all conflict rows, write "—" in gap table, note "Recommendation: proceed — no conflicts", then continue to Step 3 immediately.
+
+**If conflicts or gaps found:** present the recommended resolution per item (based on recency), then **wait for the user to confirm or override** each item. Do NOT start Step 3 on unresolved conflicts — TCs built on contradictory requirements must be redesigned.
+
+---
+
 ## Step 3 — Design test cases
 
 ### 3a — Test Type column (ask before designing)
@@ -298,6 +397,7 @@ Follow [tc-final-review-report.md](references/tc-final-review-report.md):
 
 Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
 
+- [ ] Step 2.5 conflict check completed; report block posted in chat; no unresolved conflicts before Step 3.
 - [ ] Step 3a Test Type question asked and answered; column present or absent per user choice.
 - [ ] If Test Type column present: every row has a valid type; Remark block lists absent types.
 - [ ] Step 4 review block posted with **Ready for draft: YES** and traceability matrix complete.
@@ -361,6 +461,14 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST NOT invent Test Type test cases that lack an AC/EC trace | Test Type is a label on existing coverage, not a reason to add out-of-scope rows |
 | MUST add Remark block for any requested Test Type with zero test cases | Makes coverage gaps explicit rather than silently absent |
 | MUST NOT reference agent-machine absolute paths in Jira | Other users cannot reproduce |
+| MUST run Step 2.5 conflict check before designing TCs | Contradictions between ticket and PRD/Figma invalidate TCs built without resolution |
+| MUST ask for PRD/Figma links if not found in ticket (Step 2.5a) | Cannot cross-reference without sources; one question covers both at once |
+| MUST collect last-updated datetime for each source before comparing (Step 2.5b) | Recency determines which source is stronger truth; without it the recommendation is guesswork |
+| MUST convert all datetimes to Bangkok time (ICT, UTC+7) before displaying | User's working timezone is Bangkok; raw UTC or platform timestamps cause confusion |
+| MUST format datetimes as `DD Mon YYYY HH.MM AM/PM` (e.g. `11 Dec 2026 11.45 AM`) | Consistent, readable format agreed with user |
+| MUST show "Newer source (ICT)" column with datetime per conflict row in the report | User needs to know which version to trust and exactly how much newer it is |
+| MUST NOT start Step 3 while conflicts from Step 2.5 are unresolved | Designing TCs on contradictory requirements creates rework |
+| MUST post the Step 2.5 conflict report block even when no conflicts found | Gives user visibility that cross-check was done |
 | MUST run Step 4 review before draft table | Prevents out-of-scope cases reaching Jira |
 | MUST apply tc-quality-standards on every row | ISTQB / 29119-3 consistency |
 | MUST convert `<br>` to Jira-native line breaks before posting (see [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md)) | `<br>` renders as literal text on Jira |
