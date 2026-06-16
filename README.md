@@ -32,4 +32,13 @@ Update it as new info arrives — AI reads it before asking questions.
 
 ## Helix skills source
 
-Skills originally from [Thitic9203/helix](https://github.com/Thitic9203/helix) — embedded as-is.
+Skills synced from [Thitic9203/helix](https://github.com/Thitic9203/helix) **v1.5.31** (16 Jun 2026).
+
+### TC FE Prep changes in v1.5.31
+
+| # | What changed |
+|---|-------------|
+| 1 | **Step 2.5 — Conflict check** ก่อนออกแบบ TC: เปรียบเทียบ ticket vs PRD/Figma พร้อม source recency (Bangkok ICT, format `DD Mon YYYY HH.MM AM/PM`) |
+| 2 | **Step 3a — Pre-design setup**: ถามภาษา + รหัส TC + Test Type ในข้อความเดียว |
+| 3 | **TC Language**: เลือก English (formal) หรือ Thai (ราชบัณฑิตยสภาก่อน → อังกฤษถ้าไม่มีคำไทย) |
+| 4 | **TC ID format**: ยืนยัน format (เช่น `TC_01`, `OLS-142_TC_01`) ก่อนร่าง — ใช้สม่ำเสมอทุก row |
