@@ -205,12 +205,48 @@ Before starting the table, send **one message** covering all three setup questio
 
 **Thai mode:**
 - All content in formal/professional Thai (ภาษาทางการ) — suitable for internal and external stakeholder delivery.
-- **Keep the following in English** (do not translate — translating would reduce clarity or cause misunderstanding):
-  - UI component names: Button, Dropdown, Modal, Toast, Checkbox, Radio, Toggle, Tab, Input, Textarea, Sidebar, Navbar, Tooltip, Badge, Card, Loader, Spinner, Header, Footer, Banner, Icon
-  - Technical terms: Login, Logout, API, URL, Token, Role, Permission, Status, Filter, Sort, Search, Upload, Download, Export, Import, Reset, Submit, Cancel, Confirm, Dashboard
-  - Feature/module names exactly as they appear in the system UI (if the system shows "Dashboard" do not write "แดชบอร์ด")
-  - Error codes, field keys, and internationally standardised acronyms (e.g. HTTP, CRUD, QA, UX)
-- Do **not** force a Thai translation if it reads awkwardly or is less clear than the English term.
+- **Term priority: ราชบัณฑิตยสภา Thai term first → English if no official term exists.**
+  - Use the current Royal Institute of Thailand (ราชบัณฑิตยสภา) approved term whenever one exists.
+  - Only use English when the Royal Institute has not defined a Thai equivalent, or when the system UI displays the term in English and changing it would cause confusion (e.g. a button literally labelled "Submit" in the UI).
+- **Common terms with approved Thai equivalents (use these, not English):**
+
+  | English | ใช้คำไทย |
+  |---------|----------|
+  | Login / Sign in | เข้าสู่ระบบ |
+  | Logout / Sign out | ออกจากระบบ |
+  | Button | ปุ่ม |
+  | Checkbox | ช่องทำเครื่องหมาย |
+  | Search | ค้นหา |
+  | Filter | กรอง / ตัวกรอง |
+  | Sort | เรียงลำดับ |
+  | Upload | อัปโหลด *(ราชบัณฑิต ทับศัพท์)* |
+  | Download | ดาวน์โหลด *(ราชบัณฑิต ทับศัพท์)* |
+  | Export | ส่งออก |
+  | Import | นำเข้า |
+  | Status | สถานะ |
+  | Role | บทบาท / สิทธิ์ |
+  | Permission | สิทธิ์การเข้าถึง |
+  | Password | รหัสผ่าน |
+  | Username | ชื่อผู้ใช้ |
+  | Cancel | ยกเลิก |
+  | Confirm | ยืนยัน |
+  | Reset | รีเซ็ต *(ราชบัณฑิต ทับศัพท์)* |
+  | Submit | ส่ง / บันทึก *(แล้วแต่ context)* |
+  | Error message | ข้อความแสดงข้อผิดพลาด |
+  | Notification / Toast | การแจ้งเตือน |
+  | Modal / Dialog | กล่องโต้ตอบ |
+  | Tab | แท็บ *(ราชบัณฑิต ทับศัพท์)* |
+  | Dropdown | รายการแบบเลื่อนลง |
+  | Toggle | ปุ่มสลับ |
+  | Sidebar | แถบด้านข้าง |
+  | Navbar | แถบนำทาง |
+  | Dashboard | แดชบอร์ด *(ราชบัณฑิต ทับศัพท์)* |
+  | Input field | ช่องกรอกข้อมูล |
+
+- **Keep in English** (no official Thai term, or internationally standardised):
+  - Acronyms and technical standards: API, URL, HTTP, HTTPS, CRUD, QA, UX, UI, ID, OTP, JWT, Token
+  - Feature/module names **as displayed in the system UI** — if the UI shows "Dashboard" in English, refer to it as "Dashboard" not "แดชบอร์ด"
+  - Error codes and field keys (e.g. `OLS_ERR_401`, `user_id`)
 - Numbered items in Test Steps and Expected Result must still use numerals (`1.`, `2.`, `3.`).
 
 ### 3c — TC ID format rules (apply after user confirms)
@@ -495,7 +531,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST NOT add TC outside story AC/EC | Traceability |
 | MUST ask all three pre-design questions in one message (Step 3a): language, TC ID format, Test Type | Minimises round-trips; user gives all setup answers at once |
 | MUST confirm TC language before designing (Step 3a) | Language applies to every cell — cannot retrofit after drafting |
-| MUST apply Thai mode rules from Step 3b: keep UI/technical terms in English | Forced Thai translation of technical terms causes ambiguity and looks unprofessional |
+| MUST use ราชบัณฑิตยสภา approved Thai term first in Thai mode (Step 3b); fall back to English only when no official term exists | Authoritative Thai is more professional than ad-hoc transliteration or unnecessary English |
 | MUST use formal language level in both English and Thai mode | TCs are delivered to internal and external teams |
 | MUST confirm TC ID format before designing (Step 3a) | Format must be consistent across all rows; cannot reformat after design |
 | MUST apply confirmed TC ID format to every row with consistent zero-padding (Step 3c) | Mixed formats make TC sets unmaintainable |
