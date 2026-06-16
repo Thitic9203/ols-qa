@@ -171,24 +171,57 @@ Post the conflict report block in chat (always post, even when no conflicts).
 
 ## Step 3 — Design test cases
 
-### 3a — Test Type column (ask before designing)
+### 3a — Pre-design setup (ask all three at once)
 
-Before starting the table, ask the user:
+Before starting the table, send **one message** covering all three setup questions — to avoid multiple round-trips:
 
-> Do you want to include a **Test Type** column in the test case table?
+> Before I start designing test cases, I need to confirm three things:
 >
-> Options:
-> - **System** — end-to-end UI flow
-> - **Integration** — cross-component/service interaction
-> - **Unit** — isolated element behaviour (field validation, single component)
-> - **Custom** — additional types (please specify)
+> **1. TC Language**
+> Which language should I use for all test case content (Title, Steps, Expected Results, Shared Prep)?
+> - **English** — all content in formal technical English
+> - **Thai** — content in formal Thai; technical terms with no clear Thai equivalent are kept in English (e.g. Login, Dropdown, Modal, API, URL, Checkbox, Token, Role, Status)
+>
+> **2. Test Case ID format**
+> What format should I use for TC IDs? Examples:
+> - `TC_01`, `TC_02` (simple sequential)
+> - `TC_Feature_01` (feature prefix)
+> - `{ISSUE_KEY}_TC_01` (e.g. `OLS-142_TC_01`)
+> - Other — please specify
+>
+> **3. Test Type column**
+> Do you want a **Test Type** column (System / Integration / Unit)?
+> - **Yes** — pick types: System, Integration, Unit, Custom, or all; if unsure, `System + Integration + Unit` is the default set
 > - **No** — skip this column
->
-> You can pick one, several, or all. If unsure, `System + Integration + Unit` is the default set.
 
-**Wait for the answer before proceeding.** If the user picks any type(s), follow the rules in **3b** below. If no, skip 3b and proceed with the default 9 columns.
+**Wait for all three answers before proceeding.** If the user skips any item, apply defaults: Language = English, TC ID = `TC_01`, Test Type = No.
 
-### 3b — When Test Type column is requested
+### 3b — Language rules (apply after user confirms)
+
+**English mode:**
+- All content in formal technical English throughout — Title, Precondition, Test Steps, Expected Result, Test Data, Shared Prep.
+- Consistent terminology: use the same term for the same element every time (e.g. always "Save button", never alternating "Save" / "Submit" / "the button").
+- Suitable for internal and external team delivery.
+
+**Thai mode:**
+- All content in formal/professional Thai (ภาษาทางการ) — suitable for internal and external stakeholder delivery.
+- **Keep the following in English** (do not translate — translating would reduce clarity or cause misunderstanding):
+  - UI component names: Button, Dropdown, Modal, Toast, Checkbox, Radio, Toggle, Tab, Input, Textarea, Sidebar, Navbar, Tooltip, Badge, Card, Loader, Spinner, Header, Footer, Banner, Icon
+  - Technical terms: Login, Logout, API, URL, Token, Role, Permission, Status, Filter, Sort, Search, Upload, Download, Export, Import, Reset, Submit, Cancel, Confirm, Dashboard
+  - Feature/module names exactly as they appear in the system UI (if the system shows "Dashboard" do not write "แดชบอร์ด")
+  - Error codes, field keys, and internationally standardised acronyms (e.g. HTTP, CRUD, QA, UX)
+- Do **not** force a Thai translation if it reads awkwardly or is less clear than the English term.
+- Numbered items in Test Steps and Expected Result must still use numerals (`1.`, `2.`, `3.`).
+
+### 3c — TC ID format rules (apply after user confirms)
+
+- Record the confirmed format at the top of your working notes before designing any row.
+- Apply the format **consistently** to every TC row in this session.
+- Pad numbers with leading zeros to match the widest number in the set (e.g. if 12 TCs, use `TC_01`–`TC_12`; if 100+, use `TC_001`).
+- **Never mix formats** within the same TC set (e.g. do not switch from `TC_01` to `TC_Feature_02`).
+- If the user specifies a feature prefix, derive it from the ticket title or AC group label — do not invent one.
+
+### 3d — When Test Type column is requested
 
 Add **Test Type** as an additional column (after Priority, or wherever the user prefers).
 
@@ -222,7 +255,7 @@ Default **9 columns** (change only if user specifies otherwise), plus optional *
 |--------|---------|
 | Acceptance Criteria | AC_0n / EC_0n label + short summary |
 | Services Impacted | e.g. `- Service Name` |
-| Test Case ID | Stable id e.g. `TC_Feature_01` |
+| Test Case ID | Stable id — format confirmed in 3a |
 | Test Title | Action + expected outcome (no `[Tag]` prefixes unless user wants them) |
 | Precondition | Shared prep done + per-case setup |
 | Test Data | Values to enter |
@@ -241,7 +274,7 @@ Default **9 columns** (change only if user specifies otherwise), plus optional *
 
 Add a **Precondition column note** above the table explaining that the column means: *after shared prep, before Test Steps*.
 
-### 3c — Row ordering
+### 3e — Row ordering
 
 Sort rows before presenting the draft:
 
@@ -303,7 +336,9 @@ Draft TC FE as below
 | ... one row per TC ... |
 ```
 
-If **Test Type column was requested (Step 3a)**, add the column to the header and each row, then append the Remark block (per Step 3b) after the table — listing any requested types that have no test cases:
+**Language rule:** Apply the language confirmed in Step 3a throughout the entire draft. In Thai mode, keep UI component names and technical terms in English per the Step 3b rules. In English mode, use formal technical English with consistent terminology.
+
+If **Test Type column was requested (Step 3a)**, add the column to the header and each row, then append the Remark block (per Step 3d) after the table — listing any requested types that have no test cases:
 
 ```text
 | **Acceptance Criteria** | **Services Impacted** | **Test Case ID** | **Test Title** | **Precondition** | **Test Data** | **Test Steps** | **Expected Result** | **Priority** | **Test Type** |
@@ -398,7 +433,9 @@ Follow [tc-final-review-report.md](references/tc-final-review-report.md):
 Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
 
 - [ ] Step 2.5 conflict check completed; report block posted in chat; no unresolved conflicts before Step 3.
-- [ ] Step 3a Test Type question asked and answered; column present or absent per user choice.
+- [ ] Step 3a pre-design setup questions sent in one message; all three answers received (language, TC ID format, Test Type).
+- [ ] TC language confirmed and applied consistently throughout — Thai mode: technical terms kept in English per Step 3b rules; English mode: formal technical English with consistent terminology.
+- [ ] TC ID format confirmed, recorded, and applied consistently to every row — no mixed formats.
 - [ ] If Test Type column present: every row has a valid type; Remark block lists absent types.
 - [ ] Step 4 review block posted with **Ready for draft: YES** and traceability matrix complete.
 - [ ] AC/EC coverage complete; quality checklist PASS per tc-quality-standards.
@@ -456,8 +493,13 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST refuse without story key/URL | No traceable AC/EC source |
 | MUST NOT comment on sub-tasks or other issues | Scope is one story |
 | MUST NOT add TC outside story AC/EC | Traceability |
-| MUST ask about Test Type column before designing (Step 3a) | User may or may not want the column; don't assume |
-| MUST sort rows per Step 3c before presenting draft | Consistent order makes review and execution easier |
+| MUST ask all three pre-design questions in one message (Step 3a): language, TC ID format, Test Type | Minimises round-trips; user gives all setup answers at once |
+| MUST confirm TC language before designing (Step 3a) | Language applies to every cell — cannot retrofit after drafting |
+| MUST apply Thai mode rules from Step 3b: keep UI/technical terms in English | Forced Thai translation of technical terms causes ambiguity and looks unprofessional |
+| MUST use formal language level in both English and Thai mode | TCs are delivered to internal and external teams |
+| MUST confirm TC ID format before designing (Step 3a) | Format must be consistent across all rows; cannot reformat after design |
+| MUST apply confirmed TC ID format to every row with consistent zero-padding (Step 3c) | Mixed formats make TC sets unmaintainable |
+| MUST sort rows per Step 3e before presenting draft | Consistent order makes review and execution easier |
 | MUST NOT invent Test Type test cases that lack an AC/EC trace | Test Type is a label on existing coverage, not a reason to add out-of-scope rows |
 | MUST add Remark block for any requested Test Type with zero test cases | Makes coverage gaps explicit rather than silently absent |
 | MUST NOT reference agent-machine absolute paths in Jira | Other users cannot reproduce |
