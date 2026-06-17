@@ -125,7 +125,7 @@ Generate the file from this template. Replace all `{placeholders}` with real val
 
   table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 
-  colgroup col.ac    { width: 15%; }
+  colgroup col.ac    { width: 13%; }
   colgroup col.svc   { width: 7%; }
   colgroup col.id    { width: 4%; }
   colgroup col.title { width: 12%; }
@@ -133,7 +133,7 @@ Generate the file from this template. Replace all `{placeholders}` with real val
   colgroup col.data  { width: 7%; }
   colgroup col.steps { width: 14%; }
   colgroup col.exp   { width: 14%; }
-  colgroup col.pri   { width: 5%; }
+  colgroup col.pri   { width: 7%; }
   colgroup col.type  { width: 12%; }
 
   /* ── Table head ── */
@@ -215,9 +215,9 @@ Generate the file from this template. Replace all `{placeholders}` with real val
   .b-system      { background: var(--green-light);  color: var(--green); }
 
   /* ── Priority ── */
-  .p-high   { color: var(--red);    font-weight: 700; }
-  .p-medium { color: var(--yellow); font-weight: 600; }
-  .p-low    { color: var(--text-sec); }
+  .p-high   { color: var(--red);    font-weight: 700; white-space: nowrap; }
+  .p-medium { color: var(--yellow); font-weight: 600; white-space: nowrap; }
+  .p-low    { color: var(--text-sec); white-space: nowrap; }
 
   /* ── Remark ── */
   .remark-card {
