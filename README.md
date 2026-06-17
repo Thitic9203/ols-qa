@@ -4,7 +4,7 @@ Helix QA assistant pre-configured for the **OLS** project at SkillLane.
 
 Helix skills embedded directly — no separate install needed.
 
-**OLS Workspace version: v1.7.0** (17 Jun 2026) — based on helix v1.5.31
+**OLS Workspace version: v1.8.0** (17 Jun 2026) — based on helix v1.5.31
 
 ## Quick start
 
@@ -34,6 +34,16 @@ All OLS-specific config (test env URLs, default assignee, etc.) lives in [`refer
 Update it as new info arrives — AI reads it before asking questions.
 
 ## Changelog
+
+### v1.8.0 — TC FE Prep: Precondition inline, Attachments format, missing-link notify (17 Jun 2026)
+
+OLS-local customizations on top of helix v1.5.31.
+
+- **Precondition ใน CSV ทุกไฟล์รวม shared prep ครบ inline** — Draft_Jira, Import_Qase และ typed CSVs ทุกไฟล์ไม่มี section shared prep แยกด้านบน; Precondition cell มี shared prep ทุกขั้นตอนขยายครบพร้อม per-case steps ต่อท้าย
+- **footer ใช้คำว่า Attachments (ภาษาอังกฤษ)** — เปลี่ยนจาก "ไฟล์แนบ" เป็น "Attachments"; format เปลี่ยนจาก inline ·  เป็น bullet list ทีละบรรทัด
+- **ลำดับ Attachments: Jira → Qase → Unit → Integration → System** — ทั้งใน footer และ `<details>` ตัวอย่างใน README
+- **แจ้งใน chat เมื่อ ticket ไม่มีลิงก์ Figma หรือ PRD** — Step 2.5a บอกชัดว่า link ไหนขาด; Remark block ใต้ draft TC table มีบรรทัดระบุว่า "ไม่มีลิงก์ Figma/PRD ระบุไว้ใน ticket ณ ขณะที่ draft TC ชุดนี้"
+- **อัปเดต skill references ให้ตรงกับ README** — markdown-template.md: "Two CSV files" → up to 5 พร้อม list ครบ; qase-import-format.md: Preconditions column description อัปเดตให้สะท้อนกฎ inline expansion
 
 ### v1.7.0 — TC FE Prep: Typed CSVs + Fast Publish + Import_Qase Sort (17 Jun 2026)
 
