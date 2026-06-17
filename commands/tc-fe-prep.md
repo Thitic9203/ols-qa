@@ -1,6 +1,6 @@
 ---
 description: |
-  Prepare FE manual test cases from a Jira story (AC/EC), draft comment + CSV, publish to the specified story.
+  Prepare FE manual test cases (Thai) from a Jira story (AC/EC), draft comment + two CSV attachments (Draft_Jira_{ISSUE_KEY}.csv and Import_Qase_{ISSUE_KEY}.csv), publish to the specified story.
   Do NOT use for API-only Swagger TC (tc-api-prep), retest-after-fix (retest-bug), or Playwright ticket runs (testing-ticket).
 ---
 

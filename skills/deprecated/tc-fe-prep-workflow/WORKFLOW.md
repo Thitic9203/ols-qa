@@ -1,7 +1,7 @@
 ---
 name: tc-fe-prep-workflow
 description: |
-  Prepare frontend manual test cases from a Jira story (AC/EC) with mandatory AC/EC coverage review and ISTQB/29119-3 quality check, then draft table in chat, export CSV/Excel, publish one comment on that story only, and close with a four-axis final TC review report (AC/EC alignment, spelling, numbering, scope).
+  Prepare frontend manual test cases (Thai, ราชบัณฑิตยสภา) from a Jira story (AC/EC) with mandatory AC/EC coverage review and ISTQB/29119-3 quality check, then draft table in chat, export a Qase-import CSV (Import_Qase_{ISSUE_KEY}.csv) attached to one comment on that story only, and close with a four-axis final TC review report (AC/EC alignment, spelling, numbering, scope).
   Use when the user asks for FE test cases, manual TC from acceptance criteria, draft TC comment on Jira, or TC FE Preparation from Helix (/tc-fe-prep).
   Do NOT use for API-only Swagger test cases (tc-api-prep-workflow), Playwright execution (testing-ticket-workflow), retest-after-fix (retest-bug-workflow), or opening bug tickets (create-bug-workflow).
 ---
@@ -171,39 +171,28 @@ Post the conflict report block in chat (always post, even when no conflicts).
 
 ## Step 3 — Design test cases
 
-### 3a — Pre-design setup (ask all three at once)
+### 3a — Pre-design setup
 
-Before starting the table, send **one message** covering all three setup questions — to avoid multiple round-trips:
+Two settings are **fixed for this workspace** — do NOT ask about them:
 
-> Before I start designing test cases, I need to confirm three things:
->
-> **1. TC Language**
-> Which language should I use for all test case content (Title, Steps, Expected Results, Shared Prep)?
-> - **English** — all content in formal technical English
-> - **Thai** — content in formal Thai; technical terms with no clear Thai equivalent are kept in English (e.g. Login, Dropdown, Modal, API, URL, Checkbox, Token, Role, Status)
->
-> **2. Test Case ID format**
-> What format should I use for TC IDs? Examples:
+- **TC Language = Thai (always).** All test case content is formal Thai per ราชบัณฑิตยสภา (Step 3b). English only where no official Thai term exists, and only after the Step 4.5 term-confirmation gate.
+- **Type column is always present**, restricted to `System Test` / `Unit Test` / `Integration Test` (Qase Type field — Step 3d). Do not offer to skip it.
+
+Ask only the one setting that varies, in a single message:
+
+> **Test Case ID format** — what format should I use for TC IDs? Examples:
 > - `TC_01`, `TC_02` (simple sequential)
 > - `TC_Feature_01` (feature prefix)
 > - `{ISSUE_KEY}_TC_01` (e.g. `OLS-142_TC_01`)
 > - Other — please specify
->
-> **3. Test Type column**
-> Do you want a **Test Type** column (System / Integration / Unit)?
-> - **Yes** — pick types: System, Integration, Unit, Custom, or all; if unsure, `System + Integration + Unit` is the default set
-> - **No** — skip this column
 
-**Wait for all three answers before proceeding.** If the user skips any item, apply defaults: Language = English, TC ID = `TC_01`, Test Type = No.
+**Wait for the answer.** If the user skips it, default to `TC_01`. (Note: Qase auto-generates its own case IDs on import; the Test Case ID column is for the Jira comment table and traceability, not the Qase `id` field.)
 
-### 3b — Language rules (apply after user confirms)
+### 3b — Language rules (Thai always)
 
-**English mode:**
-- All content in formal technical English throughout — Title, Precondition, Test Steps, Expected Result, Test Data, Shared Prep.
-- Consistent terminology: use the same term for the same element every time (e.g. always "Save button", never alternating "Save" / "Submit" / "the button").
-- Suitable for internal and external team delivery.
+This workspace writes **all** FE test case content in Thai. There is no English-only mode.
 
-**Thai mode:**
+**Thai mode (the only mode):**
 - All content in formal/professional Thai (ภาษาทางการ) — suitable for internal and external stakeholder delivery.
 - **Term priority: ราชบัณฑิตยสภา Thai term first → English if no official term exists.**
   - Use the current Royal Institute of Thailand (ราชบัณฑิตยสภา) approved term whenever one exists.
@@ -257,39 +246,38 @@ Before starting the table, send **one message** covering all three setup questio
 - **Never mix formats** within the same TC set (e.g. do not switch from `TC_01` to `TC_Feature_02`).
 - If the user specifies a feature prefix, derive it from the ticket title or AC group label — do not invent one.
 
-### 3d — When Test Type column is requested
+### 3d — Type column (always present)
 
-Add **Test Type** as an additional column (after Priority, or wherever the user prefers).
+**Type** is the Qase `Type` field. It is always present (after Priority).
 
-**Allowed values:** `System` | `Integration` | `Unit` | `[Custom type as specified by user]`
+**Allowed values (exactly these three — no others):** `System Test` | `Unit Test` | `Integration Test`
 
 **Assignment rules:**
 - Assign the type that best describes *what layer* the test case validates:
-  - **System** — end-to-end UI flow (user can see and interact with the feature as a whole)
-  - **Integration** — verifying that two or more components/services work together (e.g. FE → API → DB round-trip)
-  - **Unit** — isolated behaviour of one element (e.g. field validation, single component logic)
-  - **Custom** — use the label the user requested
-- A ticket does **not** need to have all types — derive only what the AC/EC actually requires.
+  - **System Test** — end-to-end UI flow (user can see and interact with the feature as a whole)
+  - **Integration Test** — verifying that two or more components/services work together (e.g. FE → API → DB round-trip)
+  - **Unit Test** — isolated behaviour of one element (e.g. field validation, single component logic)
+- A ticket does **not** need to have all three types — derive only what the AC/EC actually requires.
 - When a type has no applicable test cases for this ticket, **do NOT invent cases just to fill the type**. Instead, add a Remark block under the table (see below).
 - Extra test cases may be added to cover a type's perspective **only if** they stay within the scope of the AC/EC on this ticket — do not pull in requirements from other tickets.
 
-**Remark block (add after the table when any requested type is absent):**
+**Remark block (add after the table when any type is absent):**
 
 ```
-**Remark — Test Type coverage:**
-- No *System* test cases for this ticket.
-- No *Integration* test cases for this ticket.
+**Remark — Type coverage:**
+- No *System Test* cases for this ticket.
+- No *Integration Test* cases for this ticket.
 ```
 
 List only the types that are absent. Omit types that have at least one test case.
 
 ---
 
-Default **9 columns** (change only if user specifies otherwise), plus optional **Test Type** column per 3a:
+Default **10 columns** (change only if user specifies otherwise) — Type is always included:
 
 | Column | Purpose |
 |--------|---------|
-| Acceptance Criteria | AC_0n / EC_0n label + short summary |
+| Acceptance Criteria | AC_0n / EC_0n label + short summary (full text in the Qase **AC/EC** column) |
 | Services Impacted | e.g. `- Service Name` |
 | Test Case ID | Stable id — format confirmed in 3a |
 | Test Title | Action + expected outcome (no `[Tag]` prefixes unless user wants them) |
@@ -298,7 +286,9 @@ Default **9 columns** (change only if user specifies otherwise), plus optional *
 | Test Steps | Numbered manual steps |
 | Expected Result | Numbered assertions |
 | Priority | High / Medium / Low |
-| **Test Type** *(optional — if requested in 3a)* | System / Integration / Unit / [custom] |
+| **Type** | `System Test` / `Unit Test` / `Integration Test` (Step 3d) |
+
+The Qase import CSV uses a **different** column set (AC/EC, Title, Preconditions, Priority, Type, Status, Suite, Steps, Tags) — see [qase-import-format.md](references/qase-import-format.md). The Jira markdown table above and the Qase CSV describe the same test cases in two layouts.
 
 **Shared data prep (above table)** — typical pattern:
 
@@ -312,15 +302,9 @@ Add a **Precondition column note** above the table explaining that the column me
 
 ### 3e — Row ordering
 
-Sort rows before presenting the draft:
+Sort rows before presenting the draft.
 
-**When Test Type column is present (from 3a):**
-
-Group rows by type in this order: `Unit` → `Integration` → `System` → custom types (in order specified by user). Within each group, maintain AC/EC sequence order.
-
-**When Test Type column is absent:**
-
-Sort rows by the order the AC/EC items appear in the ticket (top to bottom). Do **not** batch all ACs before all ECs — if the ticket shows AC_01 → EC_01 → AC_02, preserve that sequence. Multiple TCs for the same AC/EC stay together in the order they were designed.
+Group rows by type in this order: `Unit Test` → `Integration Test` → `System Test`. Within each group, maintain AC/EC sequence order (the order AC/EC items appear in the ticket, top to bottom — do not batch all ACs before all ECs). Multiple TCs for the same AC/EC stay together in the order they were designed.
 
 ---
 
@@ -354,6 +338,33 @@ If review fails → fix Step 3 design and re-run 4a–4d (max 2 rounds).
 
 ---
 
+## Step 4.5 — Thai↔English term confirmation (mandatory gate)
+
+Because content is Thai by default but some terms stay in English (Step 3b), the user MUST see and approve the term choices **before** any content is written to the real TC file.
+
+After the Step 4 review passes and before showing the full draft (Step 5), post the term table in chat:
+
+```
+**Thai ↔ English terms used in this TC set**
+
+These terms appear in the test cases. Thai follows ราชบัณฑิตยสภา; English is kept only where no suitable official Thai term exists or the system UI shows it in English.
+
+| English term | ใช้ในเทสเคสเป็น | เหตุผลที่คงอังกฤษ (ถ้าคงไว้) |
+|--------------|----------------|------------------------------|
+| {term} | {Thai term used} / {kept as English} | {no official Thai term / UI shows it in English / acronym-standard / —} |
+
+ต้องการปรับคำไหนไหมครับ? ถ้าโอเคทั้งหมด ผมจะใช้ชุดคำนี้เขียนลงเทสเคสจริง
+```
+
+**Rules:**
+- List **every** term where a Thai-vs-English choice was made — both the ones translated to Thai and the ones deliberately kept in English.
+- For each kept-English term, state the reason (no official Thai term / UI label is English / acronym or standard like API, URL, OTP).
+- **Wait for the user's response.** If the user asks to change any term, apply it and re-post the changed rows.
+- Only after the user confirms (or after applying their adjustments) proceed to Step 5 and use the confirmed terms in every cell.
+- Do NOT write any TC content to a file (Step 6) until this gate is confirmed.
+
+---
+
 ## Step 5 — Draft in chat (approval gate)
 
 Post the full draft in the conversation:
@@ -367,21 +378,21 @@ Draft TC FE as below
 
 **Note — Precondition column:** After completing shared prep above, complete the numbered items in Precondition before Test Steps.
 
-| **Acceptance Criteria** | **Services Impacted** | **Test Case ID** | **Test Title** | **Precondition** | **Test Data** | **Test Steps** | **Expected Result** | **Priority** |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **Acceptance Criteria** | **Services Impacted** | **Test Case ID** | **Test Title** | **Precondition** | **Test Data** | **Test Steps** | **Expected Result** | **Priority** | **Type** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | ... one row per TC ... |
 ```
 
-**Language rule:** Apply the language confirmed in Step 3a throughout the entire draft. In Thai mode, keep UI component names and technical terms in English per the Step 3b rules. In English mode, use formal technical English with consistent terminology.
+**Language rule:** All content is Thai per Step 3b, using the terms confirmed at the Step 4.5 gate. Keep UI component names and technical terms in English only where the Step 4.5 table marked them as kept-English.
 
-If **Test Type column was requested (Step 3a)**, add the column to the header and each row, then append the Remark block (per Step 3d) after the table — listing any requested types that have no test cases:
+The **Type** column is always present. Use the 10-column header below, then append the Remark block (per Step 3d) after the table — listing any Type that has no test cases:
 
 ```text
-| **Acceptance Criteria** | **Services Impacted** | **Test Case ID** | **Test Title** | **Precondition** | **Test Data** | **Test Steps** | **Expected Result** | **Priority** | **Test Type** |
+| **Acceptance Criteria** | **Services Impacted** | **Test Case ID** | **Test Title** | **Precondition** | **Test Data** | **Test Steps** | **Expected Result** | **Priority** | **Type** |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | ... one row per TC ... |
 
-**Remark — Test Type coverage:**
+**Remark — Type coverage:**
 - No *[Type]* test cases for this ticket.
 ```
 
@@ -395,15 +406,18 @@ State clearly: **Not posted to Jira yet.**
 
 ## Step 6 — Save artifacts in the user's workspace
 
-After approval, determine the export format first (see [csv-export-rules.md](../../references/csv-export-rules.md) — Format detection section), then write files **inside the user's project** (paths relative to workspace root):
+**Suite gate (do before writing the CSV):** The Qase CSV needs a **Suite** value per row. Inspect the OLS project's existing suite tree first (Qase web UI → Test cases → suite sidebar, or ask the user to paste the current suite list — there is no Qase MCP) and reuse a fitting suite; only propose a new suite (with user approval) when none fits. Never assign a suite blind, never create a duplicate. Full rules: [qase-import-format.md](references/qase-import-format.md) — Suite rules.
+
+After approval (and Suite confirmed), write **three files** inside the user's project (paths relative to workspace root):
 
 | File | Condition | Purpose |
 |------|-----------|---------|
-| `references/{ISSUE_KEY}_FE_TC.md` | always | Canonical markdown (prep block + table) |
-| `references/{ISSUE_KEY}_FE_TC.csv` | default (no Excel request) | UTF-8 BOM CSV export |
-| `references/{ISSUE_KEY}_FE_TC.xlsx` | user explicitly requested Excel/xlsx | Excel workbook export |
+| `references/{ISSUE_KEY}_FE_TC.md` | always | Canonical markdown (prep block + Jira table) |
+| `references/Draft_Jira_{ISSUE_KEY}.csv` | always (unless xlsx requested) | **Jira-format CSV** — same column set as the chat draft table (10 columns); use as source-of-truth for the comment table |
+| `references/Import_Qase_{ISSUE_KEY}.csv` | always (unless xlsx requested) | **Qase import CSV** — schema per [qase-import-format.md](references/qase-import-format.md) |
+| `references/Draft_Jira_{ISSUE_KEY}.xlsx` / `references/Import_Qase_{ISSUE_KEY}.xlsx` | user explicitly requested Excel/xlsx | Excel versions of both files above |
 
-Follow [csv-export-rules.md](../../references/csv-export-rules.md) for the full export procedure — CSV (in-agent default) or xlsx (Python + openpyxl when user requests Excel). Never silently produce a CSV when the user asked for xlsx.
+Both CSV files are always produced together and both are uploaded to Jira (Step 7). Follow [csv-export-rules.md](../../references/csv-export-rules.md) for cell cleaning (convert `<br>`, strip tags, preserve Thai) — applies to both files. Never silently produce only one when both are required.
 
 See [references/publish-options.md](references/publish-options.md) for Jira delivery.
 
@@ -420,9 +434,11 @@ See [references/publish-options.md](references/publish-options.md) for Jira deli
 1. Intro line: `Draft TC FE as below`
 2. Shared prep + precondition note
 3. Full table (bold header cells) — **with `<br>` already converted**
-4. Footer: short note that the CSV/Excel file matches the table + **clickable attachment link** on the same issue (see footer link pattern in [jira-formatting.md](references/jira-formatting.md))
+4. Footer: two lines, each a clickable download link — one per attachment (see footer link pattern in [jira-formatting.md](references/jira-formatting.md)):
+   - `[Draft_Jira_{ISSUE_KEY}.csv]({url})` — ตารางเทสเคส (Jira format)
+   - `[Import_Qase_{ISSUE_KEY}.csv]({url})` — Qase import file พร้อม import เข้า OLS project
 
-**Upload-first rule:** Upload CSV/xlsx to the issue BEFORE posting the comment. Capture the attachment `id` from the upload response, build the `secure/attachment/{id}/{filename}` URL, then embed it as a hyperlink in the footer. Never write the filename as plain text.
+**Upload-first rule:** Upload **both** files to the issue BEFORE posting the comment. Capture each attachment `id` from the upload response, build `secure/attachment/{id}/{filename}` URLs, then embed both as hyperlinks in the footer. Never write a filename as plain text. Upload order: `Draft_Jira` first, `Import_Qase` second.
 
 **Publish methods** (choose what works in the environment — details in `references/publish-options.md`):
 
@@ -440,7 +456,7 @@ Run the **full review checklist** from [jira-comment-post-review.md](../../refer
 - [ ] **No literal `<br>`, HTML tags, or `**` markers** visible as text in any cell (zero tolerance).
 - [ ] Numbered items (`1. ` `2. ` `3. `) each on a **separate line** — not running together.
 - [ ] Cell content matches approved draft (spot-check first, middle, last rows).
-- [ ] CSV/Excel **attached to the same issue** (not just in workspace) and footer link works.
+- [ ] **Both** `Draft_Jira_{ISSUE_KEY}.csv` and `Import_Qase_{ISSUE_KEY}.csv` attached to the same issue (not just in workspace) and **both** footer links work.
 - [ ] Comment is on the **story**, not a sub-task.
 
 If any check fails → fix and re-post → re-verify on Jira UI (max 3 rounds).
@@ -469,13 +485,16 @@ Follow [tc-final-review-report.md](references/tc-final-review-report.md):
 Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
 
 - [ ] Step 2.5 conflict check completed; report block posted in chat; no unresolved conflicts before Step 3.
-- [ ] Step 3a pre-design setup questions sent in one message; all three answers received (language, TC ID format, Test Type).
-- [ ] TC language confirmed and applied consistently throughout — Thai mode: technical terms kept in English per Step 3b rules; English mode: formal technical English with consistent terminology.
-- [ ] TC ID format confirmed, recorded, and applied consistently to every row — no mixed formats.
-- [ ] If Test Type column present: every row has a valid type; Remark block lists absent types.
+- [ ] TC ID format confirmed (Step 3a), recorded, and applied consistently to every row — no mixed formats.
+- [ ] Type column present on every row with a valid value (`System Test` / `Unit Test` / `Integration Test`); Remark block lists absent types.
 - [ ] Step 4 review block posted with **Ready for draft: YES** and traceability matrix complete.
 - [ ] AC/EC coverage complete; quality checklist PASS per tc-quality-standards.
-- [ ] Export file row count matches table rows (CSV or xlsx per user's requested format).
+- [ ] Step 4.5 Thai↔English term table posted; user confirmed (or adjustments applied) **before** any file write.
+- [ ] All content is Thai per ราชบัณฑิตยสภา (Step 3b); English kept only where the Step 4.5 gate marked it kept-English.
+- [ ] Suite gate done — every CSV row uses an existing OLS suite, or a new suite was user-approved; no duplicate suites.
+- [ ] `Draft_Jira_{ISSUE_KEY}.csv` uses the 10-column Jira table schema; row count matches approved draft.
+- [ ] `Import_Qase_{ISSUE_KEY}.csv` uses Qase schema, `Status = Done` on every row, cut fields absent; row count matches approved draft.
+- [ ] Both files uploaded to the Jira issue; both footer links verified working.
 - [ ] Jira UI matches approved draft (not MCP output alone).
 - [ ] Post-publish review passed per [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — no stray tags, numbered items on separate lines, attachment present.
 - [ ] Step 7.5 final TC review report posted per [tc-final-review-report.md](references/tc-final-review-report.md) — all four axes **PASS**.
@@ -501,6 +520,7 @@ Complete [verify-closing-checklist.md](../../references/verify-closing-checklist
 | File | Content |
 |------|---------|
 | [prerequisites.md](references/prerequisites.md) | Expanded pre-flight checklist |
+| [qase-import-format.md](references/qase-import-format.md) | Qase import CSV schema, Type/Status/Suite rules, cut fields |
 | [jira-formatting.md](references/jira-formatting.md) | Tables, `<br>`, ADF, CSV footer |
 | [gotchas.md](references/gotchas.md) | Common failures |
 | [markdown-template.md](references/markdown-template.md) | Copy-paste skeleton |
@@ -529,15 +549,21 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST refuse without story key/URL | No traceable AC/EC source |
 | MUST NOT comment on sub-tasks or other issues | Scope is one story |
 | MUST NOT add TC outside story AC/EC | Traceability |
-| MUST ask all three pre-design questions in one message (Step 3a): language, TC ID format, Test Type | Minimises round-trips; user gives all setup answers at once |
-| MUST confirm TC language before designing (Step 3a) | Language applies to every cell — cannot retrofit after drafting |
-| MUST use ราชบัณฑิตยสภา approved Thai term first in Thai mode (Step 3b); fall back to English only when no official term exists | Authoritative Thai is more professional than ad-hoc transliteration or unnecessary English |
-| MUST use formal language level in both English and Thai mode | TCs are delivered to internal and external teams |
+| MUST write all TC content in Thai (Step 3b) — there is no English-only mode | Workspace standard; English mode is not offered for FE TC |
+| MUST use ราชบัณฑิตยสภา approved Thai term first (Step 3b); fall back to English only when no official term exists or the UI label is English | Authoritative Thai is more professional than ad-hoc transliteration or unnecessary English |
+| MUST post the Step 4.5 Thai↔English term table and get user confirmation BEFORE writing any TC content to a file | User must approve term choices before they are committed to the real TC file |
+| MUST use formal Thai language level throughout | TCs are delivered to internal and external teams |
+| MUST keep Type to exactly `System Test` / `Unit Test` / `Integration Test` (Step 3d) | These are the OLS Qase Type values; other values break import |
+| MUST set Status = `Done` on every Qase CSV row | Workspace rule for OLS Qase import |
+| MUST inspect existing OLS Qase suites and reuse a fitting one; create a new suite only with user approval and never a duplicate | Duplicate/colliding suites corrupt the existing Qase tree |
+| MUST verify OLS Qase Type and Status options exist before import; stop and tell user if a value is missing | Qase silently resets unknown Type/Status values on import |
+| MUST produce both `Draft_Jira_{ISSUE_KEY}.csv` (Jira 10-col schema) and `Import_Qase_{ISSUE_KEY}.csv` (Qase schema) | Two different audiences: comment table consumers and Qase importers |
+| MUST upload both CSV files before posting the comment; embed both as footer links | Footer must have two clickable download lines — one per file |
 | MUST confirm TC ID format before designing (Step 3a) | Format must be consistent across all rows; cannot reformat after design |
 | MUST apply confirmed TC ID format to every row with consistent zero-padding (Step 3c) | Mixed formats make TC sets unmaintainable |
 | MUST sort rows per Step 3e before presenting draft | Consistent order makes review and execution easier |
-| MUST NOT invent Test Type test cases that lack an AC/EC trace | Test Type is a label on existing coverage, not a reason to add out-of-scope rows |
-| MUST add Remark block for any requested Test Type with zero test cases | Makes coverage gaps explicit rather than silently absent |
+| MUST NOT invent Type test cases that lack an AC/EC trace | Type is a label on existing coverage, not a reason to add out-of-scope rows |
+| MUST add Remark block for any Type with zero test cases | Makes coverage gaps explicit rather than silently absent |
 | MUST NOT reference agent-machine absolute paths in Jira | Other users cannot reproduce |
 | MUST run Step 2.5 conflict check before designing TCs | Contradictions between ticket and PRD/Figma invalidate TCs built without resolution |
 | MUST ask for PRD/Figma links if not found in ticket (Step 2.5a) | Cannot cross-reference without sources; one question covers both at once |
