@@ -228,17 +228,19 @@ Position: last line of the Jira comment, after all attachment links. Do not add 
 
 ### Files to update
 
-| File | Change |
-|------|--------|
-| `skills/deprecated/tc-fe-prep-workflow/WORKFLOW.md` | Add csv_type intake question + branch export logic |
-| `references/csv-export-rules.md` | Add section for typed export; link here |
-| `references/csv-template-types.md` | **Done** — template spec moved here; WORKFLOW.md links to it |
+**Implemented 2026-06-17** — commit `4aac78f`
+
+| File | Change | Status |
+|------|--------|--------|
+| `skills/deprecated/tc-fe-prep-workflow/WORKFLOW.md` | Add csv_type intake question + branch export logic | **Done** |
+| `references/csv-export-rules.md` | Add section for typed export; fix link | **Done** |
+| `references/csv-template-types.md` | Template spec moved here; WORKFLOW.md links to it | **Done** |
 
 > **Note:** Typed CSVs (Unit/Integration/System) are **not** Qase import format — they are QA deliverable artifacts separate from `Import_Qase_{ISSUE_KEY}.csv`. No Qase schema conflict.
 
 ### Open questions
 
 - [x] **[RESOLVED]** Blank vs filled template → **blank** — row numbers + structure only, content columns empty. Format source of truth: [`references/csv-template-types.md`](../../references/csv-template-types.md). Do not ask user.
-- [ ] Should Unit Test group headings pull from TOR Ref sections automatically, or does the user provide them manually?
+- [x] **[RESOLVED]** Unit Test group headings → user provides manually. WORKFLOW.md Step 6 asks user for Function/Sub Function names before generating if not yet provided.
 - [ ] For Integration/System Test: does the TC content map 1:1 to rows, or do multi-step TCs expand to multiple rows?
 - [ ] Is "ลำดับ" a running number across the whole file, or reset per โมดูล?
