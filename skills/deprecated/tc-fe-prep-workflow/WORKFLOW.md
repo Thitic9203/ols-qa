@@ -88,7 +88,14 @@ If either is missing, ask the user once:
 >
 > If neither exists for this story, reply "no PRD / no Figma" and I'll proceed with ticket content only.
 
-**Wait for the user's response.** If the user confirms no PRD/Figma exists, post a one-line note ("No PRD/Figma — proceeding from ticket only.") and go to Step 3.
+**Wait for the user's response.** If the user confirms that a source does not exist (or provides no link after being asked):
+
+- **Tell the user in chat** — explicitly state which link(s) are missing, e.g.:
+  - "ไม่พบลิงก์ Figma ใน ticket — จะ draft TC จาก ticket content เท่านั้น"
+  - "ไม่พบลิงก์ PRD ใน ticket — จะ draft TC จาก ticket content เท่านั้น"
+  - "ไม่พบทั้งลิงก์ Figma และ PRD ใน ticket — จะ draft TC จาก ticket content เท่านั้น"
+- **Record which links are absent** (Figma / PRD / both) for use in the Remark block (Step 3e / Step 5).
+- Go to Step 3.
 
 ### 2.5b — Collect source metadata (recency)
 
@@ -259,7 +266,7 @@ TC IDs are always simple sequential numbers: `1`, `2`, `3`, …
 - When a type has no applicable test cases for this ticket, **do NOT invent cases just to fill the type**. Instead, add a Remark block under the table (see below).
 - Extra test cases may be added to cover a type's perspective **only if** they stay within the scope of the AC/EC on this ticket — do not pull in requirements from other tickets.
 
-**Remark block (add after the table when any type is absent):**
+**Remark block (add after the table when any type is absent OR when Figma/PRD links were missing):**
 
 ```
 **Remark — Type coverage:**
@@ -268,6 +275,15 @@ TC IDs are always simple sequential numbers: `1`, `2`, `3`, …
 ```
 
 List only the types that are absent. Omit types that have at least one test case.
+
+**Missing-link Remark lines** — append to the Remark block when a source link was not found in the ticket:
+
+```
+- ไม่มีลิงก์ Figma ระบุไว้ใน ticket ณ ขณะที่ draft TC ชุดนี้
+- ไม่มีลิงก์ PRD ระบุไว้ใน ticket ณ ขณะที่ draft TC ชุดนี้
+```
+
+Include only the line(s) that apply (Figma / PRD / both). If both links exist, omit these lines entirely.
 
 ---
 
@@ -411,7 +427,11 @@ The **Type** column is always present. Use the 10-column header below, then appe
 
 **Remark — Type coverage:**
 - No *[Type]* test cases for this ticket.
+- ไม่มีลิงก์ Figma ระบุไว้ใน ticket ณ ขณะที่ draft TC ชุดนี้
+- ไม่มีลิงก์ PRD ระบุไว้ใน ticket ณ ขณะที่ draft TC ชุดนี้
 ```
+
+*(Include missing-link lines only when the corresponding source was absent from the ticket. Omit lines for sources that were found.)*
 
 **Header rule:** Every column header MUST be wrapped in `**bold**` in the chat draft, the Jira comment, and the markdown `.md` file — e.g. `| **Acceptance Criteria** |`. This applies here and in Step 7.
 
