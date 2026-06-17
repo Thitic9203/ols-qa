@@ -60,14 +60,3 @@ OLS-local customizations on top of helix v1.5.31.
 | 5 | **Suite gate** — ตรวจ suite tree ใน Qase OLS ก่อน; reuse ของเดิมถ้าตรง; สร้างใหม่ต้องขอ user อนุมัติ ห้ามซ้ำ |
 | 6 | **qase-import-format.md** — reference ใหม่: Qase column schema, Type/Status/AC-EC field warnings |
 | 7 | **ols-project-guide.md** — เพิ่ม Qase section (project URL, file naming, Type/Status/Suite rules) |
-
-### v1.5.31 — helix sync (16 Jun 2026)
-
-Synced from [Thitic9203/helix](https://github.com/Thitic9203/helix) v1.5.31.
-
-| # | What changed |
-|---|-------------|
-| 1 | **Step 2.5 — Conflict check** ก่อนออกแบบ TC: เปรียบเทียบ ticket vs PRD/Figma พร้อม source recency (Bangkok ICT, format `DD Mon YYYY HH.MM AM/PM`) |
-| 2 | **Step 3a — Pre-design setup**: ถามภาษา + รหัส TC + Test Type ในข้อความเดียว |
-| 3 | **TC Language**: เลือก English (formal) หรือ Thai (ราชบัณฑิตยสภาก่อน → อังกฤษถ้าไม่มีคำไทย) |
-| 4 | **TC ID format**: ยืนยัน format (เช่น `TC_01`, `OLS-142_TC_01`) ก่อนร่าง — ใช้สม่ำเสมอทุก row |
