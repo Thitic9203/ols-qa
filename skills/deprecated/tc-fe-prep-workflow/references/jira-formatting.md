@@ -17,8 +17,12 @@ Draft TC FE as below
 
 ---
 
-[Draft_Jira_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ID1}/Draft_Jira_{ISSUE_KEY}.csv) — ตารางเทสเคส (Jira format)
-[Import_Qase_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ID2}/Import_Qase_{ISSUE_KEY}.csv) — Qase import file พร้อม import เข้า OLS project
+📎 **Attachments:**
+- [Draft_Jira_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ID1}/Draft_Jira_{ISSUE_KEY}.csv) — ตารางเทสเคส (Jira format)
+- [Import_Qase_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ID2}/Import_Qase_{ISSUE_KEY}.csv) — Qase import file พร้อม import เข้า OLS project
+- [Unit_Test_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ID3}/Unit_Test_{ISSUE_KEY}.csv) — Unit Test *(include only if generated)*
+- [Integration_Test_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ID4}/Integration_Test_{ISSUE_KEY}.csv) — Integration Test *(include only if generated)*
+- [System_Test_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ID5}/System_Test_{ISSUE_KEY}.csv) — System Test *(include only if generated)*
 ```
 
 ## Table rules
