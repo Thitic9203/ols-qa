@@ -2,6 +2,8 @@
 
 Use when `tc-fe-prep-workflow` or `tc-api-prep-workflow` writes an export file next to `.md` in the **user’s workspace**.
 
+> **TC FE CSV types:** Three template formats exist (Unit Test / Integration Test / System Test), each with different columns and row structure. See [csv-template-types.md](../docs/plan/csv-template-types.md) before generating a TC FE CSV.
+
 ## Format detection (decide before exporting)
 
 | User’s request contains… | Output format | File extension |
