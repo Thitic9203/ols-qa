@@ -29,11 +29,16 @@ Draft TC FE as below
 
 Allowed Type values: `System Test` | `Unit Test` | `Integration Test`. List only absent types in the Remark.
 
-> Two CSV files are always produced from this table:
+> Up to 5 CSV files are produced from this table and uploaded to Jira:
 > - `Draft_Jira_{ISSUE_KEY}.csv` — same 10-column schema as this table (Jira comment format)
 > - `Import_Qase_{ISSUE_KEY}.csv` — Qase schema (AC/EC, Title, Preconditions, Priority, Type, Status=`Done`, Suite, Steps, Tags) — see [qase-import-format.md](qase-import-format.md)
+> - `Unit_Test_{ISSUE_KEY}.csv` — 10-column, filtered to Unit Test rows only *(generated only if Unit Test TCs exist)*
+> - `Integration_Test_{ISSUE_KEY}.csv` — 10-column, filtered to Integration Test rows only *(generated only if Integration Test TCs exist)*
+> - `System_Test_{ISSUE_KEY}.csv` — 10-column, filtered to System Test rows only *(generated only if System Test TCs exist)*
 >
-> Both are uploaded to Jira and linked in the comment footer.
+> All generated files are uploaded to Jira and linked in the comment footer (📎 **Attachments:**).
+>
+> **Precondition in CSV files (all 5):** Unlike the Jira comment table, CSV files are standalone — no shared-prep block above the table. The Precondition cell must contain the full shared prep steps expanded inline (numbered continuously), followed by any per-case steps. See WORKFLOW.md Step 3e.
 
 ---
 

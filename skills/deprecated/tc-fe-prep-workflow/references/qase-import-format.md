@@ -13,7 +13,7 @@ Qase field during import. Use the exact column set below; do not add the cut fie
 |--------|--------------------|---------|
 | **AC/EC** | *custom field / leading text* | AC/EC reference as plain text — `{LABEL} — {full criterion text}` (e.g. `EC_07 — กรอก Metadata ไม่ครบ → ปุ่มส่งตรวจปิดใช้งาน ปุ่มบันทึกแบบร่างเปิดใช้งาน`) |
 | **Title** | Title *(required)* | Test case name (Thai) |
-| **Preconditions** | Preconditions | Per-case setup, after shared prep (Thai) |
+| **Preconditions** | Preconditions | Full shared prep steps expanded inline (numbered continuously) + any per-case setup (Thai) — CSV is standalone; no separate shared-prep block |
 | **Priority** | Priority | `High` / `Medium` / `Low` |
 | **Type** | Type | `System Test` / `Unit Test` / `Integration Test` only |
 | **Status** | Status | `Done` (always) |
