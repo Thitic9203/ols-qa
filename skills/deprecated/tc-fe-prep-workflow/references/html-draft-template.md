@@ -154,7 +154,8 @@ Generate the file from this template. Replace all `{placeholders}` with real val
     letter-spacing: .5px;
     text-transform: uppercase;
     border-right: 1px solid var(--border);
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
   }
   thead th:last-child { border-right: none; }
 
