@@ -4,7 +4,7 @@ Helix QA assistant pre-configured for the **OLS** project at SkillLane.
 
 Helix skills embedded directly — no separate install needed.
 
-**OLS Workspace version: v1.8.0** (17 Jun 2026) — based on helix v1.5.31
+**OLS Workspace version: v1.9.0** (17 Jun 2026) — based on helix v1.5.31
 
 ## Quick start
 
@@ -34,6 +34,11 @@ All OLS-specific config (test env URLs, default assignee, etc.) lives in [`refer
 Update it as new info arrives — AI reads it before asking questions.
 
 ## Changelog
+
+### v1.9.0 — Auto-update skills on session start (17 Jun 2026)
+
+- **Claude Code: auto `git pull` ทุกครั้งที่เปิด session** — SessionStart hook ดึง latest skills จาก remote อัตโนมัติ; แสดง banner "Skills updated (N commit(s))" เมื่อมีของใหม่ ไม่แสดงอะไรเมื่อ up-to-date; ใช้ `--ff-only` ปลอดภัย ไม่ทับ local changes
+- **Cursor: auto `git pull` ทุกครั้งที่เริ่ม conversation** — `.cursor/rules/auto-update.mdc` ให้ Cursor AI run pull เป็น first action ทุก conversation
 
 ### v1.8.0 — TC FE Prep: Precondition inline, Attachments format, missing-link notify (17 Jun 2026)
 
