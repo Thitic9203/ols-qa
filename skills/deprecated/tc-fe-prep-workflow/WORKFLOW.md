@@ -173,24 +173,16 @@ Post the conflict report block in chat (always post, even when no conflicts).
 
 ### 3a — Pre-design setup
 
-Two settings are **fixed for this workspace** — do NOT ask about them:
+All settings in this workspace are **fixed** — do NOT ask the user about any of them:
 
 - **TC Language = Thai (always).** All test case content is formal Thai per ราชบัณฑิตยสภา (Step 3b). English only where no official Thai term exists, and only after the Step 4.5 term-confirmation gate.
 - **Type column is always present**, restricted to `System Test` / `Unit Test` / `Integration Test` (Qase Type field — Step 3d). Do not offer to skip it.
+- **TC ID = simple sequential number: 1, 2, 3** (see Step 3c). No prefix, no padding, no format selection. Do not ask.
+- **Typed CSVs**: all three (Unit_Test, Integration_Test, System_Test) are generated when TCs of that type exist — no selection needed. Each populated with TCs filtered by Type and mapped to that template's columns (Step 6).
 
-Ask for the only setting that varies, in a single message:
+**Proceed directly to Step 2.** No questions needed in this step.
 
-> **TC ID format** — what format should I use for TC IDs? Examples:
-> - `TC_01`, `TC_02` (simple sequential)
-> - `TC_Feature_01` (feature prefix)
-> - `{ISSUE_KEY}_TC_01` (e.g. `OLS-142_TC_01`)
-> - Other — please specify
-
-**Wait for the answer.** If the user skips TC ID format, default to `TC_01`.
-
-All three typed CSVs (Unit_Test, Integration_Test, System_Test) are always generated — no need to ask. Each is populated with TCs filtered by Type and mapped to that template's columns (Step 6).
-
-(Note: Qase auto-generates its own case IDs on import; the Test Case ID column is for the Jira comment table and traceability, not the Qase `id` field.)
+(Note: Qase auto-generates its own case IDs on import; the Test Case ID column is for the Jira comment table and traceability only.)
 
 ### 3b — Language rules (Thai always)
 
@@ -242,13 +234,15 @@ This workspace writes **all** FE test case content in Thai. There is no English-
   - Error codes and field keys (e.g. `OLS_ERR_401`, `user_id`)
 - Numbered items in Test Steps and Expected Result must still use numerals (`1.`, `2.`, `3.`).
 
-### 3c — TC ID format rules (apply after user confirms)
+### 3c — TC ID rules (fixed — no user input)
 
-- Record the confirmed format at the top of your working notes before designing any row.
-- Apply the format **consistently** to every TC row in this session.
-- Pad numbers with leading zeros to match the widest number in the set (e.g. if 12 TCs, use `TC_01`–`TC_12`; if 100+, use `TC_001`).
-- **Never mix formats** within the same TC set (e.g. do not switch from `TC_01` to `TC_Feature_02`).
-- If the user specifies a feature prefix, derive it from the ticket title or AC group label — do not invent one.
+TC IDs are always simple sequential numbers: `1`, `2`, `3`, …
+
+- No prefix (`TC_`, `OLS-`, feature name, etc.)
+- No leading-zero padding
+- Applies to **every output**: Jira comment table, Draft_Jira CSV, Import_Qase CSV, and all typed CSVs
+- In typed CSVs (Unit/Integration/System), the number column (`No.` / `ลำดับ`) restarts at 1 within that file (since the file is filtered to one Type)
+- Do not ask the user about format — it is fixed
 
 ### 3d — Type column (always present)
 
@@ -283,7 +277,7 @@ Default **10 columns** (change only if user specifies otherwise) — Type is alw
 |--------|---------|
 | Acceptance Criteria | AC_0n / EC_0n label + short summary (full text in the Qase **AC/EC** column) |
 | Services Impacted | e.g. `- Service Name` |
-| Test Case ID | Stable id — format confirmed in 3a |
+| Test Case ID | Sequential number: 1, 2, 3 (fixed — no prefix, no padding) |
 | Test Title | Action + expected outcome (no `[Tag]` prefixes unless user wants them) |
 | Precondition | Shared prep done + per-case setup |
 | Test Data | Values to enter |
@@ -308,7 +302,12 @@ Add a **Precondition column note** above the table explaining that the column me
 
 Sort rows before presenting the draft.
 
-Group rows by type in this order: `Unit Test` → `Integration Test` → `System Test`. Within each group, maintain AC/EC sequence order (the order AC/EC items appear in the ticket, top to bottom — do not batch all ACs before all ECs). Multiple TCs for the same AC/EC stay together in the order they were designed.
+Sort rows in **all outputs** (Jira comment, Draft_Jira CSV, Import_Qase CSV, and all typed CSVs) by the same rule:
+
+1. **All ACs first**, ascending by number (AC_01, AC_02, AC_03, …)
+2. **All ECs after**, ascending by number (EC_01, EC_02, EC_03, …)
+
+Within the same AC or EC label, keep multiple TCs together in the order they were designed. Do NOT group by Type — Type is a column value only, not a grouping dimension.
 
 ---
 
@@ -575,7 +574,7 @@ Follow [tc-final-review-report.md](references/tc-final-review-report.md):
 Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
 
 - [ ] Step 2.5 conflict check completed; report block posted in chat; no unresolved conflicts before Step 3.
-- [ ] TC ID format confirmed (Step 3a), recorded, and applied consistently to every row — no mixed formats.
+- [ ] TC IDs are simple sequential numbers (1, 2, 3) across all outputs — no prefix, no padding.
 - [ ] Type column present on every row with a valid value (`System Test` / `Unit Test` / `Integration Test`); Remark block lists absent types.
 - [ ] Step 4 review block posted with **Ready for draft: YES** and traceability matrix complete.
 - [ ] AC/EC coverage complete; quality checklist PASS per tc-quality-standards.
@@ -651,9 +650,8 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST verify OLS Qase Type and Status options exist before import; stop and tell user if a value is missing | Qase silently resets unknown Type/Status values on import |
 | MUST produce both `Draft_Jira_{ISSUE_KEY}.csv` (Jira 10-col schema) and `Import_Qase_{ISSUE_KEY}.csv` (Qase schema) | Two different audiences: comment table consumers and Qase importers |
 | MUST upload both CSV files before posting the comment; embed both as footer links | Footer must have two clickable download lines — one per file |
-| MUST confirm TC ID format before designing (Step 3a) | Format must be consistent across all rows; cannot reformat after design |
-| MUST apply confirmed TC ID format to every row with consistent zero-padding (Step 3c) | Mixed formats make TC sets unmaintainable |
-| MUST sort rows per Step 3e before presenting draft | Consistent order makes review and execution easier |
+| MUST use simple sequential numbers (1, 2, 3) as TC IDs in all outputs — no prefix, no padding, do not ask user | Fixed workspace standard |
+| MUST sort all rows (Jira comment, Draft_Jira, Import_Qase, all typed CSVs) in the same order: ACs ascending first, then ECs ascending (Step 3e) | Consistent order across all deliverables |
 | MUST NOT invent Type test cases that lack an AC/EC trace | Type is a label on existing coverage, not a reason to add out-of-scope rows |
 | MUST add Remark block for any Type with zero test cases | Makes coverage gaps explicit rather than silently absent |
 | MUST NOT reference agent-machine absolute paths in Jira | Other users cannot reproduce |
