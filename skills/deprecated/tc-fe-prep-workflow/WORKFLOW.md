@@ -500,9 +500,10 @@ See [references/publish-options.md](references/publish-options.md) for Jira deli
 After writing all CSV files, build ADF JSON for the **slim 6-column Jira comment table** (NOT the full 10-column table — Jira comment has a size limit):
 
 1. Use only 6 columns: AC/EC Ref (code only), Services Impacted, ID, Test Title, Priority, Type
-2. No hardBreak nodes needed — no multi-line cells in the slim table
-3. Build complete ADF document with `__ATT1_ID__`, `__ATT2_ID__`, `__ATT3_ID__`, `__ATT4_ID__` as literal string placeholders in attachment link nodes (one placeholder per attached file)
-4. Store ADF string in agent context (transient — not written to a file)
+2. Set `colwidth` on every `tableHeader` node per the Step 7 table spec: `[90, 130, 50, 510, 90, 150]`
+3. No hardBreak nodes needed — no multi-line cells in the slim table
+4. Build complete ADF document with `__ATT1_ID__`, `__ATT2_ID__`, `__ATT3_ID__`, `__ATT4_ID__` as literal string placeholders in attachment link nodes (one placeholder per attached file)
+5. Store ADF string in agent context (transient — not written to a file)
 
 Then report to user: "Files saved. ADF ready. Publishing..."
 
@@ -520,14 +521,16 @@ ADF is already built from Step 6 — proceed directly to fast publish. Full JS p
 2. Shared prep block (numbered list)
 3. **Slim summary table — 6 columns only** (Jira comment size limit — full 10-col content is in CSV attachments):
 
-   | Column | Content |
-   |--------|---------|
-   | AC/EC Ref | Ref code only — `AC_09`, `EC_02` (NO criterion text) |
-   | Services Impacted | Same as CSV |
-   | ID | TC number |
-   | Test Title | Same as CSV |
-   | Priority | High / Medium / Low |
-   | Type | System Test / Integration Test / Unit Test |
+   | Column | Content | `colwidth` (px) |
+   |--------|---------|----------------|
+   | AC/EC Ref | Ref code only — `AC_09`, `EC_02` (NO criterion text) | 90 |
+   | Services Impacted | Same as CSV | 130 |
+   | ID | TC number | 50 |
+   | Test Title | Same as CSV | 510 |
+   | Priority | High / Medium / Low | 90 |
+   | Type | System Test / Integration Test / Unit Test | 150 |
+
+   Set `colwidth` on **every** header cell (`tableHeader.attrs.colwidth: [N]`) so columns scale to content — do not omit. Adjust values proportionally if TC count or title length differs significantly.
 
    Do **not** include Precondition, Test Data, Test Steps, or Expected Result in the Jira comment table — these are in the CSV attachments.
 
