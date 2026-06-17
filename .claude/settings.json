@@ -2,6 +2,8 @@
   "//": "OLS QA workspace settings. Auto-applied when you open this repo in Claude Code and trust the folder.",
   "permissions": {
     "allow": [
+      "Bash(git pull *)",
+      "Bash(git rev-parse *)",
       "Bash(git status)",
       "Bash(git status *)",
       "Bash(git diff *)",
