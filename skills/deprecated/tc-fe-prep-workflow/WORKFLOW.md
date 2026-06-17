@@ -260,11 +260,27 @@ TC IDs are always simple sequential numbers: `1`, `2`, `3`, …
 **Assignment rules:**
 - Assign the type that best describes *what layer* the test case validates:
   - **System Test** — end-to-end UI flow (user can see and interact with the feature as a whole)
-  - **Integration Test** — verifying that two or more components/services work together (e.g. FE → API → DB round-trip)
-  - **Unit Test** — isolated behaviour of one element (e.g. field validation, single component logic)
+  - **Integration Test** — verifying that two or more components/services work together (e.g. FE → API → DB round-trip, real-time state change, cache invalidation)
+  - **Unit Test** — isolated behaviour of one logic unit (e.g. a pure function, single component input→output), testable without the full UI flow
 - A ticket does **not** need to have all three types — derive only what the AC/EC actually requires.
 - When a type has no applicable test cases for this ticket, **do NOT invent cases just to fill the type**. Instead, add a Remark block under the table (see below).
 - Extra test cases may be added to cover a type's perspective **only if** they stay within the scope of the AC/EC on this ticket — do not pull in requirements from other tickets.
+
+**Unit Test heuristic — derive from PRD, ticket description, and Figma only (do not ask dev):**
+
+Look for AC/EC that implies **pure function / logic behavior** that can be verified with input → expected output, without needing the full browser flow:
+
+| Signal in AC/EC | Likely Type |
+|-----------------|-------------|
+| "function returns X when given Y" / "logic applies Z correctly" | Unit Test |
+| Search/filter matching across multiple fields (name OR desc OR tag) | Unit Test |
+| Combining filter criteria with AND/OR logic | Unit Test |
+| Visibility/access guard based on a single state (published, deleted, auth) | Unit Test |
+| Format / calculate / transform a value | Unit Test |
+| Two or more real services/modules communicating (API ↔ DB, cache invalidate, cross-service event) | Integration Test |
+| User performs an action → UI responds (full flow through browser) | System Test |
+
+**Key question:** Can this criterion be verified by calling a single function with test inputs and checking the output — **without a browser**? → Unit Test. If yes, write a Unit TC for the logic AND a System TC for the UI flow (they test different layers of the same AC/EC).
 
 **Remark block (add after the table when any type is absent OR when Figma/PRD links were missing):**
 
