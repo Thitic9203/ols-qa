@@ -322,22 +322,14 @@ Sort rows before presenting the draft.
 
 Row ordering differs by output:
 
-**Jira comment + Draft_Jira CSV** — sort by AC/EC only (no Type grouping):
-1. All ACs first, ascending by number (AC_01, AC_02, AC_03, …)
-2. All ECs after, ascending by number (EC_01, EC_02, EC_03, …)
-
-Within the same AC or EC label, keep multiple TCs together in the order they were designed.
-
-**Import_Qase CSV** — sort by Type first, then AC/EC within each group:
+**Jira comment + Draft_Jira CSV + Import_Qase CSV** — all three use the same ordering: Type first, then AC/EC within each group:
 1. All `Unit Test` rows first
 2. Then all `Integration Test` rows
 3. Then all `System Test` rows
 
-Within each Type group: ACs ascending (AC_01, AC_02, …), then ECs ascending (EC_01, EC_02, …). TC IDs (Test Case ID column) run continuously 1, 2, 3, … across the whole file — do NOT restart per Type group.
+Within each Type group: ACs ascending (AC_01, AC_02, …), then ECs ascending (EC_01, EC_02, …). TC IDs run continuously 1, 2, 3, … across the whole file — do NOT restart per Type group.
 
 **Typed CSVs (Unit_Test, Integration_Test, System_Test)** — each file contains only its own Type; sort rows within the file: ACs ascending, then ECs ascending. TC ID (`No.`) restarts at 1 within each file.
-
-**Important:** Do NOT use Type as a sort/group key in the Jira comment or Draft_Jira CSV — Type is a column value only in those outputs.
 
 ---
 
@@ -615,7 +607,7 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 - [ ] Step 4.5 Thai↔English term table posted; user confirmed (or adjustments applied) **before** any file write.
 - [ ] All content is Thai per ราชบัณฑิตยสภา (Step 3b); English kept only where the Step 4.5 gate marked it kept-English.
 - [ ] Suite gate done — every CSV row uses an existing OLS suite, or a new suite was user-approved; no duplicate suites.
-- [ ] `Draft_Jira_{ISSUE_KEY}.csv` uses the 10-column Jira table schema; rows sorted ACs then ECs ascending; row count matches approved draft.
+- [ ] `Draft_Jira_{ISSUE_KEY}.csv` uses the 10-column Jira table schema; rows sorted Unit Test → Integration Test → System Test, ACs then ECs within each group; row count matches approved draft.
 - [ ] `Import_Qase_{ISSUE_KEY}.csv` uses Qase schema, `Status = Done` on every row, cut fields absent; rows sorted Unit Test → Integration Test → System Test, ACs then ECs within each group, TC IDs continuous 1,2,3; row count matches approved draft.
 - [ ] Both files uploaded to the Jira issue; both footer links verified working.
 - [ ] Typed CSVs generated only for Types that have TCs; each filtered and content mapped to its template columns; all generated files uploaded to Jira; footer links present only for uploaded files; skipped types noted in comment.
@@ -685,8 +677,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST produce both `Draft_Jira_{ISSUE_KEY}.csv` (Jira 10-col schema) and `Import_Qase_{ISSUE_KEY}.csv` (Qase schema) | Two different audiences: comment table consumers and Qase importers |
 | MUST upload both CSV files before posting the comment; embed both as footer links | Footer must have two clickable download lines — one per file |
 | MUST use simple sequential numbers (1, 2, 3) as TC IDs in all outputs — no prefix, no padding, do not ask user | Fixed workspace standard |
-| MUST sort Jira comment + Draft_Jira CSV by AC/EC only (ACs ascending, then ECs ascending) — no Type grouping (Step 3e) | Comment and draft share the same AC/EC-primary ordering |
-| MUST sort Import_Qase CSV by Type first (Unit Test → Integration Test → System Test), then ACs ascending, then ECs ascending within each group; TC IDs run continuously 1, 2, 3 across whole file (Step 3e) | Qase groups by Type; continuous IDs preserve global traceability |
+| MUST sort Jira comment + Draft_Jira CSV + Import_Qase CSV by Type first (Unit Test → Integration Test → System Test), then ACs ascending, then ECs ascending within each Type group; TC IDs run continuously 1, 2, 3 across whole file (Step 3e) | All three outputs share the same Type-first ordering for consistency |
 | MUST NOT invent Type test cases that lack an AC/EC trace | Type is a label on existing coverage, not a reason to add out-of-scope rows |
 | MUST add Remark block for any Type with zero test cases | Makes coverage gaps explicit rather than silently absent |
 | MUST NOT reference agent-machine absolute paths in Jira | Other users cannot reproduce |
