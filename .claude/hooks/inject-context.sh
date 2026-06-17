@@ -2,6 +2,14 @@
 # Inject OLS QA workspace context at session start
 cd "$CLAUDE_PROJECT_DIR" 2>/dev/null || exit 0
 
+# Auto-update skills from remote
+BEFORE=$(git rev-parse HEAD 2>/dev/null)
+git pull --ff-only origin main --quiet 2>/dev/null
+AFTER=$(git rev-parse HEAD 2>/dev/null)
+if [ "$BEFORE" != "$AFTER" ]; then
+  echo "=== Skills updated ($(git log --oneline "$BEFORE".."$AFTER" 2>/dev/null | wc -l | tr -d ' ') new commit(s)) ==="
+fi
+
 echo "=== OLS QA Workspace ==="
 echo "Jira:       https://skilllane.atlassian.net/jira/software/projects/OLS/boards/818/backlog"
 echo "Confluence: https://skilllane.atlassian.net/wiki/spaces/PLUT/folder/3592814638"
