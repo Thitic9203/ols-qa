@@ -489,7 +489,7 @@ If no Unit Test TCs exist: **skip this file**. A skip-note will appear in the Ji
 | วันที่ทดสอบ | *(execution result)* | Leave blank — tester fills after running the test |
 | ผู้ทดสอบ | *(execution result)* | Leave blank — tester fills after running the test |
 
-Build 9-column Thai header; write sequential numbered rows from the filtered TC set; append 1 blank row then the 5-row summary footer. Encoding: UTF-8 BOM (`utf-8-sig`).
+Build 9-column Thai header; write sequential numbered rows from the filtered TC set. **No summary footer** — end after the last data row. Encoding: UTF-8 BOM (`utf-8-sig`).
 
 If no Integration Test TCs exist: **skip Integration_Test file**. If no System Test TCs exist: **skip System_Test file**. Skip-notes for each absent type appear in the Jira comment footer (Step 7, after attachment links, before Disclaimer).
 

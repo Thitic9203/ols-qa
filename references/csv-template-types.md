@@ -62,19 +62,9 @@ Data rows: numbered sequentially within each sub-function group.
 - No section grouping headers
 - Typical N: **330 rows**
 
-### Summary footer (after data rows)
+### No summary footer
 
-Appended after the last numbered row, separated by 1 blank row:
-
-```
-,,,,รวม,0,,,
-,,,,ผ่าน,0,,,
-,,,,ไม่ผ่าน,0,,,
-,,,,การทดสอบ (%),#DIV/0!,,,
-,,,,ผ่านการทดสอบ (%),#DIV/0!,,,
-```
-
-Footer: column 5 = label, column 6 = value, columns 1–4 and 7–9 empty.
+End after the last numbered data row — do not append any summary or blank rows.
 
 ### Encoding
 
@@ -100,9 +90,9 @@ Same as Integration Test:
 - No section grouping headers
 - Typical N: **800 rows**
 
-### Summary footer
+### No summary footer
 
-Identical to Integration Test footer (same 5 rows, same columns).
+End after the last numbered data row — do not append any summary or blank rows.
 
 ### Encoding
 
@@ -132,20 +122,9 @@ UTF-8 BOM (`utf-8-sig`) — same as Integration Test.
 
 ## Python snippets
 
-### Summary footer (Integration + System)
+### Summary footer — REMOVED
 
-```python
-writer.writerow([""] * 9)  # blank separator row
-summary = [
-    ["", "", "", "", "รวม", "0", "", "", ""],
-    ["", "", "", "", "ผ่าน", "0", "", "", ""],
-    ["", "", "", "", "ไม่ผ่าน", "0", "", "", ""],
-    ["", "", "", "", "การทดสอบ (%)", "#DIV/0!", "", "", ""],
-    ["", "", "", "", "ผ่านการทดสอบ (%)", "#DIV/0!", "", "", ""],
-]
-for row in summary:
-    writer.writerow(row)
-```
+Do not add any summary footer or trailing blank rows to Integration Test or System Test CSVs.
 
 ### Section header rows (Unit Test)
 
