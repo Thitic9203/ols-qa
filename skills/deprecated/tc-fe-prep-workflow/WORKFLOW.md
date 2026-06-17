@@ -426,6 +426,24 @@ After approval (and Suite confirmed), write **four files** inside the user's pro
 
 Both CSV files (`Draft_Jira` + `Import_Qase`) are always produced together and both are uploaded to Jira (Step 7). Follow [csv-export-rules.md](../../references/csv-export-rules.md) for cell cleaning (convert `<br>`, strip tags, preserve Thai) — applies to all CSV files. Never silently produce only one when both are required.
 
+### Qase import CSV column mapping (`Import_Qase_{ISSUE_KEY}.csv`)
+
+All columns must be populated — derive values for any column that has no direct source in the Jira draft:
+
+| Qase column | Source | Derivation rule |
+|-------------|--------|----------------|
+| AC/EC | Acceptance Criteria | Direct copy — `{LABEL} — {full criterion text}` (e.g. `EC_07 — กรอก Metadata ไม่ครบ → ปุ่มส่งตรวจปิดใช้งาน`) |
+| Title | Test Title | Direct copy |
+| Preconditions | Precondition | Direct copy |
+| Priority | Priority | Direct copy (`High` / `Medium` / `Low`) |
+| Type | Type | Direct copy (`System Test` / `Unit Test` / `Integration Test`) |
+| Status | *(fixed)* | Always `Done` |
+| Suite | *(suite gate)* | From existing OLS suite tree — see Step 6 suite gate |
+| Steps – Action | Test Steps | Direct copy |
+| Steps – Expected result | Expected Result | Direct copy |
+| Steps – Data | Test Data | Direct copy |
+| Tags | Acceptance Criteria (label only) | Extract AC/EC label(s) from the AC/EC column — comma-separated (e.g. `AC_01, EC_03`); blank only if AC/EC column has no label |
+
 ### Typed CSV export (generate only for types that have TCs)
 
 Generate typed CSVs after `Draft_Jira` and `Import_Qase`. Full column/row specs and Python snippets: [csv-template-types.md](../../../references/csv-template-types.md).
@@ -434,39 +452,43 @@ Generate typed CSVs after `Draft_Jira` and `Import_Qase`. Full column/row specs 
 
 **Column mapping — Jira draft → Unit Test (`Unit_Test_{ISSUE_KEY}.csv`):**
 
-| Jira draft column | Unit Test column | Notes |
-|-------------------|-----------------|-------|
-| Test Title | Test Scenario | |
-| Test Title (repeat) | Test Description | Tester may elaborate; prepopulate with title |
-| Precondition | Pre-condition | |
-| Test Data | Test Data | |
-| Test Steps | Test Step | |
-| Expected Result | Expected Result | |
-| *(blank — tester fills)* | Actual Result / Test status / Test Date / Test By / Comment | Leave blank |
-| Sequential within group | No. | Renumber from 1 per Sub Function group |
-| Services Impacted | Sub Function header | One `Sub Function :` header row per distinct Services Impacted value |
-| Ticket title / feature name | Function header | One `Function :` header row at the top |
+| Unit Test column | Source | Derivation rule |
+|-----------------|--------|----------------|
+| No. | Sequential within Sub Function group | Renumber from 1 per group |
+| Sub Function | Services Impacted | One `Sub Function :` header row per distinct Services Impacted value |
+| Test Scenario | Test Title | Direct copy |
+| Test Description | Derived | Write a distinct description — NOT a repeat of Test Scenario. Synthesise from AC/EC reference + key outcome: e.g. `ตรวจสอบว่า [expected outcome from Expected Result] เมื่อ [key condition from Precondition]`. Must differ from Test Scenario in phrasing and perspective. |
+| Pre-condition | Precondition | Direct copy |
+| Test Step | Test Steps | Direct copy |
+| Test Data | Test Data | Direct copy |
+| Expected Result | Expected Result | Direct copy |
+| Comment | Acceptance Criteria | Extract AC/EC label(s) (e.g. `AC_02`, `EC_05`) — traceability reference |
+| Actual Result | *(execution result)* | Leave blank — tester fills after running the test |
+| Test status | *(execution result)* | Leave blank — tester fills after running the test |
+| Test Date | *(execution result)* | Leave blank — tester fills after running the test |
+| Test By | *(execution result)* | Leave blank — tester fills after running the test |
 
-Build 13-column English header. Insert one `Function :` row (col 1 only, cols 2–13 blank) using the ticket title/feature name, then for each distinct Services Impacted value insert a `Sub Function :` header row, then the numbered data rows for that group. No summary footer.
+Build 13-column English header with columns in this order: `No., Sub Function, Test Scenario, Test Description, Pre-condition, Test Step, Test Data, Expected Result, Actual Result, Test status, Test Date, Test By, Comment`. Insert one `Function :` row (col 1 only, cols 2–13 blank) using the ticket title/feature name, then for each distinct Services Impacted value insert a `Sub Function :` header row, then the numbered data rows for that group. No summary footer.
 
 If no Unit Test TCs exist: **skip this file**. Add a note below the Jira comment table (Step 7): `ไม่มี TC ประเภท Unit Test สำหรับ ticket นี้`
 
 **Column mapping — Jira draft → Integration Test / System Test (`Integration_Test_{ISSUE_KEY}.csv` / `System_Test_{ISSUE_KEY}.csv`):**
 
-| Jira draft column | Thai column | Notes |
-|-------------------|-------------|-------|
-| Sequential (filtered set) | ลำดับ | Renumber from 1 in filtered set |
-| Services Impacted | โมดูล | |
-| Test Title | รายการทดสอบ | |
-| Test Steps | ขั้นตอนการทดสอบ | |
-| Expected Result | ผลการทดสอบที่คาดหวัง | |
-| *(blank — tester fills)* | ผลการทดสอบ / วันที่ทดสอบ / ผู้ทดสอบ / หมายเหตุ | Leave blank |
+| Thai column | Source | Derivation rule |
+|-------------|--------|----------------|
+| ลำดับ | Sequential (filtered set) | Renumber from 1 in filtered set |
+| โมดูล | Services Impacted | Direct copy |
+| รายการทดสอบ | Test Title | Direct copy |
+| ขั้นตอนการทดสอบ | Test Steps | Direct copy |
+| ผลการทดสอบที่คาดหวัง | Expected Result | Direct copy |
+| หมายเหตุ | Precondition + Test Data | Derive: `เงื่อนไขเบื้องต้น: {Precondition text} / ข้อมูลทดสอบ: {Test Data text}` — preserves values that have no own column in this template; omit a segment if that source is blank |
+| ผลการทดสอบ | *(execution result)* | Leave blank — tester fills after running the test |
+| วันที่ทดสอบ | *(execution result)* | Leave blank — tester fills after running the test |
+| ผู้ทดสอบ | *(execution result)* | Leave blank — tester fills after running the test |
 
 Build 9-column Thai header; write sequential numbered rows from the filtered TC set; append 1 blank row then the 5-row summary footer. Encoding: UTF-8 BOM (`utf-8-sig`).
 
 If no Integration Test TCs exist: **skip Integration_Test file**. If no System Test TCs exist: **skip System_Test file**. For each skipped type, add a note below the Jira comment table: `ไม่มี TC ประเภท [Integration Test / System Test] สำหรับ ticket นี้`
-
-Note: `Precondition` and `Test Data` from the Jira draft have no column in the Integration/System Test template — omit them. Refer to the Jira comment table or the Qase import CSV for those values.
 
 See [references/publish-options.md](references/publish-options.md) for Jira delivery.
 
@@ -652,7 +674,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST NOT use `\n` inside **chat draft** markdown table cells | Breaks table row in markdown renderers |
 | MUST always generate all three typed CSVs (Unit_Test, Integration_Test, System_Test) — no user selection needed | All three types are standard deliverables |
 | MUST filter TCs by Type into each typed CSV: Type = `Unit Test` → Unit_Test; `Integration Test` → Integration_Test; `System Test` → System_Test | Each template's audience expects only its own test type |
-| MUST map Jira draft columns to each template's columns per Step 6 mapping tables | Column names differ between Jira and typed templates; mapping ensures correct placement |
+| MUST map Jira draft columns to each template's columns per Step 6 mapping tables — derive values for columns with no direct source; only execution-result columns (Actual Result, Test status, Test Date, Test By, ผลการทดสอบ, วันที่ทดสอบ, ผู้ทดสอบ) are left blank | Column names differ between Jira and typed templates; all non-execution columns must have correct content |
 | MUST use ticket title/feature name as Function and Services Impacted as Sub Function in Unit_Test CSV | Unit Test template requires Function/Sub Function grouping structure |
 | MUST skip typed CSV for a Type that has zero TCs — do NOT generate an empty file | Empty files are not useful deliverables |
 | MUST add a note line in the Jira comment for each skipped type: `ไม่มี TC ประเภท [type] สำหรับ ticket นี้` | User must know explicitly that the type was absent, not silently missing |
