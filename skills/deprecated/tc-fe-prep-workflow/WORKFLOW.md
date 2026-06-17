@@ -287,20 +287,22 @@ Include only the line(s) that apply (Figma / PRD / both). If both links exist, o
 
 ---
 
-Default **10 columns** (change only if user specifies otherwise) — Type is always included:
+Default **10 columns** for the HTML draft, CSV files, and markdown `.md` — Type is always included:
 
 | Column | Purpose |
 |--------|---------|
-| Acceptance Criteria | AC_0n / EC_0n label + short summary (full text in the Qase **AC/EC** column) |
+| Acceptance Criteria | AC_0n / EC_0n label + full criterion text |
 | Services Impacted | 1 service: plain name, no prefix (e.g. `Media Library`). 2+ services: bold-numbered inline (e.g. `**1.** order-service **2.** api-gateway`) — never use `- ` bullet prefix |
 | Test Case ID | Sequential number: 1, 2, 3 (fixed — no prefix, no padding) |
 | Test Title | Action + expected outcome (no `[Tag]` prefixes unless user wants them) |
-| Precondition | **Jira comment table:** short reference ("ทำ shared prep ครบแล้ว") + per-case setup. **CSV exports (Draft_Jira, Import_Qase, all typed CSVs):** full shared prep steps expanded inline (numbered, continuous) + per-case setup — CSV files are standalone; no separate shared-prep block. |
+| Precondition | **Jira comment table:** omitted (see Step 7 slim-table rule). **CSV exports (Draft_Jira, Import_Qase, all typed CSVs):** full shared prep steps expanded inline (numbered, continuous) + per-case setup — CSV files are standalone; no separate shared-prep block. |
 | Test Data | Values to enter |
 | Test Steps | Numbered manual steps |
 | Expected Result | Numbered assertions |
 | Priority | High / Medium / Low |
 | **Type** | `System Test` / `Unit Test` / `Integration Test` (Step 3d) |
+
+> **Jira comment table** uses a **slim 6-column** version (see Step 7) — Precondition, Test Data, Steps, Expected are omitted to stay within Jira's comment size limit. Full content is always available in the attached CSV files.
 
 The Qase import CSV uses a **different** column set (AC/EC, Title, Preconditions, Priority, Type, Status, Suite, Steps, Tags) — see [qase-import-format.md](references/qase-import-format.md). The Jira markdown table above and the Qase CSV describe the same test cases in two layouts.
 
@@ -495,11 +497,12 @@ See [references/publish-options.md](references/publish-options.md) for Jira deli
 
 ### ADF pre-compute (do in same step as CSV write)
 
-After writing all CSV files, immediately build ADF JSON from the same approved table:
+After writing all CSV files, build ADF JSON for the **slim 6-column Jira comment table** (NOT the full 10-column table — Jira comment has a size limit):
 
-1. Convert every `<br>` in table cells → `{"type": "hardBreak"}` ADF node (rules: [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md))
-2. Build complete ADF document with `__ATT1_ID__` and `__ATT2_ID__` as literal string placeholders in attachment link nodes
-3. Store ADF string in agent context (transient — not written to a file)
+1. Use only 6 columns: AC/EC Ref (code only), Services Impacted, ID, Test Title, Priority, Type
+2. No hardBreak nodes needed — no multi-line cells in the slim table
+3. Build complete ADF document with `__ATT1_ID__`, `__ATT2_ID__`, `__ATT3_ID__`, `__ATT4_ID__` as literal string placeholders in attachment link nodes (one placeholder per attached file)
+4. Store ADF string in agent context (transient — not written to a file)
 
 Then report to user: "Files saved. ADF ready. Publishing..."
 
@@ -513,15 +516,27 @@ ADF is already built from Step 6 — proceed directly to fast publish. Full JS p
 
 **Comment content:**
 
-1. Intro line: `Draft TC FE as below`
-2. Shared prep + precondition note
-3. Full table (bold header cells) — **with `<br>` already converted to ADF hardBreak nodes**
+1. Intro line: `Draft TC FE as below — ดูรายละเอียด Precondition / Steps / Expected ได้ในไฟล์แนบ`
+2. Shared prep block (numbered list)
+3. **Slim summary table — 6 columns only** (Jira comment size limit — full 10-col content is in CSV attachments):
+
+   | Column | Content |
+   |--------|---------|
+   | AC/EC Ref | Ref code only — `AC_09`, `EC_02` (NO criterion text) |
+   | Services Impacted | Same as CSV |
+   | ID | TC number |
+   | Test Title | Same as CSV |
+   | Priority | High / Medium / Low |
+   | Type | System Test / Integration Test / Unit Test |
+
+   Do **not** include Precondition, Test Data, Test Steps, or Expected Result in the Jira comment table — these are in the CSV attachments.
+
 4. Footer: clickable download links — one per uploaded file (see footer link pattern in [jira-formatting.md](references/jira-formatting.md)):
-   - `[Draft_Jira_{ISSUE_KEY}.csv]({url})` — ตารางเทสเคส (Jira format)
+   - `[Draft_Jira_{ISSUE_KEY}.csv]({url})` — ตาราง TC ครบ (AC text, Precondition, Steps, Expected)
    - `[Import_Qase_{ISSUE_KEY}.csv]({url})` — Qase import file พร้อม import เข้า OLS project
-   - `[Unit_Test_{ISSUE_KEY}.csv]({url})` — Unit Test template พร้อม TC ประเภท Unit Test *(include only if file was generated)*
-   - `[Integration_Test_{ISSUE_KEY}.csv]({url})` — Integration Test template พร้อม TC ประเภท Integration Test *(include only if file was generated)*
-   - `[System_Test_{ISSUE_KEY}.csv]({url})` — System Test template พร้อม TC ประเภท System Test *(include only if file was generated)*
+   - `[Unit_Test_{ISSUE_KEY}.csv]({url})` — Unit Test template *(include only if file was generated)*
+   - `[Integration_Test_{ISSUE_KEY}.csv]({url})` — Integration Test template *(include only if file was generated)*
+   - `[System_Test_{ISSUE_KEY}.csv]({url})` — System Test template *(include only if file was generated)*
 5. For each typed CSV type that was **skipped** (no TCs of that type), add one note line here (after all attachment links): `ไม่มี TC ประเภท [Unit Test / Integration Test / System Test] สำหรับ ticket นี้`
 6. Disclaimer — **last line of the comment, after all attachment links** (exact text, do not translate or shorten):
    ```
