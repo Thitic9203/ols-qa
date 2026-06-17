@@ -190,21 +190,55 @@ def write_subfunction_header(writer, subfunction_name: str, n_cols: int = 13):
     writer.writerow(row)
 ```
 
+### Comment text link addition (after existing attachments)
+
+After generating typed CSVs, the skill appends attachment text links to the Jira story comment.  
+The existing comment already contains links for `Draft_Jira_{ISSUE_KEY}.csv` and `Import_Qase_{ISSUE_KEY}.csv`.  
+The three new files must be appended **after** those existing links, in this order:
+
+| File | Attached when |
+|------|--------------|
+| `Unit_Test_{ISSUE_KEY}.csv` | `{csv_type}` = `unit` |
+| `Integration_Test_{ISSUE_KEY}.csv` | `{csv_type}` = `integration` |
+| `System_Test_{ISSUE_KEY}.csv` | `{csv_type}` = `system` |
+
+**Link format** (same pattern as existing attachment links in the comment footer):
+
+```markdown
+[Unit_Test_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ATTACHMENT_ID}/Unit_Test_{ISSUE_KEY}.csv)
+[Integration_Test_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ATTACHMENT_ID}/Integration_Test_{ISSUE_KEY}.csv)
+[System_Test_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ATTACHMENT_ID}/System_Test_{ISSUE_KEY}.csv)
+```
+
+Only the link for the selected `{csv_type}` is added — do not add all three at once.
+
+**Implementation note:** Upload the CSV via browser JS (Control Chrome fetch — see CLAUDE.md workaround), retrieve the attachment ID from the response, then append the markdown text link to the existing comment footer.
+
+### Comment disclaimer footer
+
+After all attachment text links are appended, close the comment with this exact line:
+
+```
+⚠️ Disclaimer: ข้อมูลนี้เป็นเพียง Draft Version ที่ได้จากการใช้ Skill เท่านั้น (TC ครบตาม AC & EC) เนื้อหาทั้งหมดจำเป็นต้องได้รับการรีวิวและอัปเดตโดยทีม QA ก่อนนำไปใส่ในไฟล์เอกสารส่งมอบ และทำการนำ TC ไป Import เข้าสู่ Qase.io
+```
+
+Position: last line of the Jira comment, after all attachment links. Do not add it before the links.
+
+---
+
 ### Files to update
 
 | File | Change |
 |------|--------|
 | `skills/deprecated/tc-fe-prep-workflow/WORKFLOW.md` | Add csv_type intake question + branch export logic |
 | `references/csv-export-rules.md` | Add section for typed export; link here |
-| `docs/plan/csv-template-types.md` → move to `references/csv-template-types.md` | **This file** — source of truth for template specs; move from `docs/plan/` to `references/` during implementation so WORKFLOW.md can link to it |
+| `references/csv-template-types.md` | **Done** — template spec moved here; WORKFLOW.md links to it |
 
 > **Note:** Typed CSVs (Unit/Integration/System) are **not** Qase import format — they are QA deliverable artifacts separate from `Import_Qase_{ISSUE_KEY}.csv`. No Qase schema conflict.
 
-### Open questions (resolve before implementing)
+### Open questions
 
-> **Resolve #1 first** — it determines the entire generation approach. Current plan text assumes "filled" but this is not yet confirmed.
-
-- [ ] **[BLOCKER]** Should the skill generate a **blank template** (row numbers only, no content) OR a **filled template** (with prepared test case content)? — current plan steps assume filled; blank changes everything
+- [x] **[RESOLVED]** Blank vs filled template → **blank** — row numbers + structure only, content columns empty. Format source of truth: [`references/csv-template-types.md`](../../references/csv-template-types.md). Do not ask user.
 - [ ] Should Unit Test group headings pull from TOR Ref sections automatically, or does the user provide them manually?
 - [ ] For Integration/System Test: does the TC content map 1:1 to rows, or do multi-step TCs expand to multiple rows?
 - [ ] Is "ลำดับ" a running number across the whole file, or reset per โมดูล?
