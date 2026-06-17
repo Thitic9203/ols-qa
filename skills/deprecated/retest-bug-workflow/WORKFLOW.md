@@ -201,20 +201,31 @@ Show the full draft in chat and wait.
 - [ ] ASCII-safe JS if using JXA (`/[^\x00-\x7F]/.test(js)` false)
 - [ ] v2 vs v3 endpoint matches format
 
-### 7a. Try Atlassian MCP / REST first
+### 7a. Choose method based on content
 
-`addCommentToJiraIssue` with approved body. **Verify on Jira** — truncation happens.
+| Content | Method |
+|---------|--------|
+| Comment ≤ 3 table rows OR text-only (no table) | MCP `addCommentToJiraIssue` — fast for short results |
+| Comment > 3 table rows | ADF-direct via browser JS (Pattern D in [jira-fast-publish.md](../../references/jira-fast-publish.md)) |
+| FE bug with screenshots | v2 wiki markup via browser JS (Step 7c) |
 
-### 7b. Fallback — browser session + JXA (macOS Chrome)
+**Definition of "table":** `| col | col |` rows with data — the evidence summary block (`**Env:** staging`, `**API:** …`) is NOT a table.
 
-When MCP truncates or returns 403:
+**For MCP path (≤ 3 rows / text-only):**
+`addCommentToJiraIssue` with approved body. **Verify on Jira** — truncation still possible; if truncated, switch to ADF-direct.
 
-1. Build ADF (v3) or wiki string (v2) in Node.
-2. `JSON.stringify` → escape non-ASCII → save JS as **ASCII only**.
-3. Execute in a Chrome tab logged into `{JIRA_DOMAIN}`.
-4. Read `window.__cr` for status and comment id.
+**For ADF-direct path (> 3 table rows):**
 
-See `references/gotchas.md` for encoding.
+1. Build ADF JSON from approved draft. Convert `<br>` → `{"type": "hardBreak"}` nodes. Full rules: [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md).
+2. Set `window.__adfBody` on page (Pattern A — ADF only, no CSV data needed).
+3. Run Pattern D (comment-only): single JS fetch to `/rest/api/3/issue/{KEY}/comment`.
+4. Read `window.__fastPublish` via Pattern C; check `status: 'ok'`.
+
+Full JS patterns and error recovery: [jira-fast-publish.md](../../references/jira-fast-publish.md).
+
+### 7b. Fallback for MCP path only
+
+When MCP truncates or returns 403 on a ≤ 3 row comment, switch to ADF-direct Pattern D above.
 
 ### 7c. FE + screenshots
 

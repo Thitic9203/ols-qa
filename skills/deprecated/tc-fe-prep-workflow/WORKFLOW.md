@@ -449,7 +449,7 @@ Generate all three typed CSVs after `Draft_Jira` and `Import_Qase`. Full column/
 
 Build 13-column English header. Insert one `Function :` row (col 1 only, cols 2–13 blank) using the ticket title/feature name, then for each distinct Services Impacted value insert a `Sub Function :` header row, then the numbered data rows for that group. No summary footer.
 
-If no Unit Test TCs exist: write header row only (no data rows, no footer).
+If no Unit Test TCs exist: **skip this file**. Add a note below the Jira comment table (Step 7): `ไม่มี TC ประเภท Unit Test สำหรับ ticket นี้`
 
 **Column mapping — Jira draft → Integration Test / System Test (`Integration_Test_{ISSUE_KEY}.csv` / `System_Test_{ISSUE_KEY}.csv`):**
 
@@ -464,11 +464,21 @@ If no Unit Test TCs exist: write header row only (no data rows, no footer).
 
 Build 9-column Thai header; write sequential numbered rows from the filtered TC set; append 1 blank row then the 5-row summary footer. Encoding: UTF-8 BOM (`utf-8-sig`).
 
-If no Integration/System Test TCs exist: write header row + blank separator row + summary footer only (no data rows).
+If no Integration Test TCs exist: **skip Integration_Test file**. If no System Test TCs exist: **skip System_Test file**. For each skipped type, add a note below the Jira comment table: `ไม่มี TC ประเภท [Integration Test / System Test] สำหรับ ticket นี้`
 
 Note: `Precondition` and `Test Data` from the Jira draft have no column in the Integration/System Test template — omit them. Refer to the Jira comment table or the Qase import CSV for those values.
 
 See [references/publish-options.md](references/publish-options.md) for Jira delivery.
+
+### ADF pre-compute (do in same step as CSV write)
+
+After writing all CSV files, immediately build ADF JSON from the same approved table:
+
+1. Convert every `<br>` in table cells → `{"type": "hardBreak"}` ADF node (rules: [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md))
+2. Build complete ADF document with `__ATT1_ID__` and `__ATT2_ID__` as literal string placeholders in attachment link nodes
+3. Store ADF string in agent context (transient — not written to a file)
+
+Then report to user: "Files saved. ADF ready. Publishing..."
 
 ---
 
@@ -476,13 +486,13 @@ See [references/publish-options.md](references/publish-options.md) for Jira deli
 
 **Target:** `{ISSUE_KEY}` story the user specified.
 
-**Pre-post conversion (mandatory):** Before building the comment body, convert every `<br>` in table cells to Jira-native line breaks. Full rules: [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md). **Never copy the chat draft directly — it contains `<br>` that Jira renders as literal text.**
+ADF is already built from Step 6 — proceed directly to fast publish. Full JS patterns: [jira-fast-publish.md](../../references/jira-fast-publish.md).
 
-**Content:** Single comment (unless user asked otherwise) containing:
+**Comment content:**
 
 1. Intro line: `Draft TC FE as below`
 2. Shared prep + precondition note
-3. Full table (bold header cells) — **with `<br>` already converted**
+3. Full table (bold header cells) — **with `<br>` already converted to ADF hardBreak nodes**
 4. Footer: clickable download links — one per uploaded file (see footer link pattern in [jira-formatting.md](references/jira-formatting.md)):
    - `[Draft_Jira_{ISSUE_KEY}.csv]({url})` — ตารางเทสเคส (Jira format)
    - `[Import_Qase_{ISSUE_KEY}.csv]({url})` — Qase import file พร้อม import เข้า OLS project
@@ -494,15 +504,16 @@ See [references/publish-options.md](references/publish-options.md) for Jira deli
    ⚠️ Disclaimer: ข้อมูลนี้เป็นเพียง Draft Version ที่ได้จากการใช้ Skill เท่านั้น (TC ครบตาม AC & EC) เนื้อหาทั้งหมดจำเป็นต้องได้รับการรีวิวและอัปเดตโดยทีม QA ก่อนนำไปใส่ในไฟล์เอกสารส่งมอบ และทำการนำ TC ไป Import เข้าสู่ Qase.io
    ```
 
-**Upload-first rule:** Upload **all required files** to the issue BEFORE posting the comment. Capture each attachment `id` from the upload response, build `secure/attachment/{id}/{filename}` URLs, then embed as hyperlinks in the footer. Never write a filename as plain text. Upload order: `Draft_Jira` first, `Import_Qase` second, then `Unit_Test`, `Integration_Test`, `System_Test` in that order.
+**Publish method — ADF-direct (single JS call):**
 
-**Publish methods** (choose what works in the environment — details in `references/publish-options.md`):
+TC tables always go ADF-direct — do NOT try MCP first.
 
-| Method | When to use |
-|--------|-------------|
-| Atlassian MCP / REST | Short comments; **verify** full table rendered |
-| ADF JSON + browser session | Large tables; upload CSV/xlsx via authenticated session |
-| User pastes | Fallback if automation unavailable |
+1. Navigate to the Jira issue page (if not already there)
+2. Pattern A: set `window.__csv1Data`, `window.__csv2Data`, `window.__adfBody` on `window.*`
+3. Pattern B: single JS call — upload `Draft_Jira` → upload `Import_Qase` → post ADF comment. Upload order: `Draft_Jira` first, `Import_Qase` second, then typed CSVs in order (`Unit_Test`, `Integration_Test`, `System_Test` — add upload steps for each present file before the comment post)
+4. Pattern C: read `window.__fastPublish` → check `status: 'ok'`; on error follow recovery rules in [jira-fast-publish.md](../../references/jira-fast-publish.md)
+
+Attachment IDs captured in Pattern B are substituted into the ADF footer links automatically. Never write filenames as plain text.
 
 **After publish — mandatory post-publish review on Jira UI:**
 

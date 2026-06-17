@@ -196,13 +196,28 @@ State clearly: **Not posted / no file written yet.**
 
 Tell the user the **workspace-relative paths** to download.
 
+### ADF pre-compute (do in same step as G1 file write, even if user chose B only)
+
+After writing the CSV/xlsx files, immediately build ADF JSON from the same approved table:
+
+1. Convert every `<br>` in table cells → `{"type": "hardBreak"}` ADF node (rules: [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md))
+2. Build complete ADF document — no attachment placeholders needed for API TC (no CSV upload required unless user chose both A + B)
+3. Store ADF string in agent context (transient)
+
+If user chose both A (comment) and B (file), include `__ATT1_ID__` placeholder in the ADF footer for the CSV attachment link.
+
 ### G2 — Comment on link (if user chose A)
 
-1. Draft comment body in chat (same table; chat draft uses `<br>` in cells; **bold every header cell** — e.g. `| **Test Case ID** | **Module / Feature** | **Test Title** | ...`).
+ADF is already built from G1 — proceed directly to fast publish. Full JS patterns: [jira-fast-publish.md](../../references/jira-fast-publish.md).
+
+1. Draft comment body preview in chat (same table; **bold every header cell** — e.g. `| **Test Case ID** | **Module / Feature** | **Test Title** | ...`).
 2. Show draft comment → user may waive second approval if they already approved Phase F table.
-3. **Pre-post conversion (mandatory):** Convert every `<br>` in table cells to Jira-native line breaks before posting. Full rules: [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md). **Never copy the chat draft directly — it contains `<br>` that Jira renders as literal text.**
-4. Post using environment tools (MCP, browser). Match format: [references/delivery-options.md](references/delivery-options.md).
-5. **Verify** on the destination UI: row count, formatting, correct page/issue, **no literal `<br>` in any cell**.
+3. **Publish method — ADF-direct (do NOT try MCP first for TC tables):**
+   - Navigate to the Jira/Confluence destination page
+   - Pattern A: set `window.__adfBody` (and `window.__csv1Data` if uploading CSV)
+   - If CSV delivery: Pattern B (upload + comment). If comment-only: Pattern D
+   - Pattern C: read `window.__fastPublish` → check `status: 'ok'`
+4. **Verify** on the destination UI: row count, formatting, correct page/issue, **no literal `<br>` in any cell**.
 
 ### G-verify — Post-publish review (mandatory)
 
