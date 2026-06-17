@@ -40,10 +40,14 @@ Ask **one section at a time**. Wait for answers before the next section.
 
 ## Section E — Deliverables
 
-1. Column list if not the default nine columns.
-2. Include **Test Type** column by default? If yes, which types: System / Integration / Unit / custom? (default: ask per ticket)
-3. Preferred publish method: MCP / browser session / manual paste.
-4. Should CSV be attached to the same comment? (default yes)
+1. Column list if not the default ten columns (Type is always included).
+2. Preferred publish method: MCP / browser session / manual paste.
+3. Should the Qase import CSV be attached to the same comment? (default yes)
+
+> Fixed for this workspace (do not ask): content language = **Thai** (ราชบัณฑิตยสภา);
+> **Type** column always present (`System Test` / `Unit Test` / `Integration Test`);
+> **Status** = `Done`; export is a **Qase import CSV** named `Import_Qase_{ISSUE_KEY}.csv`;
+> **Suite** must reuse an existing OLS Qase suite or a user-approved new one.
 
 ---
 
@@ -57,5 +61,5 @@ Ask **one section at a time**. Wait for answers before the next section.
 - Portal: Back Office — Section Management
 - Shared login: BackOffice Admin
 - Seed reference: `{OTHER_STORY_KEY}` for data created in another story (if applicable)
-- Artifacts: `references/{ISSUE_KEY}_FE_TC.md` + `.csv`
+- Artifacts: `references/{ISSUE_KEY}_FE_TC.md` + `references/Draft_Jira_{ISSUE_KEY}.csv` + `references/Import_Qase_{ISSUE_KEY}.csv`
 ```

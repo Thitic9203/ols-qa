@@ -69,5 +69,5 @@ Deliver to the user:
 | Field | Value |
 |-------|--------|
 | Content-Type | `text/csv` with UTF-8 BOM |
-| Filename | `{ISSUE_KEY}_FE_TC.csv` (or project convention) |
+| Filenames | `Draft_Jira_{ISSUE_KEY}.csv` (Jira table format) + `Import_Qase_{ISSUE_KEY}.csv` (Qase import) — upload both |
 | Issue | Same as comment target |

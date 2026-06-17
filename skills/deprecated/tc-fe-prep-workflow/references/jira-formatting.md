@@ -17,7 +17,8 @@ Draft TC FE as below
 
 ---
 
-**Test cases (CSV/Excel):** Same content as the table above ({N} cases). Download the attached file `{ISSUE_KEY}_FE_TC.csv` (or `.xlsx` if Excel was requested).
+[Draft_Jira_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ID1}/Draft_Jira_{ISSUE_KEY}.csv) — ตารางเทสเคส (Jira format)
+[Import_Qase_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ID2}/Import_Qase_{ISSUE_KEY}.csv) — Qase import file พร้อม import เข้า OLS project
 ```
 
 ## Table rules
@@ -42,7 +43,7 @@ Draft TC FE as below
 | Rule | Detail |
 |------|--------|
 | Encoding | UTF-8 with BOM (`encoding='utf-8-sig'`) for Excel |
-| Header | Same 9 column names as the table (plain text, no `**`) |
+| Header | Same 10 column names as the table (plain text, no `**`) — applies to `Draft_Jira_*` file; `Import_Qase_*` uses Qase schema |
 | Cell newlines | Real `\n` inside quoted CSV fields \u2014 use `csv.writer` |
 | HTML tags | Strip all; `<br>` variants \u2192 `\n` |
 

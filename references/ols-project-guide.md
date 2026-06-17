@@ -57,6 +57,18 @@ AI reads this file before asking any OLS-related questions.
 | Working file | https://www.figma.com/design/<FIGMA_FILE_ID>/OLS_Working-file |
 | Main frame | node-id `226-94221` |
 
+## Qase (test management)
+
+| Field | Value |
+|-------|-------|
+| Project | `OLS` |
+| Project URL | https://app.qase.io/project/OLS |
+| FE TC Jira-format file | `Draft_Jira_{ISSUE_KEY}.csv` — 10-column Jira table schema; attached to story comment |
+| FE TC Qase import file | `Import_Qase_{ISSUE_KEY}.csv` — Qase schema; attached to story comment alongside Draft_Jira (schema: `skills/deprecated/tc-fe-prep-workflow/references/qase-import-format.md`) |
+| Type values | `System Test` · `Unit Test` · `Integration Test` *(verify these exist as OLS custom Type values before import)* |
+| Status value | `Done` *(verify exists as OLS custom Status value before import)* |
+| Suite | reuse existing OLS suite; new suite only with user approval, never a duplicate |
+
 ## Test Environment
 
 | Env | URL |

@@ -1,40 +1,39 @@
 # Markdown template — FE test cases
 
-Replace placeholders. Keep one table row per test case.
+Replace placeholders. Keep one table row per test case. Content is **Thai** (Step 3b) — the
+sample below uses Thai prose; keep `{PLACEHOLDERS}` as-is.
+
+The **Type** column is always present (`System Test` / `Unit Test` / `Integration Test`).
 
 ```markdown
 Draft TC FE as below
 
 **Shared data preparation (all TCs):**
 
-1. Log in to {PORTAL} as {ROLE}.
-2. Navigate to {FEATURE_AREA}.
-3. Open tab **{TAB_NAME}**.
-4. Ensure at least one {ENTITY} exists in state **{STATE}** (if missing: {SEED_STEPS_REF_OTHER_STORY}).
-5. Use target {ENTITY} named **{ENTITY_NAME}** for all cases below.
+1. เข้าสู่ระบบ {PORTAL} ด้วยบทบาท {ROLE}.
+2. ไปที่ {FEATURE_AREA}.
+3. เปิดแท็บ **{TAB_NAME}**.
+4. ตรวจสอบว่ามี {ENTITY} อย่างน้อยหนึ่งรายการในสถานะ **{STATE}** (ถ้าไม่มี: {SEED_STEPS_REF_OTHER_STORY}).
+5. ใช้ {ENTITY} เป้าหมายชื่อ **{ENTITY_NAME}** สำหรับทุกเคสด้านล่าง.
 
 **Note — Precondition column:** Complete shared prep above first. Precondition lists anything else required before Test Steps for that case.
 
-| **Acceptance Criteria** | **Services Impacted** | **Test Case ID** | **Test Title** | **Precondition** | **Test Data** | **Test Steps** | **Expected Result** | **Priority** |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| AC_01: {AC_SUMMARY} | - {SERVICE} | TC_{Feature}_01 | {TITLE} | 1. Shared prep (items 1–5) completed.<br>2. {EXTRA_PRE} | 1. {DATA} | 1. {STEP}<br>2. {STEP} | 1. {EXPECTED}<br>2. {EXPECTED} | High |
-```
-
-## Optional: Test Type column
-
-If the user requested a **Test Type** column (Step 3a of WORKFLOW.md), add it after Priority and append the Remark block after the table:
-
-```markdown
-| **Acceptance Criteria** | **Services Impacted** | **Test Case ID** | **Test Title** | **Precondition** | **Test Data** | **Test Steps** | **Expected Result** | **Priority** | **Test Type** |
+| **Acceptance Criteria** | **Services Impacted** | **Test Case ID** | **Test Title** | **Precondition** | **Test Data** | **Test Steps** | **Expected Result** | **Priority** | **Type** |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| AC_01: {AC_SUMMARY} | - {SERVICE} | TC_{Feature}_01 | {TITLE} | 1. Shared prep (items 1–5) completed.<br>2. {EXTRA_PRE} | 1. {DATA} | 1. {STEP}<br>2. {STEP} | 1. {EXPECTED}<br>2. {EXPECTED} | High | System |
+| AC_01: {AC_SUMMARY} | - {SERVICE} | TC_{Feature}_01 | {TITLE} | 1. ทำ shared prep (ข้อ 1–5) ครบแล้ว<br>2. {EXTRA_PRE} | 1. {DATA} | 1. {STEP}<br>2. {STEP} | 1. {EXPECTED}<br>2. {EXPECTED} | High | System Test |
 
-**Remark — Test Type coverage:**
-- No *Integration* test cases for this ticket.
-- No *Unit* test cases for this ticket.
+**Remark — Type coverage:**
+- No *Integration Test* cases for this ticket.
+- No *Unit Test* cases for this ticket.
 ```
 
-Allowed values: `System` | `Integration` | `Unit` | `[custom type]`. List only absent types in the Remark.
+Allowed Type values: `System Test` | `Unit Test` | `Integration Test`. List only absent types in the Remark.
+
+> Two CSV files are always produced from this table:
+> - `Draft_Jira_{ISSUE_KEY}.csv` — same 10-column schema as this table (Jira comment format)
+> - `Import_Qase_{ISSUE_KEY}.csv` — Qase schema (AC/EC, Title, Preconditions, Priority, Type, Status=`Done`, Suite, Steps, Tags) — see [qase-import-format.md](qase-import-format.md)
+>
+> Both are uploaded to Jira and linked in the comment footer.
 
 ---
 
@@ -43,17 +42,17 @@ Allowed values: `System` | `Integration` | `Unit` | `[custom type]`. List only a
 **List-only case (menu):**
 
 ```text
-1. Shared prep (items 1–5) completed.<br>2. On {FEATURE_AREA}, tab **{TAB}**.<br>3. Target row for **{ENTITY_NAME}** is visible.
+1. ทำ shared prep (ข้อ 1–5) ครบแล้ว<br>2. อยู่ที่ {FEATURE_AREA} แท็บ **{TAB}**<br>3. เห็นแถวเป้าหมายของ **{ENTITY_NAME}**
 ```
 
 **Edit form already open:**
 
 ```text
-1. Shared prep (items 1–5) completed.<br>2. Edit form for **{ENTITY_NAME}** is open.
+1. ทำ shared prep (ข้อ 1–5) ครบแล้ว<br>2. เปิดฟอร์มแก้ไขของ **{ENTITY_NAME}** อยู่
 ```
 
 **Depends on prior case:**
 
 ```text
-1. Shared prep (items 1–5) completed.<br>2. Steps through TC_{Feature}_07 completed; {MODAL} is open.
+1. ทำ shared prep (ข้อ 1–5) ครบแล้ว<br>2. ทำขั้นตอนถึง TC_{Feature}_07 ครบแล้ว; {MODAL} เปิดอยู่
 ```
