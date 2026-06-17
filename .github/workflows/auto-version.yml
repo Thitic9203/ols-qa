@@ -1,0 +1,67 @@
+name: Auto Version Bump
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'README.md'   # skip: version bump commits only touch README
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - name: Compute new version
+        id: ver
+        run: |
+          MSG="${{ github.event.head_commit.message }}"
+
+          # Bump type from conventional commit prefix
+          if echo "$MSG" | grep -q "BREAKING CHANGE"; then
+            BUMP=major
+          elif echo "$MSG" | grep -qE "^feat(\(.*\))?:"; then
+            BUMP=minor
+          else
+            BUMP=patch
+          fi
+
+          # Read current version from README header
+          CURRENT=$(grep -oP '(?<=version: v)\d+\.\d+\.\d+' README.md | head -1)
+          IFS='.' read -r MAJ MIN PAT <<< "$CURRENT"
+
+          case "$BUMP" in
+            major) MAJ=$((MAJ+1)); MIN=0; PAT=0 ;;
+            minor) MIN=$((MIN+1)); PAT=0 ;;
+            patch) PAT=$((PAT+1)) ;;
+          esac
+
+          NEW="$MAJ.$MIN.$PAT"
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+          echo "new=$NEW"         >> $GITHUB_OUTPUT
+          echo "Bump: $BUMP  $CURRENT → $NEW"
+
+      - name: Update README version header
+        run: |
+          OLD="${{ steps.ver.outputs.current }}"
+          NEW="${{ steps.ver.outputs.new }}"
+          DATE=$(date +"%-d %b %Y")
+          # Replace version number and date in the bold header line
+          sed -i "s/\*\*OLS Workspace version: v${OLD}\*\* ([^)]*)/\*\*OLS Workspace version: v${NEW}\*\* (${DATE})/" README.md
+
+      - name: Commit and tag
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git commit -m "chore(release): bump version to v${{ steps.ver.outputs.new }} [skip ci]"
+          git tag "v${{ steps.ver.outputs.new }}"
+          git push origin main
+          git push origin "v${{ steps.ver.outputs.new }}"
