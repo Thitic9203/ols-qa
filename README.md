@@ -87,13 +87,13 @@ Draft TC FE as below
 
 **Note — Precondition column:** ทำ shared prep ข้างต้นให้ครบก่อน จากนั้น Precondition ระบุสิ่งที่ต้องมีเพิ่มเติมเฉพาะ TC นั้น
 
-| **Acceptance Criteria** | **Services Impacted** | **Test Case ID** | **Test Title** | **Precondition** | **Test Data** | **Test Steps** | **Expected Result** | **Priority** | **Type** |
+| **Acceptance Criteria** | **Services Impacted** | **TC ID** | **Test Title** | **Precondition** | **Test Data** | **Test Steps** | **Expected Result** | **Priority** | **Type** |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| AC_01: Admin เห็นรายการคำขอที่รอการอนุมัติ | - OLS Portal | 1 | แสดงรายการคำขอรอการอนุมัติ | **1.** ทำ shared prep ครบแล้ว | - | **1.** ไปที่แท็บ **คำขอเข้าร่วม** | **1.** รายการคำขอแสดงผล **2.** เห็นคอลัมน์ ชื่อ / วันที่ / สถานะ ครบ | Medium | System Test |
-| AC_02: Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน | - OLS Portal / - Enrollment Service | 2 | อนุมัติคำขอเข้าร่วมสำเร็จ | **1.** ทำ shared prep ครบแล้ว **2.** คำขอของ test.learner01 อยู่ในสถานะ รอการอนุมัติ | คำขอของ test.learner01@example.com | **1.** คลิก **อนุมัติ** ที่แถว test.learner01 **2.** ยืนยันใน modal | **1.** สถานะเปลี่ยนเป็น **อนุมัติแล้ว** **2.** แถวหายจากรายการ รอการอนุมัติ | High | System Test |
-| EC_01: ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก | - OLS Portal | 3 | ป้องกันปฏิเสธโดยไม่มีเหตุผล | **1.** ทำ shared prep ครบแล้ว **2.** modal ปฏิเสธเปิดอยู่ | ช่องเหตุผล: (ว่าง) | **1.** คลิก **ปฏิเสธ** **2.** ไม่กรอกเหตุผลใน modal **3.** คลิก **บันทึก** | **1.** ระบบแสดง error "กรุณาระบุเหตุผล" **2.** modal ยังคงเปิดอยู่ **3.** สถานะคำขอไม่เปลี่ยน | High | System Test |
-| AC_02: Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน | - Enrollment Service / - Email Service | 4 | Email แจ้งอนุมัติถูกส่งไปยังผู้เรียน | **1.** ทำ shared prep ครบแล้ว **2.** เปิด inbox ของ test.learner01@example.com ในแท็บอื่น | Email: test.learner01@example.com | **1.** Admin อนุมัติคำขอตาม TC 2 **2.** ตรวจสอบ inbox ของ test.learner01 | **1.** ได้รับ email หัวข้อ "คำขอของคุณได้รับการอนุมัติ" **2.** email มีชื่อคอร์สและลิงก์เข้าเรียน | Medium | Integration Test |
-| EC_01: ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก | - Frontend Utils | 5 | validateRejectionReason คืน false เมื่อเหตุผลว่างเปล่า | **1.** ทำ shared prep ครบแล้ว | reason: (ว่าง) | **1.** เรียก validateRejectionReason โดยส่งค่า reason ว่าง | **1.** ฟังก์ชันคืนค่า false **2.** ไม่มี network request ถูกส่ง | Low | Unit Test |
+| AC_01: Admin เห็นรายการคำขอที่รอการอนุมัติ | OLS Portal | 1 | แสดงรายการคำขอรอการอนุมัติ | **1.** ทำ shared prep ครบแล้ว | - | **1.** ไปที่แท็บ **คำขอเข้าร่วม** | **1.** รายการคำขอแสดงผล **2.** เห็นคอลัมน์ ชื่อ / วันที่ / สถานะ ครบ | Medium | System Test |
+| AC_02: Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน | **1.** OLS Portal **2.** Enrollment Service | 2 | อนุมัติคำขอเข้าร่วมสำเร็จ | **1.** ทำ shared prep ครบแล้ว **2.** คำขอของ test.learner01 อยู่ในสถานะ รอการอนุมัติ | คำขอของ test.learner01@example.com | **1.** คลิก **อนุมัติ** ที่แถว test.learner01 **2.** ยืนยันใน modal | **1.** สถานะเปลี่ยนเป็น **อนุมัติแล้ว** **2.** แถวหายจากรายการ รอการอนุมัติ | High | System Test |
+| EC_01: ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก | OLS Portal | 3 | ป้องกันปฏิเสธโดยไม่มีเหตุผล | **1.** ทำ shared prep ครบแล้ว **2.** modal ปฏิเสธเปิดอยู่ | ช่องเหตุผล: (ว่าง) | **1.** คลิก **ปฏิเสธ** **2.** ไม่กรอกเหตุผลใน modal **3.** คลิก **บันทึก** | **1.** ระบบแสดง error "กรุณาระบุเหตุผล" **2.** modal ยังคงเปิดอยู่ **3.** สถานะคำขอไม่เปลี่ยน | High | System Test |
+| AC_02: Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน | **1.** Enrollment Service **2.** Email Service | 4 | Email แจ้งอนุมัติถูกส่งไปยังผู้เรียน | **1.** ทำ shared prep ครบแล้ว **2.** เปิด inbox ของ test.learner01@example.com ในแท็บอื่น | Email: test.learner01@example.com | **1.** Admin อนุมัติคำขอตาม TC 2 **2.** ตรวจสอบ inbox ของ test.learner01 | **1.** ได้รับ email หัวข้อ "คำขอของคุณได้รับการอนุมัติ" **2.** email มีชื่อคอร์สและลิงก์เข้าเรียน | Medium | Integration Test |
+| EC_01: ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก | Frontend Utils | 5 | validateRejectionReason คืน false เมื่อเหตุผลว่างเปล่า | **1.** ทำ shared prep ครบแล้ว | reason: (ว่าง) | **1.** เรียก validateRejectionReason โดยส่งค่า reason ว่าง | **1.** ฟังก์ชันคืนค่า false **2.** ไม่มี network request ถูกส่ง | Low | Unit Test |
 
 **Remark — Type coverage:**
 - มี *System Test* 3 เคส (TC 1–3)
@@ -112,102 +112,54 @@ Draft TC FE as below
 <details>
 <summary>Draft_Jira_OLS-142.csv — ตาราง 10 คอลัมน์สำหรับ Jira (ทุกประเภท รวม 5 TC)</summary>
 
-```csv
-Acceptance Criteria,Services Impacted,Test Case ID,Test Title,Precondition,Test Data,Test Steps,Expected Result,Priority,Type
-AC_01: Admin เห็นรายการคำขอที่รอการอนุมัติ,- OLS Portal,1,แสดงรายการคำขอรอการอนุมัติ,1. ทำ shared prep ครบแล้ว,-,1. ไปที่แท็บ คำขอเข้าร่วม,"1. รายการคำขอแสดงผล
-2. เห็นคอลัมน์ ชื่อ / วันที่ / สถานะ ครบ",Medium,System Test
-"AC_02: Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน","- OLS Portal
-- Enrollment Service",2,อนุมัติคำขอเข้าร่วมสำเร็จ,"1. ทำ shared prep ครบแล้ว
-2. คำขอของ test.learner01 อยู่ในสถานะ รอการอนุมัติ",คำขอของ test.learner01@example.com,"1. คลิก อนุมัติ ที่แถว test.learner01
-2. ยืนยันใน modal","1. สถานะเปลี่ยนเป็น อนุมัติแล้ว
-2. แถวหายจากรายการ รอการอนุมัติ",High,System Test
-"EC_01: ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก",- OLS Portal,3,ป้องกันปฏิเสธโดยไม่มีเหตุผล,"1. ทำ shared prep ครบแล้ว
-2. modal ปฏิเสธเปิดอยู่",ช่องเหตุผล: (ว่าง),"1. คลิก ปฏิเสธ
-2. ไม่กรอกเหตุผลใน modal
-3. คลิก บันทึก","1. ระบบแสดง error ""กรุณาระบุเหตุผล""
-2. modal ยังคงเปิดอยู่
-3. สถานะคำขอไม่เปลี่ยน",High,System Test
-"AC_02: Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน","- Enrollment Service
-- Email Service",4,Email แจ้งอนุมัติถูกส่งไปยังผู้เรียน,"1. ทำ shared prep ครบแล้ว
-2. เปิด inbox ของ test.learner01@example.com ในแท็บอื่น",Email: test.learner01@example.com,"1. Admin อนุมัติคำขอตาม TC 2
-2. ตรวจสอบ inbox ของ test.learner01","1. ได้รับ email หัวข้อ ""คำขอของคุณได้รับการอนุมัติ""
-2. email มีชื่อคอร์สและลิงก์เข้าเรียน",Medium,Integration Test
-"EC_01: ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก",- Frontend Utils,5,validateRejectionReason คืน false เมื่อเหตุผลว่างเปล่า,1. ทำ shared prep ครบแล้ว,reason: (ว่าง),1. เรียก validateRejectionReason โดยส่งค่า reason ว่าง,"1. ฟังก์ชันคืนค่า false
-2. ไม่มี network request ถูกส่ง",Low,Unit Test
-```
+| Acceptance Criteria | Services Impacted | TC ID | Test Title | Precondition | Test Data | Test Steps | Expected Result | Priority | Type |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| AC_01: Admin เห็นรายการคำขอที่รอการอนุมัติ | OLS Portal | 1 | แสดงรายการคำขอรอการอนุมัติ | 1. ทำ shared prep ครบแล้ว | - | 1. ไปที่แท็บ คำขอเข้าร่วม | 1. รายการคำขอแสดงผล<br>2. เห็นคอลัมน์ ชื่อ / วันที่ / สถานะ ครบ | Medium | System Test |
+| AC_02: Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน | 1. OLS Portal<br>2. Enrollment Service | 2 | อนุมัติคำขอเข้าร่วมสำเร็จ | 1. ทำ shared prep ครบแล้ว<br>2. คำขอของ test.learner01 อยู่ในสถานะ รอการอนุมัติ | คำขอของ test.learner01@example.com | 1. คลิก อนุมัติ ที่แถว test.learner01<br>2. ยืนยันใน modal | 1. สถานะเปลี่ยนเป็น อนุมัติแล้ว<br>2. แถวหายจากรายการ รอการอนุมัติ | High | System Test |
+| EC_01: ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก | OLS Portal | 3 | ป้องกันปฏิเสธโดยไม่มีเหตุผล | 1. ทำ shared prep ครบแล้ว<br>2. modal ปฏิเสธเปิดอยู่ | ช่องเหตุผล: (ว่าง) | 1. คลิก ปฏิเสธ<br>2. ไม่กรอกเหตุผลใน modal<br>3. คลิก บันทึก | 1. ระบบแสดง error "กรุณาระบุเหตุผล"<br>2. modal ยังคงเปิดอยู่<br>3. สถานะคำขอไม่เปลี่ยน | High | System Test |
+| AC_02: Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน | 1. Enrollment Service<br>2. Email Service | 4 | Email แจ้งอนุมัติถูกส่งไปยังผู้เรียน | 1. ทำ shared prep ครบแล้ว<br>2. เปิด inbox ของ test.learner01@example.com ในแท็บอื่น | Email: test.learner01@example.com | 1. Admin อนุมัติคำขอตาม TC 2<br>2. ตรวจสอบ inbox ของ test.learner01 | 1. ได้รับ email หัวข้อ "คำขอของคุณได้รับการอนุมัติ"<br>2. email มีชื่อคอร์สและลิงก์เข้าเรียน | Medium | Integration Test |
+| EC_01: ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก | Frontend Utils | 5 | validateRejectionReason คืน false เมื่อเหตุผลว่างเปล่า | 1. ทำ shared prep ครบแล้ว | reason: (ว่าง) | 1. เรียก validateRejectionReason โดยส่งค่า reason ว่าง | 1. ฟังก์ชันคืนค่า false<br>2. ไม่มี network request ถูกส่ง | Low | Unit Test |
 
 </details>
 
 <details>
 <summary>Import_Qase_OLS-142.csv — สำหรับนำเข้า Qase.io (เรียง Unit → Integration → System)</summary>
 
-```csv
-AC/EC,Title,Preconditions,Priority,Type,Status,Suite,Steps – Action,Steps – Expected result,Steps – Data,Tags
-"EC_01 — ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก",validateRejectionReason คืน false เมื่อเหตุผลว่างเปล่า,1. ทำ shared prep ครบแล้ว,Low,Unit Test,Done,Course Management > Enrollment Requests,1. เรียก validateRejectionReason โดยส่งค่า reason ว่าง,"1. ฟังก์ชันคืนค่า false
-2. ไม่มี network request ถูกส่ง",reason: (ว่าง),"EC_01, ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก"
-"AC_02 — Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน",Email แจ้งอนุมัติถูกส่งไปยังผู้เรียน,"1. ทำ shared prep ครบแล้ว
-2. เปิด inbox ของ test.learner01@example.com ในแท็บอื่น",Medium,Integration Test,Done,Course Management > Enrollment Requests,"1. Admin อนุมัติคำขอตาม TC 2
-2. ตรวจสอบ inbox ของ test.learner01","1. ได้รับ email หัวข้อ ""คำขอของคุณได้รับการอนุมัติ""
-2. email มีชื่อคอร์สและลิงก์เข้าเรียน",Email: test.learner01@example.com,"AC_02, Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน"
-"AC_01 — Admin เห็นรายการคำขอที่รอการอนุมัติ",แสดงรายการคำขอรอการอนุมัติ,1. ทำ shared prep ครบแล้ว,Medium,System Test,Done,Course Management > Enrollment Requests,1. ไปที่แท็บ คำขอเข้าร่วม,"1. รายการคำขอแสดงผล
-2. เห็นคอลัมน์ ชื่อ / วันที่ / สถานะ ครบ",-,"AC_01, Admin เห็นรายการคำขอที่รอการอนุมัติ"
-"AC_02 — Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน",อนุมัติคำขอเข้าร่วมสำเร็จ,"1. ทำ shared prep ครบแล้ว
-2. คำขอของ test.learner01 อยู่ในสถานะ รอการอนุมัติ",High,System Test,Done,Course Management > Enrollment Requests,"1. คลิก อนุมัติ ที่แถว test.learner01
-2. ยืนยันใน modal","1. สถานะเปลี่ยนเป็น อนุมัติแล้ว
-2. แถวหายจากรายการ รอการอนุมัติ",คำขอของ test.learner01@example.com,"AC_02, Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน"
-"EC_01 — ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก",ป้องกันปฏิเสธโดยไม่มีเหตุผล,"1. ทำ shared prep ครบแล้ว
-2. modal ปฏิเสธเปิดอยู่",High,System Test,Done,Course Management > Enrollment Requests,"1. คลิก ปฏิเสธ
-2. ไม่กรอกเหตุผลใน modal
-3. คลิก บันทึก","1. ระบบแสดง error ""กรุณาระบุเหตุผล""
-2. modal ยังคงเปิดอยู่
-3. สถานะคำขอไม่เปลี่ยน",ช่องเหตุผล: (ว่าง),"EC_01, ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก"
-```
+| AC/EC | Title | Preconditions | Priority | Type | Status | Suite | Steps – Action | Steps – Expected | Steps – Data | Tags |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| EC_01 — ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก | validateRejectionReason คืน false เมื่อเหตุผลว่างเปล่า | 1. ทำ shared prep ครบแล้ว | Low | Unit Test | Done | Course Management > Enrollment Requests | 1. เรียก validateRejectionReason โดยส่งค่า reason ว่าง | 1. ฟังก์ชันคืนค่า false<br>2. ไม่มี network request ถูกส่ง | reason: (ว่าง) | EC_01, ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก |
+| AC_02 — Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน | Email แจ้งอนุมัติถูกส่งไปยังผู้เรียน | 1. ทำ shared prep ครบแล้ว<br>2. เปิด inbox ของ test.learner01@example.com ในแท็บอื่น | Medium | Integration Test | Done | Course Management > Enrollment Requests | 1. Admin อนุมัติคำขอตาม TC 2<br>2. ตรวจสอบ inbox ของ test.learner01 | 1. ได้รับ email หัวข้อ "คำขอของคุณได้รับการอนุมัติ"<br>2. email มีชื่อคอร์สและลิงก์เข้าเรียน | Email: test.learner01@example.com | AC_02, Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน |
+| AC_01 — Admin เห็นรายการคำขอที่รอการอนุมัติ | แสดงรายการคำขอรอการอนุมัติ | 1. ทำ shared prep ครบแล้ว | Medium | System Test | Done | Course Management > Enrollment Requests | 1. ไปที่แท็บ คำขอเข้าร่วม | 1. รายการคำขอแสดงผล<br>2. เห็นคอลัมน์ ชื่อ / วันที่ / สถานะ ครบ | - | AC_01, Admin เห็นรายการคำขอที่รอการอนุมัติ |
+| AC_02 — Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน | อนุมัติคำขอเข้าร่วมสำเร็จ | 1. ทำ shared prep ครบแล้ว<br>2. คำขอของ test.learner01 อยู่ในสถานะ รอการอนุมัติ | High | System Test | Done | Course Management > Enrollment Requests | 1. คลิก อนุมัติ ที่แถว test.learner01<br>2. ยืนยันใน modal | 1. สถานะเปลี่ยนเป็น อนุมัติแล้ว<br>2. แถวหายจากรายการ รอการอนุมัติ | คำขอของ test.learner01@example.com | AC_02, Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน |
+| EC_01 — ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก | ป้องกันปฏิเสธโดยไม่มีเหตุผล | 1. ทำ shared prep ครบแล้ว<br>2. modal ปฏิเสธเปิดอยู่ | High | System Test | Done | Course Management > Enrollment Requests | 1. คลิก ปฏิเสธ<br>2. ไม่กรอกเหตุผลใน modal<br>3. คลิก บันทึก | 1. ระบบแสดง error "กรุณาระบุเหตุผล"<br>2. modal ยังคงเปิดอยู่<br>3. สถานะคำขอไม่เปลี่ยน | ช่องเหตุผล: (ว่าง) | EC_01, ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก |
 
 </details>
 
 <details>
 <summary>System_Test_OLS-142.csv — System Test 3 TC (TC 1–3)</summary>
 
-```csv
-Acceptance Criteria,Services Impacted,Test Case ID,Test Title,Precondition,Test Data,Test Steps,Expected Result,Priority,Type
-AC_01: Admin เห็นรายการคำขอที่รอการอนุมัติ,- OLS Portal,1,แสดงรายการคำขอรอการอนุมัติ,1. ทำ shared prep ครบแล้ว,-,1. ไปที่แท็บ คำขอเข้าร่วม,"1. รายการคำขอแสดงผล
-2. เห็นคอลัมน์ ชื่อ / วันที่ / สถานะ ครบ",Medium,System Test
-"AC_02: Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน","- OLS Portal
-- Enrollment Service",2,อนุมัติคำขอเข้าร่วมสำเร็จ,"1. ทำ shared prep ครบแล้ว
-2. คำขอของ test.learner01 อยู่ในสถานะ รอการอนุมัติ",คำขอของ test.learner01@example.com,"1. คลิก อนุมัติ ที่แถว test.learner01
-2. ยืนยันใน modal","1. สถานะเปลี่ยนเป็น อนุมัติแล้ว
-2. แถวหายจากรายการ รอการอนุมัติ",High,System Test
-"EC_01: ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก",- OLS Portal,3,ป้องกันปฏิเสธโดยไม่มีเหตุผล,"1. ทำ shared prep ครบแล้ว
-2. modal ปฏิเสธเปิดอยู่",ช่องเหตุผล: (ว่าง),"1. คลิก ปฏิเสธ
-2. ไม่กรอกเหตุผลใน modal
-3. คลิก บันทึก","1. ระบบแสดง error ""กรุณาระบุเหตุผล""
-2. modal ยังคงเปิดอยู่
-3. สถานะคำขอไม่เปลี่ยน",High,System Test
-```
+| Acceptance Criteria | Services Impacted | TC ID | Test Title | Precondition | Test Data | Test Steps | Expected Result | Priority | Type |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| AC_01: Admin เห็นรายการคำขอที่รอการอนุมัติ | OLS Portal | 1 | แสดงรายการคำขอรอการอนุมัติ | 1. ทำ shared prep ครบแล้ว | - | 1. ไปที่แท็บ คำขอเข้าร่วม | 1. รายการคำขอแสดงผล<br>2. เห็นคอลัมน์ ชื่อ / วันที่ / สถานะ ครบ | Medium | System Test |
+| AC_02: Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน | 1. OLS Portal<br>2. Enrollment Service | 2 | อนุมัติคำขอเข้าร่วมสำเร็จ | 1. ทำ shared prep ครบแล้ว<br>2. คำขอของ test.learner01 อยู่ในสถานะ รอการอนุมัติ | คำขอของ test.learner01@example.com | 1. คลิก อนุมัติ ที่แถว test.learner01<br>2. ยืนยันใน modal | 1. สถานะเปลี่ยนเป็น อนุมัติแล้ว<br>2. แถวหายจากรายการ รอการอนุมัติ | High | System Test |
+| EC_01: ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก | OLS Portal | 3 | ป้องกันปฏิเสธโดยไม่มีเหตุผล | 1. ทำ shared prep ครบแล้ว<br>2. modal ปฏิเสธเปิดอยู่ | ช่องเหตุผล: (ว่าง) | 1. คลิก ปฏิเสธ<br>2. ไม่กรอกเหตุผลใน modal<br>3. คลิก บันทึก | 1. ระบบแสดง error "กรุณาระบุเหตุผล"<br>2. modal ยังคงเปิดอยู่<br>3. สถานะคำขอไม่เปลี่ยน | High | System Test |
 
 </details>
 
 <details>
 <summary>Integration_Test_OLS-142.csv — Integration Test 1 TC (TC 4)</summary>
 
-```csv
-Acceptance Criteria,Services Impacted,Test Case ID,Test Title,Precondition,Test Data,Test Steps,Expected Result,Priority,Type
-"AC_02: Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน","- Enrollment Service
-- Email Service",4,Email แจ้งอนุมัติถูกส่งไปยังผู้เรียน,"1. ทำ shared prep ครบแล้ว
-2. เปิด inbox ของ test.learner01@example.com ในแท็บอื่น",Email: test.learner01@example.com,"1. Admin อนุมัติคำขอตาม TC 2
-2. ตรวจสอบ inbox ของ test.learner01","1. ได้รับ email หัวข้อ ""คำขอของคุณได้รับการอนุมัติ""
-2. email มีชื่อคอร์สและลิงก์เข้าเรียน",Medium,Integration Test
-```
+| Acceptance Criteria | Services Impacted | TC ID | Test Title | Precondition | Test Data | Test Steps | Expected Result | Priority | Type |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| AC_02: Admin อนุมัติคำขอ → สถานะอัปเดต + ส่ง email แจ้งผู้เรียน | 1. Enrollment Service<br>2. Email Service | 4 | Email แจ้งอนุมัติถูกส่งไปยังผู้เรียน | 1. ทำ shared prep ครบแล้ว<br>2. เปิด inbox ของ test.learner01@example.com ในแท็บอื่น | Email: test.learner01@example.com | 1. Admin อนุมัติคำขอตาม TC 2<br>2. ตรวจสอบ inbox ของ test.learner01 | 1. ได้รับ email หัวข้อ "คำขอของคุณได้รับการอนุมัติ"<br>2. email มีชื่อคอร์สและลิงก์เข้าเรียน | Medium | Integration Test |
 
 </details>
 
 <details>
 <summary>Unit_Test_OLS-142.csv — Unit Test 1 TC (TC 5)</summary>
 
-```csv
-Acceptance Criteria,Services Impacted,Test Case ID,Test Title,Precondition,Test Data,Test Steps,Expected Result,Priority,Type
-"EC_01: ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก",- Frontend Utils,5,validateRejectionReason คืน false เมื่อเหตุผลว่างเปล่า,1. ทำ shared prep ครบแล้ว,reason: (ว่าง),1. เรียก validateRejectionReason โดยส่งค่า reason ว่าง,"1. ฟังก์ชันคืนค่า false
-2. ไม่มี network request ถูกส่ง",Low,Unit Test
-```
+| Acceptance Criteria | Services Impacted | TC ID | Test Title | Precondition | Test Data | Test Steps | Expected Result | Priority | Type |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| EC_01: ปฏิเสธโดยไม่ระบุเหตุผล → ระบบแสดง error ห้ามบันทึก | Frontend Utils | 5 | validateRejectionReason คืน false เมื่อเหตุผลว่างเปล่า | 1. ทำ shared prep ครบแล้ว | reason: (ว่าง) | 1. เรียก validateRejectionReason โดยส่งค่า reason ว่าง | 1. ฟังก์ชันคืนค่า false<br>2. ไม่มี network request ถูกส่ง | Low | Unit Test |
 
 </details>
