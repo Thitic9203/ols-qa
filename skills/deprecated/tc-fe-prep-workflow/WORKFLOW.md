@@ -292,7 +292,7 @@ Default **10 columns** (change only if user specifies otherwise) — Type is alw
 | Column | Purpose |
 |--------|---------|
 | Acceptance Criteria | AC_0n / EC_0n label + short summary (full text in the Qase **AC/EC** column) |
-| Services Impacted | e.g. `- Service Name` |
+| Services Impacted | 1 service: plain name, no prefix (e.g. `Media Library`). 2+ services: bold-numbered inline (e.g. `**1.** order-service **2.** api-gateway`) — never use `- ` bullet prefix |
 | Test Case ID | Sequential number: 1, 2, 3 (fixed — no prefix, no padding) |
 | Test Title | Action + expected outcome (no `[Tag]` prefixes unless user wants them) |
 | Precondition | **Jira comment table:** short reference ("ทำ shared prep ครบแล้ว") + per-case setup. **CSV exports (Draft_Jira, Import_Qase, all typed CSVs):** full shared prep steps expanded inline (numbered, continuous) + per-case setup — CSV files are standalone; no separate shared-prep block. |

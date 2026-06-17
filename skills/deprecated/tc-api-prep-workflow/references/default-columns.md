@@ -4,7 +4,7 @@
 |--------|------------------|
 | **Test Case ID** | `TC_API_{Module}_{nn}` — unique |
 | **Module / Feature** | Tag, domain, or path group (e.g. `auth`, `orders`) |
-| **Services Impacted** | e.g. `- order-service` · `- api-gateway` |
+| **Services Impacted** | 1 service: plain name, no prefix (e.g. `order-service`). 2+ services: bold-numbered inline (e.g. `**1.** order-service **2.** api-gateway`) — never use `- ` bullet prefix |
 | **Test Title** | e.g. `POST /v1/orders — create order with valid payload` |
 | **Precondition** | Bearer token, tenant id, existing record ids, env base URL |
 | **Test Data** | Method, path, headers, body/query samples (redact secrets) |
