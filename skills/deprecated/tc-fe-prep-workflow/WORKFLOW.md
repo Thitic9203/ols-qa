@@ -442,7 +442,7 @@ All columns must be populated — derive values for any column that has no direc
 | Steps – Action | Test Steps | Direct copy |
 | Steps – Expected result | Expected Result | Direct copy |
 | Steps – Data | Test Data | Direct copy |
-| Tags | Acceptance Criteria (label only) | Extract AC/EC label(s) from the AC/EC column — comma-separated (e.g. `AC_01, EC_03`); blank only if AC/EC column has no label |
+| Tags | Acceptance Criteria | Extract AC/EC reference(s) verbatim from the ticket — label + full criterion text, comma-separated (e.g. `AC_01 — ผู้ใช้สามารถบันทึกได้, EC_03 — กรณีที่ field ว่าง`). **MUST NOT invent or paraphrase AC/EC — use exact text from the ticket only.** Blank only if ticket has no AC/EC label for this TC. |
 
 ### Typed CSV export (generate only for types that have TCs)
 
@@ -680,3 +680,4 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST add a note line in the Jira comment for each skipped type: `ไม่มี TC ประเภท [type] สำหรับ ticket นี้` | User must know explicitly that the type was absent, not silently missing |
 | MUST upload only generated typed CSVs to Jira; embed footer links only for uploaded files (after Draft_Jira + Import_Qase) | No broken or phantom links |
 | MUST append disclaimer as last line of comment after all attachment links — exact text, no translation | Required quality gate for all TC FE deliverables |
+| MUST NOT invent or paraphrase AC/EC labels or criterion text anywhere in any CSV — use verbatim text from the ticket only | Invented AC/EC creates false traceability and corrupts test coverage records |
