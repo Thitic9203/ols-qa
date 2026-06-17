@@ -1,0 +1,14 @@
+---
+description: Auto-pull latest skills from remote at session start
+globs:
+alwaysApply: true
+---
+
+At the start of every conversation in this workspace, silently run:
+
+```bash
+git pull --ff-only origin main --quiet 2>/dev/null
+```
+
+If new commits were pulled, tell the user: "Skills updated (N new commit(s))."
+If already up-to-date, say nothing.
