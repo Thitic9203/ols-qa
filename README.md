@@ -57,20 +57,6 @@ OLS-local customizations on top of helix v1.5.31.
 - **Tags ใน Qase ใช้ข้อความจาก ticket โดยตรง** — คัดลอก AC/EC พร้อมข้อความจาก ticket ทุกตัวอักษร ไม่มีการสรุปหรือแต่งเพิ่มเอง
 - **ถ้าประเภทใดไม่มีเทสเคส จะแจ้งไว้ใน Jira comment** — ไม่สร้างไฟล์ว่าง; ระบุหมายเหตุในความคิดเห็นแทนว่าประเภทนั้นไม่มี TC
 
-### v1.6.0 — TC FE Prep: Qase integration + Thai language (17 Jun 2026)
-
-OLS-local customizations on top of helix v1.5.31.
-
-| # | What changed |
-|---|-------------|
-| 1 | **ภาษาไทยเสมอ** — เนื้อหาเทสเคสทั้งหมดเป็นภาษาไทยตามราชบัณฑิตยสภา ไม่มีโหมด English-only |
-| 2 | **Step 4.5 — Term gate** — หลัง coverage review ต้องโชว์ตาราง Thai↔English ให้ user ยืนยันก่อนเขียนไฟล์จริง |
-| 3 | **Type column ถาวร** — `System Test` / `Unit Test` / `Integration Test` (Qase Type values) ทุก TC เสมอ |
-| 4 | **2 CSV attachments ใน Jira comment** — `Draft_Jira_{ISSUE_KEY}.csv` (Jira table format) + `Import_Qase_{ISSUE_KEY}.csv` (Qase import schema); footer มี 2 clickable download links |
-| 5 | **Suite gate** — ตรวจ suite tree ใน Qase OLS ก่อน; reuse ของเดิมถ้าตรง; สร้างใหม่ต้องขอ user อนุมัติ ห้ามซ้ำ |
-| 6 | **qase-import-format.md** — reference ใหม่: Qase column schema, Type/Status/AC-EC field warnings |
-| 7 | **ols-project-guide.md** — เพิ่ม Qase section (project URL, file naming, Type/Status/Suite rules) |
-
 ---
 
 ## ตัวอย่างผลลัพธ์ TC FE Prep
