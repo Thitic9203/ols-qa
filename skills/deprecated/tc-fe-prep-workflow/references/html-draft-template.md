@@ -317,7 +317,7 @@ Group by Type: Unit Test → Integration Test → System Test. For each group th
   <td>{Services Impacted — plain name if 1; "1. A 2. B" if 2+}</td>
   <td class="tc-id">{TC ID number}</td>
   <td>{Test Title}</td>
-  <td>{Precondition}</td>
+  <td>{Precondition — 1 item: plain text, no number. 2+ items: "1. item1<br>2. item2<br>3. item3"}</td>
   <td>{Test Data — or "—"}</td>
   <td>1. {step 1}<br>2. {step 2}<br>3. {step 3}</td>
   <td>1. {result 1}<br>2. {result 2}</td>
