@@ -562,6 +562,22 @@ ADF is already built from Step 6 — proceed directly to fast publish. Full JS p
    ⚠️ Disclaimer: ข้อมูลนี้เป็นเพียง Draft Version ที่ได้จากการใช้ Skill เท่านั้น (TC ครบตาม AC & EC) เนื้อหาทั้งหมดจำเป็นต้องได้รับการรีวิวและอัปเดตโดยทีม QA ก่อนนำไปใส่ในไฟล์เอกสารส่งมอบ และทำการนำ TC ไป Import เข้าสู่ Qase.io
    ```
 
+**Pre-publish re-check (MANDATORY before every post or re-post):**
+
+Verify ALL of the following are present in the ADF body before calling the Jira comment API. If any item is missing → add it → then publish.
+
+| # | Required element | Where in ADF |
+|---|-----------------|--------------|
+| 1 | TC table — ALL rows present, count matches approved draft | After heading |
+| 2 | Attachments heading + one link per uploaded file (Draft_Jira, Import_Qase + typed CSVs) | After table |
+| 3 | Skip-note line for every Type that has zero TCs: `ไม่มี TC ประเภท [Type] สำหรับ ticket นี้` | After attachment links |
+| 4 | **Remark block** — `Remark — Type coverage:` + missing-Figma line (if Figma absent from ticket) + missing-PRD line (if PRD absent from ticket) | After attachment links / skip-notes |
+| 5 | **Disclaimer** — exact Thai text — **last line, nothing after it** | Very last node |
+
+Shortcut check: scroll to bottom of the ADF `content` array — last node MUST be the Disclaimer paragraph. Second-to-last MUST be the Remark block (if applicable). If you are only fixing TC text, you MUST still rebuild the full ADF with all 5 elements intact.
+
+---
+
 **Publish method — ADF-direct (single JS call):**
 
 TC tables always go ADF-direct — do NOT try MCP first.
@@ -714,5 +730,5 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST add a note line in the Jira comment for each skipped type: `ไม่มี TC ประเภท [type] สำหรับ ticket นี้` | User must know explicitly that the type was absent, not silently missing |
 | MUST upload only generated typed CSVs to Jira; embed footer links only for uploaded files (after Draft_Jira + Import_Qase) | No broken or phantom links |
 | MUST append disclaimer as last line of comment after all attachment links — exact text, no translation | Required quality gate for all TC FE deliverables |
-| **MUST NOT drop any required comment element when regenerating or re-posting** — every rebuild MUST include: (1) table with all TC rows, (2) Attachments heading + all file links, (3) Disclaimer as last line. Fixing TC text ≠ permission to omit the rest. | Partial rebuild silently loses mandatory elements (e.g. Disclaimer) — user must not discover missing content by inspection |
+| **MUST NOT drop any required comment element when regenerating or re-posting** — every rebuild MUST include: (1) table with all TC rows, (2) Attachments heading + all file links, (3) Remark block when Figma/PRD absent or any Type has zero TCs, (4) Disclaimer as last line. Run pre-publish re-check table before every post. Fixing TC text ≠ permission to omit the rest. | Partial rebuild silently loses mandatory elements — user must not discover missing content by inspection |
 | MUST NOT invent or paraphrase AC/EC labels or criterion text anywhere in any CSV — use verbatim text from the ticket only | Invented AC/EC creates false traceability and corrupts test coverage records |
