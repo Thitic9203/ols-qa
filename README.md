@@ -39,13 +39,13 @@ Update it as new info arrives — AI reads it before asking questions.
 
 OLS-local customizations on top of helix v1.5.31.
 
-- **3 Typed CSV ออกอัตโนมัติ** — Unit_Test, Integration_Test, System_Test CSV สร้างเฉพาะประเภทที่มี TC จริง แนบ Jira พร้อม clickable link ทุกไฟล์
-- **Typed CSV เนื้อหาครบทุก column** — map Jira draft → template ของแต่ละประเภทถูกต้อง; เฉพาะ execution-result columns (Actual Result, Test status ฯลฯ) เว้นให้ QA กรอกเอง
-- **Import_Qase เรียงตาม Type** — Unit Test → Integration Test → System Test; AC ascending แล้ว EC ascending ภายในแต่ละกลุ่ม; TC ID รันต่อเนื่อง 1,2,3 ตลอดไฟล์
-- **Fast publish — JS single call** — upload CSV ทุกไฟล์ + post ADF comment ในคำสั่งเดียว; ลดขั้นตอน retry และลด latency
-- **TC ID = 1, 2, 3 ทุก output** — ไม่มี prefix, ไม่มี padding, ไม่ถาม user; สม่ำเสมอทุก file ทุกแถว
-- **Tags verbatim จาก ticket** — Tags ใน Import_Qase CSV ใช้ label + ข้อความ AC/EC ตรงๆ จาก ticket ห้าม paraphrase หรือแต่งเอง
-- **Skip + แจ้ง Type ที่ไม่มี TC** — ไม่สร้างไฟล์ว่าง; เพิ่มบรรทัดหมายเหตุใน Jira comment สำหรับทุก Type ที่ขาด TC
+- **ไฟล์ CSV แยกตามประเภทเทสเคส** — สร้างไฟล์แยกสำหรับ Unit Test, Integration Test, และ System Test ให้อัตโนมัติ พร้อมแนบลง Jira ทุกไฟล์
+- **เนื้อหาในไฟล์ CSV ครบทุกช่อง** — ข้อมูลทุกคอลัมน์กรอกให้ถูกรูปแบบของแต่ละประเภทแล้ว; เหลือเฉพาะช่องผลการทดสอบที่ QA กรอกเองหลังทดสอบจริง
+- **ไฟล์นำเข้า Qase เรียงตามประเภท** — Unit Test มาก่อน ตามด้วย Integration Test และ System Test; ภายในแต่ละกลุ่มเรียง AC ก่อน EC; หมายเลข TC รันต่อเนื่องตลอดไฟล์
+- **แนบไฟล์และโพสต์ comment ลง Jira เร็วขึ้น** — ลดขั้นตอนการส่งข้อมูลขึ้น Jira ให้เสร็จในรอบเดียว ไม่ต้องรอหลายรอบ
+- **หมายเลขเทสเคสเป็นตัวเลขล้วน 1, 2, 3** — ไม่มีตัวอักษรนำหน้า ทุกไฟล์ใช้รูปแบบเดียวกันสม่ำเสมอ
+- **Tags ใน Qase ใช้ข้อความจาก ticket โดยตรง** — คัดลอก AC/EC พร้อมข้อความจาก ticket ทุกตัวอักษร ไม่มีการสรุปหรือแต่งเพิ่มเอง
+- **ถ้าประเภทใดไม่มีเทสเคส จะแจ้งไว้ใน Jira comment** — ไม่สร้างไฟล์ว่าง; ระบุหมายเหตุในความคิดเห็นแทนว่าประเภทนั้นไม่มี TC
 
 ### v1.6.0 — TC FE Prep: Qase integration + Thai language (17 Jun 2026)
 
