@@ -150,13 +150,15 @@ Branch on `{csv_type}`:
 
 #### If `integration`:
 1. Build header: `ลำดับ, โมดูล, รายการทดสอบ, ขั้นตอนการทดสอบ, ผลการทดสอบที่คาดหวัง, ผลการทดสอบ, วันที่ทดสอบ, ผู้ทดสอบ, หมายเหตุ`
-2. Populate data rows with sequential ลำดับ, fill columns with prepared content
+2. Populate data rows with sequential ลำดับ, fill columns with prepared content *(depends on open question #1 — filled vs blank)*
 3. Append **1 blank row** then the 5-row summary footer
-4. Filename: `Integration Test - {ISSUE_KEY} {feature_name}.csv`
+4. Write with UTF-8 BOM (`encoding='utf-8-sig'`) — required for Thai columns to open correctly in Excel
+5. Filename: `Integration Test - {ISSUE_KEY} {feature_name}.csv`
 
 #### If `system`:
-1. Same columns and structure as Integration Test
-2. Filename: `System Test - {ISSUE_KEY} {feature_name}.csv`
+1. Same columns and structure as Integration Test (including UTF-8 BOM)
+2. Row count matches content only — 800 is the template cap reference, not a generation target (see open question #1 below)
+3. Filename: `System Test - {ISSUE_KEY} {feature_name}.csv`
 
 ### Summary footer Python snippet
 
@@ -178,12 +180,13 @@ for row in summary:
 
 ```python
 # Header rows for Unit Test — insert before each group's data rows
+# Pass bare name (no prefix) — functions prepend "Function : " / "Sub Function : " automatically
 def write_function_header(writer, function_name: str, n_cols: int = 13):
-    row = [function_name] + [""] * (n_cols - 1)
+    row = [f"Function : {function_name}"] + [""] * (n_cols - 1)
     writer.writerow(row)
 
 def write_subfunction_header(writer, subfunction_name: str, n_cols: int = 13):
-    row = [subfunction_name] + [""] * (n_cols - 1)
+    row = [f"Sub Function : {subfunction_name}"] + [""] * (n_cols - 1)
     writer.writerow(row)
 ```
 
@@ -193,11 +196,15 @@ def write_subfunction_header(writer, subfunction_name: str, n_cols: int = 13):
 |------|--------|
 | `skills/deprecated/tc-fe-prep-workflow/WORKFLOW.md` | Add csv_type intake question + branch export logic |
 | `references/csv-export-rules.md` | Add section for typed export; link here |
-| `references/csv-template-types.md` | **This file** — source of truth for template specs |
+| `docs/plan/csv-template-types.md` → move to `references/csv-template-types.md` | **This file** — source of truth for template specs; move from `docs/plan/` to `references/` during implementation so WORKFLOW.md can link to it |
+
+> **Note:** Typed CSVs (Unit/Integration/System) are **not** Qase import format — they are QA deliverable artifacts separate from `Import_Qase_{ISSUE_KEY}.csv`. No Qase schema conflict.
 
 ### Open questions (resolve before implementing)
 
+> **Resolve #1 first** — it determines the entire generation approach. Current plan text assumes "filled" but this is not yet confirmed.
+
+- [ ] **[BLOCKER]** Should the skill generate a **blank template** (row numbers only, no content) OR a **filled template** (with prepared test case content)? — current plan steps assume filled; blank changes everything
 - [ ] Should Unit Test group headings pull from TOR Ref sections automatically, or does the user provide them manually?
 - [ ] For Integration/System Test: does the TC content map 1:1 to rows, or do multi-step TCs expand to multiple rows?
 - [ ] Is "ลำดับ" a running number across the whole file, or reset per โมดูล?
-- [ ] Should the skill support generating a blank template (row numbers only, no content) OR a filled template (with prepared test case content)?
