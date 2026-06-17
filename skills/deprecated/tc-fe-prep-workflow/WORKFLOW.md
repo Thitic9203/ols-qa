@@ -180,7 +180,7 @@ All settings in this workspace are **fixed** — do NOT ask the user about any o
 - **TC ID = simple sequential number: 1, 2, 3** (see Step 3c). No prefix, no padding, no format selection. Do not ask.
 - **Typed CSVs**: all three (Unit_Test, Integration_Test, System_Test) are generated when TCs of that type exist — no selection needed. Each populated with TCs filtered by Type and mapped to that template's columns (Step 6).
 
-**Proceed directly to Step 2.** No questions needed in this step.
+**No questions needed in this step — proceed to Step 3b.**
 
 (Note: Qase auto-generates its own case IDs on import; the Test Case ID column is for the Jira comment table and traceability only.)
 
@@ -307,7 +307,9 @@ Sort rows in **all outputs** (Jira comment, Draft_Jira CSV, Import_Qase CSV, and
 1. **All ACs first**, ascending by number (AC_01, AC_02, AC_03, …)
 2. **All ECs after**, ascending by number (EC_01, EC_02, EC_03, …)
 
-Within the same AC or EC label, keep multiple TCs together in the order they were designed. Do NOT group by Type — Type is a column value only, not a grouping dimension.
+Within the same AC or EC label, keep multiple TCs together in the order they were designed.
+
+**Important:** Do NOT use Type as a sort/group key in the Jira comment, Draft_Jira CSV, or Import_Qase CSV — Type is a column value only. Typed CSVs (Unit_Test, Integration_Test, System_Test) are separate files filtered by Type (Step 6) — that is not grouping, it is file-level filtering.
 
 ---
 
@@ -469,7 +471,7 @@ Generate typed CSVs after `Draft_Jira` and `Import_Qase`. Full column/row specs 
 
 Build 13-column English header with columns in this order: `No., Sub Function, Test Scenario, Test Description, Pre-condition, Test Step, Test Data, Expected Result, Actual Result, Test status, Test Date, Test By, Comment`. Insert one `Function :` row (col 1 only, cols 2–13 blank) using the ticket title/feature name, then for each distinct Services Impacted value insert a `Sub Function :` header row, then the numbered data rows for that group. No summary footer.
 
-If no Unit Test TCs exist: **skip this file**. Add a note below the Jira comment table (Step 7): `ไม่มี TC ประเภท Unit Test สำหรับ ticket นี้`
+If no Unit Test TCs exist: **skip this file**. A skip-note will appear in the Jira comment footer (Step 7, after attachment links, before Disclaimer).
 
 **Column mapping — Jira draft → Integration Test / System Test (`Integration_Test_{ISSUE_KEY}.csv` / `System_Test_{ISSUE_KEY}.csv`):**
 
@@ -487,7 +489,7 @@ If no Unit Test TCs exist: **skip this file**. Add a note below the Jira comment
 
 Build 9-column Thai header; write sequential numbered rows from the filtered TC set; append 1 blank row then the 5-row summary footer. Encoding: UTF-8 BOM (`utf-8-sig`).
 
-If no Integration Test TCs exist: **skip Integration_Test file**. If no System Test TCs exist: **skip System_Test file**. For each skipped type, add a note below the Jira comment table: `ไม่มี TC ประเภท [Integration Test / System Test] สำหรับ ticket นี้`
+If no Integration Test TCs exist: **skip Integration_Test file**. If no System Test TCs exist: **skip System_Test file**. Skip-notes for each absent type appear in the Jira comment footer (Step 7, after attachment links, before Disclaimer).
 
 See [references/publish-options.md](references/publish-options.md) for Jira delivery.
 
@@ -520,8 +522,8 @@ ADF is already built from Step 6 — proceed directly to fast publish. Full JS p
    - `[Unit_Test_{ISSUE_KEY}.csv]({url})` — Unit Test template พร้อม TC ประเภท Unit Test *(include only if file was generated)*
    - `[Integration_Test_{ISSUE_KEY}.csv]({url})` — Integration Test template พร้อม TC ประเภท Integration Test *(include only if file was generated)*
    - `[System_Test_{ISSUE_KEY}.csv]({url})` — System Test template พร้อม TC ประเภท System Test *(include only if file was generated)*
-   - For each type that was **skipped** (no TCs of that type), add a note line after all attachment links: `ไม่มี TC ประเภท [Unit Test / Integration Test / System Test] สำหรับ ticket นี้`
-5. Disclaimer — **last line of the comment, after all attachment links** (exact text, do not translate or shorten):
+5. For each typed CSV type that was **skipped** (no TCs of that type), add one note line here (after all attachment links): `ไม่มี TC ประเภท [Unit Test / Integration Test / System Test] สำหรับ ticket นี้`
+6. Disclaimer — **last line of the comment, after all attachment links** (exact text, do not translate or shorten):
    ```
    ⚠️ Disclaimer: ข้อมูลนี้เป็นเพียง Draft Version ที่ได้จากการใช้ Skill เท่านั้น (TC ครบตาม AC & EC) เนื้อหาทั้งหมดจำเป็นต้องได้รับการรีวิวและอัปเดตโดยทีม QA ก่อนนำไปใส่ในไฟล์เอกสารส่งมอบ และทำการนำ TC ไป Import เข้าสู่ Qase.io
    ```
@@ -670,7 +672,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST post Step 7.5 final review report ([tc-final-review-report.md](references/tc-final-review-report.md)) with overall **PASS** before Step 8 or any "TC prep complete" message | User receives certified four-axis review of final TC |
 | MUST attach CSV/Excel to Jira issue when file was generated (not just workspace) | User expects downloadable file on the issue |
 | MUST NOT use `\n` inside **chat draft** markdown table cells | Breaks table row in markdown renderers |
-| MUST always generate all three typed CSVs (Unit_Test, Integration_Test, System_Test) — no user selection needed | All three types are standard deliverables |
+| MUST generate a typed CSV for each Type that has TCs — no user selection needed; skip if a Type has zero TCs | Only Types with actual TCs produce a deliverable file |
 | MUST filter TCs by Type into each typed CSV: Type = `Unit Test` → Unit_Test; `Integration Test` → Integration_Test; `System Test` → System_Test | Each template's audience expects only its own test type |
 | MUST map Jira draft columns to each template's columns per Step 6 mapping tables — derive values for columns with no direct source; only execution-result columns (Actual Result, Test status, Test Date, Test By, ผลการทดสอบ, วันที่ทดสอบ, ผู้ทดสอบ) are left blank | Column names differ between Jira and typed templates; all non-execution columns must have correct content |
 | MUST use ticket title/feature name as Function and Services Impacted as Sub Function in Unit_Test CSV | Unit Test template requires Function/Sub Function grouping structure |
