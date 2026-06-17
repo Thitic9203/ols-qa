@@ -279,7 +279,7 @@ Default **10 columns** (change only if user specifies otherwise) — Type is alw
 | Services Impacted | e.g. `- Service Name` |
 | Test Case ID | Sequential number: 1, 2, 3 (fixed — no prefix, no padding) |
 | Test Title | Action + expected outcome (no `[Tag]` prefixes unless user wants them) |
-| Precondition | Shared prep done + per-case setup |
+| Precondition | **Jira comment table:** short reference ("ทำ shared prep ครบแล้ว") + per-case setup. **CSV exports (Draft_Jira, Import_Qase, all typed CSVs):** full shared prep steps expanded inline (numbered, continuous) + per-case setup — CSV files are standalone; no separate shared-prep block. |
 | Test Data | Values to enter |
 | Test Steps | Numbered manual steps |
 | Expected Result | Numbered assertions |
@@ -297,6 +297,8 @@ The Qase import CSV uses a **different** column set (AC/EC, Title, Preconditions
 5. Identify the target entity used across TCs.
 
 Add a **Precondition column note** above the table explaining that the column means: *after shared prep, before Test Steps*.
+
+**Precondition in CSV exports (all files):** Unlike the Jira comment table, CSV files have no separate shared-prep block. The Precondition cell must contain the full shared prep steps expanded inline, followed by any per-case steps. Re-number all steps continuously (1, 2, 3, …). Apply to Draft_Jira, Import_Qase, and all typed CSVs (Unit_Test, Integration_Test, System_Test).
 
 ### 3e — Row ordering
 
