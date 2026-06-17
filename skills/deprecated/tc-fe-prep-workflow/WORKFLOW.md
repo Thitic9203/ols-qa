@@ -420,15 +420,15 @@ After approval (and Suite confirmed), write **four files** inside the user's pro
 | `references/Draft_Jira_{ISSUE_KEY}.csv` | always (unless xlsx requested) | **Jira-format CSV** — same column set as the chat draft table (10 columns); use as source-of-truth for the comment table |
 | `references/Import_Qase_{ISSUE_KEY}.csv` | always (unless xlsx requested) | **Qase import CSV** — schema per [qase-import-format.md](references/qase-import-format.md) |
 | `references/Draft_Jira_{ISSUE_KEY}.xlsx` / `references/Import_Qase_{ISSUE_KEY}.xlsx` | user explicitly requested Excel/xlsx | Excel versions of both files above |
-| `references/Unit_Test_{ISSUE_KEY}.csv` | always | **Typed content CSV** — 13 English columns; TCs filtered to Type = `Unit Test`, content mapped to Unit Test template columns (Step 6 mapping); Function/Sub Function groupings from ticket title + Services Impacted |
-| `references/Integration_Test_{ISSUE_KEY}.csv` | always | **Typed content CSV** — 9 Thai columns; TCs filtered to Type = `Integration Test`, content mapped to Integration Test template columns (Step 6 mapping); summary footer |
-| `references/System_Test_{ISSUE_KEY}.csv` | always | **Typed content CSV** — 9 Thai columns; TCs filtered to Type = `System Test`, content mapped to System Test template columns (Step 6 mapping); summary footer |
+| `references/Unit_Test_{ISSUE_KEY}.csv` | only if Type = `Unit Test` TCs exist | **Typed content CSV** — 13 English columns; TCs filtered to Type = `Unit Test`, content mapped to Unit Test template columns (Step 6 mapping); Function/Sub Function groupings from ticket title + Services Impacted |
+| `references/Integration_Test_{ISSUE_KEY}.csv` | only if Type = `Integration Test` TCs exist | **Typed content CSV** — 9 Thai columns; TCs filtered to Type = `Integration Test`, content mapped to Integration Test template columns (Step 6 mapping); summary footer |
+| `references/System_Test_{ISSUE_KEY}.csv` | only if Type = `System Test` TCs exist | **Typed content CSV** — 9 Thai columns; TCs filtered to Type = `System Test`, content mapped to System Test template columns (Step 6 mapping); summary footer |
 
 Both CSV files (`Draft_Jira` + `Import_Qase`) are always produced together and both are uploaded to Jira (Step 7). Follow [csv-export-rules.md](../../references/csv-export-rules.md) for cell cleaning (convert `<br>`, strip tags, preserve Thai) — applies to all CSV files. Never silently produce only one when both are required.
 
-### Typed CSV export (always generate all three)
+### Typed CSV export (generate only for types that have TCs)
 
-Generate all three typed CSVs after `Draft_Jira` and `Import_Qase`. Full column/row specs and Python snippets: [csv-template-types.md](../../../references/csv-template-types.md).
+Generate typed CSVs after `Draft_Jira` and `Import_Qase`. Full column/row specs and Python snippets: [csv-template-types.md](../../../references/csv-template-types.md).
 
 **Filter TCs by Type:** Each typed CSV contains only the TCs whose `Type` column matches that file's type. TCs with a different Type are excluded.
 
@@ -496,9 +496,10 @@ ADF is already built from Step 6 — proceed directly to fast publish. Full JS p
 4. Footer: clickable download links — one per uploaded file (see footer link pattern in [jira-formatting.md](references/jira-formatting.md)):
    - `[Draft_Jira_{ISSUE_KEY}.csv]({url})` — ตารางเทสเคส (Jira format)
    - `[Import_Qase_{ISSUE_KEY}.csv]({url})` — Qase import file พร้อม import เข้า OLS project
-   - `[Unit_Test_{ISSUE_KEY}.csv]({url})` — Unit Test template พร้อม TC ประเภท Unit Test
-   - `[Integration_Test_{ISSUE_KEY}.csv]({url})` — Integration Test template พร้อม TC ประเภท Integration Test
-   - `[System_Test_{ISSUE_KEY}.csv]({url})` — System Test template พร้อม TC ประเภท System Test
+   - `[Unit_Test_{ISSUE_KEY}.csv]({url})` — Unit Test template พร้อม TC ประเภท Unit Test *(include only if file was generated)*
+   - `[Integration_Test_{ISSUE_KEY}.csv]({url})` — Integration Test template พร้อม TC ประเภท Integration Test *(include only if file was generated)*
+   - `[System_Test_{ISSUE_KEY}.csv]({url})` — System Test template พร้อม TC ประเภท System Test *(include only if file was generated)*
+   - For each type that was **skipped** (no TCs of that type), add a note line after all attachment links: `ไม่มี TC ประเภท [Unit Test / Integration Test / System Test] สำหรับ ticket นี้`
 5. Disclaimer — **last line of the comment, after all attachment links** (exact text, do not translate or shorten):
    ```
    ⚠️ Disclaimer: ข้อมูลนี้เป็นเพียง Draft Version ที่ได้จากการใช้ Skill เท่านั้น (TC ครบตาม AC & EC) เนื้อหาทั้งหมดจำเป็นต้องได้รับการรีวิวและอัปเดตโดยทีม QA ก่อนนำไปใส่ในไฟล์เอกสารส่งมอบ และทำการนำ TC ไป Import เข้าสู่ Qase.io
@@ -562,7 +563,7 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 - [ ] `Draft_Jira_{ISSUE_KEY}.csv` uses the 10-column Jira table schema; row count matches approved draft.
 - [ ] `Import_Qase_{ISSUE_KEY}.csv` uses Qase schema, `Status = Done` on every row, cut fields absent; row count matches approved draft.
 - [ ] Both files uploaded to the Jira issue; both footer links verified working.
-- [ ] All three typed CSVs (`Unit_Test_{ISSUE_KEY}.csv`, `Integration_Test_{ISSUE_KEY}.csv`, `System_Test_{ISSUE_KEY}.csv`) generated — each filtered by Type and content mapped to its template columns; all three uploaded to Jira; all three footer links verified working.
+- [ ] Typed CSVs generated only for Types that have TCs; each filtered and content mapped to its template columns; all generated files uploaded to Jira; footer links present only for uploaded files; skipped types noted in comment.
 - [ ] Disclaimer appended as **last line** of the Jira comment, after all attachment links (exact wording, not translated or shortened).
 - [ ] Jira UI matches approved draft (not MCP output alone).
 - [ ] Post-publish review passed per [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — no stray tags, numbered items on separate lines, attachment present.
@@ -653,6 +654,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST filter TCs by Type into each typed CSV: Type = `Unit Test` → Unit_Test; `Integration Test` → Integration_Test; `System Test` → System_Test | Each template's audience expects only its own test type |
 | MUST map Jira draft columns to each template's columns per Step 6 mapping tables | Column names differ between Jira and typed templates; mapping ensures correct placement |
 | MUST use ticket title/feature name as Function and Services Impacted as Sub Function in Unit_Test CSV | Unit Test template requires Function/Sub Function grouping structure |
-| MUST generate empty-but-valid file when a Type has no TCs: Unit_Test = header row only; Integration/System_Test = header + blank separator + summary footer | File must always be present even if that type has no TCs |
-| MUST upload all three typed CSVs to Jira and embed all three footer links in the comment (after Draft_Jira + Import_Qase) | All five deliverable files must be accessible from the issue |
+| MUST skip typed CSV for a Type that has zero TCs — do NOT generate an empty file | Empty files are not useful deliverables |
+| MUST add a note line in the Jira comment for each skipped type: `ไม่มี TC ประเภท [type] สำหรับ ticket นี้` | User must know explicitly that the type was absent, not silently missing |
+| MUST upload only generated typed CSVs to Jira; embed footer links only for uploaded files (after Draft_Jira + Import_Qase) | No broken or phantom links |
 | MUST append disclaimer as last line of comment after all attachment links — exact text, no translation | Required quality gate for all TC FE deliverables |
