@@ -2,7 +2,7 @@
 
 Use when `tc-fe-prep-workflow` or `tc-api-prep-workflow` writes an export file next to `.md` in the **user’s workspace**.
 
-> **TC FE CSV types:** Three template formats exist (Unit Test / Integration Test / System Test), each with different columns and row structure. See [csv-template-types.md](../docs/plan/csv-template-types.md) before generating a TC FE CSV.
+> **TC FE CSV types:** Three template formats exist (Unit Test / Integration Test / System Test), each with different columns and row structure. See [csv-template-types.md](csv-template-types.md) before generating a TC FE CSV.
 
 ## Format detection (decide before exporting)
 
@@ -151,6 +151,48 @@ print(f"Saved {len(rows)} rows to {ISSUE_KEY}_FE_TC.xlsx")
 ### Fallback
 
 If xlsx generation fails (missing Python, permission error, etc.) → warn the user and offer to fall back to UTF-8 BOM CSV instead. **Do not silently produce a CSV when the user asked for xlsx.**
+
+---
+
+## Typed TC FE export (Unit / Integration / System)
+
+When `{csv_type}` is set (from Step 3a of `tc-fe-prep-workflow`), generate one additional typed CSV alongside `Draft_Jira` and `Import_Qase`. Full column/row specs: [csv-template-types.md](csv-template-types.md).
+
+### Branching logic
+
+| `{csv_type}` | File | Template spec |
+|-------------|------|---------------|
+| `unit` | `Unit_Test_{ISSUE_KEY}.csv` | 13 English columns, Function/Sub Function header rows, no footer |
+| `integration` | `Integration_Test_{ISSUE_KEY}.csv` | 9 Thai columns, 330 blank rows, summary footer, UTF-8 BOM |
+| `system` | `System_Test_{ISSUE_KEY}.csv` | 9 Thai columns, 800 blank rows, summary footer, UTF-8 BOM |
+
+### If `unit`
+
+1. Header: `No., Sub Function, Test Scenario, Test Description, Pre-condition, Test Step, Test Data, Expected Result, Actual Result, Test status, Test Date, Test By, Comment`
+2. For each Sub Function group: insert a `Function : <name>` header row, then a `Sub Function : <name>` header row (col 1 only; cols 2–13 empty), then numbered data rows (content columns blank)
+3. No summary footer
+4. Encoding: UTF-8 (no BOM needed for English-header files)
+
+If the user has not provided Function/Sub Function names, ask once before generating:
+> "Unit Test CSV needs Function and Sub Function group names. Please list them (one per line: Function → Sub Function)."
+
+### If `integration` or `system`
+
+1. Header: `ลำดับ, โมดูล, รายการทดสอบ, ขั้นตอนการทดสอบ, ผลการทดสอบที่คาดหวัง, ผลการทดสอบ, วันที่ทดสอบ, ผู้ทดสอบ, หมายเหตุ`
+2. Rows 1 → N (330 for integration, 800 for system): col 1 = row number, cols 2–9 empty
+3. Append summary footer after 1 blank row (see Python snippet in [csv-template-types.md](csv-template-types.md))
+4. Encoding: UTF-8 BOM (`utf-8-sig`) — required for Thai to open correctly in Excel
+
+### Upload + comment link
+
+After generating the typed CSV:
+1. Upload via browser JS (Control Chrome fetch — see CLAUDE.md workaround) while on the Jira issue page
+2. Retrieve `attachment_id` from the response JSON
+3. Append link after the `Import_Qase` footer line:
+   ```
+   [Unit_Test_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{attachment_id}/Unit_Test_{ISSUE_KEY}.csv)
+   ```
+   (substitute the filename pattern for integration/system accordingly)
 
 ---
 

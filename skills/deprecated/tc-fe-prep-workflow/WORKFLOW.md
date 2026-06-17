@@ -178,15 +178,24 @@ Two settings are **fixed for this workspace** — do NOT ask about them:
 - **TC Language = Thai (always).** All test case content is formal Thai per ราชบัณฑิตยสภา (Step 3b). English only where no official Thai term exists, and only after the Step 4.5 term-confirmation gate.
 - **Type column is always present**, restricted to `System Test` / `Unit Test` / `Integration Test` (Qase Type field — Step 3d). Do not offer to skip it.
 
-Ask only the one setting that varies, in a single message:
+Ask both settings that vary, in a **single message**:
 
-> **Test Case ID format** — what format should I use for TC IDs? Examples:
+> **1. Test Case ID format** — what format should I use for TC IDs? Examples:
 > - `TC_01`, `TC_02` (simple sequential)
 > - `TC_Feature_01` (feature prefix)
 > - `{ISSUE_KEY}_TC_01` (e.g. `OLS-142_TC_01`)
 > - Other — please specify
+>
+> **2. CSV template type** — which typed CSV should I generate alongside the Jira table?
+> 1. Unit Test (English, 13 columns, grouped by Sub Function)
+> 2. Integration Test (Thai, 9 columns, ~330 rows)
+> 3. System Test (Thai, 9 columns, ~800 rows)
 
-**Wait for the answer.** If the user skips it, default to `TC_01`. (Note: Qase auto-generates its own case IDs on import; the Test Case ID column is for the Jira comment table and traceability, not the Qase `id` field.)
+Save the csv_type answer as `{csv_type}` = `unit` | `integration` | `system`.
+
+**Wait for both answers.** If the user skips TC ID format, default to `TC_01`. If the user skips csv_type, ask once more then default to `system`.
+
+(Note: Qase auto-generates its own case IDs on import; the Test Case ID column is for the Jira comment table and traceability, not the Qase `id` field.)
 
 ### 3b — Language rules (Thai always)
 
@@ -408,7 +417,7 @@ State clearly: **Not posted to Jira yet.**
 
 **Suite gate (do before writing the CSV):** The Qase CSV needs a **Suite** value per row. Inspect the OLS project's existing suite tree first (Qase web UI → Test cases → suite sidebar, or ask the user to paste the current suite list — there is no Qase MCP) and reuse a fitting suite; only propose a new suite (with user approval) when none fits. Never assign a suite blind, never create a duplicate. Full rules: [qase-import-format.md](references/qase-import-format.md) — Suite rules.
 
-After approval (and Suite confirmed), write **three files** inside the user's project (paths relative to workspace root):
+After approval (and Suite confirmed), write **four files** inside the user's project (paths relative to workspace root):
 
 | File | Condition | Purpose |
 |------|-----------|---------|
@@ -416,8 +425,19 @@ After approval (and Suite confirmed), write **three files** inside the user's pr
 | `references/Draft_Jira_{ISSUE_KEY}.csv` | always (unless xlsx requested) | **Jira-format CSV** — same column set as the chat draft table (10 columns); use as source-of-truth for the comment table |
 | `references/Import_Qase_{ISSUE_KEY}.csv` | always (unless xlsx requested) | **Qase import CSV** — schema per [qase-import-format.md](references/qase-import-format.md) |
 | `references/Draft_Jira_{ISSUE_KEY}.xlsx` / `references/Import_Qase_{ISSUE_KEY}.xlsx` | user explicitly requested Excel/xlsx | Excel versions of both files above |
+| `references/Unit_Test_{ISSUE_KEY}.csv` | `{csv_type}` = `unit` | **Typed blank template** — 13 English columns, Function/Sub Function groupings |
+| `references/Integration_Test_{ISSUE_KEY}.csv` | `{csv_type}` = `integration` | **Typed blank template** — 9 Thai columns, 330 rows, summary footer |
+| `references/System_Test_{ISSUE_KEY}.csv` | `{csv_type}` = `system` | **Typed blank template** — 9 Thai columns, 800 rows, summary footer |
 
-Both CSV files are always produced together and both are uploaded to Jira (Step 7). Follow [csv-export-rules.md](../../references/csv-export-rules.md) for cell cleaning (convert `<br>`, strip tags, preserve Thai) — applies to both files. Never silently produce only one when both are required.
+Both CSV files (`Draft_Jira` + `Import_Qase`) are always produced together and both are uploaded to Jira (Step 7). Follow [csv-export-rules.md](../../references/csv-export-rules.md) for cell cleaning (convert `<br>`, strip tags, preserve Thai) — applies to all CSV files. Never silently produce only one when both are required.
+
+### Typed CSV export (branch on `{csv_type}`)
+
+Generate the typed CSV after `Draft_Jira` and `Import_Qase`. Full column/row specs and Python snippets: [csv-template-types.md](../../../references/csv-template-types.md).
+
+**If `unit`:** build 13-column English header; for each Sub Function group insert `Function :` and `Sub Function :` header rows (col 1 only, cols 2–13 blank), then numbered data rows with blank content. No summary footer. If Function/Sub Function names not yet provided, ask the user before generating.
+
+**If `integration` or `system`:** build 9-column Thai header; write sequential rows 1 → N (330 / 800), cols 2–9 blank; append 1 blank row then the 5-row summary footer. Encoding: UTF-8 BOM (`utf-8-sig`).
 
 See [references/publish-options.md](references/publish-options.md) for Jira delivery.
 
@@ -434,11 +454,18 @@ See [references/publish-options.md](references/publish-options.md) for Jira deli
 1. Intro line: `Draft TC FE as below`
 2. Shared prep + precondition note
 3. Full table (bold header cells) — **with `<br>` already converted**
-4. Footer: two lines, each a clickable download link — one per attachment (see footer link pattern in [jira-formatting.md](references/jira-formatting.md)):
+4. Footer: clickable download links — one per uploaded file (see footer link pattern in [jira-formatting.md](references/jira-formatting.md)):
    - `[Draft_Jira_{ISSUE_KEY}.csv]({url})` — ตารางเทสเคส (Jira format)
    - `[Import_Qase_{ISSUE_KEY}.csv]({url})` — Qase import file พร้อม import เข้า OLS project
+   - (If `{csv_type}` = `unit`) `[Unit_Test_{ISSUE_KEY}.csv]({url})`
+   - (If `{csv_type}` = `integration`) `[Integration_Test_{ISSUE_KEY}.csv]({url})`
+   - (If `{csv_type}` = `system`) `[System_Test_{ISSUE_KEY}.csv]({url})`
+5. Disclaimer — **last line of the comment, after all attachment links** (exact text, do not translate or shorten):
+   ```
+   ⚠️ Disclaimer: ข้อมูลนี้เป็นเพียง Draft Version ที่ได้จากการใช้ Skill เท่านั้น (TC ครบตาม AC & EC) เนื้อหาทั้งหมดจำเป็นต้องได้รับการรีวิวและอัปเดตโดยทีม QA ก่อนนำไปใส่ในไฟล์เอกสารส่งมอบ และทำการนำ TC ไป Import เข้าสู่ Qase.io
+   ```
 
-**Upload-first rule:** Upload **both** files to the issue BEFORE posting the comment. Capture each attachment `id` from the upload response, build `secure/attachment/{id}/{filename}` URLs, then embed both as hyperlinks in the footer. Never write a filename as plain text. Upload order: `Draft_Jira` first, `Import_Qase` second.
+**Upload-first rule:** Upload **all required files** to the issue BEFORE posting the comment. Capture each attachment `id` from the upload response, build `secure/attachment/{id}/{filename}` URLs, then embed as hyperlinks in the footer. Never write a filename as plain text. Upload order: `Draft_Jira` first, `Import_Qase` second, typed CSV third (if `{csv_type}` was set).
 
 **Publish methods** (choose what works in the environment — details in `references/publish-options.md`):
 
@@ -495,6 +522,8 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 - [ ] `Draft_Jira_{ISSUE_KEY}.csv` uses the 10-column Jira table schema; row count matches approved draft.
 - [ ] `Import_Qase_{ISSUE_KEY}.csv` uses Qase schema, `Status = Done` on every row, cut fields absent; row count matches approved draft.
 - [ ] Both files uploaded to the Jira issue; both footer links verified working.
+- [ ] Typed CSV (`Unit_Test`, `Integration_Test`, or `System_Test`) generated per `{csv_type}` with correct columns, row structure, and footer (if applicable); uploaded to Jira; footer link verified working.
+- [ ] Disclaimer appended as **last line** of the Jira comment, after all attachment links (exact wording, not translated or shortened).
 - [ ] Jira UI matches approved draft (not MCP output alone).
 - [ ] Post-publish review passed per [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — no stray tags, numbered items on separate lines, attachment present.
 - [ ] Step 7.5 final TC review report posted per [tc-final-review-report.md](references/tc-final-review-report.md) — all four axes **PASS**.
@@ -580,3 +609,8 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST post Step 7.5 final review report ([tc-final-review-report.md](references/tc-final-review-report.md)) with overall **PASS** before Step 8 or any "TC prep complete" message | User receives certified four-axis review of final TC |
 | MUST attach CSV/Excel to Jira issue when file was generated (not just workspace) | User expects downloadable file on the issue |
 | MUST NOT use `\n` inside **chat draft** markdown table cells | Breaks table row in markdown renderers |
+| MUST confirm `{csv_type}` in Step 3a before designing TCs | CSV structure is set upfront; cannot change after export |
+| MUST generate typed CSV (Unit/Integration/System) matching `{csv_type}` confirmed in Step 3a | Type determines columns, row structure, and footer |
+| MUST ask for Function/Sub Function group names before generating Unit Test CSV if not provided | Unit Test structure depends on group names |
+| MUST upload typed CSV to Jira and embed attachment link in comment footer (after Draft_Jira + Import_Qase) | All three deliverable files must be accessible from the issue |
+| MUST append disclaimer as last line of comment after all attachment links — exact text, no translation | Required quality gate for all TC FE deliverables |
