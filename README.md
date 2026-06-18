@@ -4,7 +4,7 @@ Helix QA assistant pre-configured for the **OLS** project at SkillLane.
 
 Helix skills embedded directly — no separate install needed.
 
-**OLS Workspace version: v1.9.2** (17 Jun 2026) — based on helix v1.5.31
+**OLS Workspace version: v1.10.0** (18 Jun 2026) — based on helix v1.5.31
 
 ## Quick start
 
@@ -34,6 +34,12 @@ All OLS-specific config (test env URLs, default assignee, etc.) lives in [`refer
 Update it as new info arrives — AI reads it before asking questions.
 
 ## Changelog
+
+### v1.10.0 — TC FE Prep: Pre-draft AC/EC consistency check + HTML review report (18 Jun 2026)
+
+- **เช็ค AC/EC ซ้ำ/ซ้ำซ้อน/ขัดแย้งกันก่อน draft TC (Step 2a)** — เปรียบเทียบ AC/EC ทุกคู่ภายใน ticket เดียวกัน หาสามประเภท: Duplicate (ซ้ำกันคนละ wording), Redundant (ข้อหนึ่งครอบข้ออื่น), Contradictory (ขัดแย้งกัน); ให้ user เลือกวิธีจัดการ (ข้ามซ้ำ / draft ทั้งหมด / แก้ ticket ก่อน)
+- **รวม pre-draft review เป็น HTML เปิดใน Chrome** — ผลเช็ค AC/EC consistency (Step 2a) + conflict check กับ PRD/Figma (Step 2.5) รวมเป็นหน้า HTML เดียว เปิดใน Chrome ให้ตรวจสอบ แทนการโพสต์ตารางยาวในแชท; ใช้ design system เดียวกับ TC draft HTML (Apple-style)
+- **การโต้ตอบ/ตัดสินใจยังอยู่ในแชท** — prompt ถาม user + รับคำตอบยังคุยในแชทเหมือนเดิม; HTML เป็นแค่ display layer
 
 ### v1.9.0 — Auto-update skills on session start (17 Jun 2026)
 

@@ -70,6 +70,52 @@ From the Jira story, build a checklist:
 
 ---
 
+## Step 2a — AC/EC internal consistency check
+
+**Must complete after Step 2 and before Step 2.5.** Catches duplicates, redundancies, and contradictions within the ticket's own AC/EC list — problems that waste TC effort or produce conflicting test cases.
+
+### 2a.1 — Analyse all AC and EC items
+
+Compare every AC/EC pair against every other AC/EC on the same ticket. Flag items that fall into any of these categories:
+
+| Category | Definition | Example |
+|----------|-----------|---------|
+| **Duplicate** | Two items describe the same requirement in different wording | AC_02 "กดปุ่มบันทึกแล้วบันทึกข้อมูลสำเร็จ" ↔ AC_05 "ระบบบันทึกข้อมูลเมื่อผู้ใช้คลิกปุ่ม Save" |
+| **Redundant** | One item is a subset of another (fully covered by the broader item) | AC_01 "ค้นหาด้วยชื่อ, รหัส, หรือคำอธิบาย" covers EC_03 "ค้นหาด้วยชื่อแล้วพบผลลัพธ์" |
+| **Contradictory** | Two items specify conflicting expected behaviour for the same scenario | AC_04 "เมื่อฟิลด์ว่าง → ปุ่มบันทึกปิดใช้งาน" vs EC_02 "เมื่อฟิลด์ว่าง → แสดง error message ใต้ฟิลด์" |
+
+### 2a.2 — Build report (do not post tables in chat)
+
+Collect all findings from 2a.1 into the HTML report. The report is generated in Step 2.5d together with the conflict check results — both checks share one HTML page.
+
+**If NO issues:** record `Issues found: NO` for the HTML template.
+
+**If issues found:** record each item with its category badge and recommendation for the HTML template.
+
+Do NOT post tables in chat — all detail goes into the HTML page (Step 2.5d).
+
+### 2a.3 — User decision gate (when issues found)
+
+After the HTML report is opened in Chrome (Step 2.5d), if Step 2a found issues, ask in chat:
+
+> พบ AC/EC ที่ซ้ำ/ซ้ำซ้อน/ขัดแย้งกัน (ดูรายละเอียดใน Chrome) — ต้องการให้จัดการอย่างไรครับ?
+>
+> 1. **ข้ามส่วนที่ซ้ำ** — ตัดข้อที่ซ้ำซ้อนออก draft TC เฉพาะข้อที่ไม่ซ้ำ
+> 2. **Draft ตาม AC/EC ทั้งหมดที่ระบุในทิคเกต** — เขียน TC ตาม AC/EC ทุกข้อตามที่เขียนไว้ ไม่ตัดไม่รวม
+> 3. **ปรับ AC/EC ก่อน** — แจ้งให้แก้ไข AC/EC ในทิคเกตก่อนแล้วค่อยกลับมา draft
+>
+> หรือระบุวิธีอื่นได้เลยครับ
+
+**Wait for the user's answer.** Apply their decision:
+- **Option 1 (skip duplicates):** Record which items are skipped and which are kept. Use only kept items for TC design. Note skipped items in the Remark block (Step 3d).
+- **Option 2 (draft all as-is):** Proceed with all AC/EC items as written. Each gets its own TC rows — even if duplicated.
+- **Option 3 (fix first):** Pause workflow. Resume from Step 2 after the user updates the ticket.
+- **Custom:** Follow the user's instruction.
+
+Do NOT proceed to Step 3 until the user has decided on Step 2a issues (if any) AND Step 2.5 conflicts (if any).
+
+---
+
 ## Step 2.5 — Conflict check against PRD and Figma (pre-design gate)
 
 **Must complete before Step 3.** Do not skip even if requirements look complete — conflicts caught here prevent rework after TCs are drafted.
@@ -90,12 +136,8 @@ If either is missing, ask the user once:
 
 **Wait for the user's response.** If the user confirms that a source does not exist (or provides no link after being asked):
 
-- **Tell the user in chat** — explicitly state which link(s) are missing, e.g.:
-  - "ไม่พบลิงก์ Figma ใน ticket — จะ draft TC จาก ticket content เท่านั้น"
-  - "ไม่พบลิงก์ PRD ใน ticket — จะ draft TC จาก ticket content เท่านั้น"
-  - "ไม่พบทั้งลิงก์ Figma และ PRD ใน ticket — จะ draft TC จาก ticket content เท่านั้น"
-- **Record which links are absent** (Figma / PRD / both) for use in the Remark block (Step 3e / Step 5).
-- Go to Step 3.
+- **Record which links are absent** (Figma / PRD / both) for the HTML report and the Remark block (Step 3e / Step 5).
+- Continue to Step 2.5b with available sources only.
 
 ### 2.5b — Collect source metadata (recency)
 
@@ -127,11 +169,23 @@ Compare against the story's AC/EC and description across these areas:
 | Scope gaps | Features visible in Figma/PRD that no AC/EC covers |
 | Contradictions | Conflicting expected results between ticket and PRD/Figma |
 
-### 2.5d — Report findings in chat
+### 2.5d — Generate HTML report and open in Chrome
 
-Post the conflict report block in chat (always post, even when no conflicts).
+**Do NOT post conflict tables or AC/EC consistency tables in chat.** Generate a single HTML page that contains both Step 2a and Step 2.5 results.
 
-**Column detail rules — every cell must be fully written out, never summarised or abbreviated:**
+1. **Generate** `references/{ISSUE_KEY}_FE_pre_draft_review.html` following [html-pre-draft-review-template.md](references/html-pre-draft-review-template.md) — includes Step 2a consistency check + Step 2.5 conflict/recency/scope-gap sections.
+2. **Write** the file to the workspace using the Write tool.
+3. **Open** in Chrome: `mcp__Control_Chrome__open_url` → `file:///absolute/path/to/references/{ISSUE_KEY}_FE_pre_draft_review.html`
+4. **Post in chat** (short — all detail is in Chrome):
+
+> Pre-draft review เปิดใน Chrome แล้ว — ตรวจสอบผลการเช็ค AC/EC consistency + PRD/Figma conflict ได้เลยครับ
+
+Then handle user decisions in chat:
+- If Step 2a found issues → post the Step 2a.3 decision prompt in chat.
+- If Step 2.5 found conflicts or gaps → present recommendations in chat and wait for the user to confirm or override.
+- If both checks are clean → tell the user in chat and proceed to Step 3.
+
+**Column detail rules** (apply when building the HTML) — every cell must be fully written out, never summarised or abbreviated:
 
 | Column | What to put in it |
 |--------|------------------|
@@ -142,37 +196,9 @@ Post the conflict report block in chat (always post, even when no conflicts).
 | **Newer source (ICT)** | Source name + its last-updated datetime in `DD Mon YYYY HH.MM AM/PM` |
 | **Severity** | High = blocks TC design or changes core flow; Medium = affects expected result wording or label; Low = cosmetic / minor label difference |
 
-```
-**Conflict Check — {ISSUE_KEY} vs PRD/Figma**
+**If NO conflicts and no gaps and no Step 2a issues:** generate the HTML (both sections show clean status), tell the user in chat, then continue to Step 3 immediately.
 
-**Source recency** *(Bangkok time, ICT UTC+7)*
-| Source | Last updated (ICT) | Notes |
-|--------|-------------------|-------|
-| Ticket ({ISSUE_KEY}) | {DD Mon YYYY HH.MM AM/PM or "Unknown"} | Status: {Open/In Progress/Done} |
-| PRD | {DD Mon YYYY HH.MM AM/PM or "Unknown"} | {version label if any} |
-| Figma | {DD Mon YYYY HH.MM AM/PM or "Unknown"} | {version/frame label if any} |
-
-**Most recently updated:** {source name} ({DD Mon YYYY HH.MM AM/PM ICT}) → treated as stronger truth by default.
-
----
-
-**Conflicts found: YES / NO**
-
-| # | AC/EC | Area | Ticket says | PRD/Figma says | Newer source (ICT) | Severity |
-|---|-------|------|-------------|----------------|-------------------|----------|
-| 1 | {label}: {full AC/EC text from ticket} | {specific UI element / field / flow / rule} | {exact wording or behavior from ticket — quote verbatim} | {exact wording, label, or behavior from PRD/Figma — include frame or section ref} | {Source name} — {DD Mon YYYY HH.MM AM/PM} | High / Medium / Low |
-
-**Scope gaps (in PRD/Figma but no AC/EC covers it):**
-| # | Source | Where | What is shown | Why it may matter |
-|---|--------|-------|---------------|------------------|
-| 1 | {Figma frame {ref} / PRD section {ref}} | {screen / page / section name} | {full description of the feature or element shown} | {impact on TC scope if included or excluded} |
-
-**Recommendation:** {resolve before designing TCs — list conflict numbers that need user answer / proceed and note gaps in TC remarks / proceed — no conflicts}
-```
-
-**If NO conflicts and no gaps:** set `Conflicts found: NO`, write "—" in all conflict rows, write "—" in gap table, note "Recommendation: proceed — no conflicts", then continue to Step 3 immediately.
-
-**If conflicts or gaps found:** present the recommended resolution per item (based on recency), then **wait for the user to confirm or override** each item. Do NOT start Step 3 on unresolved conflicts — TCs built on contradictory requirements must be redesigned.
+**If conflicts, gaps, or Step 2a issues found:** generate the HTML, open in Chrome, then handle each set of issues in chat. Do NOT start Step 3 until all issues are resolved — TCs built on contradictory or inconsistent requirements must be redesigned.
 
 ---
 
@@ -625,7 +651,8 @@ Follow [tc-final-review-report.md](references/tc-final-review-report.md):
 
 Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
 
-- [ ] Step 2.5 conflict check completed; report block posted in chat; no unresolved conflicts before Step 3.
+- [ ] Step 2a AC/EC internal consistency check completed; results shown in pre-draft review HTML; user decision applied (if issues found).
+- [ ] Step 2.5 conflict check completed; results shown in pre-draft review HTML; no unresolved conflicts before Step 3.
 - [ ] TC IDs are simple sequential numbers (1, 2, 3) across all outputs — no prefix, no padding.
 - [ ] Type column present on every row with a valid value (`System Test` / `Unit Test` / `Integration Test`); Remark block lists absent types.
 - [ ] Step 4 review block posted with **Ready for draft: YES** and traceability matrix complete.
@@ -671,6 +698,7 @@ Complete [verify-closing-checklist.md](../../references/verify-closing-checklist
 | [publish-options.md](references/publish-options.md) | MCP vs browser vs manual |
 | [worked-example.md](references/worked-example.md) | On-demand: anonymized sample (read only when format reference needed) |
 | [ac-ec-coverage-review.md](references/ac-ec-coverage-review.md) | AC/EC traceability + scope review (pre-draft) |
+| [html-pre-draft-review-template.md](references/html-pre-draft-review-template.md) | Pre-draft review HTML template (Step 2a + 2.5) |
 | [tc-final-review-report.md](references/tc-final-review-report.md) | Four-axis final review + close-out report template |
 | [tc-quality-standards.md](../../references/tc-quality-standards.md) | ISTQB / 29119-3 TC quality |
 | [scripts/README.md](scripts/README.md) | Optional CSV/xlsx helper pointer |
@@ -732,3 +760,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST append disclaimer as last line of comment after all attachment links — exact text, no translation | Required quality gate for all TC FE deliverables |
 | **MUST NOT drop any required comment element when regenerating or re-posting** — every rebuild MUST include: (1) table with all TC rows, (2) Attachments heading + all file links, (3) Remark block when Figma/PRD absent or any Type has zero TCs, (4) Disclaimer as last line. Run pre-publish re-check table before every post. Fixing TC text ≠ permission to omit the rest. | Partial rebuild silently loses mandatory elements — user must not discover missing content by inspection |
 | MUST NOT invent or paraphrase AC/EC labels or criterion text anywhere in any CSV — use verbatim text from the ticket only | Invented AC/EC creates false traceability and corrupts test coverage records |
+| MUST run Step 2a AC/EC internal consistency check after Step 2 and before Step 2.5 | Duplicate/redundant/contradictory AC/EC within the ticket wastes TC effort or produces conflicting test cases |
+| MUST include Step 2a results in the pre-draft review HTML even when no issues found | Gives user visibility that the check was done |
+| MUST NOT proceed to Step 3 while Step 2a issues are unresolved | TC design on inconsistent AC/EC creates rework |
+| MUST follow user's decision on how to handle flagged AC/EC (skip, draft all, fix first) | User owns the AC/EC scope — AI does not unilaterally remove or merge items |
