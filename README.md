@@ -46,28 +46,6 @@ Update it as new info arrives — AI reads it before asking questions.
 - **Claude Code: auto `git pull` ทุกครั้งที่เปิด session** — SessionStart hook ดึง latest skills จาก remote อัตโนมัติ; แสดง banner "Skills updated (N commit(s))" เมื่อมีของใหม่ ไม่แสดงอะไรเมื่อ up-to-date; ใช้ `--ff-only` ปลอดภัย ไม่ทับ local changes
 - **Cursor: auto `git pull` ทุกครั้งที่เริ่ม conversation** — `.cursor/rules/auto-update.mdc` ให้ Cursor AI run pull เป็น first action ทุก conversation
 
-### v1.8.0 — TC FE Prep: Precondition inline, Attachments format, missing-link notify (17 Jun 2026)
-
-OLS-local customizations on top of helix v1.5.31.
-
-- **Precondition ใน CSV ทุกไฟล์รวม shared prep ครบ inline** — Draft_Jira, Import_Qase และ typed CSVs ทุกไฟล์ไม่มี section shared prep แยกด้านบน; Precondition cell มี shared prep ทุกขั้นตอนขยายครบพร้อม per-case steps ต่อท้าย
-- **footer ใช้คำว่า Attachments (ภาษาอังกฤษ)** — เปลี่ยนจาก "ไฟล์แนบ" เป็น "Attachments"; format เปลี่ยนจาก inline ·  เป็น bullet list ทีละบรรทัด
-- **ลำดับ Attachments: Jira → Qase → Unit → Integration → System** — ทั้งใน footer และ `<details>` ตัวอย่างใน README
-- **แจ้งใน chat เมื่อ ticket ไม่มีลิงก์ Figma หรือ PRD** — Step 2.5a บอกชัดว่า link ไหนขาด; Remark block ใต้ draft TC table มีบรรทัดระบุว่า "ไม่มีลิงก์ Figma/PRD ระบุไว้ใน ticket ณ ขณะที่ draft TC ชุดนี้"
-- **อัปเดต skill references ให้ตรงกับ README** — markdown-template.md: "Two CSV files" → up to 5 พร้อม list ครบ; qase-import-format.md: Preconditions column description อัปเดตให้สะท้อนกฎ inline expansion
-
-### v1.7.0 — TC FE Prep: Typed CSVs + Fast Publish + Import_Qase Sort (17 Jun 2026)
-
-OLS-local customizations on top of helix v1.5.31.
-
-- **ไฟล์ CSV แยกตามประเภทเทสเคส** — สร้างไฟล์แยกสำหรับ Unit Test, Integration Test, และ System Test ให้อัตโนมัติ พร้อมแนบลง Jira ทุกไฟล์
-- **เนื้อหาในไฟล์ CSV ครบทุกช่อง** — ข้อมูลทุกคอลัมน์กรอกให้ถูกรูปแบบของแต่ละประเภทแล้ว; เหลือเฉพาะช่องผลการทดสอบที่ QA กรอกเองหลังทดสอบจริง
-- **ไฟล์นำเข้า Qase เรียงตามประเภท** — Unit Test มาก่อน ตามด้วย Integration Test และ System Test; ภายในแต่ละกลุ่มเรียง AC ก่อน EC; หมายเลข TC รันต่อเนื่องตลอดไฟล์
-- **แนบไฟล์และโพสต์ comment ลง Jira เร็วขึ้น** — ลดขั้นตอนการส่งข้อมูลขึ้น Jira ให้เสร็จในรอบเดียว ไม่ต้องรอหลายรอบ
-- **หมายเลขเทสเคสเป็นตัวเลขล้วน 1, 2, 3** — ไม่มีตัวอักษรนำหน้า ทุกไฟล์ใช้รูปแบบเดียวกันสม่ำเสมอ
-- **Tags ใน Qase ใช้ข้อความจาก ticket โดยตรง** — คัดลอก AC/EC พร้อมข้อความจาก ticket ทุกตัวอักษร ไม่มีการสรุปหรือแต่งเพิ่มเอง
-- **ถ้าประเภทใดไม่มีเทสเคส จะแจ้งไว้ใน Jira comment** — ไม่สร้างไฟล์ว่าง; ระบุหมายเหตุในความคิดเห็นแทนว่าประเภทนั้นไม่มี TC
-
 ---
 
 ## ตัวอย่างผลลัพธ์ TC FE Prep
