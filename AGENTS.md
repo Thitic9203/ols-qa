@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Minimal entry for any coding agent (Cursor, Copilot, Gemini CLI, Windsurf, Cline, Codex, …). Full matrix: [docs/supported-agents.md](docs/supported-agents.md).
+Minimal entry for any coding agent (Cursor, Copilot, Gemini CLI, Windsurf, Cline, Codex, …).
 
 ## Instruction priority
 
@@ -46,4 +46,4 @@ Full routing and handoffs: [references/skill-routing.md](references/skill-routin
 
 ## More
 
-Install and version: [README.md](README.md) · Contributor: [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md)
+Install and version: [README.md](README.md)
