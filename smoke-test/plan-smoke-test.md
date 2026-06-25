@@ -49,14 +49,14 @@ location.reload();
 
 | No. | Role | Topic | URL | ผลลัพธ์ |
 |-----|------|-------|-----|--------|
-| 1 | Creator | เข้าสู่ระบบและโหลดหน้าแรก | `/` → `/creator` | ✅ ผ่าน |
-| 2 | Creator | เมนูหลักและ Navigation | `/creator/*` | ✅ ผ่าน |
-| 3 | Creator | หน้าสร้าง/จัดการสื่อและคอร์ส | `/creator/media`, `/creator/course` | ⚠️ Low |
-| 4 | Creator | หน้าตั้งค่าช่องของฉัน | `/creator/settings` | ✅ ผ่าน |
-| 5 | Learner | เข้าสู่ระบบและโหลดหน้าแรก | `/trending` | ❌ High |
-| 6 | Learner | เมนูหลักและ Navigation | `/learning-path`, `/content` | ✅ ผ่าน |
-| 7 | Learner | เรียกดูรายการคอร์สและสื่อ | `/content` | ✅ ผ่าน |
-| 8 | Learner | เข้าเนื้อหาสื่อการเรียนรู้ | `/content/media/:id` | ✅ ผ่าน |
+| 1 | Creator | [เข้าสู่ระบบและโหลดหน้าแรก](smoke-test-2026-06-25.md#tc1) | `/` → `/creator` | ✅ ผ่าน |
+| 2 | Creator | [เมนูหลักและ Navigation](smoke-test-2026-06-25.md#tc2) | `/creator/*` | ✅ ผ่าน |
+| 3 | Creator | [หน้าสร้าง/จัดการสื่อและคอร์ส](smoke-test-2026-06-25.md#tc3) | `/creator/media`, `/creator/course` | ⚠️ Low |
+| 4 | Creator | [หน้าตั้งค่าช่องของฉัน](smoke-test-2026-06-25.md#tc4) | `/creator/settings` | ✅ ผ่าน |
+| 5 | Learner | [เข้าสู่ระบบและโหลดหน้าแรก](smoke-test-2026-06-25.md#tc5) | `/trending` | ❌ High |
+| 6 | Learner | [เมนูหลักและ Navigation](smoke-test-2026-06-25.md#tc6) | `/learning-path`, `/content` | ✅ ผ่าน |
+| 7 | Learner | [เรียกดูรายการคอร์สและสื่อ](smoke-test-2026-06-25.md#tc7) | `/content` | ✅ ผ่าน |
+| 8 | Learner | [เข้าเนื้อหาสื่อการเรียนรู้](smoke-test-2026-06-25.md#tc8) | `/content/media/:id` | ✅ ผ่าน |
 
 ## Severity Scale
 
