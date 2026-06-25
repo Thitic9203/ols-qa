@@ -77,60 +77,62 @@ location.reload();
 
 **แก้ด้วย:** `mcp__plugin_superpowers-chrome_chrome__use_browser` — full browser control รองรับ navigate/eval/screenshot
 
-## สถานะ Deep Test (รอบ 2 — 25 มิ.ย. 2569)
+## สถานะ Deep Test (อัปเดต — รวม รอบ 2 + รอบ 3)
 
-> Agents crash กลางคัน — รายงาน partial อยู่ใน [smoke-test-2026-06-25.md](smoke-test-2026-06-25.md#deep-test--รอบ-2-25-มิย-2569)
+> รายละเอียด: [smoke-test-2026-06-25.md](smoke-test-2026-06-25.md#deep-test--รอบ-2-25-มิย-2569)  
+> รอบ 3 (26 มิ.ย.): 12 agents hit session limit — ผลจาก screenshots ที่ capture ก่อน limit
 
 ### Creator
 
-| TC | Topic | สถานะ |
-|----|-------|--------|
-| C00 | Login | ✅ ผ่าน |
-| C04 | Media list, filters, search, actions | ✅ ผ่าน (พบ 2 bugs) |
-| C02 | Sidebar nav (click all) | ⏳ ยังไม่ได้ทำ |
-| C03 | Topbar + user menu | ⏳ ยังไม่ได้ทำ |
-| C06 | Media filter functional | ⏳ ยังไม่ได้ทำ |
-| C07 | Media search | ⏳ ยังไม่ได้ทำ |
-| C08 | Upload/สร้างสื่อ flow | ⏳ ยังไม่ได้ทำ |
-| C09 | Media item detail/edit | ⏳ ยังไม่ได้ทำ |
-| C10 | Course list | ⏳ ยังไม่ได้ทำ |
-| C11 | Create new course | ⏳ ยังไม่ได้ทำ |
-| C12 | Course detail/edit | ⏳ ยังไม่ได้ทำ |
-| C13 | LP management | ⏳ ยังไม่ได้ทำ |
-| C14 | Settings (all tabs) | ⏳ ยังไม่ได้ทำ |
-| C15 | Notifications | ⏳ ยังไม่ได้ทำ |
-| C16 | User profile/account | ⏳ ยังไม่ได้ทำ |
-| C17 | Switch Creator → Learner | ⏳ ยังไม่ได้ทำ |
-| C18 | 404 handling | ⏳ ยังไม่ได้ทำ |
-| C19 | Auth boundary test | ⏳ ยังไม่ได้ทำ |
+| TC | Topic | สถานะ | รอบ |
+|----|-------|--------|-----|
+| C00 | Login | ✅ ผ่าน | R2 |
+| C02 | Sidebar nav | ⚠️ Partial — hamburger layout (Bug Medium #3) | R3 |
+| C03 | Topbar | ✅ ผ่าน (visual confirm) | R3 |
+| C04 | Media list, filters, search | ✅ ผ่าน (พบ 2 bugs) | R2 |
+| C06 | Media filter dropdowns | ✅ Filters แสดงครบ 5 dropdowns | R3 |
+| C09 | Media item grid | ✅ 12 items, pagination 2 หน้า | R3 |
+| C07 | Media search (functional) | ⏳ ยังไม่ได้ทำ | - |
+| C08 | Upload/สร้างสื่อ flow | ⏳ ยังไม่ได้ทำ | - |
+| C10 | Course list | ⏳ ยังไม่ได้ทำ | - |
+| C11 | Create new course | ⏳ ยังไม่ได้ทำ | - |
+| C12 | Course detail/edit | ⏳ ยังไม่ได้ทำ | - |
+| C13 | LP management | ⏳ ยังไม่ได้ทำ | - |
+| C14 | Settings (all tabs) | ⏳ ยังไม่ได้ทำ | - |
+| C15 | Notifications | ⏳ ยังไม่ได้ทำ | - |
+| C16 | User profile/account | ⏳ ยังไม่ได้ทำ | - |
+| C17 | Switch Creator → Learner | ⏳ ยังไม่ได้ทำ | - |
+| C18 | 404 handling | ⏳ ยังไม่ได้ทำ | - |
+| C19 | Auth boundary test | ⏳ ยังไม่ได้ทำ | - |
 
 ### Learner
 
-| TC | Topic | สถานะ |
-|----|-------|--------|
-| L01 | Login | ✅ ผ่าน |
-| L02 | Trending bug | ❌ ยืนยัน bug + พบ retry redirect ผิด |
-| L05 | LP list (partial) | ⚠️ hero โหลด / list ไม่ยืนยัน |
-| L08 | Catalog default | ✅ ผ่าน |
-| L16 | Video page | ✅ ผ่าน (controls ยังไม่ได้กด) |
-| L03 | Sidebar nav (all items) | ⏳ ยังไม่ได้ทำ |
-| L04 | Goal sub-categories | ⏳ ยังไม่ได้ทำ |
-| L06 | LP detail | ⏳ ยังไม่ได้ทำ |
-| L07 | LP enrollment | ⏳ ยังไม่ได้ทำ |
-| L09–L13 | Catalog filters (5 types) | ⏳ ยังไม่ได้ทำ |
-| L14 | Catalog search | ⏳ ยังไม่ได้ทำ |
-| L15 | Catalog sort | ⏳ ยังไม่ได้ทำ |
-| L17 | Video player (play/seek/volume) | ⏳ ยังไม่ได้ทำ |
-| L18 | Video tabs | ⏳ ยังไม่ได้ทำ |
-| L19 | Comments | ⏳ ยังไม่ได้ทำ |
-| L20 | PDF content | ⏳ ยังไม่ได้ทำ |
-| L21 | My Learning page | ⏳ ยังไม่ได้ทำ |
-| L22 | Following / watchlist | ⏳ ยังไม่ได้ทำ |
-| L23 | Profile page | ⏳ ยังไม่ได้ทำ |
-| L24 | Notifications | ⏳ ยังไม่ได้ทำ |
-| L25 | Switch Learner → Creator | ⏳ ยังไม่ได้ทำ |
-| L26 | 404 page | ⏳ ยังไม่ได้ทำ |
-| L27 | Live stream page | ⏳ ยังไม่ได้ทำ |
+| TC | Topic | สถานะ | รอบ |
+|----|-------|--------|-----|
+| L01 | Login | ✅ ผ่าน | R2 |
+| L02 | Trending bug | ❌ ยืนยัน bug + retry redirect ผิด | R2/R3 |
+| L03 | Sidebar nav | ❌ Session boundary bug — Learner เข้า /creator ได้ (High) | R3 |
+| L05 | LP list | ⚠️ hero โหลด / list ไม่ยืนยัน | R2 |
+| L08 | Catalog default | ✅ ผ่าน | R2 |
+| L09 | Catalog initial | ⚠️ โหลดได้ แต่พบ Creator button ใน Learner UI (High) | R3 |
+| L16 | Video page | ✅ ผ่าน (controls ยังไม่ได้กด) | R2 |
+| L04 | Goal sub-categories | ⏳ ยังไม่ได้ทำ | - |
+| L06 | LP detail | ⏳ ยังไม่ได้ทำ | - |
+| L07 | LP enrollment | ⏳ ยังไม่ได้ทำ | - |
+| L10–L13 | Catalog filters (4 more types) | ⏳ ยังไม่ได้ทำ | - |
+| L14 | Catalog search | ⏳ ยังไม่ได้ทำ | - |
+| L15 | Catalog sort | ⏳ ยังไม่ได้ทำ | - |
+| L17 | Video player (play/seek/volume) | ⏳ ยังไม่ได้ทำ | - |
+| L18 | Video tabs | ⏳ ยังไม่ได้ทำ | - |
+| L19 | Comments | ⏳ ยังไม่ได้ทำ | - |
+| L20 | PDF content | ⏳ ยังไม่ได้ทำ | - |
+| L21 | My Learning page | ⏳ ยังไม่ได้ทำ | - |
+| L22 | Following / watchlist | ⏳ ยังไม่ได้ทำ | - |
+| L23 | Profile page | ⏳ ยังไม่ได้ทำ | - |
+| L24 | Notifications | ⏳ ยังไม่ได้ทำ | - |
+| L25 | Switch Learner → Creator | ⏳ ยังไม่ได้ทำ | - |
+| L26 | 404 page | ⏳ ยังไม่ได้ทำ | - |
+| L27 | Live stream page | ⏳ ยังไม่ได้ทำ | - |
 
 ---
 
