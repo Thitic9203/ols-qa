@@ -77,10 +77,11 @@ location.reload();
 
 **แก้ด้วย:** `mcp__plugin_superpowers-chrome_chrome__use_browser` — full browser control รองรับ navigate/eval/screenshot
 
-## สถานะ Deep Test (อัปเดต — รวม รอบ 2 + รอบ 3)
+## สถานะ Deep Test (อัปเดต — รวม รอบ 2 + รอบ 3 + รอบ 4)
 
 > รายละเอียด: [smoke-test-2026-06-25.md](smoke-test-2026-06-25.md#deep-test--รอบ-2-25-มิย-2569)  
-> รอบ 3 (26 มิ.ย.): 12 agents hit session limit — ผลจาก screenshots ที่ capture ก่อน limit
+> รอบ 3 (26 มิ.ย.): 12 agents hit session limit — ผลจาก screenshots ที่ capture ก่อน limit  
+> รอบ 4 (26 มิ.ย.): `mcp__Claude_in_Chrome__computer` ทุก action ล้มเหลว (extension conflict) — ใช้ได้แค่ navigate/read_page/get_page_text
 
 ### Creator
 
@@ -92,18 +93,18 @@ location.reload();
 | C04 | Media list, filters, search | ✅ ผ่าน (พบ 2 bugs) | R2 |
 | C06 | Media filter dropdowns | ✅ Filters แสดงครบ 5 dropdowns | R3 |
 | C09 | Media item grid | ✅ 12 items, pagination 2 หน้า | R3 |
-| C07 | Media search (functional) | ⏳ ยังไม่ได้ทำ | - |
-| C08 | Upload/สร้างสื่อ flow | ⏳ ยังไม่ได้ทำ | - |
-| C10 | Course list | ⏳ ยังไม่ได้ทำ | - |
+| C07 | Media search (functional) | ⏳ ยังไม่ได้ทำ (R4: blocked — ไม่สามารถ login เป็น Creator ได้ เพราะ JS exec ล้มเหลว) | - |
+| C08 | Upload/สร้างสื่อ flow | ⏳ ยังไม่ได้ทำ (R4: blocked) | - |
+| C10 | Course list | ⏳ ยังไม่ได้ทำ (R4: blocked) | - |
 | C11 | Create new course | ⏳ ยังไม่ได้ทำ | - |
 | C12 | Course detail/edit | ⏳ ยังไม่ได้ทำ | - |
-| C13 | LP management | ⏳ ยังไม่ได้ทำ | - |
+| C13 | LP management | ⏳ ยังไม่ได้ทำ (R4: blocked) | - |
 | C14 | Settings (all tabs) | ⏳ ยังไม่ได้ทำ | - |
 | C15 | Notifications | ⏳ ยังไม่ได้ทำ | - |
 | C16 | User profile/account | ⏳ ยังไม่ได้ทำ | - |
-| C17 | Switch Creator → Learner | ⏳ ยังไม่ได้ทำ | - |
+| C17 | Switch Creator → Learner | ⏳ ยังไม่ได้ทำ (R4: blocked) | - |
 | C18 | 404 handling | ⏳ ยังไม่ได้ทำ | - |
-| C19 | Auth boundary test | ⏳ ยังไม่ได้ทำ | - |
+| C19 | Auth boundary test | ✅ ผ่าน — Learner ถูก redirect กลับ `/` เมื่อเข้า `/creator/*` | R4 |
 
 ### Learner
 
