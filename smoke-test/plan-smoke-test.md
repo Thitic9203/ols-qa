@@ -94,17 +94,17 @@ location.reload();
 | C04 | Media list, filters, search | ✅ ผ่าน (พบ 2 bugs) | R2 |
 | C06 | Media filter dropdowns | ✅ Filters แสดงครบ 5 dropdowns | R3 |
 | C09 | Media item grid | ✅ 12 items, pagination 2 หน้า | R3 |
-| C07 | Media search (functional) | ⏳ ยังไม่ได้ทำ (R4: blocked — ไม่สามารถ login เป็น Creator ได้ เพราะ JS exec ล้มเหลว) | - |
-| C08 | Upload/สร้างสื่อ flow | ⏳ ยังไม่ได้ทำ (R4: blocked) | - |
-| C10 | Course list | ⏳ ยังไม่ได้ทำ (R4: blocked) | - |
-| C11 | Create new course | ⏳ ยังไม่ได้ทำ | - |
-| C12 | Course detail/edit | ⏳ ยังไม่ได้ทำ | - |
-| C13 | LP management | ⏳ ยังไม่ได้ทำ (R4: blocked) | - |
-| C14 | Settings (all tabs) | ⏳ ยังไม่ได้ทำ | - |
-| C15 | Notifications | ⏳ ยังไม่ได้ทำ | - |
-| C16 | User profile/account | ⏳ ยังไม่ได้ทำ | - |
-| C17 | Switch Creator → Learner | ⏳ ยังไม่ได้ทำ (R4: blocked) | - |
-| C18 | 404 handling | ⏳ ยังไม่ได้ทำ | - |
+| C07 | Media search (functional) | ⚠️ Partial — search box visible, functional test blocked (ต้องการ click/type) | R5 |
+| C08 | Upload/สร้างสื่อ flow | ⚠️ Partial — "สร้างสื่อ" button visible (2 จุด), form = modal/SPA ไม่มี static URL | R5 |
+| C10 | Course list | ✅ ผ่าน — 5 คอร์ส, status tabs ครบ | R5 |
+| C11 | Create new course | ⚠️ Partial — "สร้างคอร์ส" button visible, form = modal/SPA (ต้องการ click) | R5 |
+| C12 | Course detail/edit | ⚠️ Partial — "แก้ไข" ใน 5 คอร์ส, edit = SPA navigation (ต้องการ click) | R5 |
+| C13 | LP management | ✅ ผ่าน — 102 LPs, pagination 11 หน้า | R5 |
+| C14 | Settings (all tabs) | ✅ ผ่าน — YouTube Channel tab visible (1 tab พบ) | R5 |
+| C15 | Notifications | ⚠️ Partial — Notifications region ใน DOM (Alt+T), lazy-load ต้องการ click trigger | R5 |
+| C16 | User profile/account | ✅ ผ่าน — ธนกร วิชัยดิษฐ์, stats/activity/achievements ครบ | R5 |
+| C17 | Switch Creator → Learner | ❌ API Error — /trending "Cannot GET /trending" (Sprint 3/OLS-35 scope) | R5 |
+| C18 | 404 handling | ✅ ผ่าน — "404: This page could not be found." แสดงถูกต้อง | R5 |
 | C19 | Auth boundary test | ✅ ผ่าน — Learner ถูก redirect กลับ `/` เมื่อเข้า `/creator/*` | R4 |
 
 ### Learner
