@@ -81,7 +81,8 @@ location.reload();
 
 > รายละเอียด: [smoke-test-2026-06-25.md](smoke-test-2026-06-25.md#deep-test--รอบ-2-25-มิย-2569)  
 > รอบ 3 (26 มิ.ย.): 12 agents hit session limit — ผลจาก screenshots ที่ capture ก่อน limit  
-> รอบ 4 (26 มิ.ย.): `mcp__Claude_in_Chrome__computer` ทุก action ล้มเหลว (extension conflict) — ใช้ได้แค่ navigate/read_page/get_page_text
+> รอบ 4 (26 มิ.ย.): Creator agent — `claude_in_chrome__computer` ล้มเหลว (extension conflict) ใช้ได้แค่ navigate/read_page  
+> รอบ 4b (26 มิ.ย.): Learner + Guest agent — `claude_in_chrome__computer` + `javascript_tool` ทำงานได้ ทดสอบ G01-G02, L01-L07 ครบ
 
 ### Creator
 
@@ -110,20 +111,25 @@ location.reload();
 
 | TC | Topic | สถานะ | รอบ |
 |----|-------|--------|-----|
-| L01 | Login | ✅ ผ่าน | R2 |
-| L02 | Trending bug | ❌ ยืนยัน bug + retry redirect ผิด | R2/R3 |
-| L03 | Sidebar nav | ❌ Session boundary bug — Learner เข้า /creator ได้ (High) | R3 |
-| L05 | LP list | ⚠️ hero โหลด / list ไม่ยืนยัน | R2 |
-| L08 | Catalog default | ✅ ผ่าน | R2 |
-| L09 | Catalog initial | ⚠️ โหลดได้ แต่พบ Creator button ใน Learner UI (High) | R3 |
-| L16 | Video page | ✅ ผ่าน (controls ยังไม่ได้กด) | R2 |
+| G01 | Guest — Landing page (OLS-21 / OLS-18 AC_06) | ✅ ผ่าน — homepage โหลดสมบูรณ์ ไม่ต้อง login | R4b |
+| G02 | Guest — เรียกดูคลังสื่อ /content (OLS-50 AC_01) | ✅ ผ่าน — 4,500 รายการ, metadata ครบ, ไม่มี login prompt | R4b |
+| L01 | Login (OLS-18 AC_01) | ✅ ผ่าน | R2/R4b |
+| L02 | Trending bug (OLS-35 area) | ❌ Bug High — Cannot GET /trending, retry redirect ผิด | R2/R3 |
+| L03 | Session boundary — Learner เข้า /creator | ✅ ผ่าน R4 — Learner redirect กลับ `/` (อาจแก้แล้ว จาก R3 ที่พบ bug) | R3→R4 |
+| L05 | LP list hero (OLS-26 entry) | ⚠️ hero โหลด / list ยังไม่ยืนยันสมบูรณ์ | R2 |
+| L06 | LP Detail (OLS-26 AC_01,AC_05,AC_06) | ✅ ผ่าน (มีข้อสังเกต) — title, goal, course list, instructor ครบ; ไม่มีรูปปก; enroll state auto-enrolled | R4b |
+| L07 | LP Enrollment CTA (OLS-26 AC_02) | ⚠️ ยังไม่ยืนยัน — learner auto-enrolled ทำให้ไม่เห็น "ลงทะเบียนเรียนทันที" | R4b |
+| L08 | Catalog default (OLS-50 AC_01) | ✅ ผ่าน | R2 |
+| L09 | Catalog initial load (OLS-50 AC_01) | ⚠️ โหลดได้ แต่พบ Creator button ใน Learner UI (Bug #6) | R3/R4 |
+| L10 | Catalog search (OLS-50 AC_02) | ❌ Bug High — search ไม่กรองผล (4,500 คงเดิมทุก query) | R4b |
+| L11 | Media type filter tab (OLS-50 AC_03) | ❌ Bug Medium — ไม่มี type filter tab ใน implementation | R4b |
+| L12 | Catalog filter modal (OLS-50 AC_04-08) | ⏳ modal เปิดได้ — interaction ยังไม่ทดสอบ | - |
+| L13 | Course Detail (OLS-27 AC_01, AC_05) | ✅ ผ่าน (มีข้อสังเกต) — title, lessons, instructor, achievements ครบ; enroll state auto-enrolled | R4b |
+| L14 | Course Enrollment CTA (OLS-27 AC_02) | ⚠️ ยังไม่ยืนยัน — learner auto-enrolled | R4b |
+| L15 | Enroll Course flow (OLS-28 AC_01-03) | ⏳ ยังไม่ได้ทดสอบ full flow | - |
+| L16 | Video page/player (OLS-48 AC_01, AC_04) | ✅ ผ่าน — player โหลด, metadata ครบ; JS play() blocked by autoplay policy | R2/R4b |
 | L04 | Goal sub-categories | ⏳ ยังไม่ได้ทำ | - |
-| L06 | LP detail | ⏳ ยังไม่ได้ทำ | - |
-| L07 | LP enrollment | ⏳ ยังไม่ได้ทำ | - |
-| L10–L13 | Catalog filters (4 more types) | ⏳ ยังไม่ได้ทำ | - |
-| L14 | Catalog search | ⏳ ยังไม่ได้ทำ | - |
-| L15 | Catalog sort | ⏳ ยังไม่ได้ทำ | - |
-| L17 | Video player (play/seek/volume) | ⏳ ยังไม่ได้ทำ | - |
+| L17 | Video player controls (play/seek/volume) | ⚠️ ยังไม่ยืนยัน — ต้องการ real user gesture | R4b |
 | L18 | Video tabs | ⏳ ยังไม่ได้ทำ | - |
 | L19 | Comments | ⏳ ยังไม่ได้ทำ | - |
 | L20 | PDF content | ⏳ ยังไม่ได้ทำ | - |
@@ -134,6 +140,63 @@ location.reload();
 | L25 | Switch Learner → Creator | ⏳ ยังไม่ได้ทำ | - |
 | L26 | 404 page | ⏳ ยังไม่ได้ทำ | - |
 | L27 | Live stream page | ⏳ ยังไม่ได้ทำ | - |
+
+---
+
+## Sprint 2–5 Jira Ticket Mapping (อ้างอิงสำหรับ smoke test)
+
+> ดึงจาก board: https://skilllane.atlassian.net/jira/software/projects/OLS/boards/818/backlog
+
+### Sprint 2 (17 Jun – 26 Jun) — Active
+
+| Ticket | Summary | เชื่อมกับ TC | สถานะ test |
+|--------|---------|-------------|-----------|
+| OLS-18 | SSO Login via NDLP | G01/G02/L01 | ✅ ผ่าน (mock token) |
+| OLS-21 | Guest Browse | G01/G02 | ✅ ผ่าน |
+| OLS-22 | Create video/YouTube media | C08 | ⏳ pending Creator login |
+| OLS-23 | Create course | C11 | ⏳ pending |
+| OLS-25 | Learner — ดูสื่อของ Creator ที่ติดตาม | L22 | ⏳ pending |
+| OLS-26 | LP Detail | L06/L07 | ✅⚠️ R4b |
+| OLS-27 | Course Detail | L13/L14 | ✅⚠️ R4b |
+| OLS-28 | Enroll Course & Learn | L15 | ⏳ pending full flow |
+| OLS-29 | Enroll LP & Learn | - | ⏳ pending |
+| OLS-42 | Creator Content Management | C08 | ⏳ pending |
+| OLS-43 | Create Digital Book media | C08 | ⏳ pending |
+| OLS-44 | Update media | - | ⏳ pending |
+| OLS-45 | Delete media | - | ⏳ pending |
+| OLS-46 | Creator profile — my media list | C16 | ⏳ pending |
+| OLS-47 | Learner Bookmark list | L22 | ⏳ pending |
+| OLS-48 | Media Detail (Video/PDF/ePub/Article) | L16/L17 | ✅⚠️ R4b |
+| OLS-50 | View Media List (คลังสื่อ) | L08-L11/G02 | ⚠️ search ไม่ทำงาน (Bug #8), ไม่มี type filter (Bug #9) |
+| OLS-51 | Unpublish/Republish media | - | ⏳ pending |
+| OLS-52 | Update course | C10 | ⏳ pending Creator login |
+| OLS-53 | Delete course | - | ⏳ pending |
+| OLS-54 | Unpublish/Republish course | - | ⏳ pending |
+
+### Sprint 3 (29 Jun – 10 Jul) — Not started
+
+| Ticket | Summary | หมายเหตุ |
+|--------|---------|---------|
+| OLS-20 | Session Management | ยังไม่ deploy |
+| OLS-24 | Create LP | ยังไม่ deploy |
+| OLS-30 | Social Interaction (Learner) | ยังไม่ deploy |
+| OLS-31 | User Moderation | ยังไม่ deploy |
+| OLS-32 | Admin Moderation | ยังไม่ deploy |
+| OLS-34 | NDLP Integration (Creator) | ยังไม่ deploy |
+| OLS-35 | Feed page (Learner) | ❌ /trending ยัง error (Bug #1) |
+| OLS-36 | Learner Onboard | ยังไม่ deploy |
+| OLS-55–57 | LP Update/Delete/Unpublish | ยังไม่ deploy |
+
+### Sprint 4 (13 Jul – 24 Jul) — Not started
+
+| Ticket | Summary |
+|--------|---------|
+| OLS-33 | Creator Live Streaming |
+| OLS-37 | Admin Rewards Engine |
+
+### Sprint 5 (27 Jul – 7 Aug) — Not started
+
+_(4 work items — ยังไม่โหลด details)_
 
 ---
 
