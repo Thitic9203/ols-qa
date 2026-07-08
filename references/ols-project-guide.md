@@ -73,8 +73,18 @@ AI reads this file before asking any OLS-related questions.
 
 | Env | URL |
 |-----|-----|
+| Dev | `https://<DEV_HOST>/` — **VPN required** · auth via NDLP68 SSO |
 | Staging | *(not configured — ask user and update this table)* |
 | Production | *(not configured — ask user and update this table)* |
+
+### Auth / login flow
+
+OLS ไม่มีหน้า login ของตัวเอง — login ผ่าน **NDLP68 portal** (`https://<SSO_PORTAL_HOST>`) แล้ว SSO session carry เข้า OLS อัตโนมัติ.
+
+- **Account**: staging Teacher/Creator — email + password **ไม่ commit ลง repo (public)** → ขอจาก user หรือ team password manager
+- ถ้ากรอก login form ผ่าน automation โดน classifier block → ให้ user login เองด้วยมือ
+- Verify creator mode: sidebar มี "จัดการสื่อการเรียนรู้" + ปุ่มล่างเขียน "เปลี่ยนเป็น Learner mode"
+- **Detailed runbook** (tooling workarounds, สร้าง test data, status transitions): `docs/result/OLS-44/ols-44-creator-media-editing-testing.md` § Setup & Runbook
 
 ## Default assignee / reporter
 
