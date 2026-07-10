@@ -18,23 +18,36 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 1
+          fetch-tags: true   # needed so the duplicate-tag guard can see existing tags
 
       - name: Compute new version
         id: ver
+        env:
+          # Never interpolate a commit message into the shell — it is attacker-controlled
+          # and this job holds contents:write. Pass it through the environment instead.
+          MSG: ${{ github.event.head_commit.message }}
         run: |
-          MSG="${{ github.event.head_commit.message }}"
+          set -euo pipefail
 
-          # Bump type from conventional commit prefix
-          if echo "$MSG" | grep -q "BREAKING CHANGE"; then
+          # Conventional-commit prefix lives on the subject line only;
+          # a "feat:" inside the body must not bump minor.
+          # Pure-bash slice — no pipe, so pipefail cannot trip on SIGPIPE.
+          SUBJECT=${MSG%%$'\n'*}
+
+          if [[ "$MSG" == *"BREAKING CHANGE"* ]]; then
             BUMP=major
-          elif echo "$MSG" | grep -qE "^feat(\(.*\))?:"; then
+          elif [[ "$SUBJECT" =~ ^feat(\(.*\))?!?: ]]; then
             BUMP=minor
           else
             BUMP=patch
           fi
 
-          # Read current version from README header
-          CURRENT=$(grep -oP '(?<=version: v)\d+\.\d+\.\d+' README.md | head -1)
+          # Read current version from README header (-m1 stops grep itself, no SIGPIPE)
+          CURRENT=$(grep -m1 -oP '(?<=version: v)\d+\.\d+\.\d+' README.md || true)
+          if [ -z "$CURRENT" ]; then
+            echo "::error::No 'version: vX.Y.Z' header found in README.md — cannot bump."
+            exit 1
+          fi
           IFS='.' read -r MAJ MIN PAT <<< "$CURRENT"
 
           case "$BUMP" in
@@ -44,24 +57,37 @@ jobs:
           esac
 
           NEW="$MAJ.$MIN.$PAT"
-          echo "current=$CURRENT" >> $GITHUB_OUTPUT
-          echo "new=$NEW"         >> $GITHUB_OUTPUT
+          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+          echo "new=$NEW"         >> "$GITHUB_OUTPUT"
           echo "Bump: $BUMP  $CURRENT → $NEW"
 
       - name: Update README version header
+        env:
+          OLD: ${{ steps.ver.outputs.current }}
+          NEW: ${{ steps.ver.outputs.new }}
         run: |
-          OLD="${{ steps.ver.outputs.current }}"
-          NEW="${{ steps.ver.outputs.new }}"
+          set -euo pipefail
           DATE=$(date +"%-d %b %Y")
-          # Replace version number and date in the bold header line
           sed -i "s/\*\*OLS Workspace version: v${OLD}\*\* ([^)]*)/\*\*OLS Workspace version: v${NEW}\*\* (${DATE})/" README.md
+          # `cmd && { exit 1; }` would abort the step under `set -e` when cmd exits 1.
+          if git diff --quiet -- README.md; then
+            echo "::error::README version header did not change (expected v${OLD})."
+            exit 1
+          fi
 
       - name: Commit and tag
+        env:
+          NEW: ${{ steps.ver.outputs.new }}
         run: |
+          set -euo pipefail
+          if git rev-parse -q --verify "refs/tags/v${NEW}" >/dev/null; then
+            echo "::error::Tag v${NEW} already exists — refusing to overwrite."
+            exit 1
+          fi
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git commit -m "chore(release): bump version to v${{ steps.ver.outputs.new }} [skip ci]"
-          git tag "v${{ steps.ver.outputs.new }}"
+          git commit -m "chore(release): bump version to v${NEW} [skip ci]"
+          git tag "v${NEW}"
           git push origin main
-          git push origin "v${{ steps.ver.outputs.new }}"
+          git push origin "v${NEW}"
