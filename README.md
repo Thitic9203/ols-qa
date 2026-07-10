@@ -4,7 +4,7 @@ Helix QA assistant pre-configured for the **OLS** project at <ORG>.
 
 Helix skills embedded directly — no separate install needed.
 
-**OLS Workspace version: v1.11.29** (10 Jul 2026) — based on helix v1.5.31
+**OLS Workspace version: v1.12.0** (10 Jul 2026) — based on helix v1.5.31
 
 ## Quick start
 
@@ -15,7 +15,7 @@ Open this folder in **Claude Code** and trust the project. The SessionStart hook
 | Command | What it does |
 |---------|-------------|
 | `/helix` | Main menu — pick a workflow |
-| `/tc-fe-prep` | Frontend TC (Thai) from a story — outputs Jira comment + สูงสุด 5 CSV attachments (Draft_Jira, Import_Qase, Unit_Test, Integration_Test, System_Test) |
+| `/tc-fe-prep` | Frontend TC (Thai) from a story — รีเช็คคำจาก TC glossary ให้ยืนยันก่อน แล้ว outputs Jira comment + สูงสุด 5 CSV attachments (Draft_Jira, Import_Qase, Unit_Test, Integration_Test, System_Test) |
 | `/tc-api-prep` | API test cases from spec + Swagger |
 | `/retest-bug` | Verify a fix on a Jira bug, add evidence, comment |
 | `/testing-ticket` | Playwright test for a ticket, optionally update results |
@@ -35,16 +35,20 @@ Update it as new info arrives — AI reads it before asking questions.
 
 ## Changelog
 
+### v1.12.0 — TC FE Prep: บังคับรีเช็คคำศัพท์จาก TC glossary ก่อนออกแบบ TC (10 Jul 2026)
+
+- **Step 2b — TC glossary re-check (gate ใหม่ บังคับ)** — ทุกรอบก่อนออกแบบ TC สกิลจะดึง tab `คำที่ใช้ใน TC` จาก [published sheet](https://docs.google.com/spreadsheets/d/e/<TC_GLOSSARY_PUB_ID>/pubhtml) ใหม่สดๆ แล้วโพสต์ URL ต้นทาง + จำนวนคำ + diff ให้ user ดูเป็นหลักฐาน; ของเก่าที่ cache ไว้ใช้ไม่ได้
+- **Glossary อยู่เหนือทุกตารางคำในสกิล** — 14 คำที่ชีทเป็นเจ้าของ (Login, Checkbox, Filter, Upload, Status, Role, Cancel, Confirm, Notification, Toast, Modal, Dialog, Tab, Dashboard) ถูกถอดออกจาก fallback table เพื่อไม่ให้มี source of truth สองที่; เหลือ fallback ไว้เฉพาะคำที่ชีทไม่มี
+- **หยุดถามเมื่อคำไม่ชัด** — ช่องคำไทยว่าง หรือ 1 คำอังกฤษมีความหมายไทยขัดกัน (เช่น `Creator` vs `Creator (media owner)`) → บล็อก ห้ามเดา; การเดาแล้วติดป้าย "provisional" ไม่นับว่าถาม
+- **`references/tc-glossary.csv` เป็น mirror เป๊ะๆ** — ห้ามแก้ typo/เรียง/ลบซ้ำในไฟล์; แก้ที่ชีทแล้ว re-export เท่านั้น
+- **Step 4.5 term table เพิ่มคอลัมน์ `ที่มา`** — ทุกคำต้องระบุว่ามาจาก `glossary` / `fallback` / `user`; แถวที่ไม่มีที่มา = คำที่ถูกคิดขึ้นเอง ต้องถอดออก
+- กติกาเต็ม: [`references/tc-glossary.md`](references/tc-glossary.md) · ลิงก์ชีท + `gid`: [`references/ols-project-guide.md`](references/ols-project-guide.md)
+
 ### v1.10.0 — TC FE Prep: Pre-draft AC/EC consistency check + HTML review report (18 Jun 2026)
 
 - **เช็ค AC/EC ซ้ำ/ซ้ำซ้อน/ขัดแย้งกันก่อน draft TC (Step 2a)** — เปรียบเทียบ AC/EC ทุกคู่ภายใน ticket เดียวกัน หาสามประเภท: Duplicate (ซ้ำกันคนละ wording), Redundant (ข้อหนึ่งครอบข้ออื่น), Contradictory (ขัดแย้งกัน); ให้ user เลือกวิธีจัดการ (ข้ามซ้ำ / draft ทั้งหมด / แก้ ticket ก่อน)
 - **รวม pre-draft review เป็น HTML เปิดใน Chrome** — ผลเช็ค AC/EC consistency (Step 2a) + conflict check กับ PRD/Figma (Step 2.5) รวมเป็นหน้า HTML เดียว เปิดใน Chrome ให้ตรวจสอบ แทนการโพสต์ตารางยาวในแชท; ใช้ design system เดียวกับ TC draft HTML (Apple-style)
 - **การโต้ตอบ/ตัดสินใจยังอยู่ในแชท** — prompt ถาม user + รับคำตอบยังคุยในแชทเหมือนเดิม; HTML เป็นแค่ display layer
-
-### v1.9.0 — Auto-update skills on session start (17 Jun 2026)
-
-- **Claude Code: auto `git pull` ทุกครั้งที่เปิด session** — SessionStart hook ดึง latest skills จาก remote อัตโนมัติ; แสดง banner "Skills updated (N commit(s))" เมื่อมีของใหม่ ไม่แสดงอะไรเมื่อ up-to-date; ใช้ `--ff-only` ปลอดภัย ไม่ทับ local changes
-- **Cursor: auto `git pull` ทุกครั้งที่เริ่ม conversation** — `.cursor/rules/auto-update.mdc` ให้ Cursor AI run pull เป็น first action ทุก conversation
 
 ---
 
