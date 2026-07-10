@@ -42,6 +42,10 @@ AI reads this file before asking any OLS-related questions.
 | block | any → BLOCKED |
 | Deploy done | DEPLOYING → READY TO TEST |
 
+### Assignee during QA
+
+**Never change the assignee** when picking up an OLS ticket for retest or testing — not to self, not back to the developer after a verdict. Ownership is tracked by status, not assignee. This overrides the generic retest-bug-workflow Step 8b/8c (find developer → assign).
+
 ## Confluence
 
 | Field | Value |
