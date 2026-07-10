@@ -37,7 +37,7 @@ Update it as new info arrives — AI reads it before asking questions.
 
 ### v1.12.0 — TC FE Prep: บังคับรีเช็คคำศัพท์จาก TC glossary ก่อนออกแบบ TC (10 Jul 2026)
 
-- **Step 2b — TC glossary re-check (gate ใหม่ บังคับ)** — ทุกรอบก่อนออกแบบ TC สกิลจะดึง tab `คำที่ใช้ใน TC` จาก [published sheet](https://docs.google.com/spreadsheets/d/e/<TC_GLOSSARY_PUB_ID>/pubhtml) ใหม่สดๆ แล้วโพสต์ URL ต้นทาง + จำนวนคำ + diff ให้ user ดูเป็นหลักฐาน; ของเก่าที่ cache ไว้ใช้ไม่ได้
+- **Step 2.6 — TC glossary re-check (gate ใหม่ บังคับ)** — หลังเคลียร์ AC/EC + conflict check เสร็จ ก่อนออกแบบ TC สกิลจะดึง tab `คำที่ใช้ใน TC` จาก [published sheet](https://docs.google.com/spreadsheets/d/e/<TC_GLOSSARY_PUB_ID>/pubhtml) ใหม่สดๆ แล้วโพสต์ URL ต้นทาง + จำนวนคำ + diff ให้ user ดูเป็นหลักฐาน; ของเก่าที่ cache ไว้ใช้ไม่ได้
 - **Glossary อยู่เหนือทุกตารางคำในสกิล** — 14 คำที่ชีทเป็นเจ้าของ (Login, Checkbox, Filter, Upload, Status, Role, Cancel, Confirm, Notification, Toast, Modal, Dialog, Tab, Dashboard) ถูกถอดออกจาก fallback table เพื่อไม่ให้มี source of truth สองที่; เหลือ fallback ไว้เฉพาะคำที่ชีทไม่มี
 - **หยุดถามเมื่อคำไม่ชัด** — ช่องคำไทยว่าง หรือ 1 คำอังกฤษมีความหมายไทยขัดกัน (เช่น `Creator` vs `Creator (media owner)`) → บล็อก ห้ามเดา; การเดาแล้วติดป้าย "provisional" ไม่นับว่าถาม
 - **`references/tc-glossary.csv` เป็น mirror เป๊ะๆ** — ห้ามแก้ typo/เรียง/ลบซ้ำในไฟล์; แก้ที่ชีทแล้ว re-export เท่านั้น
