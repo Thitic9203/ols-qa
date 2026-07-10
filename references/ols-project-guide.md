@@ -69,6 +69,21 @@ AI reads this file before asking any OLS-related questions.
 | Status value | `Done` *(verify exists as OLS custom Status value before import)* |
 | Suite | reuse existing OLS suite; new suite only with user approval, never a duplicate |
 
+## TC glossary (terminology source of truth)
+
+Thai wording used inside test case content. Rules: [tc-glossary.md](tc-glossary.md).
+
+| Field | Value |
+|-------|-------|
+| Published sheet | https://docs.google.com/spreadsheets/d/e/<TC_GLOSSARY_PUB_ID>/pubhtml |
+| Tab | `คำที่ใช้ใน TC` |
+| `gid` | `1039533787` |
+| CSV export | `https://docs.google.com/spreadsheets/d/e/<TC_GLOSSARY_PUB_ID>/pub?gid=1039533787&single=true&output=csv` |
+| Local mirror | `references/tc-glossary.csv` — verbatim export; never hand-edit |
+| Other tabs (not used for TC wording) | `EvMS` (gid 0) · `CBMS` (996233269) · `ELMS` (2836061) · `OLS` (1770700178) · `จำแนก TC` (221306802) |
+
+Re-fetch and confirm with the user **before every TC design run** — see [tc-glossary.md](tc-glossary.md) § Re-check gate.
+
 ## Test Environment
 
 | Env | URL |

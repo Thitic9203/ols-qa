@@ -116,6 +116,51 @@ Do NOT proceed to Step 3 until the user has decided on Step 2a issues (if any) A
 
 ---
 
+## Step 2b — TC glossary re-check (mandatory gate)
+
+**Must complete after Step 2a and before Step 3.** The Thai wording inside test cases comes from a project glossary that the team edits between runs. A cached copy is not evidence.
+
+Rules: [tc-glossary.md](../../references/tc-glossary.md). Sheet URL, tab, and `gid`: the project guide loaded in Step 1.
+
+### 2b.1 — Re-fetch the glossary
+
+Fetch the published tab as CSV using the `gid` from the project guide, overwriting the local mirror. Never hand-edit the CSV; never pass `-k` to work around a TLS error.
+
+### 2b.2 — Report to the user (evidence)
+
+Post in chat, before any test case design:
+
+```
+**TC glossary — re-checked**
+
+ที่มา: {published sheet URL}
+Tab: {tab name} (gid {gid}) · {N} คำ
+ไฟล์: references/tc-glossary.csv
+
+{diff vs committed CSV — added / removed / changed rows, or "ไม่มีการเปลี่ยนแปลงจากครั้งก่อน"}
+```
+
+Attach or link the CSV. The user must be able to see the words, not take the agent's word for them.
+
+### 2b.3 — Gap and ambiguity scan
+
+Scan **only the terms this ticket's test cases will use** — do not interrogate the user about the whole sheet.
+
+| Condition | Action |
+|-----------|--------|
+| Thai cell empty | **STOP and ask** what word to use. May offer the Step 3b fallback term, labelled as a suggestion. |
+| One English key, conflicting Thai meanings across rows | **STOP and ask** which meaning applies to this ticket. |
+| Thai cell has comma-separated variants | Not blocking — propose one variant at the Step 4.5 gate. |
+| No row for the term | Use the Step 3b fallback table; if absent there too, ask. |
+
+**Wait for the user's answers.** Record each decision for the Step 4.5 table.
+
+Writing a guess and tagging it *provisional* / *pending confirmation* / *documented fallback* is **not** asking. See the red flags in [tc-glossary.md](../../references/tc-glossary.md).
+
+Do NOT proceed to Step 3 until Step 2b gaps are resolved.
+
+---
+
 ## Step 2.5 — Conflict check against PRD and Figma (pre-design gate)
 
 **Must complete before Step 3.** Do not skip even if requirements look complete — conflicts caught here prevent rework after TCs are drafted.
@@ -208,7 +253,7 @@ Then handle user decisions in chat:
 
 All settings in this workspace are **fixed** — do NOT ask the user about any of them:
 
-- **TC Language = Thai (always).** All test case content is formal Thai per ราชบัณฑิตยสภา (Step 3b). English only where no official Thai term exists, and only after the Step 4.5 term-confirmation gate.
+- **TC Language = Thai (always).** All test case content is formal Thai per ราชบัณฑิตยสภา (Step 3b), using the project TC glossary re-fetched at Step 2b as the first authority. English only where no official Thai term exists, and only after the Step 4.5 term-confirmation gate.
 - **Type column is always present**, restricted to `System Test` / `Unit Test` / `Integration Test` (Qase Type field — Step 3d). Do not offer to skip it.
 - **TC ID = simple sequential number: 1, 2, 3** (see Step 3c). No prefix, no padding, no format selection. Do not ask.
 - **Typed CSVs**: all three (Unit_Test, Integration_Test, System_Test) are generated when TCs of that type exist — no selection needed. Each populated with TCs filtered by Type and mapped to that template's columns (Step 6).
@@ -223,48 +268,42 @@ This workspace writes **all** FE test case content in Thai. There is no English-
 
 **Thai mode (the only mode):**
 - All content in formal/professional Thai (ภาษาทางการ) — suitable for internal and external stakeholder delivery.
-- **Term priority: ราชบัณฑิตยสภา Thai term first → English if no official term exists.**
-  - Use the current Royal Institute of Thailand (ราชบัณฑิตยสภา) approved term whenever one exists.
-  - Only use English when the Royal Institute has not defined a Thai equivalent, or when the system UI displays the term in English and changing it would cause confusion (e.g. a button literally labelled "Submit" in the UI).
-- **Common terms with approved Thai equivalents (use these, not English):**
+- **Term priority (stop at the first rule that answers):**
+  1. **The project TC glossary** re-fetched at Step 2b — if the English term has a row with a non-empty Thai cell, use that Thai term **verbatim**. The glossary outranks every table in this file.
+  2. **The fallback table below** — only for terms the glossary has no row for.
+  3. **Ask the user** — anything else. Never coin a term.
+- Where the glossary and this file disagree, **the glossary wins**. Do not "reconcile" them or prefer the wording you remember.
+- Terms whose glossary row exists but has an **empty** Thai cell are a Step 2b blocking question, not a free choice. Where a former default exists (e.g. `Dropdown` → `รายการแบบเลื่อนลง`), offer it as a **suggestion** in that question — never as the answer.
+- **Fallback table — only for terms absent from the glossary:**
 
   | English | ใช้คำไทย |
   |---------|----------|
-  | Login / Sign in | เข้าสู่ระบบ |
   | Logout / Sign out | ออกจากระบบ |
   | Button | ปุ่ม |
-  | Checkbox | ช่องทำเครื่องหมาย |
   | Search | ค้นหา |
-  | Filter | กรอง / ตัวกรอง |
   | Sort | เรียงลำดับ |
-  | Upload | อัปโหลด *(ราชบัณฑิต ทับศัพท์)* |
   | Download | ดาวน์โหลด *(ราชบัณฑิต ทับศัพท์)* |
   | Export | ส่งออก |
   | Import | นำเข้า |
-  | Status | สถานะ |
-  | Role | บทบาท / สิทธิ์ |
   | Permission | สิทธิ์การเข้าถึง |
   | Password | รหัสผ่าน |
   | Username | ชื่อผู้ใช้ |
-  | Cancel | ยกเลิก |
-  | Confirm | ยืนยัน |
   | Reset | รีเซ็ต *(ราชบัณฑิต ทับศัพท์)* |
   | Submit | ส่ง / บันทึก *(แล้วแต่ context)* |
   | Error message | ข้อความแสดงข้อผิดพลาด |
-  | Notification / Toast | การแจ้งเตือน |
-  | Modal / Dialog | กล่องโต้ตอบ |
-  | Tab | แท็บ *(ราชบัณฑิต ทับศัพท์)* |
-  | Dropdown | รายการแบบเลื่อนลง |
   | Toggle | ปุ่มสลับ |
   | Sidebar | แถบด้านข้าง |
   | Navbar | แถบนำทาง |
-  | Dashboard | แดชบอร์ด *(ราชบัณฑิต ทับศัพท์)* |
   | Input field | ช่องกรอกข้อมูล |
+
+  Terms removed from this table because the glossary now owns them: Login, Checkbox, Filter, Upload, Status, Role, Cancel, Confirm, Notification, Toast, Modal, Dialog, Tab, Dashboard. Read them from the glossary — do not re-add them here.
 
 - **Keep in English** (no official Thai term, or internationally standardised):
   - Acronyms and technical standards: API, URL, HTTP, HTTPS, CRUD, QA, UX, UI, ID, OTP, JWT, Token
-  - Feature/module names **as displayed in the system UI** — if the UI shows "Dashboard" in English, refer to it as "Dashboard" not "แดชบอร์ด"
+  - Feature/module names **as displayed in the system UI** — if the UI shows a label in English, refer to it by that label
   - Error codes and field keys (e.g. `OLS_ERR_401`, `user_id`)
+
+  **Collision rule:** when a term is *both* in the glossary *and* rendered in English by the UI (e.g. glossary says `Dashboard → แผงควบคุม` but the screen reads "Dashboard"), this is a Step 2b question — **ask the user which to use**. Do not silently apply the UI-label exception to escape a glossary term.
 - Numbered items in Test Steps and Expected Result must still use numerals (`1.`, `2.`, `3.`).
 
 ### 3c — TC ID rules (fixed — no user input)
@@ -416,17 +455,21 @@ After the Step 4 review passes and before showing the full draft (Step 5), post 
 ```
 **Thai ↔ English terms used in this TC set**
 
-These terms appear in the test cases. Thai follows ราชบัณฑิตยสภา; English is kept only where no suitable official Thai term exists or the system UI shows it in English.
+Glossary: {published sheet URL} · tab {tab name} (gid {gid}) · {N} คำ · re-checked {date}
 
-| English term | ใช้ในเทสเคสเป็น | เหตุผลที่คงอังกฤษ (ถ้าคงไว้) |
-|--------------|----------------|------------------------------|
-| {term} | {Thai term used} / {kept as English} | {no official Thai term / UI shows it in English / acronym-standard / —} |
+These terms appear in the test cases. Thai follows the glossary first, then ราชบัณฑิตยสภา; English is kept only where no suitable official Thai term exists or the system UI shows it in English.
+
+| English term | ใช้ในเทสเคสเป็น | ที่มา | เหตุผลที่คงอังกฤษ (ถ้าคงไว้) |
+|--------------|----------------|-------|------------------------------|
+| {term} | {Thai term used} / {kept as English} | glossary / fallback / user | {no official Thai term / UI shows it in English / acronym-standard / —} |
 
 ต้องการปรับคำไหนไหมครับ? ถ้าโอเคทั้งหมด ผมจะใช้ชุดคำนี้เขียนลงเทสเคสจริง
 ```
 
 **Rules:**
 - List **every** term where a Thai-vs-English choice was made — both the ones translated to Thai and the ones deliberately kept in English.
+- The **ที่มา** column is mandatory on every row: `glossary` (row in the Step 2b CSV), `fallback` (Step 3b table, no glossary row), or `user` (answered a Step 2b question). A row with no provenance means the term was invented — remove it and ask.
+- Where the glossary offered comma-separated variants (e.g. `แถบ, แท็บ`), propose one and mark the row `glossary` — the user confirms the pick here.
 - For each kept-English term, state the reason (no official Thai term / UI label is English / acronym or standard like API, URL, OTP).
 - **Wait for the user's response.** If the user asks to change any term, apply it and re-post the changed rows.
 - Only after the user confirms (or after applying their adjustments) proceed to Step 5 and use the confirmed terms in every cell.
@@ -652,12 +695,14 @@ Follow [tc-final-review-report.md](references/tc-final-review-report.md):
 Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
 
 - [ ] Step 2a AC/EC internal consistency check completed; results shown in pre-draft review HTML; user decision applied (if issues found).
+- [ ] Step 2b glossary re-fetched this session (not reused from a prior run); source URL + row count + diff posted in chat; CSV shown to user; all empty-cell / conflicting-meaning questions answered before Step 3.
 - [ ] Step 2.5 conflict check completed; results shown in pre-draft review HTML; no unresolved conflicts before Step 3.
 - [ ] TC IDs are simple sequential numbers (1, 2, 3) across all outputs — no prefix, no padding.
 - [ ] Type column present on every row with a valid value (`System Test` / `Unit Test` / `Integration Test`); Remark block lists absent types.
 - [ ] Step 4 review block posted with **Ready for draft: YES** and traceability matrix complete.
 - [ ] AC/EC coverage complete; quality checklist PASS per tc-quality-standards.
-- [ ] Step 4.5 Thai↔English term table posted; user confirmed (or adjustments applied) **before** any file write.
+- [ ] Step 4.5 Thai↔English term table posted with glossary source line and a `ที่มา` value on every row; user confirmed (or adjustments applied) **before** any file write.
+- [ ] Every Thai term in the final TC matches the Step 2b glossary verbatim where a non-empty row exists; no term was invented, and none tagged "provisional".
 - [ ] All content is Thai per ราชบัณฑิตยสภา (Step 3b); English kept only where the Step 4.5 gate marked it kept-English.
 - [ ] Suite gate done — every CSV row uses an existing OLS suite, or a new suite was user-approved; no duplicate suites.
 - [ ] `Draft_Jira_{ISSUE_KEY}.csv` uses the 10-column Jira table schema; rows sorted Unit Test → Integration Test → System Test, ACs then ECs within each group; row count matches approved draft.
@@ -700,6 +745,7 @@ Complete [verify-closing-checklist.md](../../references/verify-closing-checklist
 | [ac-ec-coverage-review.md](references/ac-ec-coverage-review.md) | AC/EC traceability + scope review (pre-draft) |
 | [html-pre-draft-review-template.md](references/html-pre-draft-review-template.md) | Pre-draft review HTML template (Step 2a + 2.5) |
 | [tc-final-review-report.md](references/tc-final-review-report.md) | Four-axis final review + close-out report template |
+| [tc-glossary.md](../../references/tc-glossary.md) | Terminology source of truth: re-check gate, precedence, gap/ambiguity policy |
 | [tc-quality-standards.md](../../references/tc-quality-standards.md) | ISTQB / 29119-3 TC quality |
 | [scripts/README.md](scripts/README.md) | Optional CSV/xlsx helper pointer |
 
@@ -721,6 +767,11 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST NOT comment on sub-tasks or other issues | Scope is one story |
 | MUST NOT add TC outside story AC/EC | Traceability |
 | MUST write all TC content in Thai (Step 3b) — there is no English-only mode | Workspace standard; English mode is not offered for FE TC |
+| MUST re-fetch the TC glossary from its published sheet at Step 2b every run, and post the source URL, row count, and diff in chat before designing TCs | The team edits the sheet between runs; a cached CSV is not evidence of the current words |
+| MUST treat the glossary as the first authority for Thai wording — above the Step 3b fallback table, above remembered wording, above the UI-label exception | Two sources of truth guarantee drift; the sheet is the one the team maintains |
+| MUST NOT normalise, spell-fix, dedupe, or sort `references/tc-glossary.csv` — it is a verbatim mirror; typos are fixed in the sheet by its owner | A CSV that differs from the sheet is a silent drift bug |
+| MUST stop and ask the user when a glossary Thai cell is empty, or when one English key carries conflicting Thai meanings across rows | The agent has no authority to coin project terminology |
+| MUST NOT write a guessed term and tag it "provisional", "pending confirmation", or "documented fallback" instead of asking | Tagging a guess is not asking; the guess still reaches the deliverable |
 | MUST use ราชบัณฑิตยสภา approved Thai term first (Step 3b); fall back to English only when no official term exists or the UI label is English | Authoritative Thai is more professional than ad-hoc transliteration or unnecessary English |
 | MUST post the Step 4.5 Thai↔English term table and get user confirmation BEFORE writing any TC content to a file | User must approve term choices before they are committed to the real TC file |
 | MUST use formal Thai language level throughout | TCs are delivered to internal and external teams |
