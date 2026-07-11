@@ -20,7 +20,7 @@ Post comment → Review on Jira UI → Pass all checks?
 - [ ] **All TC rows present** — count rows on Jira UI, must match approved draft row count
 - [ ] **Shared data preparation section** visible above table (if applicable)
 - [ ] **Precondition note** visible (if applicable)
-- [ ] **Table header row** visible with all column names
+- [ ] **Table header row** visible with all column names — every column has an explicit, **all-English** header; row-number column reads `No.` (a bare `#` renders as a **blank** header cell in Jira)
 - [ ] **Footer** visible (CSV/Excel reference line, attachment link)
 
 ### 2. Content accuracy

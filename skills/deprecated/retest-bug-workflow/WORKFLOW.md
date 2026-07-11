@@ -179,14 +179,16 @@ Template core:
 **Test Step (from ticket):** …
 **Expected Result:** …
 
-| Test Case | Input | Result | Status |
-|-----------|-------|--------|--------|
-| Bug case | … | … | ✅/❌ |
+| No. | Test Case | Input | Result | Status |
+|-----|-----------|-------|--------|--------|
+| 1 | Bug case | … | … | ✅/❌ |
 
 ---
 
 **Evidence** — full cURL + response per case (API) or screenshots (FE)
 ```
+
+**Table headers:** every column MUST carry an explicit, all-English header. Give the row-number column the header `No.` — a bare `#` renders as a **blank** header cell in Jira. Applies to both markdown (MCP) and v2 wiki (`|| No. || … ||`) tables.
 
 Show the full draft in chat and wait.
 
@@ -316,6 +318,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST include full cURL/response per API case | Evidence must stand alone |
 | MUST treat Swagger (+ error docs) over stale ticket text | Ticket may be wrong |
 | MUST use **PASSED ✅** or **FAILED ❌** only in summary line | Scanability for dev/QA |
+| MUST give every table column an explicit English header; row-number column = `No.` | bare `#` renders as a blank header cell in Jira |
 | MUST lock v2/v3 at Step 3; FE → v2 + screenshots | Rewrites waste time |
 | MUST verify Jira UI after post (Step 7d) before Step 8 | Truncation / wrong endpoint |
 | MUST run Step 8 after successful post unless user stopped you | Workflow closure |
