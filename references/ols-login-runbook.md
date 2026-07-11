@@ -31,7 +31,7 @@ live in local agent memory `reference_ols-test-accounts`. Related: memory
 | Student | **Learner** | Student | default learner experience |
 | Teacher | **NDLP Creator** | Teacher | **primary for creator / media QA**; after login toggle "Creator mode" |
 | School Admin | **Admin Content** | School Admin | |
-| Central Admin (OBEC) | **Admin User** | Central Admin | called "admin obec" on the NDLP side |
+| Admin OBEC | **Admin User** | Admin OBEC | central OBEC admin (account was labeled "Central Admin" in the original account dump) |
 | Region Admin | *(OLS role not yet specified — confirm with user)* | Region Admin | not in the provided mapping |
 
 Emails + shared password → memory `reference_ols-test-accounts`. Never paste
