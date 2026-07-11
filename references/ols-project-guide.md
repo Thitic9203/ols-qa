@@ -12,6 +12,7 @@ AI reads this file before asking any OLS-related questions.
 | Project ID | `10791` |
 | Board ID | `818` |
 | Board URL | https://<ORG>.atlassian.net/jira/software/projects/OLS/boards/818/backlog |
+| QA test-ready filter | https://<ORG>.atlassian.net/issues?filter=21323 — candidate tickets for AI testing; pick those with **Status = READY TO TEST** and **TC Status = QA Reviewed** |
 
 ### Workflow statuses
 
@@ -73,6 +74,28 @@ AI reads this file before asking any OLS-related questions.
 | Status value | `Done` *(verify exists as OLS custom Status value before import)* |
 | Suite | reuse existing OLS suite; new suite only with user approval, never a duplicate |
 
+## QA tracking sheet (ticket list + TC status)
+
+Master sheet of OLS tickets with QA/TC status. AI reads this to decide which tickets to test and to load each ticket's reviewed test cases. See workflow: [ai-assisted-testing-template.md](ai-assisted-testing-template.md).
+
+| Field | Value |
+|-------|-------|
+| Sheet | https://docs.google.com/spreadsheets/d/<QA_TRACKING_SHEET_ID>/edit?gid=991559500 |
+| Summary tab `gid` | `991559500` — columns: Issue Type · parent · Key · Summary · Status · Ticket Detail Status · QA Owner · TC Status · Added to Regression · Remark |
+| Per-ticket TC detail | click a ticket **Key** in the sheet → opens that ticket's own tab listing all its test cases |
+| Eligibility for AI testing | **Status = `READY TO TEST`** AND **TC Status = `QA Reviewed`** |
+| Ticket has no TC rows in sheet | TCs not yet pasted → tell user to update the sheet first; do **not** start testing |
+
+## Screenshot evidence (Drive)
+
+Per-ticket screenshot capture for QA evidence — one folder per ticket.
+
+| Field | Value |
+|-------|-------|
+| Root folder | `Capture screen (OLS)` → https://drive.google.com/drive/folders/<EVIDENCE_DRIVE_ROOT_ID> |
+| Per-ticket folder | `OLS-<key>` (e.g. `OLS-44`) — create it if missing before testing |
+| Naming | one screenshot per Expected Result, e.g. `TC_01-ER_1.png` — mirror `docs/result/OLS-<key>/` |
+
 ## TC glossary (terminology source of truth)
 
 Thai wording used inside test case content. Rules: [tc-glossary.md](tc-glossary.md).
@@ -100,7 +123,8 @@ Re-fetch and confirm with the user **before every TC design run** — see [tc-gl
 
 OLS ไม่มีหน้า login ของตัวเอง — login ผ่าน **NDLP68 portal** (`https://<SSO_PORTAL_HOST>`) แล้ว SSO session carry เข้า OLS อัตโนมัติ. NDLP68 เซ็ต auth cookie บน parent domain `<COOKIE_DOMAIN>` → cookie ส่งถึง `<DEV_HOST>` เอง (login ndlp68 สำเร็จ → refresh dev-ols = login แล้ว). Login API: `POST {backend}/auth/login-with-email`, cookie session (`withCredentials`); backend = `school-core-api-{env}<COOKIE_DOMAIN>` (env ∈ dev/uat/preprod/ndlp68/prod).
 
-- **Account**: staging accounts มี 5 roles (Student / Teacher / School Admin / Central Admin / Region Admin) — email + password **ไม่ commit ลง repo (public)** → เก็บใน agent memory (local) หรือขอจาก user. Teacher = role หลักของ creator/media QA.
+- **Full step-by-step runbook + NDLP→OLS role mapping:** [ols-login-runbook.md](ols-login-runbook.md) — AI ตามไฟล์นี้เพื่อ login ทดสอบระบบได้เลย
+- **Account**: staging accounts มี 5 roles (Student / Teacher / School Admin / Central Admin / Region Admin) — email + password **ไม่ commit ลง repo (public)** → เก็บใน agent memory (local) หรือขอจาก user. Teacher = role หลักของ creator/media QA. Role mapping → OLS: Student=Learner · Teacher=NDLP Creator · School Admin=Admin Content · Central Admin(OBEC)=Admin User · Region Admin=TBD.
 - **Automated login (verified working):** ใช้ headless `use_browser` (skill `superpowers-chrome:browsing`) — invisible, ไม่แตะจอ user. Flow: accept PDPA overlay ("ยอมรับ") → เปิด login modal (`#email` / `#password`) → submit. **reCAPTCHA v3 ผ่านแบบ headless ได้ ไม่โดน block.** Full runbook + selectors อยู่ใน agent memory `reference_ols-ndlp68-auto-login`. (แก้ note เดิม: automation ไม่ได้โดน classifier block — login มือเป็น fallback สุดท้ายเท่านั้น)
 - Verify creator mode: sidebar มี "จัดการสื่อการเรียนรู้" + ปุ่มล่างเขียน "เปลี่ยนเป็น Learner mode" (dev-ols เปิดมาเป็น Learner view ก่อน, `localStorage.isCreator=false` → กด toggle เป็น Creator mode)
 - **Detailed runbook** (tooling workarounds, สร้าง test data, status transitions): `docs/result/OLS-44/ols-44-creator-media-editing-testing.md` § Setup & Runbook
