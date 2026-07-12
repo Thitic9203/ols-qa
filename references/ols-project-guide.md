@@ -80,8 +80,8 @@ Master sheet of OLS tickets with QA/TC status. AI reads this to decide which tic
 
 | Field | Value |
 |-------|-------|
-| Sheet | https://docs.google.com/spreadsheets/d/<QA_TRACKING_SHEET_ID>/edit?gid=991559500 |
-| Summary tab `gid` | `991559500` — columns: Issue Type · parent · Key · Summary · Status · Ticket Detail Status · QA Owner · TC Status · Added to Regression · Remark |
+| Sheet | https://docs.google.com/spreadsheets/d/<QA_TRACKING_SHEET_ID>/edit?gid=528925434 |
+| Summary tab `gid` | `528925434` (tab literally named **"Summary"**) — the ticket list for eligibility. Columns: Issue Type · parent · Key · Summary · Status · Ticket Detail Status · QA Owner · TC Status · Added to Regression Test Plan · Remark. *(Verified 2026-07-12 via Sheets API. Earlier value `991559500` was WRONG — that gid is a different tab "Test Progress - ALL TC", a pass/fail progress rollup with columns Ticket No.·QA Owner·Total TC·% Passed·… — do NOT use it for ticket selection.)* |
 | Per-ticket TC detail | click a ticket **Key** in the sheet → opens that ticket's own tab listing all its test cases |
 | Eligibility for AI testing | **Status = `READY TO TEST`** AND **TC Status = `QA Reviewed`** |
 | Ticket has no TC rows in sheet | TCs not yet pasted → tell user to update the sheet first; do **not** start testing |
