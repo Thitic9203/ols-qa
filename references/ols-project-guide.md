@@ -76,7 +76,7 @@ AI reads this file before asking any OLS-related questions.
 
 ## QA tracking sheet (ticket list + TC status)
 
-Master sheet of OLS tickets with QA/TC status. AI reads this to decide which tickets to test and to load each ticket's reviewed test cases. See workflow: [ai-assisted-testing-template.md](ai-assisted-testing-template.md).
+Master sheet of OLS tickets with QA/TC status. AI reads this to decide which tickets to test and to load each ticket's reviewed test cases. See workflow: [ai-assisted-testing-template.md](../docs/ai-assisted-testing-template.md).
 
 | Field | Value |
 |-------|-------|
