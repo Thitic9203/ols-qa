@@ -262,6 +262,7 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 - [ ] API cases: full cURL + response per row (no "same as above").
 - [ ] Jira issue re-opened after post: comment visible, not truncated.
 - [ ] Step 7d fix-verify completed.
+- [ ] Step 9 QA notify sent if the project configures a channel (retest verdict + Jira comment link + @mention).
 - [ ] [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Retest section).
 
 ---
@@ -287,6 +288,19 @@ From changelog: last move into the project's **active development** status (ofte
 ### 8d. Tell the user
 
 > Done. Review at `https://{JIRA_DOMAIN}/browse/{ISSUE_KEY}`
+
+---
+
+## Step 9 — QA result notify (if the project configures a channel)
+
+After the transition, if the project defines a **QA notify channel** (Discord/Slack/chat), post a **retest-result** notification so the reporter / QA owner sees the outcome.
+
+- Load channel, format, recipient, and any helper from the workspace `*-retest-guide.md` / project guide. **Never hardcode webhook URLs, tokens, machine paths, or user IDs in this skill** ([portable-content.md](../../references/portable-content.md)) — they live in project config or local agent memory.
+- Message = the single **retest verdict** (PASSED ✅ / FAILED ❌), a short bullet of what was checked, a link to the Jira retest comment, and an @mention of the recipient the project specifies (default: the bug **Reporter**).
+- This is a **result FYI**, not a "please review" request (the retest is already closed) — do not reuse the full-test-run "QA Review Requested / pending review" wording.
+- If the project provides a notify helper, **use it** (it gets @mention + headers right) instead of hand-assembling the payload.
+
+Skip if the project has no notify channel configured.
 
 ---
 

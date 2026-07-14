@@ -96,6 +96,15 @@ Per-ticket screenshot capture for QA evidence — one folder per ticket.
 | Per-ticket folder | `OLS-<key>` (e.g. `OLS-44`) — create it if missing before testing |
 | Naming | one screenshot per Expected Result, e.g. `TC_01-ER_1.png` — mirror `docs/result/OLS-<key>/` |
 
+## Retest-bug QA notify
+
+After a retest-bug close-out (retest-bug-workflow Step 9), post a **retest-result FYI** to the QA Discord thread.
+
+- Helper: `discord_qa_notify.py --mode retest --verdict PASSED|FAILED --ticket OLS-<key> --title "<jira title>" --result-link "<Jira retest-comment URL>" --qa-owner "<name>" --owner-label Reporter`
+- Default recipient = the bug **Reporter** (filed it); override `--qa-owner` / `--owner-label` for QA Owner or dev if the team prefers.
+- Retest mode = single verdict headline + link to the Jira retest comment — **no** "pending review" wording, no Sheet tab (a retest bug is not tracked in the QA sheet).
+- Thread, webhook location, name→Discord-ID roster, and the @mention + User-Agent rules: reuse [ai-assisted-testing-template.md](../docs/ai-assisted-testing-template.md) Stage 6 and local agent memory `reference_ols-discord-qa-notify`. **Webhook URL is a secret — never commit it here.**
+
 ## TC glossary (terminology source of truth)
 
 Thai wording used inside test case content. Rules: [tc-glossary.md](tc-glossary.md).
