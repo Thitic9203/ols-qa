@@ -73,6 +73,12 @@ Use Atlassian integration (`getJiraIssue` or equivalent):
 
 Capture: environment, test steps, expected/actual results, API endpoint, bug type hints (`[API]`, `[FE]`, admin vs user portal).
 
+**The bug's own details are the PRIMARY verdict source.** Read the bug's description in full and extract its **Expected Result verbatim** — every item, every exact wording. The verdict criterion is:
+
+- **PASSED** only if the retest satisfies **ALL** expected results stated in the bug — every item, character-exact where the bug specifies wording. Partial match = **FAILED**.
+- Parent-story AC / Figma are **supplements** for context or when the bug is title-only — they never override or dilute the bug's own expected results. If the bug's expected result and the parent AC conflict, test against the bug's text and flag the conflict to the user.
+- List each expected-result item as its own row in the result table (Step 6) so the ALL-items check is visible, not implied.
+
 ---
 
 ## Step 2b — Fix claim vs verification plan (mandatory)
@@ -314,6 +320,17 @@ After the transition, if the project defines a **QA notify channel** (Discord/Sl
 - This is a **result FYI**, not a "please review" request (the retest is already closed) — do not reuse the full-test-run "QA Review Requested / pending review" wording.
 - If the project provides a notify helper, **use it** (it gets @mention + headers right) instead of hand-assembling the payload.
 
+### Pre-notify review gate (mandatory, every send)
+
+Run this checklist on the **dry-run output** before every real send — no exceptions, including resends and corrections:
+
+1. **Ticket key + title** match the Jira issue exactly.
+2. **Verdict + counts** match the posted Jira retest comment (PASS/FAIL/BLOCKED numbers add up to the cases actually run).
+3. **Body bullets** describe what was actually tested against the **bug's own expected results** — no copy-paste from another ticket.
+4. **Result link** opens the correct issue and `focusedCommentId` = the retest comment ID just posted.
+5. **Recipient**: re-read the QA Owner field value fetched in this session for THIS ticket; confirm the resolved `<@id>` maps to that name in the roster, and the label matches the field source.
+6. Only after all 5 pass → send. Any doubt → show the dry-run to the user first.
+
 Skip if the project has no notify channel configured.
 
 ### Correcting a posted notification
@@ -370,6 +387,8 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST `--dry-run` Discord notify before real send | Catches format errors before they go live |
 | MUST set `--pass-count N` + `--summary "Retest of dev fix"` + `--owner-label "QA Owner"` on every Discord retest notify | Defaults produce wrong output (0/0/0 + wrong label); learned from 3-resend incident |
 | MUST fetch the notify recipient from the ticket's QA Owner field (per project guide) per ticket, and verify the @mention person = that field's value — NEVER the Reporter, never a name carried over from another ticket | Label said "QA Owner" but pinged the Reporter → 3 wrong pings, user correction 2026-07-15 |
+| MUST verdict from the bug's OWN expected results — PASSED only when ALL items are met (character-exact where wording is specified); parent AC is supplement, never substitute | Bug details are the contract; partial match = FAILED (user rule 2026-07-15) |
+| MUST run the Step 9 pre-notify review gate (5 checks on dry-run output) before EVERY send, including resends | Catches wrong recipient/link/counts before they go live (user rule 2026-07-15) |
 | MUST NOT use `await` in superpowers-chrome eval — use setTimeout + window.__var | `await` returns undefined; callback pattern required |
 | MUST use `mousedown` event (not `click`) for MUI Select/combobox elements | MUI Select ignores regular click events |
 | MUST match OLS buttons by textContent, not generic CSS class | Generic selectors hit wrong button (e.g. "สร้างสื่อ" instead of target) |
