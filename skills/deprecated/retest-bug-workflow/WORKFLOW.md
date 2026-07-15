@@ -179,7 +179,7 @@ Template core:
 **Test Step (from ticket):** …
 **Expected Result:** …
 
-| No. | Test Case | Input | Result | Status |
+| **No.** | **Test Case** | **Input** | **Result** | **Status** |
 |-----|-----------|-------|--------|--------|
 | 1 | Bug case | … | … | ✅/❌ |
 
@@ -188,7 +188,7 @@ Template core:
 **Evidence** — full cURL + response per case (API) or screenshots (FE)
 ```
 
-**Table headers:** every column MUST carry an explicit, all-English header. Give the row-number column the header `No.` — a bare `#` renders as a **blank** header cell in Jira. Applies to both markdown (MCP) and v2 wiki (`|| No. || … ||`) tables.
+**Table headers:** every column MUST carry an explicit, all-English header. Give the row-number column the header `No.` — a bare `#` renders as a **blank** header cell in Jira. Applies to both markdown (MCP) and v2 wiki (`|| No. || … ||`) tables. **Headers MUST be bold** (`| **No.** | **Test Case** | …`) — Jira doesn't auto-bold markdown table headers.
 
 Show the full draft in chat and wait.
 
@@ -277,13 +277,26 @@ NEVER hardcode transition names in the skill — Jira workflows differ per proje
 
 Use `getTransitionsForJiraIssue` and match the names from config or the user.
 
-### 8b. Find developer
+**Default transitions (override in project config):**
+
+| Verdict | Target status | Typical transition name |
+|---------|--------------|------------------------|
+| PASSED | Done | "approve by QA" |
+| FAILED | In Progress | project-specific — check config |
+
+**Note:** some projects use BLOCKED for FAILED retests — check the project's `*-retest-guide.md` or `references/ols-project-guide.md` for the correct target status.
+
+### 8b. Find developer (project-overridable)
 
 From changelog: last move into the project's **active development** status (often named "In Progress" — use the name from config if different) → that author's `accountId`.
 
-### 8c. Assign
+**Some projects (e.g. OLS) never change assignee** — check the project guide before running this step.
+
+### 8c. Assign (project-overridable)
 
 `editJiraIssue` → assignee = that developer (PASSED and FAILED).
+
+**Skip if the project guide says "never change assignee"** (e.g. OLS — ownership tracked by status, not assignee).
 
 ### 8d. Tell the user
 
@@ -301,6 +314,15 @@ After the transition, if the project defines a **QA notify channel** (Discord/Sl
 - If the project provides a notify helper, **use it** (it gets @mention + headers right) instead of hand-assembling the payload.
 
 Skip if the project has no notify channel configured.
+
+### Correcting a posted notification
+
+If a verdict changes after the notification was sent (e.g. PASSED→FAILED on re-audit):
+
+1. **PATCH the existing Discord message** — do not repost. Use `PATCH /webhooks/{wid}/{wtok}/messages/{mid}?thread_id={thread}` with the corrected content.
+2. To find the message ID: use webhook GET `GET /webhooks/{wid}/{wtok}/messages/{mid}?thread_id={thread}` (bot token GET returns empty `content` without MESSAGE_CONTENT intent).
+3. Update the Jira comment in place (`addCommentToJiraIssue` with `commentId` parameter).
+4. Transition the ticket to the correct status.
 
 ---
 
@@ -333,6 +355,8 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST treat Swagger (+ error docs) over stale ticket text | Ticket may be wrong |
 | MUST use **PASSED ✅** or **FAILED ❌** only in summary line | Scanability for dev/QA |
 | MUST give every table column an explicit English header; row-number column = `No.` | bare `#` renders as a blank header cell in Jira |
+| MUST bold every table header cell (`\| **No.** \| **Test Case** \| …`) | Jira doesn't auto-bold markdown headers; non-bold looks unprofessional |
+| MUST compare actual text against expected (customfield_12116) character-by-character when expected specifies exact wording | Any text difference = FAIL — no "minor wording" or "cosmetic" exceptions |
 | MUST lock v2/v3 at Step 3; FE → v2 + screenshots | Rewrites waste time |
 | MUST verify Jira UI after post (Step 7d) before Step 8 | Truncation / wrong endpoint |
 | MUST run Step 8 after successful post unless user stopped you | Workflow closure |
