@@ -100,8 +100,8 @@ Per-ticket screenshot capture for QA evidence — one folder per ticket.
 
 After a retest-bug close-out (retest-bug-workflow Step 9), post a **retest-result FYI** to the QA Discord thread.
 
-- Helper: `discord_qa_notify.py --mode retest --verdict PASSED|FAILED --ticket OLS-<key> --title "<jira title>" --result-link "<Jira retest-comment URL>" --qa-owner "<name>" --owner-label Reporter`
-- Default recipient = the bug **Reporter** (filed it); override `--qa-owner` / `--owner-label` for QA Owner or dev if the team prefers.
+- Helper: `discord_qa_notify.py --mode retest --ticket OLS-<key> --title "<jira title>" --summary "Retest of dev fix" --pass-count N --fail-count N --blocked-count N --body $'• <bullet>' --result-link "<Jira retest-comment URL>?focusedCommentId=<id>" --qa-owner "<QA Owner name>" --owner-label "QA Owner"` — always `--dry-run` first, eyeball, then send.
+- **Recipient = the ticket's QA Owner — Jira field `customfield_12120` — NEVER the Reporter** (user correction 2026-07-15 after 3 wrong pings). Read the field from the bug itself before every send; pass that exact name as `--qa-owner`. If `customfield_12120` is empty → ask the user, do not fall back to Reporter silently.
 - Retest mode = single verdict headline + link to the Jira retest comment — **no** "pending review" wording, no Sheet tab (a retest bug is not tracked in the QA sheet).
 - Thread, webhook location, name→Discord-ID roster, and the @mention + User-Agent rules: reuse [ai-assisted-testing-template.md](../docs/ai-assisted-testing-template.md) Stage 6 and local agent memory `reference_ols-discord-qa-notify`. **Webhook URL is a secret — never commit it here.**
 

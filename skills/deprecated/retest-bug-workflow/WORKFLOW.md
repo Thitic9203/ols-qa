@@ -309,7 +309,8 @@ From changelog: last move into the project's **active development** status (ofte
 After the transition, if the project defines a **QA notify channel** (Discord/Slack/chat), post a **retest-result** notification so the reporter / QA owner sees the outcome.
 
 - Load channel, format, recipient, and any helper from the workspace `*-retest-guide.md` / project guide. **Never hardcode webhook URLs, tokens, machine paths, or user IDs in this skill** ([portable-content.md](../../references/portable-content.md)) — they live in project config or local agent memory.
-- Message = the single **retest verdict** (PASSED ✅ / FAILED ❌), a short bullet of what was checked, a link to the Jira retest comment, and an @mention of the recipient the project specifies (default: the bug **Reporter**).
+- Message = the single **retest verdict** (PASSED ✅ / FAILED ❌), a short bullet of what was checked, a link to the Jira retest comment, and an @mention of the recipient.
+- **Recipient resolution (mandatory):** read the recipient from the ticket field the project guide names (e.g. a "QA Owner" custom field) — fetch that field's value from the bug itself for **every** notify; do not reuse a name from an earlier ticket, and do not default to the Reporter. The label printed next to the mention MUST match the field the value came from (label "QA Owner" ⇒ value from the QA Owner field). If the field is empty or the guide names no field, ask the user before sending.
 - This is a **result FYI**, not a "please review" request (the retest is already closed) — do not reuse the full-test-run "QA Review Requested / pending review" wording.
 - If the project provides a notify helper, **use it** (it gets @mention + headers right) instead of hand-assembling the payload.
 
@@ -362,3 +363,15 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST run Step 8 after successful post unless user stopped you | Workflow closure |
 | MUST create test data when possible | "No data" is not an excuse |
 | MUST NOT change COMMENT_FORMAT after Step 3 | v2/v3 rewrite cost |
+| MUST NOT include local file paths in Jira comments (`docs/result/`, `/Users/`, etc.) | Meaningless to Jira readers; user enforced "เน้นๆๆ ห้ามผิดอีก" |
+| MUST scan Jira comment for local paths before posting | Catches leaks: `docs/`, `~/`, absolute paths |
+| MUST use two-step transition for READY TO TEST → Done: `121` then `41` | Single `151` fails; READY TO TEST can't jump directly to Done |
+| MUST transition FAIL verdict to In Progress (`21`), NEVER to BLOCKED | OLS workflow: BLOCKED = external block, In Progress = needs dev fix |
+| MUST `--dry-run` Discord notify before real send | Catches format errors before they go live |
+| MUST set `--pass-count N` + `--summary "Retest of dev fix"` + `--owner-label "QA Owner"` on every Discord retest notify | Defaults produce wrong output (0/0/0 + wrong label); learned from 3-resend incident |
+| MUST fetch the notify recipient from the ticket's QA Owner field (per project guide) per ticket, and verify the @mention person = that field's value — NEVER the Reporter, never a name carried over from another ticket | Label said "QA Owner" but pinged the Reporter → 3 wrong pings, user correction 2026-07-15 |
+| MUST NOT use `await` in superpowers-chrome eval — use setTimeout + window.__var | `await` returns undefined; callback pattern required |
+| MUST use `mousedown` event (not `click`) for MUI Select/combobox elements | MUI Select ignores regular click events |
+| MUST match OLS buttons by textContent, not generic CSS class | Generic selectors hit wrong button (e.g. "สร้างสื่อ" instead of target) |
+| MUST NOT modify DOM inside MutationObserver callback | Causes infinite recursion → CDP crash |
+| MUST use singular OLS management URLs (`/creator/learning-path` not `/learning-paths`) | Plural = 404; API uses plural but UI uses singular |
