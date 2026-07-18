@@ -96,6 +96,30 @@ Per-ticket screenshot capture for QA evidence — one folder per ticket.
 | Per-ticket folder | `OLS-<key>` (e.g. `OLS-44`) — create it if missing before testing |
 | Naming | one screenshot per Expected Result, e.g. `TC_01-ER_1.png` — mirror `docs/result/OLS-<key>/` |
 
+## Bug ticket field schema (where the bug content actually lives)
+
+**OLS Bug tickets keep their content in custom fields, NOT in the `description` field** (which is
+empty on OLS bugs — verified OLS-75, OLS-227, 2026-07-18). Any retest/verdict logic MUST read these,
+not `description`. All are ADF (`{"type":"doc",…}`) — parse the text out.
+
+| Field ID | Meaning | Use in retest |
+|----------|---------|---------------|
+| `customfield_12116` | **Expected result** | the verdict source — compare the fixed behavior against this **character-by-character** where it specifies exact wording (WORKFLOW.md line 388). ALL items met = PASSED; any unmet = FAILED |
+| `customfield_12113` | **Test step** | the steps to reproduce / re-verify the fix |
+| `customfield_12112` | **Test data** | data/preconditions needed to reproduce |
+| `customfield_12114` | **Actual result** | the original bug symptom (what to confirm is now gone) |
+| `customfield_12115` | Actual result link | evidence link from the original report |
+| `customfield_12111` | Root cause description | dev's root-cause note |
+| `customfield_12110` | Root cause type | e.g. "Logic Error" |
+| `customfield_12122` | Severity | e.g. High |
+| `customfield_12118` | Web browser name | e.g. Google Chrome |
+| `customfield_12125` | Detected on Environment | e.g. Dev |
+| `customfield_12120` | **QA Owner** | Discord ping target (array; NEVER the Reporter — see below) |
+| `customfield_12123` | Test Result Approval by QA | QA approval state |
+| `customfield_12124` | Pair Testing Status | |
+
+Read call (retest): `GET /rest/api/3/issue/<KEY>?fields=summary,status,issuetype,customfield_12116,customfield_12113,customfield_12112,customfield_12114,customfield_12111,customfield_12122,customfield_12118,customfield_12125,customfield_12120`. If `customfield_12116` is empty, fall back to any expected-result text in a comment/description; if still nothing → **BLOCKED** (cannot verdict without an expected result).
+
 ## Retest-bug QA notify
 
 After a retest-bug close-out (retest-bug-workflow Step 9), post a **retest-result FYI** to the QA Discord thread.
