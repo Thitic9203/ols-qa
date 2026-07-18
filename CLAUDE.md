@@ -108,6 +108,13 @@ Jira ตีความ `1.` ที่ขึ้นต้น cell เป็น or
 
 ## Jira file attachment via browser JS (workaround)
 
+> **Interactive sessions only.** The browser-JS and Chrome-MCP workarounds in this section and the
+> next are for a session you drive live in chat. The unattended **`/bot-testing` bots** (retest +
+> test) run headless with no attached browser and must never touch the user's screen — they write
+> Jira over the REST API (`curl -u "$OLS_JIRA_CREDS"`, see `prompt-retest.md`) and never use
+> `Control_Chrome` / `Claude_in_Chrome` / `computer-use`. See the always-headless rule in
+> `docs/ols-login-runbook.md` and the design spec addendum (2026-07-18).
+
 Atlassian MCP `addCommentToJiraIssue` ไม่รองรับ file upload — ต้องใช้ browser JS แทน:
 
 ```javascript
