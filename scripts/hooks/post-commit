@@ -1,0 +1,20 @@
+#!/bin/bash
+# ols-qa post-commit hook — after any commit that touches SHARED skill content
+# (skills/ | references/ | commands/), propagate the change into the helix plugin
+# and deploy a new helix version. helix's own pre-commit secret-guard is the hard
+# gate: OLS credentials/URLs/tokens can never be committed there, so nothing leaks.
+#
+# Non-fatal by design: a sync failure never affects the ols-qa commit that already happened.
+# Disable temporarily with:  HELIX_SYNC=0 git commit ...
+
+[ "${HELIX_SYNC:-1}" = "1" ] || exit 0
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+CHANGED="$(git diff --name-only HEAD~1 HEAD 2>/dev/null)" || exit 0
+
+if printf '%s\n' "$CHANGED" | grep -qE '^(skills|references|commands)/'; then
+  echo "[ols-qa post-commit] shared skill files changed → syncing to helix…"
+  bash "$ROOT/scripts/sync-skills-to-helix.sh" \
+    || echo "[ols-qa post-commit] ⚠️ helix sync/deploy failed (see above). Your ols-qa commit is fine; re-run scripts/sync-skills-to-helix.sh after fixing."
+fi
+exit 0

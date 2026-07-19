@@ -55,6 +55,16 @@ references/                    ← shared rule fragments, linked by skills (not 
 - ลบ/rename skill directory ทั้ง folder
 - แก้ hooks/ config
 
+## Skill sync → helix plugin (mandatory) + OLS-secret guard
+
+The **active** skills Claude Code runs are the **helix** plugin (`~/.claude/skills/*` → symlink → `~/GitHub/helix/skills/*`), **not** this ols-qa copy. So editing a skill/reference/command **here** does NOT change the running skill until it reaches helix.
+
+**Rule (automatic):** whenever a **shared** file under `skills/` · `references/` · `commands/` (one that also exists in helix) is committed here, it is **auto-synced to helix and a new helix version is deployed** — via the `post-commit` hook → `scripts/sync-skills-to-helix.sh` → helix `pre-commit` (auto version-bump) → push. Run `bash scripts/setup-hooks.sh` once per clone to activate (`core.hooksPath=scripts/hooks`). OLS-specific files (e.g. `references/ols-project-guide.md`) don't exist in helix → never synced.
+
+**Hard guard — NEVER let OLS secrets reach helix:** `~/GitHub/helix/scripts/check-no-secrets.sh` runs in helix's `pre-commit` and blocks the commit if any OLS credential / test-account (`*<STG_SUFFIX>@<INTERNAL_DOMAIN>`, `<TEST_PASSWORD>`), OLS/NDLP URL (`dev-ols`, `ndlp68`, `*<COOKIE_DOMAIN>`, `<ORG>.atlassian.net`, `<OTHER_CUSTOMER_HOST>`), secret file/token (`.jira_token`, `.discord_webhook`, webhooks, PEM/reCAPTCHA/cloud keys) is present — anywhere in helix. helix is a **generic** plugin: use placeholders `{ISSUE_KEY}` / `{JIRA_DOMAIN}` / `{PORTAL}` only. When you learn of a new OLS secret, add its pattern to `check-no-secrets.sh` (TIER1).
+
+**When editing skills manually (AI):** put generic skill logic in the shared file (auto-reaches helix); keep OLS-specific config (URLs, accounts, sheet/Drive/Confluence IDs) ONLY in `references/ols-project-guide.md` (ols-qa-only). Never paste OLS creds/URLs into a shared skill/reference — the guard will block the deploy anyway.
+
 ## Default decisions (ไม่ต้องถาม)
 
 - Language ใน skill/command files: English only
