@@ -157,12 +157,16 @@ Swagger is source of truth — not stale ticket text alone.
 
 ### FE bugs
 
-- Screenshot **every** case — upload as issue attachment first
+- Screenshot **every** case — upload as issue attachment first, then embed inline
 - Name files `tc{N}-{short-desc}.png`
 - Max ~3 bullets per case in the comment
-- Embed with wiki: `!filename.png|width=600!`
+- **Inline image embedding (mandatory):** after uploading each screenshot as an attachment, embed it in the v2 wiki comment using `!filename.png|width=450!` (≈50% of Jira comment column width). Images MUST render inline — never leave them as filename-only text references.
 
-Upload via authenticated `POST /rest/api/3/issue/{KEY}/attachments` with `X-Atlassian-Token: no-check` if using browser session.
+**Upload + embed flow:**
+1. Save screenshots to `docs/result/{ISSUE_KEY}/`
+2. Serve via local CORS server (127.0.0.1) for browser-based upload
+3. Upload each file: `fetch('/rest/api/3/issue/{KEY}/attachments', {method:'POST', headers:{'X-Atlassian-Token':'no-check'}, body: formData})` using authenticated browser session on Jira page
+4. Reference in v2 wiki comment body: `!filename.png|width=450!` — one image per evidence item
 
 ---
 
@@ -235,9 +239,16 @@ Full JS patterns and error recovery: [jira-fast-publish.md](../../references/jir
 
 When MCP truncates or returns 403 on a ≤ 3 row comment, switch to ADF-direct Pattern D above.
 
-### 7c. FE + screenshots
+### 7c. FE + screenshots (inline image embedding)
 
-Use **v2** wiki markup and `/rest/api/2/issue/{KEY}/comment`. Attach images before posting.
+Use **v2** wiki markup and `/rest/api/2/issue/{KEY}/comment`.
+
+**Mandatory flow — images must render inline, not as filename text:**
+
+1. **Upload attachments first** — for each screenshot, POST to `/rest/api/3/issue/{KEY}/attachments` via authenticated browser JS (FormData + `X-Atlassian-Token: no-check`). Serve local files through a CORS server (127.0.0.1) so the browser fetch can read them.
+2. **Embed in wiki body** — reference each uploaded file as `!filename.png|width=450!` (≈50% of comment column). Place the embed directly after its corresponding evidence row or description.
+3. **Post comment** — v2 wiki POST to `/rest/api/2/issue/{KEY}/comment` with the body containing `!file.png|width=450!` references. v2 renders these as inline images automatically.
+4. **Verify (Step 7d)** — confirm images render as visible pictures on Jira, not as `!filename!` text.
 
 ### 7d — Post-publish review (mandatory)
 
@@ -268,12 +279,25 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 - [ ] API cases: full cURL + response per row (no "same as above").
 - [ ] Jira issue re-opened after post: comment visible, not truncated.
 - [ ] Step 7d fix-verify completed.
+- [ ] **Step 8·0 format-completeness gate passed BEFORE any transition** — FE bug: screenshots embedded inline + render-verified; API bug: full cURL/response per row.
 - [ ] Step 9 QA notify sent if the project configures a channel (retest verdict + Jira comment link + @mention).
 - [ ] [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Retest section).
 
 ---
 
 ## Step 8 — Close out (after successful post; no second approval unless user asked)
+
+### 8·0 — Format-completeness gate (MUST pass before ANY transition)
+
+**Hard gate — do NOT run 8a until the posted comment is complete per the Step 6 / Step 7c format:**
+
+- [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌**; env + results table present (bold headers, `No.` column).
+- [ ] One result row per expected-result item (the ALL-items check is visible).
+- [ ] **FE / UI bug:** a screenshot for **every executed case**, uploaded as an attachment **and embedded inline** (`!file.png|width=450!`), confirmed rendering on the Jira UI (Step 7d). **A text-only comment for an FE bug FAILS this gate** — the exact-text/values table is not a substitute for the required images.
+- [ ] **API bug:** full cURL + response per row (no "same as above").
+- [ ] No local file paths, no literal `<br>`/HTML markup.
+
+If any item fails — including when evidence **cannot** be embedded (e.g. no Jira-auth upload path) — **STOP. Do NOT transition.** Report the specific gap to the user and resolve it (or get an explicit user waiver) first. Never move a bug's status on an evidence-incomplete comment.
 
 ### 8a. Transition
 
@@ -377,6 +401,8 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST compare actual text against expected (customfield_12116) character-by-character when expected specifies exact wording | Any text difference = FAIL — no "minor wording" or "cosmetic" exceptions |
 | MUST lock v2/v3 at Step 3; FE → v2 + screenshots | Rewrites waste time |
 | MUST verify Jira UI after post (Step 7d) before Step 8 | Truncation / wrong endpoint |
+| MUST pass the Step 8·0 format-completeness gate before ANY status transition — FE bug requires screenshots embedded inline **and** render-verified; a text-only FE comment fails the gate | Transitioning on an evidence-incomplete comment silently hides the gap (learned OLS-181: FE bug moved to Done with a text-only comment) |
+| MUST NOT offer the user a "skip screenshots / text-only" option for an FE bug — screenshots are mandatory, not optional; if upload is blocked, STOP and resolve, don't bypass | Offering to skip a mandatory step is how the gate got bypassed (OLS-181) |
 | MUST run Step 8 after successful post unless user stopped you | Workflow closure |
 | MUST create test data when possible | "No data" is not an excuse |
 | MUST NOT change COMMENT_FORMAT after Step 3 | v2/v3 rewrite cost |
@@ -389,6 +415,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST fetch the notify recipient from the ticket's QA Owner field (per project guide) per ticket, and verify the @mention person = that field's value — NEVER the Reporter, never a name carried over from another ticket | Label said "QA Owner" but pinged the Reporter → 3 wrong pings, user correction 2026-07-15 |
 | MUST verdict from the bug's OWN expected results — PASSED only when ALL items are met (character-exact where wording is specified); parent AC is supplement, never substitute | Bug details are the contract; partial match = FAILED (user rule 2026-07-15) |
 | MUST run the Step 9 pre-notify review gate (5 checks on dry-run output) before EVERY send, including resends | Catches wrong recipient/link/counts before they go live (user rule 2026-07-15) |
+| MUST embed FE screenshots as inline images (`!file.png\|width=450!`) in Jira comments — never leave as filename-only text | Screenshots must be visible inline; filename text is unreadable evidence |
 | MUST NOT use `await` in superpowers-chrome eval — use setTimeout + window.__var | `await` returns undefined; callback pattern required |
 | MUST use `mousedown` event (not `click`) for MUI Select/combobox elements | MUI Select ignores regular click events |
 | MUST match OLS buttons by textContent, not generic CSS class | Generic selectors hit wrong button (e.g. "สร้างสื่อ" instead of target) |

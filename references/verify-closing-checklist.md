@@ -36,6 +36,7 @@ Apply [qa-evidence-gates.md](qa-evidence-gates.md) before any pass/post/done cla
 
 - [ ] Retest plan (dev claim vs verify) posted before tests
 - [ ] Comment format v2/v3 not switched mid-session
+- [ ] **Step 8·0 format-completeness gate PASSED before any status transition** — FE bug: a screenshot per executed case, embedded inline (`!file.png|width=450!`) **and render-verified** on the Jira UI; API bug: full cURL/response per row. A text-only FE comment fails this gate → do NOT transition, resolve or get explicit user waiver first.
 - [ ] Screenshots attached before v2 wiki embed (FE)
 - [ ] Transition names match workspace guide
 - [ ] Post-publish review passed: no stray HTML/markup tags, numbered items on separate lines ([jira-comment-post-review.md](jira-comment-post-review.md))
