@@ -1,0 +1,32 @@
+#!/bin/bash
+# ols-qa pre-commit — EARLIEST guard: block committing an OLS secret into a SHARED
+# skill file (one that also exists in the helix plugin), before it can ever be synced.
+# Non-shared OLS files (e.g. references/ols-project-guide.md) are EXEMPT — this
+# workspace legitimately holds OLS config; only the generic/shared files must stay clean.
+set -uo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+HELIX="${HELIX_REPO:-$HOME/GitHub/helix}"
+GUARD="$HELIX/scripts/check-no-secrets.sh"
+[ -x "$GUARD" ] || exit 0   # helix guard unavailable -> skip here (helix side still guards on sync)
+
+STAGED="$(git diff --cached --name-only --diff-filter=ACM)"
+SHARED=""
+for f in $STAGED; do
+  case "$f" in skills/*|references/*|commands/*) ;; *) continue ;; esac
+  [ -f "$HELIX/$f" ] || continue          # "shared" = present in helix
+  [ -f "$ROOT/$f" ] || continue
+  SHARED="$SHARED $ROOT/$f"               # absolute path for the guard
+done
+
+if [ -n "$SHARED" ]; then
+  echo "[ols-qa pre-commit] scanning shared skill files for OLS secrets…"
+  # shellcheck disable=SC2086
+  if ! "$GUARD" $SHARED; then
+    echo "[ols-qa pre-commit] ❌ OLS secret in a SHARED skill file — commit BLOCKED."
+    echo "  Move OLS config (URLs/accounts/IDs) into references/ols-project-guide.md (ols-qa-only, never synced),"
+    echo "  and use placeholders {ISSUE_KEY}/{JIRA_DOMAIN}/{PORTAL} in shared skills."
+    exit 1
+  fi
+fi
+exit 0

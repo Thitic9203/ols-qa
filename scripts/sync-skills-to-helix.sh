@@ -42,6 +42,15 @@ FILES="$(printf '%s' "$FILES" | sed '/^$/d')"
 echo "sync: propagating to helix ($HELIX):"
 printf '%s\n' "$FILES" | sed 's/^/  · /'
 
+# --- LAYER: pre-scan the ols-qa SOURCE files BEFORE copying anything to helix ---
+SRC_ABS=""
+for f in $FILES; do [ -n "$f" ] && SRC_ABS="$SRC_ABS $OLSQA/$f"; done
+# shellcheck disable=SC2086
+if ! "$HELIX/scripts/check-no-secrets.sh" $SRC_ABS; then
+  echo "sync: ❌ OLS secret in ols-qa SOURCE file(s) — refusing to copy, NOTHING deployed."
+  exit 1
+fi
+
 # --- pull helix latest, copy files ---
 ( cd "$HELIX" && git pull --rebase --quiet origin main 2>/dev/null ) || true
 printf '%s\n' "$FILES" | while IFS= read -r f; do
