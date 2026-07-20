@@ -61,6 +61,7 @@ AI reads this file before asking any OLS-related questions.
 |-------|-------|
 | Working file | https://www.figma.com/design/<FIGMA_FILE_ID>/OLS_Working-file |
 | Main frame | node-id `226-94221` |
+| Access when Dev Mode MCP is off | Open the working-file URL in the **Chrome MCP** browser (`claude-in-chrome` — the QA Chrome login to Figma persists) → wait ~5–9s for the canvas to render → screenshot the node. Dismiss the "Want to view this file in Dev Mode?" modal with **Not now** (never Request access). This account = **View + Comment only** (toast "You can only view and comment on this file") — enough to view/screenshot/copy specs. `node-id` in the URL uses `-`; Figma `nodeId` uses `:` (`2257-114654` → `2257:114654`). Verified 2026-07-20 (node `2257:114654` = frame **AllContent-Guest**, page 💙 Learner Mode → คลังสื่อทั้งหมด). |
 
 ## Qase (test management)
 

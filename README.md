@@ -35,6 +35,12 @@ Update it as new info arrives — AI reads it before asking questions.
 
 ## Changelog
 
+### v1.15.0 — Retest bug + Testing ticket: วิธีเข้าถึง Figma design reference (20 Jul 2026)
+
+- **เพิ่มวิธี view Figma design ในทั้ง 2 สกิล** — retest-bug (Step 2 ตอนอ่าน expected result ที่ Figma เป็น supplement) + testing-ticket (Phase B load context): ลำดับคือ **Figma Dev Mode MCP** ก่อน (ต้องเปิด Dev Mode MCP Server ใน Figma desktop + เปิดไฟล์; `node-id` ใน URL ใช้ `-` แต่ MCP `nodeId` ใช้ `:` เช่น `2257-114654` → `2257:114654`) → ถ้า server ปิด **fallback เป็น browser-automation MCP**: เปิด URL ไฟล์ (login เบราว์เซอร์ค้างไว้) → รอ canvas render → screenshot node
+- **ปิด modal "view this file in Dev Mode?" ด้วย "Not now" เท่านั้น — ห้าม "Request access"** (ส่งคำขอ seat); account แบบ **View + Comment** ก็อ่าน/แคป/copy spec ได้พอ
+- OLS-specific (working-file URL + หมายเหตุการเข้าถึง) อยู่ใน [`references/ols-project-guide.md`](references/ols-project-guide.md) — ตาราง Figma
+
 ### v1.12.0 — TC FE Prep: บังคับรีเช็คคำศัพท์จาก TC glossary ก่อนออกแบบ TC (10 Jul 2026)
 
 - **Step 2.6 — TC glossary re-check (gate ใหม่ บังคับ)** — หลังเคลียร์ AC/EC + conflict check เสร็จ ก่อนออกแบบ TC สกิลจะดึง tab `คำที่ใช้ใน TC` จาก [published sheet](https://docs.google.com/spreadsheets/d/e/<TC_GLOSSARY_PUB_ID>/pubhtml) ใหม่สดๆ แล้วโพสต์ URL ต้นทาง + จำนวนคำ + diff ให้ user ดูเป็นหลักฐาน; ของเก่าที่ cache ไว้ใช้ไม่ได้
@@ -43,12 +49,6 @@ Update it as new info arrives — AI reads it before asking questions.
 - **`references/tc-glossary.csv` เป็น mirror เป๊ะๆ** — ห้ามแก้ typo/เรียง/ลบซ้ำในไฟล์; แก้ที่ชีทแล้ว re-export เท่านั้น
 - **Step 4.5 term table เพิ่มคอลัมน์ `ที่มา`** — ทุกคำต้องระบุว่ามาจาก `glossary` / `fallback` / `user`; แถวที่ไม่มีที่มา = คำที่ถูกคิดขึ้นเอง ต้องถอดออก
 - กติกาเต็ม: [`references/tc-glossary.md`](references/tc-glossary.md) · ลิงก์ชีท + `gid`: [`references/ols-project-guide.md`](references/ols-project-guide.md)
-
-### v1.10.0 — TC FE Prep: Pre-draft AC/EC consistency check + HTML review report (18 Jun 2026)
-
-- **เช็ค AC/EC ซ้ำ/ซ้ำซ้อน/ขัดแย้งกันก่อน draft TC (Step 2a)** — เปรียบเทียบ AC/EC ทุกคู่ภายใน ticket เดียวกัน หาสามประเภท: Duplicate (ซ้ำกันคนละ wording), Redundant (ข้อหนึ่งครอบข้ออื่น), Contradictory (ขัดแย้งกัน); ให้ user เลือกวิธีจัดการ (ข้ามซ้ำ / draft ทั้งหมด / แก้ ticket ก่อน)
-- **รวม pre-draft review เป็น HTML เปิดใน Chrome** — ผลเช็ค AC/EC consistency (Step 2a) + conflict check กับ PRD/Figma (Step 2.5) รวมเป็นหน้า HTML เดียว เปิดใน Chrome ให้ตรวจสอบ แทนการโพสต์ตารางยาวในแชท; ใช้ design system เดียวกับ TC draft HTML (Apple-style)
-- **การโต้ตอบ/ตัดสินใจยังอยู่ในแชท** — prompt ถาม user + รับคำตอบยังคุยในแชทเหมือนเดิม; HTML เป็นแค่ display layer
 
 ---
 
