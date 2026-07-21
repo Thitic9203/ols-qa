@@ -63,10 +63,12 @@ short-circuits in order:
    expires after **12 h**)
 3. **A test run is active** (a `/bot-testing` run or an autopoll run holds the lock) → skip this cycle
 4. **The queue is non-empty** → skip (still draining)
-5. **Scan the sheet** for eligible tickets, then exclude: any declined in the last **24 h**, any already
-   queued, and any launched within the last **3 h** (its sheet status can lag a just-started/failed run)
-6. **Nothing eligible** → silent
-7. **Eligible tickets found** → set their **QA Owner = the QA lead** in both Jira (`customfield_12120`,
+5. **Scan the sheet** for the tickets still `NOT STARTED`, then split them:
+   - **Unfinished** — a ticket we already launched that is *still* `NOT STARTED` (its run ended without
+     completing, e.g. VPN dropped mid-run). It resumes automatically — see *Resume unfinished runs* below.
+   - **Fresh** — never launched, not declined in the last **24 h**, not already queued → offered for testing.
+6. **Nothing fresh** → silent
+7. **Fresh tickets found** → set their **QA Owner = the QA lead** in both Jira (`customfield_12120`,
    assignee untouched) and the sheet, then post **one** prompt in the QA review thread on Discord listing
    all of them, with **Yes / No** buttons
 
@@ -81,6 +83,17 @@ short-circuits in order:
 **Yes** approves the whole batch. The bot **never** re-confirms ticket-by-ticket; it just queues them and
 tests serially.
 
+### Resume unfinished runs
+
+A launched run can end without finishing — the NDLP VPN drops mid-session, the machine sleeps, or the run
+hits its timeout. The ticket's test cases then stay `NOT STARTED` in the sheet. **Such a ticket is never
+dropped: the next cycle picks it up and continues it automatically, without asking again** (the batch was
+already approved). Concretely, once no run holds the lock, any ticket we launched that is *still*
+`NOT STARTED` is re-queued and re-run. Each `run.sh` launch already retries 3× internally; the autopoll
+layer resumes a ticket up to **2 more times** (`MAX_AUTO_RETRY`). If it still hasn't completed after that,
+it is suspended for **24 h** with a Discord notice (run `/bot-testing <KEY>` to force it sooner). A ticket
+whose status moves off `NOT STARTED` (i.e. it finished) is forgotten and never re-run.
+
 ### Why buttons (not a typed yes/no)
 
 The bot runs without Discord's privileged **Message Content** intent, so it can't read the text of a typed
@@ -92,9 +105,10 @@ token is independent of that window and never fails with a stale-interaction err
 ### State & operation
 
 Durable state lives in `~/ols-qa-testing-bot/.autopoll_state.json`
-(`{pending, declined, queue, launched}`) and survives restarts. Key constants: scan **2 h** · drain
-**60 s** · declined **24 h** · launched cooldown **3 h** · pending-prompt expiry **12 h**. Logs:
-`~/ols-qa-testing-bot/logs/listener.out.log` (look for `autopoll armed`). Restart after editing:
+(`{pending, declined, queue, launched, attempts}`) and survives restarts. Key constants: scan **2 h** ·
+drain **60 s** · declined **24 h** · auto-resume cap **2** · settle window **120 s** · pending-prompt
+expiry **12 h**. Logs: `~/ols-qa-testing-bot/logs/listener.out.log` (look for `autopoll armed`,
+`auto-resume`). Restart after editing:
 `launchctl kickstart -k gui/$(id -u)/com.<USER>.ols-testing-listener`.
 
 ## Automated TC auto-draft (ทุก ~4 ชม.)
