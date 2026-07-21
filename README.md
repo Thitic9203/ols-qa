@@ -33,6 +33,70 @@ Open this folder in **Claude Code** and trust the project. The SessionStart hook
 All OLS-specific config (test env URLs, default assignee, etc.) lives in [`references/ols-project-guide.md`](references/ols-project-guide.md).
 Update it as new info arrives — AI reads it before asking questions.
 
+## Automated testing trigger (autopoll)
+
+A background service that watches the QA tracking sheet and offers to start testing whenever tickets are
+ready — you confirm once in Discord, it runs the rest headless. This is **OLS-specific infrastructure**,
+not a helix skill: it lives outside this repo in the testing bot (`~/ols-qa-testing-bot/listener/index.js`,
+run by a launchd `KeepAlive` job) and is additive to the on-request `/bot-testing` command in the same
+listener. Ownership of tickets it tests is claimed automatically (see step 7).
+
+### Eligibility
+
+A ticket is offered for testing only when **all** of these hold (checked against the
+[QA tracking sheet](references/ols-project-guide.md#qa-tracking-sheet-ticket-list--tc-status)):
+
+- **Status** = `READY TO TEST` (Summary tab)
+- **TC Status** = `QA Reviewed` (Summary tab)
+- Its per-ticket tab still has **≥ 1 test case with Test Status = `NOT STARTED`** (i.e. real work is left)
+
+The scan reads Google Sheets over an OAuth token, so it works without the NDLP VPN.
+
+### The 2-hour cycle
+
+The scan (`scanTick`) runs **every 2 hours**, plus once ~15 s after the listener (re)starts. Each cycle
+short-circuits in order:
+
+1. **NDLP VPN not connected** → silent skip, wait for the next cycle (testing can't run without it, so it
+   doesn't ask)
+2. **A prompt is still awaiting an answer** → wait (never stack a second prompt; an unanswered prompt
+   expires after **12 h**)
+3. **A test run is active** (a `/bot-testing` run or an autopoll run holds the lock) → skip this cycle
+4. **The queue is non-empty** → skip (still draining)
+5. **Scan the sheet** for eligible tickets, then exclude: any declined in the last **24 h**, any already
+   queued, and any launched within the last **3 h** (its sheet status can lag a just-started/failed run)
+6. **Nothing eligible** → silent
+7. **Eligible tickets found** → set their **QA Owner = the QA lead** in both Jira (`customfield_12120`,
+   assignee untouched) and the sheet, then post **one** prompt in the QA review thread on Discord listing
+   all of them, with **Yes / No** buttons
+
+### Confirm once → serial queue
+
+- **Yes** → every ticket in that prompt is queued, and the queue drains **one at a time** — `drainTick`
+  (every 60 s) launches `run.sh <ticket>` for the next ticket only once no run holds the lock. Each run is
+  the normal test flow, starting from the VPN check.
+- **No** → those tickets are suppressed for **24 h**, then become eligible again.
+
+**Invariant — one confirmation per batch:** a single prompt covers all eligible tickets and a single
+**Yes** approves the whole batch. The bot **never** re-confirms ticket-by-ticket; it just queues them and
+tests serially.
+
+### Why buttons (not a typed yes/no)
+
+The bot runs without Discord's privileged **Message Content** intent, so it can't read the text of a typed
+reply. Buttons emit an interaction that routes back without that intent. The result is rendered by
+**editing the prompt message over the bot token** (not the interaction response) because this gateway link
+can deliver interaction events after Discord's 3-second reply window has closed — editing over the bot
+token is independent of that window and never fails with a stale-interaction error.
+
+### State & operation
+
+Durable state lives in `~/ols-qa-testing-bot/.autopoll_state.json`
+(`{pending, declined, queue, launched}`) and survives restarts. Key constants: scan **2 h** · drain
+**60 s** · declined **24 h** · launched cooldown **3 h** · pending-prompt expiry **12 h**. Logs:
+`~/ols-qa-testing-bot/logs/listener.out.log` (look for `autopoll armed`). Restart after editing:
+`launchctl kickstart -k gui/$(id -u)/com.<USER>.ols-testing-listener`.
+
 ## Changelog
 
 ### v1.15.0 — Retest bug + Testing ticket: วิธีเข้าถึง Figma design reference (20 Jul 2026)
