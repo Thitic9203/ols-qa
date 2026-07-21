@@ -162,7 +162,36 @@ ticket ที่มี TC อยู่แล้ว **แม้ยังไม่
 ผลลัพธ์ทุกชุดเป็น **Draft** — ต้องผ่านการรีวิวจาก QA ก่อนใช้งานจริง Sheet, tab, และ gid อยู่ใน
 [`references/ols-project-guide.md`](references/ols-project-guide.md) → ตาราง **QA tracking sheet**
 
+### ตารางเวลา, resume งานค้าง & self-healing
+
+Bot อยู่ที่ `~/ols-qa-tc-autodraft-bot/` (นอก repo): `run.sh` (VPN gate + lock + pre-scan → เรียก
+headless `claude --print prompt.md` เมื่อมีงานจริง) · `scan_todo.py` · `write_tabs.py` (generic,
+validate fail-closed) · `check_token.sh` (token probe + alert) · `prompt.md` (วิธีทำ). ใช้ secret ร่วมกับ
+bot อื่น (claude token, Jira, Google OAuth) — ไม่มี secret อยู่ใน repo.
+
+- **ตารางเวลา** — launchd `com.<USER>.ols-tc-autodraft` ยิงทุก 4 ชม. **ตรงเวลานาฬิกา 00 / 04 / 08 / 12 /
+  16 / 20 น.** (`StartCalendarInterval`, caffeinate). รอบที่เครื่องหลับ/VPN ลง = ข้ามเงียบ
+- **Resume งานค้างอัตโนมัติ (ชีทคือ state เอง — ไม่มีไฟล์จำสถานะให้ drift)** — scan คิดค่า **`needsTC`** =
+  ไม่มีแท็บ **หรือแท็บมีแต่ว่าง** (รอบก่อนสร้างแท็บแล้ว crash/timeout ก่อนเขียน → รอบหน้าเห็นว่าว่าง → ทำต่อ).
+  แต่ละรอบ draft ไม่เกิน **`OLS_MAX_PER_ROUND` = 6** ticket (ที่เหลือไปต่อรอบหน้าเอง) → รอบสั้น timeout ยาก;
+  ตราบใดยังไม่เขียนจริง = ยัง `needsTC` = ถูกหยิบซ้ำ **ไม่มีวันโกหกว่าเสร็จ**
+- **กันรัน run เปล่า** — ticket ที่ถูก flag ว่า **ไม่มี AC/EC** (ร่างไม่ได้) จะถูกอ่านจาก Summary Remark แล้ว
+  **ไม่ trigger รอบใหม่** จนกว่าคนจะเคลียร์ Remark / ticket เปลี่ยนสถานะ
+- **Token guard (renew อัตโนมัติไม่ได้ เพราะ `claude setup-token` เป็น browser-OAuth)** — `check_token.sh`
+  probe token แบบถูกๆ; ถ้า stale เด้ง **แจ้งเตือน macOS + Discord** พร้อมคำสั่งแก้ ใช้ 2 จุด: (ก) **preflight
+  ใน run.sh** (token เสีย = เตือน + ข้ามรอบ ไม่เผา run ทิ้งเงียบ) · (ข) **monitor รายวัน 09:30**
+  (`com.<USER>.ols-tc-token-check`) เตือนล่วงหน้าก่อนรอบเที่ยง. Logs: `~/ols-qa-tc-autodraft-bot/logs/`
+  (`bot.log`, `token.log`). ทดสอบ scan-only: `DRYRUN=1 bash ~/ols-qa-tc-autodraft-bot/run.sh`
+
 ## Changelog
+
+### v1.16.1 — TC auto-draft bot: schedule ตรงเวลา + resume งานค้าง + token guard (21 Jul 2026)
+
+- **ตารางเวลาตรงนาฬิกา** — เปลี่ยนจาก interval เป็น `StartCalendarInterval` ทุก 4 ชม. **00 / 04 / 08 / 12 / 16 / 20 น.** (รอบถัดไปคาดเดาได้)
+- **Resume งานค้างอัตโนมัติ** — scan คิด `needsTC` = ไม่มีแท็บ **หรือแท็บว่าง** (รอบก่อน crash หลังสร้างแท็บ → รอบหน้าทำต่อ); cap **6 ticket/รอบ** ที่เหลือไปต่อรอบหน้า; ชีทคือ state เอง ไม่มีวันโกหกว่าเสร็จ
+- **กันรัน run เปล่า** — ticket ที่ flag "ไม่มี AC/EC" (ร่างไม่ได้) ไม่ trigger รอบใหม่จนกว่าจะได้ requirements
+- **Token guard** — `check_token.sh` probe token headless; stale = แจ้งเตือน **macOS + Discord** พร้อมคำสั่งแก้ ใช้เป็น preflight ใน run.sh (ไม่เผา run ทิ้งเงียบ) + monitor รายวัน 09:30 (`com.<USER>.ols-tc-token-check`)
+- รายละเอียด: section [ตารางเวลา, resume งานค้าง & self-healing](#ตารางเวลา-resume-งานค้าง--self-healing)
 
 ### v1.16.0 — Automated TC auto-draft: ร่าง TC ให้ ticket TC Status=TO DO (20 Jul 2026)
 
@@ -170,12 +199,6 @@ ticket ที่มี TC อยู่แล้ว **แม้ยังไม่
 - **ห้ามมโน / ห้ามเกินขอบเขต** — ทุกเคส trace AC/EC จริงจาก Jira (verbatim), ครบทุก AC + EC, `Type` = Unit/Integration/System เฉพาะที่ AC/EC รองรับ; ticket ที่ **ไม่มี AC/EC** เลย = ไม่ร่าง แค่ flag; conflict/ caveat (BLOCKED, รอ Figma, AC/EC ยังเปลี่ยน) → `Need QA recheck: …` ที่ช่อง Remark
 - **ไม่แตะ `TC Status` ใน Summary และไม่เขียน Jira** — ผลลัพธ์เป็น Draft รอ QA รีวิว; VPN/เปิดคอมเป็นเงื่อนไข ถ้าไม่ครบ = เงียบ
 - รายละเอียดเต็ม: section [Automated TC auto-draft](#automated-tc-auto-draft-ทุก-4-ชม)
-
-### v1.15.0 — Retest bug + Testing ticket: วิธีเข้าถึง Figma design reference (20 Jul 2026)
-
-- **เพิ่มวิธี view Figma design ในทั้ง 2 สกิล** — retest-bug (Step 2 ตอนอ่าน expected result ที่ Figma เป็น supplement) + testing-ticket (Phase B load context): ลำดับคือ **Figma Dev Mode MCP** ก่อน (ต้องเปิด Dev Mode MCP Server ใน Figma desktop + เปิดไฟล์; `node-id` ใน URL ใช้ `-` แต่ MCP `nodeId` ใช้ `:` เช่น `2257-114654` → `2257:114654`) → ถ้า server ปิด **fallback เป็น browser-automation MCP**: เปิด URL ไฟล์ (login เบราว์เซอร์ค้างไว้) → รอ canvas render → screenshot node
-- **ปิด modal "view this file in Dev Mode?" ด้วย "Not now" เท่านั้น — ห้าม "Request access"** (ส่งคำขอ seat); account แบบ **View + Comment** ก็อ่าน/แคป/copy spec ได้พอ
-- OLS-specific (working-file URL + หมายเหตุการเข้าถึง) อยู่ใน [`references/ols-project-guide.md`](references/ols-project-guide.md) — ตาราง Figma
 
 ---
 
