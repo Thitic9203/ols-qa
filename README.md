@@ -97,22 +97,59 @@ Durable state lives in `~/ols-qa-testing-bot/.autopoll_state.json`
 `~/ols-qa-testing-bot/logs/listener.out.log` (look for `autopoll armed`). Restart after editing:
 `launchctl kickstart -k gui/$(id -u)/com.<USER>.ols-testing-listener`.
 
+## Automated TC auto-draft (ทุก ~4 ชม.)
+
+งานอัตโนมัติที่ **ร่างเทสเคส FE** ให้ ticket ที่ยังไม่มี TC แล้วเขียนลง **QA tracking sheet** โดยตรง — เพื่อให้ทีม QA
+มี TC ตั้งต้นรอรีวิว ไม่ต้องเริ่มจากศูนย์ เป็น **OLS-specific infrastructure** (launchd bot บนเครื่อง QA) ไม่ใช่ helix skill
+และ **แยกจาก autopoll** ด้านบน (คนละงาน: autopoll = รันเทสต์ ticket ที่ TC พร้อมแล้ว; ตัวนี้ = ร่าง TC ให้ ticket ที่ยังไม่มี TC)
+
+### Eligibility
+
+Ticket จะถูกร่าง TC ให้ เมื่อ **ครบทุกข้อ** (เช็คกับ tab **Summary** ของ
+[QA tracking sheet](references/ols-project-guide.md#qa-tracking-sheet-ticket-list--tc-status)):
+
+- **TC Status** = `TO DO`
+- **Ticket Detail Status** = `Details Provided`
+- **ยังไม่มี TC** — ยังไม่มีแท็บของ ticket นั้น หรือมีแท็บแต่ว่าง
+
+ticket ที่มี TC อยู่แล้ว **แม้ยังไม่ครบ** = **ข้าม** ให้คนจัดการต่อ การสแกนอ่าน Google Sheets ผ่าน OAuth token
+จึงทำงานได้โดยไม่ต้องต่อ VPN แต่ตัว bot จะ **ทำงานจริงเฉพาะช่วงที่เปิดคอม + ต่อ NDLP VPN อยู่** ถ้าไม่ครบเงื่อนไข = อยู่เงียบ
+
+### ขั้นตอน (ยึดวิธีนี้ทุกรอบ)
+
+1. **Scan** — หา ticket ที่เข้าเกณฑ์จาก tab Summary
+2. **Triage** — ถ้า ticket **ไม่มี AC/EC** เลย → **ไม่ร่าง** (ห้ามมโน) แค่เขียน note ที่ช่อง Remark ของ Summary;
+   caveat อื่น (Jira status = BLOCKED / In Progress / REVIEWING, PO รอ Figma, comment ที่ AC/EC ยังเปลี่ยน) →
+   เก็บเป็นโน้ต `Need QA recheck: …`
+3. **Draft (parallel)** — ยิง subagent 1 ตัวต่อ 1 ticket พร้อมกัน ป้อน AC/EC แบบ verbatim จาก Jira เพื่อกันการแต่งเติม
+   แต่ละตัวออกแบบ TC ให้: ทุกเคส trace กลับ AC/EC จริง — **ครบทุก AC + EC**, ไม่เกินขอบเขต; `Type` = Unit /
+   Integration / System **เฉพาะ layer ที่ AC/EC รองรับจริง** (ไม่แต่ง TC มา filler); เนื้อหาไทยทางการ;
+   `Test Case ID` = `TC_01, TC_02, …`; `Test Status` เริ่มต้น = **`Not Started`**
+4. **Verify** — ตรวจ coverage (AC/EC → TC) ของทุก ticket ก่อนเขียนลงชีท
+5. **Write** — สร้าง **แท็บใหม่** ต่อ 1 ticket ตามฟอร์แมต tab **`OLS-44`** (16 คอลัมน์: Acceptance Criteria ·
+   Services Impacted · Test Case ID · Test Title · Precondition · Test Data · Test Steps · Expected Result ·
+   Priority · Type · QA Owner · Test Status · Actual Result · Capture Screen Link · Linked Bug · Remark) →
+   เพิ่มแถวใน tab **`Test Progress - ALL TC`** → เขียนโน้ตที่ช่อง Remark ของ tab **Summary**
+6. **ไม่แตะ** ค่า `TC Status` ใน Summary (ให้ QA เปลี่ยนเอง) และ **ไม่เขียน Jira**
+
+ความขัดแย้งใน ticket (description/comment) ถูกบันทึกที่ช่อง Remark ของแท็บนั้นเสมอ เช่น `Need QA recheck เกี่ยวกับ…`
+ผลลัพธ์ทุกชุดเป็น **Draft** — ต้องผ่านการรีวิวจาก QA ก่อนใช้งานจริง Sheet, tab, และ gid อยู่ใน
+[`references/ols-project-guide.md`](references/ols-project-guide.md) → ตาราง **QA tracking sheet**
+
 ## Changelog
+
+### v1.16.0 — Automated TC auto-draft: ร่าง TC ให้ ticket TC Status=TO DO (20 Jul 2026)
+
+- **งานใหม่ (launchd bot, ทุก ~4 ชม.)** — สแกน tab Summary หา ticket **TC Status = `TO DO` + Ticket Detail Status = `Details Provided`** ที่ **ยังไม่มี TC** แล้วร่าง FE TC ลง **แท็บใหม่** ในฟอร์แมต `OLS-44` (16 คอลัมน์, `TC_01…`, `Test Status = Not Started`) + เพิ่มแถวใน `Test Progress - ALL TC` + note ที่ Remark ของ Summary; ticket ที่มี TC แล้ว = ข้าม
+- **ห้ามมโน / ห้ามเกินขอบเขต** — ทุกเคส trace AC/EC จริงจาก Jira (verbatim), ครบทุก AC + EC, `Type` = Unit/Integration/System เฉพาะที่ AC/EC รองรับ; ticket ที่ **ไม่มี AC/EC** เลย = ไม่ร่าง แค่ flag; conflict/ caveat (BLOCKED, รอ Figma, AC/EC ยังเปลี่ยน) → `Need QA recheck: …` ที่ช่อง Remark
+- **ไม่แตะ `TC Status` ใน Summary และไม่เขียน Jira** — ผลลัพธ์เป็น Draft รอ QA รีวิว; VPN/เปิดคอมเป็นเงื่อนไข ถ้าไม่ครบ = เงียบ
+- รายละเอียดเต็ม: section [Automated TC auto-draft](#automated-tc-auto-draft-ทุก-4-ชม)
 
 ### v1.15.0 — Retest bug + Testing ticket: วิธีเข้าถึง Figma design reference (20 Jul 2026)
 
 - **เพิ่มวิธี view Figma design ในทั้ง 2 สกิล** — retest-bug (Step 2 ตอนอ่าน expected result ที่ Figma เป็น supplement) + testing-ticket (Phase B load context): ลำดับคือ **Figma Dev Mode MCP** ก่อน (ต้องเปิด Dev Mode MCP Server ใน Figma desktop + เปิดไฟล์; `node-id` ใน URL ใช้ `-` แต่ MCP `nodeId` ใช้ `:` เช่น `2257-114654` → `2257:114654`) → ถ้า server ปิด **fallback เป็น browser-automation MCP**: เปิด URL ไฟล์ (login เบราว์เซอร์ค้างไว้) → รอ canvas render → screenshot node
 - **ปิด modal "view this file in Dev Mode?" ด้วย "Not now" เท่านั้น — ห้าม "Request access"** (ส่งคำขอ seat); account แบบ **View + Comment** ก็อ่าน/แคป/copy spec ได้พอ
 - OLS-specific (working-file URL + หมายเหตุการเข้าถึง) อยู่ใน [`references/ols-project-guide.md`](references/ols-project-guide.md) — ตาราง Figma
-
-### v1.12.0 — TC FE Prep: บังคับรีเช็คคำศัพท์จาก TC glossary ก่อนออกแบบ TC (10 Jul 2026)
-
-- **Step 2.6 — TC glossary re-check (gate ใหม่ บังคับ)** — หลังเคลียร์ AC/EC + conflict check เสร็จ ก่อนออกแบบ TC สกิลจะดึง tab `คำที่ใช้ใน TC` จาก [published sheet](https://docs.google.com/spreadsheets/d/e/<TC_GLOSSARY_PUB_ID>/pubhtml) ใหม่สดๆ แล้วโพสต์ URL ต้นทาง + จำนวนคำ + diff ให้ user ดูเป็นหลักฐาน; ของเก่าที่ cache ไว้ใช้ไม่ได้
-- **Glossary อยู่เหนือทุกตารางคำในสกิล** — 14 คำที่ชีทเป็นเจ้าของ (Login, Checkbox, Filter, Upload, Status, Role, Cancel, Confirm, Notification, Toast, Modal, Dialog, Tab, Dashboard) ถูกถอดออกจาก fallback table เพื่อไม่ให้มี source of truth สองที่; เหลือ fallback ไว้เฉพาะคำที่ชีทไม่มี
-- **หยุดถามเมื่อคำไม่ชัด** — ช่องคำไทยว่าง หรือ 1 คำอังกฤษมีความหมายไทยขัดกัน (เช่น `Creator` vs `Creator (media owner)`) → บล็อก ห้ามเดา; การเดาแล้วติดป้าย "provisional" ไม่นับว่าถาม
-- **`references/tc-glossary.csv` เป็น mirror เป๊ะๆ** — ห้ามแก้ typo/เรียง/ลบซ้ำในไฟล์; แก้ที่ชีทแล้ว re-export เท่านั้น
-- **Step 4.5 term table เพิ่มคอลัมน์ `ที่มา`** — ทุกคำต้องระบุว่ามาจาก `glossary` / `fallback` / `user`; แถวที่ไม่มีที่มา = คำที่ถูกคิดขึ้นเอง ต้องถอดออก
-- กติกาเต็ม: [`references/tc-glossary.md`](references/tc-glossary.md) · ลิงก์ชีท + `gid`: [`references/ols-project-guide.md`](references/ols-project-guide.md)
 
 ---
 
