@@ -68,9 +68,8 @@ short-circuits in order:
      completing, e.g. VPN dropped mid-run). It resumes automatically — see *Resume unfinished runs* below.
    - **Fresh** — never launched, not declined in the last **24 h**, not already queued → offered for testing.
 6. **Nothing fresh** → silent
-7. **Fresh tickets found** → set their **QA Owner = the QA lead** in both Jira (`customfield_12120`,
-   assignee untouched) and the sheet, then post **one** prompt in the QA review thread on Discord listing
-   all of them, with **Yes / No** buttons
+7. **Fresh tickets found** → post **one** prompt in the QA review thread on Discord listing all of them,
+   with **Yes / No** buttons (ownership is claimed on the first click — see *Ownership* below)
 
 ### Confirm once → serial queue
 
@@ -82,6 +81,18 @@ short-circuits in order:
 **Invariant — one confirmation per batch:** a single prompt covers all eligible tickets and a single
 **Yes** approves the whole batch. The bot **never** re-confirms ticket-by-ticket; it just queues them and
 tests serially.
+
+### Ownership — first click claims the batch
+
+Anyone in the QA thread can answer — this is how the whole team uses one central bot (there is nothing to
+deploy per person; deploying the bot on more than one machine is **not** supported — the runs share a
+single OLS account and would collide). **The first person to click (Yes *or* No) becomes the QA Owner** of
+every ticket in that prompt: the bot writes `customfield_12120` in Jira to that clicker (assignee
+untouched), and the sheet's QA Owner column follows via the hourly Jira→sheet sync. This claims the
+tickets so no one else picks them up. The Discord-user → Jira-account mapping lives in
+`~/ols-qa-testing-bot/.qa-roster.json`; if the clicker isn't in it, the tickets are still queued or
+suppressed but ownership is left unset and a warning is shown (add the person to the roster). The test run
+itself always executes centrally on the QA Mac, whoever clicked.
 
 ### Resume unfinished runs
 
@@ -107,8 +118,9 @@ token is independent of that window and never fails with a stale-interaction err
 Durable state lives in `~/ols-qa-testing-bot/.autopoll_state.json`
 (`{pending, declined, queue, launched, attempts}`) and survives restarts. Key constants: scan **2 h** ·
 drain **60 s** · declined **24 h** · auto-resume cap **2** · settle window **120 s** · pending-prompt
-expiry **12 h**. Logs: `~/ols-qa-testing-bot/logs/listener.out.log` (look for `autopoll armed`,
-`auto-resume`). Restart after editing:
+expiry **12 h**. Team roster (Discord user → Jira account) for ownership:
+`~/ols-qa-testing-bot/.qa-roster.json`. Logs: `~/ols-qa-testing-bot/logs/listener.out.log` (look for
+`autopoll armed`, `auto-resume`, `QA Owner ->`). Restart after editing:
 `launchctl kickstart -k gui/$(id -u)/com.<USER>.ols-testing-listener`.
 
 ## Automated TC auto-draft (ทุก ~4 ชม.)
