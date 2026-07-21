@@ -226,9 +226,9 @@ otherwise).
 | ↳ Autopoll (inside the listener) | every 2 h | Finds ready tickets → asks in Discord → first click claims + runs on **Yes** (see *Automated testing trigger*) |
 | **TC auto-draft** (`ols-tc-autodraft`) | every 4 h (00/04/08/12/16/20) | Drafts FE test cases for tickets that have none yet (see *Automated TC auto-draft*) |
 | **QA-owner sync** (`ols-qa-owner-sync`) | every 2 min | Keeps the QA Owner shown in already-sent Discord notifications in step with Jira |
-| **Login smoke-test** (`ols-login-check`) | Mon–Fri 10:35 | Connects the VPN and checks NDLP→OLS SSO login still works; logs the result |
+| **Login smoke-test** (`ols-login-check`) | Mon–Fri 10:35 AM | Connects the VPN and checks NDLP→OLS SSO login still works; logs the result |
 | **Auth-token check** (`ols-tc-token-check`) | เป็นรอบ | Keeps the headless Claude auth token fresh — unattended runs fail silently on a stale token |
-| **Wake-for-audit** (`wake-for-audit`) | Mon–Fri 10:25 | Wakes the Mac ~10 min before the morning jobs so the schedule actually fires |
+| **Wake-for-audit** (`wake-for-audit`) | Mon–Fri 10:25 AM | Wakes the Mac ~10 min before the morning jobs so the schedule actually fires |
 
 Separately, a Google Apps Script syncs the tracking sheet's **QA Owner** column from Jira — so ownership set
 anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows up in the sheet on its own.
