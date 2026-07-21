@@ -24,6 +24,12 @@ Follow [shared-preamble.md](../../references/shared-preamble.md).
 
 MUST refuse to reach Phase B until **Ticket** and **URL** are provided — because the test plan has no target.
 
+**Pre-flight login smoke gate (mandatory before Phase B).** Before running any scenario, verify that login **actually succeeds** for **every role/credential set** the run may use — not only the one role the first case needs. Drive the real login (headless where supported) per role and confirm an authenticated signal (redirect to an authed area, a session/`me` endpoint, or a logged-in UI marker). Produce a per-role pass/fail table.
+- **All roles pass →** proceed to Phase B.
+- **Any role fails →** 🛑 stop, report which role failed and why (backend error, VPN, bad creds), and do **not** start testing until it is cleared or the user explicitly says to skip the failing role. Never mark scenarios PASSED when auth was never verified.
+
+This catches an auth-backend outage (e.g. an IdP returning a 4xx on every login) up front, before opening cases that would all block later. Project-specific role list, accounts, and login steps live in the project's `references/*-guide.md` / login runbook.
+
 If **VPN** is required per user and environment is unreachable in Phase D, stop and report — do not mark scenarios PASSED without evidence.
 
 ---
