@@ -10,6 +10,23 @@ Helix skills embedded directly — no separate install needed.
 
 Open this folder in **Claude Code** and trust the project. The SessionStart hook injects OLS context automatically.
 
+## What this workspace can do
+
+Three ways of working, all pointed at the OLS project:
+
+- **A. Interactive skills** — you run these yourself in Claude Code (see *Helix commands*): design test
+  cases (`/tc-fe-prep`, `/tc-api-prep`), run a Playwright test (`/testing-ticket`), re-verify a dev fix
+  (`/retest-bug`), or file bugs (`/create-bug`).
+- **B. Discord-driven testing** — a bot on the QA Mac tests tickets headless and reports back:
+  - **On request** — type `/bot-testing OLS-xx` in the QA thread; it auto-routes (Bug → retest, Story →
+    test). See *On-request testing*.
+  - **Automatic (autopoll)** — every 2 h it finds ready tickets and asks in the thread; the first person to
+    answer claims them, one **Yes** runs them. See *Automated testing trigger*.
+- **C. Background automations** — scheduled jobs keep the pipeline running unattended: TC drafting, QA-owner
+  sync, a daily login smoke-test, auth-token refresh. See *Background automations*.
+
+Each is detailed below.
+
 ## Helix commands
 
 | Command | What it does |
@@ -32,6 +49,20 @@ Open this folder in **Claude Code** and trust the project. The SessionStart hook
 
 All OLS-specific config (test env URLs, default assignee, etc.) lives in [`references/ols-project-guide.md`](references/ols-project-guide.md).
 Update it as new info arrives — AI reads it before asking questions.
+
+## On-request testing — `/bot-testing`
+
+Type `/bot-testing OLS-<key>` in the QA Discord thread to test one ticket on demand (same bot/listener as
+autopoll, so it also runs headless on the QA Mac). It reads the ticket type from Jira and routes
+automatically:
+
+- **Bug → retest** — re-verifies the dev's fix against the bug's Expected Result, attaches evidence, then
+  **writes the verdict back to Jira** (comment + status transition) and notifies the QA thread.
+- **Story → test** — runs the ticket's reviewed test cases with Playwright and writes results to the
+  **Google Sheet + Drive** (screenshots / MP4); it **does not touch Jira**.
+
+Anyone in the thread can trigger it. Only one run executes at a time — a lock serialises `/bot-testing` and
+autopoll together, so they never collide on the single OLS account.
 
 ## Automated testing trigger (autopoll)
 
@@ -182,6 +213,25 @@ bot อื่น (claude token, Jira, Google OAuth) — ไม่มี secret �
   ใน run.sh** (token เสีย = เตือน + ข้ามรอบ ไม่เผา run ทิ้งเงียบ) · (ข) **monitor รายวัน 09:30**
   (`com.<USER>.ols-tc-token-check`) เตือนล่วงหน้าก่อนรอบเที่ยง. Logs: `~/ols-qa-tc-autodraft-bot/logs/`
   (`bot.log`, `token.log`). ทดสอบ scan-only: `DRYRUN=1 bash ~/ols-qa-tc-autodraft-bot/run.sh`
+
+## Background automations (launchd on the QA Mac)
+
+Scheduled jobs that keep the QA pipeline running unattended. All are `launchd` agents on the QA Mac; each
+needs the machine awake, and anything that touches OLS also needs the NDLP VPN up (jobs skip quietly
+otherwise).
+
+| Job | Schedule | What it does |
+|-----|----------|--------------|
+| **Testing listener** (`ols-testing-listener`) | always on (KeepAlive) | Runs the Discord bot: `/bot-testing` on-request **+** the autopoll trigger |
+| ↳ Autopoll (inside the listener) | every 2 h | Finds ready tickets → asks in Discord → first click claims + runs on **Yes** (see *Automated testing trigger*) |
+| **TC auto-draft** (`ols-tc-autodraft`) | every 4 h (00/04/08/12/16/20) | Drafts FE test cases for tickets that have none yet (see *Automated TC auto-draft*) |
+| **QA-owner sync** (`ols-qa-owner-sync`) | every 2 min | Keeps the QA Owner shown in already-sent Discord notifications in step with Jira |
+| **Login smoke-test** (`ols-login-check`) | Mon–Fri 10:35 | Connects the VPN and checks NDLP→OLS SSO login still works; logs the result |
+| **Auth-token check** (`ols-tc-token-check`) | periodic | Keeps the headless Claude auth token fresh — unattended runs fail silently on a stale token |
+| **Wake-for-audit** (`wake-for-audit`) | Mon–Fri 10:25 | Wakes the Mac ~10 min before the morning jobs so the schedule actually fires |
+
+Separately, a Google Apps Script syncs the tracking sheet's **QA Owner** column from Jira — so ownership set
+anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows up in the sheet on its own.
 
 ## Changelog
 
