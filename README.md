@@ -244,7 +244,7 @@ Two steps the AI/bot performs to hand a story back to its human QA Owner once th
 **1. Sort + highlight the progress tab** — `~/ols-qa-testing-bot/sort_test_progress.py [--apply] [--ai-ticket OLS-xx ...]`
 - Re-sorts the QA sheet **`Test Progress - ALL TC`** tab by **`% Passed` (col D) descending**, tie-break **`Total TC` (col C) descending** — most-complete tickets float to the top.
 - Paints every **AI-tested** ticket's row **solid yellow** (union of existing yellow rows + `--ai-ticket`).
-- Uses native `sortRange` (moves whole rows, formulas recompute) + a self-heal guard that repairs col A if a concurrent tab-sync leaves it as a broken `=OLS-xx` formula.
+- Uses native `sortRange` (moves whole rows, formulas recompute) + a **surgical** self-heal that repairs **only** an exact bare `=OLS-nn` cell (→ `#NAME?`) back to plain text. It must **never** touch `=HYPERLINK(…,"OLS-nn")` tab-link formulas — stripping their `=` turns them into dead literals and breaks the whole tab (root cause of the 2026-07-22 corruption; see [docs/qa-owner-sync/README.md](docs/qa-owner-sync/README.md#incident-2026-07-22--test-progress-tab-corruption-fixed)).
 
 **2. Hand QA Owner back to the real person** — after posting the result comment:
 - Revert **QA Owner** from the AI account (`QA Lead`) to the story's **most-recent prior owner** (from the Jira field changelog) in BOTH Jira field **`customfield_12120`** and the sheet (`Summary` col G + `Test Progress` col B).
