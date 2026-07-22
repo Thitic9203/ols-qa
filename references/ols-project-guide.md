@@ -47,12 +47,16 @@ Transition ids (global, usable from any status): `11` To Do · `21` In Progress 
 `41` Done · `51` DEPLOYING · **`61` READY TO TEST** · `71` TESTING · `81`/`141` BLOCKED ·
 `151` approve by QA (→ Done). From READY TO TEST to Done use `121` then `41`.
 
-### Unblocking stories after a PASSED retest (retest-bug-workflow Step 8e)
+### Unblocking stories once a bug reaches Done (retest-bug-workflow Step 8e)
 
-Ready-for-QA status for a story that a fixed bug was blocking = **READY TO TEST** (transition `61`).
-Move it **only** when every one of that story's "is blocked by" links is in **Done** — OLS stories are
-commonly blocked by several bugs at once, and bugs sitting in **DEPLOYING** still count as unresolved.
-Leave assignee and QA Owner untouched.
+**Trigger = the bug is in Done** (Done means fixed). Ready-for-QA status for a story it was blocking =
+**READY TO TEST** (transition `61`). Move the story **only** when every one of its "is blocked by"
+links is in **Done** — OLS stories are commonly blocked by several bugs at once, and a blocker sitting
+in **DEPLOYING** / REVIEWING / In Progress still counts as unresolved. Leave assignee and QA Owner
+untouched.
+
+Check the links from the **story** side (`is blocked by`), not just the bug's `blocks` list, so
+blockers that this retest never touched are not missed.
 
 ### Assignee during QA
 
