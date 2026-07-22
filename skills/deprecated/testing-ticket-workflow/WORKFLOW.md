@@ -186,14 +186,26 @@ Reply **confirm** to apply updates, or correct the mapping.
 
 - Open or fetch the destination (browser, API, MCP, or file read).
 - **Match existing layout** — headers, row order, language, status vocabulary already in use.
-- For Google Sheets: read headers and sample rows before writing.
+- For Google Sheets: read headers and sample rows before writing. **Detect the result columns from the header row — never assume fixed column letters**, and confirm the tab name and tab id refer to the same tab.
 - For Jira comments: draft in chat; use v2 wiki vs v3 ADF per project guide if present.
 - If access fails (auth, 403, VPN) → report exactly what failed; **do not claim success.**
 
+**Claim the scope (layer 1 — hard gate).** Snapshot the destination, then classify every target
+row: untested (empty / `NOT STARTED`, no result text, no links) or written by an earlier run of
+yours = **yours to write**; anything a person filled in = **not yours**. Drop the not-yours rows
+here and list them for the user. Same for a shared evidence folder: note which files already
+exist and were not uploaded by you. See [result-update-discipline.md](references/result-update-discipline.md).
+
 ### G5 — Apply updates
 
-- Write **every** planned row/cell/comment field.
-- Map each test scenario to the correct row (by TC id, row number, or user mapping).
+- Write **every** planned row/cell/comment field **that this run owns** — and nothing else.
+- Map each test scenario to the correct row (by TC id, row number, or user mapping), and **anchor
+  on the row's own identifier**: if the id in that row is not the case you are recording, skip it.
+- **Re-read each row immediately before writing** (layer 2) — if it changed since G4, someone is
+  editing it; skip that row rather than overwrite.
+- Never overwrite, rename, delete, reorder, or reformat anything a person put there — and never
+  reuse an existing file's link as this run's evidence. Refusing is a correct outcome: record
+  "not written — owned by someone else" and carry on.
 - Include evidence references where the format allows (screenshot names, bug keys as `{{KEY}}` in Jira wiki).
 
 ### G6 — Review before “complete” (mandatory)
@@ -208,6 +220,10 @@ Before telling the user updates are done:
    - [ ] Jira/Confluence: comment or table visible as intended (not draft-only unless user asked draft).
    - [ ] **No literal `<br>`, HTML tags, or stray markup** visible as text in any cell.
    - [ ] **Numbered items** each on a separate line — not running together on one line.
+   - [ ] **Nothing outside this run's own cells/files changed** (layer 3): diff the destination
+         against the G4 snapshot. Anything else changed → restore it from the snapshot, stop, and
+         tell the user. Existing files in a shared folder still present and unmodified.
+   - [ ] Every **refused / skipped** row is listed in the report with the reason.
 3. If any mismatch → fix and re-check. **Maximum 3 fix rounds** — then report specific failures with best available workaround (see [jira-comment-post-review.md](../../references/jira-comment-post-review.md)).
 
 ### G7 — Close

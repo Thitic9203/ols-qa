@@ -86,6 +86,7 @@ Master sheet of OLS tickets with QA/TC status. AI reads this to decide which tic
 | Per-ticket TC detail | click a ticket **Key** in the sheet → opens that ticket's own tab listing all its test cases |
 | Eligibility for AI testing | **Status = `READY TO TEST`** AND **TC Status = `QA Reviewed`** |
 | Ticket has no TC rows in sheet | TCs not yet pasted → tell user to update the sheet first; do **not** start testing |
+| 🔐 **Write scope (บังคับ)** | AI เขียนได้เฉพาะแถวที่ **ว่าง/NOT STARTED** หรือแถวที่ **AI เขียนเองรอบก่อน** (Actual Result ขึ้นต้น `Tested by Claude AI`) · แถวที่ QA ใส่ status/actual/ลิงก์ไว้ = **ห้ามแตะ** · เขียนผ่าน `sheet_write.py` (`--dry-run` ก่อน · ทุกแถวมี `"tc"` anchor) **ห้ามยิง Sheets API เขียน tab TC เอง** — รายละเอียด 3 ชั้น: [ai-assisted-testing-template.md § Write-scope guard](../docs/ai-assisted-testing-template.md#-write-scope-guard--ai-แตะได้เฉพาะงานของรอบตัวเอง-3-ชั้น--บังคับ) |
 
 ## Customer UAT sheet (regression TC delivery)
 
@@ -106,6 +107,7 @@ Per-ticket screenshot capture for QA evidence — one folder per ticket.
 | Root folder | `Capture screen (OLS)` → https://drive.google.com/drive/folders/<EVIDENCE_DRIVE_ROOT_ID> |
 | Per-ticket folder | `OLS-<key>` (e.g. `OLS-44`) — create it if missing before testing |
 | Naming | one screenshot per Expected Result, e.g. `TC_01-ER_1.png` — mirror `docs/result/OLS-<key>/` |
+| 🔐 **Write scope (บังคับ)** | อัปโหลดผ่าน `drive_upload.py` เท่านั้น — เขียนได้เฉพาะในโฟลเดอร์ `OLS-<key>` · **ไฟล์ที่ QA อัปไว้ = ห้ามทับ ห้ามลบ ห้าม rename และห้ามเอาลิงก์มาอ้างเป็นหลักฐานของรอบ AI** · ชนชื่อ → เปลี่ยนชื่อไฟล์ของรอบเราแล้วอัปใหม่ |
 
 ## Bug ticket field schema (where the bug content actually lives)
 
