@@ -237,6 +237,23 @@ are both reachable without the NDLP VPN, so this one runs every weekday regardle
 - Schedule: weekday **10:00 AM & 5:00 PM** via `~/ols-qa-testing-bot/flip_run.sh` (if the Mac is asleep at
   fire time, launchd runs the missed job on next wake). Log: `~/ols-qa-testing-bot/logs/flip.log`.
 
+## Post-run close-out (runs after every AI test run, per story)
+
+Two steps the AI/bot performs to hand a story back to its human QA Owner once the automated cases are done. **The card stays at `TESTING`** — AI only pre-runs; the real QA Owner does the final recheck + closes.
+
+**1. Sort + highlight the progress tab** — `~/ols-qa-testing-bot/sort_test_progress.py [--apply] [--ai-ticket OLS-xx ...]`
+- Re-sorts the QA sheet **`Test Progress - ALL TC`** tab by **`% Passed` (col D) descending**, tie-break **`Total TC` (col C) descending** — most-complete tickets float to the top.
+- Paints every **AI-tested** ticket's row **solid yellow** (union of existing yellow rows + `--ai-ticket`).
+- Uses native `sortRange` (moves whole rows, formulas recompute) + a self-heal guard that repairs col A if a concurrent tab-sync leaves it as a broken `=OLS-xx` formula.
+
+**2. Hand QA Owner back to the real person** — after posting the result comment:
+- Revert **QA Owner** from the AI account (`QA Lead`) to the story's **most-recent prior owner** (from the Jira field changelog) in BOTH Jira field **`customfield_12120`** and the sheet (`Summary` col G + `Test Progress` col B).
+- Post an AI comment on the story **@mentioning that owner** — "recheck the AI results + test the remaining cases AI couldn't (multi-account / threshold / BPM / missing-fixture / PO-confirm)". Card kept at **TESTING**.
+- **QA Owner B resigned → substitute QA Owner A** wherever the prior owner would be QA Owner B; never assign/ping QA Owner B again.
+- Assignee is **never** touched (ownership = status + QA Owner field, not assignee).
+
+**Discord destination** — every QA notify/handoff goes **only** to the thread `🏂 ปั่นเทสด้วย AI` (id `<DISCORD_QA_THREAD_ID>`). `discord_qa_notify.py` targets it via `?thread_id=`; ad-hoc sends must include that thread id (or use the bot token to post to the channel directly) — a bare webhook POST lands in the wrong parent channel.
+
 ## Background automations (launchd on the QA Mac)
 
 Scheduled jobs that keep the QA pipeline running unattended. All are `launchd` agents on the QA Mac; each
@@ -259,20 +276,20 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
 
 ## Changelog
 
+### v1.16.3 — Post-run close-out: progress sort/highlight + QA-Owner handoff (22 Jul 2026)
+
+- **Test Progress sort + yellow** — หลังทุก test run: `sort_test_progress.py` เรียง tab `Test Progress - ALL TC` ตาม **% Passed มากสุดก่อน** (เท่ากัน→ **Total TC มากกว่าก่อน**) + ไฮไลต์แถวที่ AI รันเป็น **สีเหลือง**; ใช้ native `sortRange` + self-heal guard คืน col A ถ้า tab-sync ทำพัง (`=OLS-xx` → `#NAME?`)
+- **QA Owner handoff** — หลัง AI เทสสตอรี่เสร็จ: คืน **QA Owner** จากบัญชี AI (QA Lead) → **คนเดิมล่าสุด** ทั้งใน Jira (`customfield_12120`) + ชีท (Summary G / Test Progress B), การ์ด**คงที่ `TESTING`**, แล้วเม้นแท็ก QA Owner จริงให้ recheck + เทสเคสที่เหลือ (assignee ไม่แตะ)
+- **QA Owner B ลาออก → ใช้ QA Owner A แทน** ทุกที่ (Jira/Sheet/Discord); ไม่ ping/assign QA Owner B อีก
+- **Discord** — ทุก QA notify/handoff ส่งเฉพาะ thread `🏂 ปั่นเทสด้วย AI` (`<DISCORD_QA_THREAD_ID>`); ต้องมี `?thread_id=` เสมอ, ticket key เป็นลิงก์ Jira `[OLS-xx](…/browse/OLS-xx)`
+- รายละเอียด: section [Post-run close-out](#post-run-close-out-runs-after-every-ai-test-run-per-story)
+
 ### v1.16.2 — Auto-flip stories READY TO TEST → TESTING (22 Jul 2026)
 
 - **งานใหม่ (launchd bot, Mon–Fri 10:30)** — สแกน story ที่ Jira status = **READY TO TEST** แล้วเช็ค TC ในชีท; ถ้าแท็บของ story มีเคสสถานะ **ที่ไม่ใช่ `Not Started` อย่างน้อย 1 เคส** (= เริ่มเทสแล้ว) → flip Jira story เป็น **TESTING** อัตโนมัติ, **QA Owner คงเดิม** (ไม่เคยส่ง `assignee`)
 - **Idempotent + status-guarded** — `scan_testing_flip.py --apply` อ่าน status สดจาก Jira ก่อน flip เฉพาะตัวที่ยัง READY TO TEST ผ่าน transition **121 "pick up by QA"**; รันซ้ำมือได้ปลอดภัย; dry-run ได้ (`--apply` เท่านั้นที่เขียน Jira)
 - **ไม่ต้อง VPN** (Google Sheets + Jira REST) → รันทุก weekday; story ที่ไม่มีแท็บ TC ในชีท = ข้าม ไม่ flip
 - รายละเอียด: section [Auto-flip stories to TESTING](#auto-flip-stories-to-testing)
-
-### v1.16.1 — TC auto-draft bot: schedule ตรงเวลา + resume งานค้าง + token guard (21 Jul 2026)
-
-- **ตารางเวลาตรงนาฬิกา** — เปลี่ยนจาก interval เป็น `StartCalendarInterval` ทุก 4 ชม. **00 / 04 / 08 / 12 / 16 / 20 น.** (รอบถัดไปคาดเดาได้)
-- **Resume งานค้างอัตโนมัติ** — scan คิด `needsTC` = ไม่มีแท็บ **หรือแท็บว่าง** (รอบก่อน crash หลังสร้างแท็บ → รอบหน้าทำต่อ); cap **6 ticket/รอบ** ที่เหลือไปต่อรอบหน้า; ชีทคือ state เอง ไม่มีวันโกหกว่าเสร็จ
-- **กันรัน run เปล่า** — ticket ที่ flag "ไม่มี AC/EC" (ร่างไม่ได้) ไม่ trigger รอบใหม่จนกว่าจะได้ requirements
-- **Token guard** — `check_token.sh` probe token headless; stale = แจ้งเตือน **macOS + Discord** พร้อมคำสั่งแก้ ใช้เป็น preflight ใน run.sh (ไม่เผา run ทิ้งเงียบ) + monitor รายวัน 09:30 (`com.<USER>.ols-tc-token-check`)
-- รายละเอียด: section [ตารางเวลา, resume งานค้าง & self-healing](#ตารางเวลา-resume-งานค้าง--self-healing)
 
 ---
 
