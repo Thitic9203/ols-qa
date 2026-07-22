@@ -101,6 +101,7 @@ Master sheet of OLS tickets with QA/TC status. AI reads this to decide which tic
 | Per-ticket TC detail | click a ticket **Key** in the sheet → opens that ticket's own tab listing all its test cases |
 | Eligibility for AI testing | **Status = `READY TO TEST`** AND **TC Status = `QA Reviewed`** |
 | Ticket has no TC rows in sheet | TCs not yet pasted → tell user to update the sheet first; do **not** start testing |
+| 🧬 **Integrity (บังคับ)** | เขียนแล้ว **สูตรห้ามพัง · ค่าห้ามเพี้ยน · ห้ามเลื่อนคอลัมน์** — หา column จาก header row (ห้าม hardcode) · ห้ามเขียนค่าดิบทับเซลล์ที่เป็นสูตร · เขียน **RAW** เสมอ (กัน `=…`/`1/2`/`007` ถูกตีความใหม่) · หลังเขียนต้องอ่านกลับมาตรง + ไม่มี `#REF!/#NAME?` ใหม่ + header ไม่ขยับ · ใช้ได้กับ **ทุก tab** ผ่าน `sheet_guard.py` |
 | 🔐 **Write scope (บังคับ)** | AI เขียนได้เฉพาะแถวที่ **ว่าง/NOT STARTED** หรือแถวที่ **AI เขียนเองรอบก่อน** (Actual Result ขึ้นต้น `Tested by Claude AI`) · แถวที่ QA ใส่ status/actual/ลิงก์ไว้ = **ห้ามแตะ** · เขียนผ่าน `sheet_write.py` (`--dry-run` ก่อน · ทุกแถวมี `"tc"` anchor) **ห้ามยิง Sheets API เขียน tab TC เอง** — รายละเอียด 3 ชั้น: [ai-assisted-testing-template.md § Write-scope guard](../docs/ai-assisted-testing-template.md#-write-scope-guard--ai-แตะได้เฉพาะงานของรอบตัวเอง-3-ชั้น--บังคับ) |
 
 ## Customer UAT sheet (regression TC delivery)

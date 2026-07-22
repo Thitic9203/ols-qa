@@ -206,6 +206,10 @@ exist and were not uploaded by you. See [result-update-discipline.md](references
 - Never overwrite, rename, delete, reorder, or reformat anything a person put there — and never
   reuse an existing file's link as this run's evidence. Refusing is a correct outcome: record
   "not written — owned by someone else" and carry on.
+- **Do not damage what you do write:** never put a literal over a cell holding a formula; send
+  text so the sheet cannot re-read it as a formula/date/number (`=`, `+`, `-`, `@`, `1/2`,
+  `2026-07-23`, `007`); and make every row exactly as wide as the range so nothing shifts into
+  the wrong column.
 - Include evidence references where the format allows (screenshot names, bug keys as `{{KEY}}` in Jira wiki).
 
 ### G6 — Review before “complete” (mandatory)
@@ -224,6 +228,9 @@ Before telling the user updates are done:
          against the G4 snapshot. Anything else changed → restore it from the snapshot, stop, and
          tell the user. Existing files in a shared folder still present and unmodified.
    - [ ] Every **refused / skipped** row is listed in the report with the reason.
+   - [ ] **Nothing was damaged**: written cells read back exactly what was sent, every formula
+         that was there is still a formula, no new `#REF!/#NAME?/#VALUE!/#N/A` anywhere, and the
+         header row is unchanged.
 3. If any mismatch → fix and re-check. **Maximum 3 fix rounds** — then report specific failures with best available workaround (see [jira-comment-post-review.md](../../references/jira-comment-post-review.md)).
 
 ### G7 — Close

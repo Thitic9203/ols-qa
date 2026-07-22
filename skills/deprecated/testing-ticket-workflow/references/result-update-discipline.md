@@ -20,6 +20,17 @@ Every layer **fails closed**: if a check cannot be satisfied, do not write.
 | Result text starts with your own run marker (e.g. `Tested by <agent> …`) | ✅ your earlier run — re-runs and retests may update it |
 | Anything else — a status, a note, or a link a person put there | ⛔ hands off |
 
+### Integrity — three kinds of damage a "successful" write can leave behind
+
+Scope is only half the rule. A write that touches exactly the right cells can still wreck the
+sheet, so every layer also checks that **nothing came out damaged**:
+
+| # | Damage | How it happens | Guard |
+|:-:|---|---|---|
+| **I1** | **A formula is destroyed** | writing a literal over a cell that held a formula; a spilling array formula blocked by leftover values in its spill range | refuse to write a literal onto a formula cell; after writing, every pre-existing formula must still be a formula and the same one, and **no new `#REF!`/`#NAME?`/`#VALUE!`/`#N/A`/`#DIV/0!` may appear anywhere in the block**. Clear an array formula's spill range *before* writing it |
+| **I2** | **A value is altered on the way in** | the sheet re-reads text as something else: `=…`/`+…`/`-…`/`@…` becomes a formula, `1/2` or `2026-07-23` becomes a date, `007` loses its zero | write text **RAW**; reserve the "interpret this" input mode for values you genuinely mean as formulas; refuse a literal that would be reinterpreted; after writing, **read the cells back and compare them to what was sent** |
+| **I3** | **Values land in the wrong column** | a row shorter than the range shifts every later value one column left; hardcoded column letters when the layout has variants; a moved header row | resolve columns **by header name**, require every written row to be exactly as wide as the range (pad with empty strings), and verify the **header row is unchanged** after the write — if the header moved, every column mapping in the run was wrong |
+
 ### Layer 1 — pre-flight claim (before writing anything)
 
 - Confirm the tab/page you resolved is the one you were given (name **and** id must agree — an
@@ -44,6 +55,9 @@ Every layer **fails closed**: if a check cannot be satisfied, do not write.
 - Re-read the block and diff against the snapshot. Any cell that changed outside the claimed set
   is collateral damage: **restore it from the snapshot** and fail the run loudly. Never leave it
   silently changed, and never "fix it up" by writing something new over it.
+- Run the integrity checks too: written cells read back exactly what was sent, formulas survived,
+  no new error cells, header row unchanged. A run that "wrote successfully" but left a `#REF!`
+  behind has failed — report it rather than moving on.
 - Append every decision — written, refused, overridden, restored — to an audit log.
 
 ### Shared file/evidence folders
