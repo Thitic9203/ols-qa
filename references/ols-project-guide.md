@@ -87,6 +87,16 @@ Master sheet of OLS tickets with QA/TC status. AI reads this to decide which tic
 | Eligibility for AI testing | **Status = `READY TO TEST`** AND **TC Status = `QA Reviewed`** |
 | Ticket has no TC rows in sheet | TCs not yet pasted → tell user to update the sheet first; do **not** start testing |
 
+## Customer UAT sheet (regression TC delivery)
+
+Customer-facing regression sheet — HI-QA runs delivery-gate regression from it.
+
+| Field | Value |
+|-------|-------|
+| Sheet | https://docs.google.com/spreadsheets/d/<CUSTOMER_UAT_SHEET_ID>/edit |
+| OLS tab | `OLS: TC List` (gid `2084955184`) — cols B–G = Module · Test case name · Pre-requisite · Test data · Test step · Expected Result. **Only B–G are ours**; col A (No.) pre-filled, cols H+ = SKL-QA/HI-QA tester columns — never touch. Other tabs (ELMS/CBMS/EvMS/…) never touch. |
+| Auto-sync | launchd `com.<USER>.ols-regression-sync` Mon–Fri 10:30+17:00 runs `~/ols-qa-testing-bot/regression_sync.py` — appends System-Test PASSED cases from DONE stories, idempotent. Details: [regression-tc-sync.md](../docs/regression-tc-sync.md) |
+
 ## Screenshot evidence (Drive)
 
 Per-ticket screenshot capture for QA evidence — one folder per ticket.
