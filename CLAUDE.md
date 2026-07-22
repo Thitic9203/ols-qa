@@ -163,3 +163,51 @@ fetch('/rest/api/3/issue/ISSUE-KEY/attachments', {
 | `Claude_in_Chrome__file_upload` | Upload ไฟล์จาก session shared folder เท่านั้น | ไม่สามารถ upload ไฟล์จาก repo/local path |
 | `Control_Chrome__execute_javascript` | Run JS บน Jira pages (upload, API calls) | ไม่รองรับ async/await, ใช้ `.then()` |
 | `Control_Chrome__get_current_tab` | ดู tab ID ที่ต่างจาก Claude_in_Chrome | tab ID คนละชุดกัน |
+
+## Post-mortems
+
+Root-cause notes for mistakes that already reached a user-facing surface. Read before touching the
+surface named in each entry. One rule per entry — apply it, don't re-derive it.
+
+### PM-001 — Discord QA notify sent with the wrong header (2026-07-22, OLS-217)
+
+**What happened.** The retest notify for OLS-217 went out as `❌ **Retest Result** — Ticket …`.
+Every notify the user had previously accepted in the QA channel uses one fixed header,
+`🔔 **QA Review Requested** — Ticket …`, with the verdict carried **only** by the bold count line
+(`**0 PASSED / 4 FAILED / 0 BLOCKED**`). User: "ห้ามส่งโนติที่ผิดฟอแมตอีก". Fixed in place by
+PATCHing the existing message — never by reposting.
+
+**Root cause — three failures stacked, none of which the pre-send gate could catch:**
+
+1. **The generator itself was wrong.** `discord_qa_notify.py` `build_content()` had a separate
+   `mode == "retest"` branch that synthesised its own `✅/❌ Retest Result` header instead of reusing
+   the shared one. The divergence came from *reasoning about semantics* ("a retest is already closed
+   out, so it isn't a review request") instead of matching the format the user had already accepted.
+   **Semantic reasoning overrode observed convention.**
+2. **The agent memory agreed with the bug.** The retest-format memory described the retest header as
+   a verdict headline, so code and memory corroborated each other. Two wrong sources that agree feel
+   like verification but are one source.
+3. **The pre-send gate had no format check.** The Step 9 five-check gate verifies ticket, counts,
+   bullets, link and recipient — all *content*. Nothing compared the *layout* to anything. The
+   dry-run was reviewed against expectation, not against evidence, so the header was never in scope.
+
+**Underlying mistake:** treating a `LOCKED layout` claim in a docstring as authority. For a
+user-facing format, authority is **the last message the user accepted on that surface** — not a
+comment in the code, not a memory, not an inference about what the message "is".
+
+**Prevention (mandatory, applies to every outbound notify):**
+
+- **Check #6 in the pre-send gate — format diff against the channel.** Before any send, fetch the
+  most recent accepted notify from the target channel and compare the dry-run to it line-by-line:
+  header line, count line, bullet block, link line, owner line. Any structural difference = stop and
+  ask. Reading back a real message costs one API call; a wrong send costs a correction round.
+- **One header for every mode.** Header text is mode-independent. Verdict/state belongs in the count
+  line only. Never add a per-verdict icon or a per-mode header variant to `build_content()`.
+- **Fix the generator, not the message.** A bad send means the shared formatter is wrong — patch
+  `build_content()` (the single source both the sender and `sync_qa_owner.py` use) and leave a
+  comment naming the reference message, then correct the posted message with a PATCH edit in place.
+- **When code and memory agree, that is not corroboration.** Confirm a user-facing format against the
+  live surface before trusting either.
+- Full parameter rules and the canonical reference message id live in local agent memory
+  (`feedback_discord-retest-format`, `feedback_discord-canonical-format`) — the channel/webhook ids
+  are secrets and MUST NOT be committed here.
