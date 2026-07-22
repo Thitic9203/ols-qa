@@ -276,6 +276,21 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
 
 ## Changelog
 
+### v1.16.4 — retest-bug: auto-unblock linked stories once a bug reaches Done (23 Jul 2026)
+
+- **New Step 8d in `/retest-bug`** — the moment a retested bug lands in **Done** (verdict PASSED), the
+  workflow reads its `blocks` links, then re-checks each blocked **story's own** "is blocked by" list
+  (not just this bug) so a story with multiple open blockers is never released early.
+- **Only-Done-counts rule** — a blocker sitting in DEPLOYING / REVIEWING / In Progress still leaves the
+  story blocked; only every blocker being **Done** releases it.
+- **Backwards-move guard** — a story already in QA (READY TO TEST / TESTING) or still mid-development
+  (In Progress / REVIEWING) is left untouched even once all blockers clear — Step 8d only moves stories
+  parked in the project's **blocked** status, never pulls one back from further along the pipeline.
+- **Never touches assignee/QA Owner.** Unresolved blockers are reported to the user with their keys and
+  live statuses; nothing is transitioned silently.
+- Root-cause note for a related notify-format bug fixed the same week: [CLAUDE.md § Post-mortems, PM-001](CLAUDE.md#post-mortems).
+- รายละเอียด: [retest-bug-workflow/WORKFLOW.md § Step 8d](skills/deprecated/retest-bug-workflow/WORKFLOW.md)
+
 ### v1.16.3 — Post-run close-out: progress sort/highlight + QA-Owner handoff (22 Jul 2026)
 
 - **Test Progress sort + yellow** — หลังทุก test run: `sort_test_progress.py` เรียง tab `Test Progress - ALL TC` ตาม **% Passed มากสุดก่อน** (เท่ากัน→ **Total TC มากกว่าก่อน**) + ไฮไลต์แถวที่ AI รันเป็น **สีเหลือง**; ใช้ native `sortRange` + self-heal guard คืน col A ถ้า tab-sync ทำพัง (`=OLS-xx` → `#NAME?`)
@@ -283,13 +298,6 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
 - **QA Owner B ลาออก → ใช้ QA Owner A แทน** ทุกที่ (Jira/Sheet/Discord); ไม่ ping/assign QA Owner B อีก
 - **Discord** — ทุก QA notify/handoff ส่งเฉพาะ thread `🏂 ปั่นเทสด้วย AI` (`<DISCORD_QA_THREAD_ID>`); ต้องมี `?thread_id=` เสมอ, ticket key เป็นลิงก์ Jira `[OLS-xx](…/browse/OLS-xx)`
 - รายละเอียด: section [Post-run close-out](#post-run-close-out-runs-after-every-ai-test-run-per-story)
-
-### v1.16.2 — Auto-flip stories READY TO TEST → TESTING (22 Jul 2026)
-
-- **งานใหม่ (launchd bot, Mon–Fri 10:30)** — สแกน story ที่ Jira status = **READY TO TEST** แล้วเช็ค TC ในชีท; ถ้าแท็บของ story มีเคสสถานะ **ที่ไม่ใช่ `Not Started` อย่างน้อย 1 เคส** (= เริ่มเทสแล้ว) → flip Jira story เป็น **TESTING** อัตโนมัติ, **QA Owner คงเดิม** (ไม่เคยส่ง `assignee`)
-- **Idempotent + status-guarded** — `scan_testing_flip.py --apply` อ่าน status สดจาก Jira ก่อน flip เฉพาะตัวที่ยัง READY TO TEST ผ่าน transition **121 "pick up by QA"**; รันซ้ำมือได้ปลอดภัย; dry-run ได้ (`--apply` เท่านั้นที่เขียน Jira)
-- **ไม่ต้อง VPN** (Google Sheets + Jira REST) → รันทุก weekday; story ที่ไม่มีแท็บ TC ในชีท = ข้าม ไม่ flip
-- รายละเอียด: section [Auto-flip stories to TESTING](#auto-flip-stories-to-testing)
 
 ---
 

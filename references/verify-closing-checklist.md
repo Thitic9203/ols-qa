@@ -40,6 +40,7 @@ Apply [qa-evidence-gates.md](qa-evidence-gates.md) before any pass/post/done cla
 - [ ] Screenshots attached before v2 wiki embed (FE)
 - [ ] Transition names match workspace guide
 - [ ] Post-publish review passed: no stray HTML/markup tags, numbered items on separate lines ([jira-comment-post-review.md](jira-comment-post-review.md))
+- [ ] **If the bug landed in Done (PASSED): Step 8d run** — every story this bug `blocks` re-checked on the story's own "is blocked by" list (only **Done** counts as resolved); a story moved to ready-for-QA only if it was parked in the blocked status and every blocker cleared; anything still blocked, or already further along than blocked, reported instead of transitioned.
 
 ## Create bug
 
