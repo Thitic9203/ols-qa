@@ -47,7 +47,7 @@ Transition ids (global, usable from any status): `11` To Do · `21` In Progress 
 `41` Done · `51` DEPLOYING · **`61` READY TO TEST** · `71` TESTING · `81`/`141` BLOCKED ·
 `151` approve by QA (→ Done). From READY TO TEST to Done use `121` then `41`.
 
-### Unblocking stories once a bug reaches Done (retest-bug-workflow Step 8e)
+### Unblocking stories once a bug reaches Done (retest-bug-workflow Step 8d)
 
 **Trigger = the bug is in Done** (Done means fixed). Ready-for-QA status for a story it was blocking =
 **READY TO TEST** (transition `61`). Move the story **only** when every one of its "is blocked by"

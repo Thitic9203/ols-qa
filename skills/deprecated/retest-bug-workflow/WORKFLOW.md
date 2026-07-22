@@ -282,6 +282,7 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 - [ ] Jira issue re-opened after post: comment visible, not truncated.
 - [ ] Step 7d fix-verify completed.
 - [ ] **Step 8·0 format-completeness gate passed BEFORE any transition** — FE bug: screenshots embedded inline + render-verified; API bug: full cURL/response per row.
+- [ ] Bug landed in Done → **Step 8d** run: stories it blocked either moved to ready-for-QA or left with their remaining blockers reported.
 - [ ] Step 9 QA notify sent if the project configures a channel (retest verdict + Jira comment link + @mention).
 - [ ] [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Retest section).
 
@@ -330,7 +331,7 @@ From changelog: last move into the project's **active development** status (ofte
 
 **Skip if the project guide says "never change assignee"** (e.g. OLS — ownership tracked by status, not assignee).
 
-### 8e. Unblock linked stories (run once the bug reaches Done)
+### 8d. Unblock linked stories (run once the bug reaches Done)
 
 **Trigger: the bug is now in Done** — i.e. the retest PASSED and Step 8a moved it there. A bug in Done
 counts as fixed, and that is what releases the stories it was blocking. Run this immediately after the
@@ -348,24 +349,28 @@ when **nothing else** still blocks it.
    project guide) — never hardcode it here.
 4. **Only Done counts as resolved.** A blocker still in an in-flight status — being deployed, in
    review, in progress — leaves the story blocked.
-5. If any blocker is unresolved, **leave the story untouched** and report the remaining blocker keys
+5. **Only move a story that is parked in the project's blocked status.** A story already in QA
+   (ready-for-QA / testing) or still being built (in progress / review) must be left alone — pushing it
+   to ready-for-QA would move it backwards or hand QA work the dev has not finished.
+6. If any blocker is unresolved, **leave the story untouched** and report the remaining blocker keys
    and their statuses to the user.
-6. Never change the story's assignee or QA Owner while doing this.
+7. Never change the story's assignee or QA Owner while doing this.
 
 **Bug not in Done → skip this step entirely.** A story stays blocked while the bug is unfixed.
 
 | Situation | Action |
 |-----------|--------|
-| Bug Done, story has no other blocker outside Done | transition story → ready-for-QA status |
+| Bug Done, story parked in blocked status, no other blocker outside Done | transition story → ready-for-QA status |
 | Bug Done, story still blocked by something not Done | leave; report the blocker keys + statuses |
+| Bug Done, story already in QA or still in development | leave; never move it backwards |
 | Bug Done, no blocks link on the bug | nothing to do |
 | Bug not in Done (FAILED / BLOCKED verdict) | skip |
 
-### 8d. Tell the user
+### 8e. Tell the user
 
 > Done. Review at `https://{JIRA_DOMAIN}/browse/{ISSUE_KEY}`
 
-Include the 8e outcome: which stories were moved, and which stayed blocked and by what.
+Include the 8d outcome: which stories were moved, and which stayed blocked and by what.
 
 ---
 
@@ -439,8 +444,8 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST pass the Step 8·0 format-completeness gate before ANY status transition — FE bug requires screenshots embedded inline **and** render-verified; a text-only FE comment fails the gate | Transitioning on an evidence-incomplete comment silently hides the gap (learned OLS-181: FE bug moved to Done with a text-only comment) |
 | MUST NOT offer the user a "skip screenshots / text-only" option for an FE bug — screenshots are mandatory, not optional; if upload is blocked, STOP and resolve, don't bypass | Offering to skip a mandatory step is how the gate got bypassed (OLS-181) |
 | MUST run Step 8 after successful post unless user stopped you | Workflow closure |
-| MUST run Step 8e as soon as the bug lands in Done — Done = fixed = the stories it blocked may be releasable | Otherwise blocked stories sit in the backlog after their blocker is already closed |
-| MUST check EVERY "is blocked by" link on a story before moving it in Step 8e, and treat only **Done** as resolved | This bug is often not the story's only blocker; moving a still-blocked story sends untestable work back to QA |
+| MUST run Step 8d as soon as the bug lands in Done — Done = fixed = the stories it blocked may be releasable | Otherwise blocked stories sit in the backlog after their blocker is already closed |
+| MUST check EVERY "is blocked by" link on a story before moving it in Step 8d, treat only **Done** as resolved, and move only stories parked in the blocked status | This bug is often not the story's only blocker; moving a still-blocked story sends untestable work back to QA, and touching a story already in QA/dev moves it backwards |
 | MUST create test data when possible | "No data" is not an excuse |
 | MUST NOT change COMMENT_FORMAT after Step 3 | v2/v3 rewrite cost |
 | MUST NOT include local file paths in Jira comments (`docs/result/`, absolute home/machine paths, etc.) | Meaningless to Jira readers; user enforced "เน้นๆๆ ห้ามผิดอีก" |
