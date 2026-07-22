@@ -448,6 +448,30 @@ Post the table from [coverage-delta-template.md](../../references/coverage-delta
 
 If review fails → fix Step 3 design and re-run 4a–4d (max 2 rounds).
 
+### 4e — Unclear spec → BLOCK the case, never guess (mandatory, zero omissions)
+
+During review, any case whose expected behaviour is **not certain** — contradictory AC/EC, spec that
+conflicts with Key Feature/Business Rules/PRD/Figma, values referenced from another ticket that is not
+confirmed, mis-threaded comments, or any point the reviewer cannot verify from the ticket itself —
+MUST NOT be resolved by guessing or by silently picking one interpretation.
+
+For every such case, do ALL of the following — no case may be skipped:
+
+1. Set that case's **Test Status = `BLOCKED`** (per-row, in the tracking sheet / result table — not
+   the whole ticket unless every case is affected).
+2. Write a **Remark on that exact case's row** that names, explicitly:
+   - **Actor** — the case's **QA Owner** is the person who must go make contact (name them, e.g.
+     `QA Owner ({owner}) ติดต่อ …` — never a bare "waiting for X" with no actor);
+   - **Contact target** — the specific person to contact (Reporter / PO / designer, by name);
+   - **Topic** — exactly what must be confirmed, quoting the conflicting AC/EC labels or sources;
+   - **Unblock condition** — what happens after the answer (e.g. "ได้คำตอบแล้วจึงปรับ TC และรันได้").
+3. Cases that are certain remain unblocked — blocking is per-case, surgical, never blanket.
+
+**Zero-omission rule:** every uncertainty found anywhere in the review (coverage check, quality check,
+conflict check, comment triage) MUST end up as a `BLOCKED` row with such a Remark. An uncertainty
+mentioned only in chat, a report, or a commit message — but absent from the sheet row — is a
+workflow violation.
+
 ---
 
 ## Step 4.5 — Thai↔English term confirmation (mandatory gate)
@@ -819,3 +843,4 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST include Step 2a results in the pre-draft review HTML even when no issues found | Gives user visibility that the check was done |
 | MUST NOT proceed to Step 3 while Step 2a issues are unresolved | TC design on inconsistent AC/EC creates rework |
 | MUST follow user's decision on how to handle flagged AC/EC (skip, draft all, fix first) | User owns the AC/EC scope — AI does not unilaterally remove or merge items |
+| MUST set Test Status = `BLOCKED` on every case whose spec is uncertain, with a per-row Remark naming actor (**the QA Owner goes and contacts**), contact target, topic, and unblock condition (Step 4e) — never guess, never leave an uncertainty out of the sheet | A guessed TC produces a false verdict; an unattributed "waiting" remark means nobody acts on it |
