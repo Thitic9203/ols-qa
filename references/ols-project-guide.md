@@ -43,6 +43,17 @@ AI reads this file before asking any OLS-related questions.
 | block | any → BLOCKED |
 | Deploy done | DEPLOYING → READY TO TEST |
 
+Transition ids (global, usable from any status): `11` To Do · `21` In Progress · `31` REVIEWING ·
+`41` Done · `51` DEPLOYING · **`61` READY TO TEST** · `71` TESTING · `81`/`141` BLOCKED ·
+`151` approve by QA (→ Done). From READY TO TEST to Done use `121` then `41`.
+
+### Unblocking stories after a PASSED retest (retest-bug-workflow Step 8e)
+
+Ready-for-QA status for a story that a fixed bug was blocking = **READY TO TEST** (transition `61`).
+Move it **only** when every one of that story's "is blocked by" links is in **Done** — OLS stories are
+commonly blocked by several bugs at once, and bugs sitting in **DEPLOYING** still count as unresolved.
+Leave assignee and QA Owner untouched.
+
 ### Assignee during QA
 
 **Never change the assignee** when picking up an OLS ticket for retest or testing — not to self, not back to the developer after a verdict. Ownership is tracked by status, not assignee. This overrides the generic retest-bug-workflow Step 8b/8c (find developer → assign).

@@ -330,9 +330,36 @@ From changelog: last move into the project's **active development** status (ofte
 
 **Skip if the project guide says "never change assignee"** (e.g. OLS — ownership tracked by status, not assignee).
 
+### 8e. Unblock linked stories (run on PASSED only)
+
+A bug usually carries a **blocks** link to one or more stories — on the story those appear as
+**"is blocked by {ISSUE_KEY}"**. When the retest verdict is **PASSED**, the story may be ready for QA
+again, but only when **nothing else** still blocks it.
+
+1. Read the bug's link list and collect every issue it **blocks**.
+2. For each of those stories, re-read the story's own **inward blocks links** ("is blocked by") — do
+   NOT assume this bug was the only blocker.
+3. Move the story to the project's ready-for-QA status **only if every one of its blockers is
+   resolved** (in a done status). Take the status/transition name from the project config
+   (`references/*-retest-guide.md` / project guide) — never hardcode it here.
+4. If any blocker is unresolved, **leave the story untouched** and report the remaining blocker keys
+   and their statuses to the user.
+5. Never change the story's assignee or QA Owner while doing this.
+
+**FAILED verdict → skip this step entirely.** A story stays blocked while the bug is unfixed.
+
+| Situation | Action |
+|-----------|--------|
+| PASSED, story has no other unresolved blocker | transition story → ready-for-QA status |
+| PASSED, story still blocked by something else | leave; report the blocker keys |
+| PASSED, bug has no blocks link | nothing to do |
+| FAILED / BLOCKED verdict | skip |
+
 ### 8d. Tell the user
 
 > Done. Review at `https://{JIRA_DOMAIN}/browse/{ISSUE_KEY}`
+
+Include the 8e outcome: which stories were moved, and which stayed blocked and by what.
 
 ---
 
@@ -406,6 +433,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST pass the Step 8·0 format-completeness gate before ANY status transition — FE bug requires screenshots embedded inline **and** render-verified; a text-only FE comment fails the gate | Transitioning on an evidence-incomplete comment silently hides the gap (learned OLS-181: FE bug moved to Done with a text-only comment) |
 | MUST NOT offer the user a "skip screenshots / text-only" option for an FE bug — screenshots are mandatory, not optional; if upload is blocked, STOP and resolve, don't bypass | Offering to skip a mandatory step is how the gate got bypassed (OLS-181) |
 | MUST run Step 8 after successful post unless user stopped you | Workflow closure |
+| MUST check EVERY "is blocked by" link on a story before moving it in Step 8e — this bug is often not its only blocker | Moving a still-blocked story to QA sends untestable work back to the queue |
 | MUST create test data when possible | "No data" is not an excuse |
 | MUST NOT change COMMENT_FORMAT after Step 3 | v2/v3 rewrite cost |
 | MUST NOT include local file paths in Jira comments (`docs/result/`, absolute home/machine paths, etc.) | Meaningless to Jira readers; user enforced "เน้นๆๆ ห้ามผิดอีก" |
