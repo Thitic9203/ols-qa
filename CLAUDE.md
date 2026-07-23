@@ -211,3 +211,55 @@ comment in the code, not a memory, not an inference about what the message "is".
 - Full parameter rules and the canonical reference message id live in local agent memory
   (`feedback_discord-retest-format`, `feedback_discord-canonical-format`) — the channel/webhook ids
   are secrets and MUST NOT be committed here.
+
+### PM-002 — Retest comment shipped incomplete, then had to be corrected in-ticket (2026-07-23, OLS-108)
+
+**Surface:** the Jira retest comment (retest-bug-workflow Step 6/7) and any Phase F3 defect write-up.
+
+**What happened.** OLS-108's round-1 comment posted a `FAILED` verdict with an env block, the ticket's
+test step/expected result, a 3-row expected-result table and 5 screenshots — and nothing else. The dev
+then asked two questions: *"เกิดต่อเมื่อ user ก๊อป URL มาเปิดตรงๆ ใช่ไหม"* and *"ต้องโชว์ detail เหมือนปกติแต่ disable
+ปุ่มไว้ ใช่ไหม"*. The answer given was **"ไม่ใช่ เกิดทั้ง 2 ทาง"** — wrong. The user then had to ask three more
+times what actually needs fixing and who decides. The comment was edited **twice**, the second time
+8 hours after posting, and had to carry an in-ticket retraction (*"ขอแก้ข้อมูลจากที่เคยแจ้งไว้ว่าเกิดทั้ง 2 ทาง"*)
+plus a correction posted into the Discord thread where the wrong answer had already been replied to.
+
+**Root cause — four failures, in the order they compounded:**
+
+1. **The wrong claim came from a stale client view, recorded as product behavior.** Run 1 observed
+   the "การเรียนของฉัน" list ~5 s after the course was unpublished, while the list still held
+   pre-change data — the card had no badge and was still clickable. That is a property of test
+   timing, not of the product. Run 2, ten minutes later, showed the badge and no anchor.
+2. **Two of our own runs contradicted each other and the contradiction was never reconciled.** Both
+   captures were in the evidence set (`C2-me-learning-after-unpublish.png` vs `tc3-mylearning-badge.png`).
+   The observation that matched the already-formed verdict was the one that got published.
+3. **The claim was asserted from memory, not re-verified.** The dev's question was answered directly
+   from recollection of run 1 rather than by re-running the surface — so a one-run artifact was
+   escalated into an authoritative statement to a developer.
+4. **The comment answered only "what is wrong", not the three things a reader acts on** — which entry
+   points reproduce it, what the screen should look like instead (concretely enough to implement),
+   and what must change / who decides between updating the expected result and changing the code.
+   Every question asked afterwards mapped 1:1 to a section that was never written.
+
+**Underlying mistake:** treating a defect report as a *verdict record* rather than as *the artifact
+someone else acts on*. A verdict record is finished when the status is right; a defect report is
+finished only when a developer who has never seen the ticket needs to ask nothing.
+
+**Prevention (now enforced in the skills — apply, don't re-derive):**
+
+- Full contract: [references/defect-report-completeness.md](references/defect-report-completeness.md).
+  Wired into retest-bug-workflow (Step 4f · 6a · 6b · 10) and testing-ticket-workflow (E1 · F3 · F4 · H).
+- **Repro matrix, one row per entry point, or no scope claim.** Exercise the direct route *and* the
+  in-app path separately, one screenshot each. An untried path is written `not tested` — never
+  inferred. Words like "always" / "both ways" must trace to a row.
+- **Hard-reload after every state-changing fixture step before observing.** A stale window is reported
+  as a separate timing note with the measured delay, never as a repro row.
+- **A contradiction between your own observations blocks drafting** until one clean re-run settles it;
+  record which capture was the artifact. Never settle it in favour of the verdict you already hold.
+- **A non-PASSED comment carries three extra blocks** — repro matrix, why-failed with the expected line
+  quoted verbatim, and resolution options with a named owner each — plus one line stating whether the
+  originally reported symptom is gone.
+- **Pass the dev-question gate before the FIRST post.** Never "post now and explain in chat".
+- **A question arriving after posting = re-verify, answer in the shape asked, then fold the answer back
+  into the comment in place.** A wrong published statement is corrected visibly in both places — the
+  in-place edit and the thread where it was given. Never a silent edit.

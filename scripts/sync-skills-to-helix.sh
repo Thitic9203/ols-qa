@@ -32,6 +32,7 @@ else CHANGED="$(cd "$OLSQA" && git diff --name-only HEAD~1 HEAD 2>/dev/null)"; f
 # --- keep only SHARED skill files (exist in both, under skills/|references/|commands/) ---
 FILES=()          # to sync (relative paths)
 SKIPPED_NEW=()    # generic-looking files not present in helix (new candidates)
+SKIPPED_REF=()    # new references/* not present in helix (never auto-created; reported)
 while IFS= read -r f; do
   [ -n "$f" ] || continue
   case "$f" in skills/*|references/*|commands/*) ;; *) continue ;; esac
@@ -39,10 +40,14 @@ while IFS= read -r f; do
   if [ -f "$HELIX/$f" ]; then
     FILES+=("$f")
   else
-    # not in helix yet. references/* here holds OLS-only config -> never auto-create.
+    # not in helix yet. references/* here holds OLS-only config -> never auto-create,
+    # but still REPORT it: a shared skill file may link to it, and a silent drop ships
+    # helix a dangling reference (happened once with defect-report-completeness.md).
     case "$f" in
       skills/*|commands/*)
         if [ "$SYNC_NEW" = "1" ]; then FILES+=("$f"); else SKIPPED_NEW+=("$f"); fi ;;
+      references/*)
+        SKIPPED_REF+=("$f") ;;
     esac
   fi
 done <<EOF
@@ -52,6 +57,13 @@ EOF
 if [ "${#SKIPPED_NEW[@]}" -gt 0 ]; then
   echo "sync: NOT syncing ${#SKIPPED_NEW[@]} new skills/commands file(s) absent from helix (set HELIX_SYNC_NEW=1 to include):"
   printf '  · %s\n' "${SKIPPED_NEW[@]}"
+fi
+
+if [ "${#SKIPPED_REF[@]}" -gt 0 ]; then
+  echo "sync: ⚠️  ${#SKIPPED_REF[@]} new references/* file(s) are NOT auto-created in helix (OLS-only by default):"
+  printf '  · %s\n' "${SKIPPED_REF[@]}"
+  echo "sync:    If a SHARED skill file links to one of these, copy it into helix by hand and commit there,"
+  echo "sync:    or the deployed workflow ships with a dangling link."
 fi
 
 [ "${#FILES[@]}" -gt 0 ] || { echo "sync: no shared skill files to sync — nothing to do"; exit 0; }
