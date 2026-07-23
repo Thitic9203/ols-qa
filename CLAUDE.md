@@ -266,41 +266,49 @@ finished only when a developer who has never seen the ticket needs to ask nothin
   into the comment in place.** A wrong published statement is corrected visibly in both places — the
   in-place edit and the thread where it was given. Never a silent edit.
 
-### PM-003 — Retest comment used the generic helix template instead of this project's own house style (2026-07-23, OLS-252)
+### PM-003 — Retest comment picked the wrong precedent, twice, before matching the real current format (2026-07-23, OLS-252)
 
-**Surface:** the Jira retest comment body (retest-bug-workflow Step 6).
+**Surface:** the Jira retest comment body (retest-bug-workflow Step 6), posted via raw `PUT
+/rest/api/2/issue/{key}/comment/{id}` with a hand-built wiki-markup string (not the Atlassian MCP
+`addCommentToJiraIssue` tool).
 
-**What happened.** The OLS-252 PASSED retest comment was drafted from
-`retest-bug-workflow/references/worked-example.md` (generic, anonymized) instead of from this
-project's own prior retest comments. Result: a `**Fixture:**` line the project never uses, `---`
-horizontal-rule dividers between sections that the project never uses, column labels
-("Expected result item" / "Actual" / "Expected-result coverage") that don't match the project's actual
-wording ("Expected Result" / "Observed now" / "Result:"), the closing emoji placed inside the bold
-marker instead of outside it, a markdown-style `[text](url)` link (invalid Jira wiki markup — rendered
-as a duplicated raw URL), and a markdown table divider row `| --- | --- |` copied verbatim from the
-template snippet (also invalid in Jira wiki tables — rendered as a visible garbage row of literal
-dashes). The user had to say so three times before the comment was corrected in place.
+**What happened — three drafts before it matched.** Draft 1 came from
+`retest-bug-workflow/references/worked-example.md` (generic, anonymized): a `**Fixture:**` line, `---`
+dividers, "Expected result item"/"Actual"/"Expected-result coverage" wording, emoji inside the bold
+marker, a markdown `[text](url)` link, and a markdown table divider row `| --- | --- |`. The user
+rejected it. Draft 2 was rebuilt from OLS-199 (comments `80459`/`80901`, 2026-07-20/22) — but that
+ticket turned out to be an **older, superseded** style: no Fixture line, no dividers, different column
+names. The user pointed at OLS-251 (comment `81050`, posted the same day, later) as the actual current
+format — which turned out to be far closer to Draft 1 (Fixture line, dividers, "Expected result
+item"/"Actual"/"Expected-result coverage" all present) than to OLS-199. Draft 3 matched OLS-251
+structurally, but its table used the same `| --- | --- |` divider row from Draft 1 — which rendered
+clean in OLS-251 but rendered as a **visible garbage row of literal dashes** when posted through this
+session's raw-API path. Fixed by switching to a real Jira-wiki header row (`||No.||...||`) with no
+separator row.
 
-**Root cause.** Same failure shape as PM-001: a template/reference document was treated as the
-authority for a user-facing format, instead of the last real artifact accepted on that surface. This
-project has an established house style, visible in its own prior Jira comments (e.g. OLS-199 comments
-`80459`/`80901`) — that style had already silently diverged from the generic skill template through
-practice, and nobody had reconciled the two. Drafting from the template instead of from precedent
-reintroduced every difference at once, plus two literal markup bugs the template snippet carries
-(`[text](url)` and `| --- |` are markdown syntax, not valid Jira wiki notation — Jira wiki uses
-`[text|url]` for links and `||header||` rows with no separator row for tables).
+**Root cause — two distinct mistakes stacked.**
+1. **Treated a reference template as authority before checking any real precedent** (PM-001's lesson,
+   not yet internalized): should have fetched a real prior comment from this project *first*, before
+   drafting from `worked-example.md` at all.
+2. **When correcting, grabbed the nearest precedent found (OLS-199) instead of the most recent one.**
+   Precedent authority is chronological — the latest real comment on the surface wins — but OLS-199 was
+   simply the first search hit, not verified as the current standard. This is exactly PM-001's "last
+   accepted artifact wins" rule, misapplied by picking *an* old artifact instead of *the newest* one.
+3. **A markdown table divider row (`| --- | --- |`) is not reliably safe even when precedent contains
+   it** — it evidently depends on how the comment reaches Jira (this session's raw `fetch()` PUT vs.
+   whatever produced OLS-251, likely the MCP tool's markdown→ADF conversion). Copying a raw-source
+   snippet is not proof it will render the same way through a different posting path.
 
 **Prevention:**
 
-- **Before drafting a retest comment in an established project, fetch a real prior PASSED and FAILED
-  comment from the same Jira project first** (`getJiraIssue` with `fields:["comment"]` on a recently
-  closed bug of the same type) and match its structure — labels, section order, divider use, emoji
-  placement — over the generic `worked-example.md`. The generic template is a fallback for a project
-  with no history yet, not a default to prefer once history exists.
-- **Never copy a markdown table divider row (`| --- | --- |`) or a markdown link (`[text](url)`) into
-  Jira wiki markup.** Jira wiki tables need no separator row; links use `[text|url]` (or a bare URL,
-  which auto-links). Treat any markdown-flavored snippet in a *reference* doc as needing translation to
-  wiki syntax, not literal copy-paste.
+- **Before drafting a retest comment in an established project, fetch the *most recent* real comment(s)
+  from the same Jira project** (`getJiraIssue` with `fields:["comment"]`, sorted/read by `created`
+  timestamp) — not just any past comment that happens to match the bug type. If two precedents disagree
+  (as OLS-199 vs OLS-251 did here), the newer one is the standard; treat the older one as stale, don't
+  average or guess between them.
+- **Never include a markdown table divider row (`| --- | --- |`) when posting via raw API `fetch()`
+  wiki-markup body.** Use a real Jira-wiki header row (`|| col || col ||`) with no separator line
+  instead — confirmed safe in this posting path regardless of what a copied raw-source example shows.
 - **Re-render and read the full comment top to bottom after every post or edit** — a partial scroll-check
-  (as was done initially here) missed both the duplicated-URL line and the garbage dash row until the
-  user flagged the format mismatch generally, not the specific bugs.
+  missed the garbage row and a duplicated-URL line in earlier drafts here; only a full top-to-bottom
+  pass caught both.
