@@ -37,6 +37,7 @@ Post comment → Review on Jira UI → Pass all checks?
 - [ ] **No other HTML tags** visible as text (`<b>`, `<p>`, `<li>`, `<ul>`, `<strong>`, etc.)
 - [ ] **No literal `**`** showing as text (markdown bold markers should render, not display)
 - [ ] **No `\n`** showing as literal text
+- [ ] **Structure survived** — in `renderedBody`, `<table>` count == source `||` header-row count (v2) or `|---|` divider count (markdown), `<hr>` count == source rule count, `<img>` count == source embed count. An unclosed `{macro}` (`{id}`, `{status}`, a raw JSON blob) silently turns every table below it into raw text while leaving images intact, so counting images alone proves nothing
 
 ### 4. Numbered item formatting
 
@@ -61,7 +62,7 @@ If CSV/Excel was generated in a prior step but NOT attached to Jira → **attach
 | Missing rows / truncated table | Re-post full comment (delete old if partial); consider ADF for large tables |
 | Literal `<br>` or HTML tags | Re-run [jira-linebreak-conversion.md](jira-linebreak-conversion.md), strip tags, re-post |
 | Numbered items on same line | Verify conversion produced actual line breaks; re-post with corrected body |
-| Literal `**` visible | Jira may not support markdown bold in this context; switch to ADF bold or remove markers |
+| Literal `**` visible | The body is markdown but was posted to the **v2 wiki** endpoint. Wiki bold is a single `*`; `**x**` renders as bold-wrapped-in-asterisks. Convert the whole body to wiki syntax (`*bold*`, `----`, `\|\|header\|\|` with no divider row, `!file.png\|width=450!`) and PUT it back to the same comment id — never repost |
 | CSV not attached | Upload CSV/Excel to the issue via MCP or browser; update footer link |
 | Footer link broken | Get correct attachment URL after upload; edit comment footer |
 

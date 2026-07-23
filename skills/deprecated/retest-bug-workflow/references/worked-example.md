@@ -40,38 +40,45 @@
 **Bug:** `PROJ-88` — admin review action shows wrong button label
 **Result:** PASSED ✅
 
+FE bug → screenshots → **v2 wiki markup**, so the body below is wiki markup, **not markdown**.
 Output (full comment — this is the entire body, nothing added):
 
-```markdown
-**Retest Result: PASSED** ✅
+```text
+*Retest Result: PASSED* {color:green}✅{color}
 
-**Env:** Staging (`app.staging.example.com`)
-**Date:** 2026-07-23
-**Fixture:** Existing queue item — no new fixture created or modified
+*Env:* Staging (app.staging.example.com)
+*Date:* 2026-07-23
+*Fixture:* Existing queue item — no new fixture created or modified
 
----
+----
 
-**Test Step (from ticket):** Admin opens the review action on a flagged item
-**Expected Result (from ticket, verbatim):** Reject button reads "Review Failed"
+*Test Step (from ticket):* Admin opens the review action on a flagged item
+*Expected Result (from ticket, verbatim):* Reject button reads "Review Failed"
 
-| **No.** | **Expected result item** | **Actual** | **Status** |
-| --- | --- | --- | --- |
-| 1 | Reject button reads "Review Failed" | Button text confirmed via DOM extraction, char-exact | ✅ |
+||*No.*||*Expected result item*||*Actual*||*Status*||
+|1|Reject button reads "Review Failed"|Button text confirmed via DOM extraction, char-exact|✅|
 
-**Expected-result coverage:** 1 / 1 items met
+*Expected-result coverage:* 1 / 1 items met
 
----
+----
 
-**Evidence**
+*Evidence*
 
 Review queue list:
-![](...)
+!queue-list.png|width=450!
+
 Review modal — button labels confirmed:
-![](...)
+!modal-buttons.png|width=450!
 ```
 
 ## Lessons (example 2)
 
-- No **API**/**Swagger** lines — FE bug, so they're omitted, not written as "N/A".
+- No *API*/*Swagger* lines — FE bug, so they're omitted, not written as "N/A".
 - Each screenshot gets one short caption line, not a paragraph.
 - Nothing outside the template fields — this is the whole comment.
+- **The fence says `text`, not `markdown`, on purpose.** Every construct above is wiki markup:
+  `*bold*` (one asterisk), `----` (4 dashes), `||header||`, `!file.png|width=450!`. Copying this
+  block into a markdown-flavoured draft — or drafting in markdown and posting to `/rest/api/2/` —
+  produces `*<b>bold</b>*`, an em-dash instead of a rule, and a visible row of dashes where the
+  divider was. Nothing errors; it just renders wrong. Syntax map + pre-post scan:
+  [gotchas.md](gotchas.md) § markdown → wiki.

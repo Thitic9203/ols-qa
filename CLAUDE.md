@@ -312,3 +312,58 @@ separator row.
 - **Re-render and read the full comment top to bottom after every post or edit** — a partial scroll-check
   missed the garbage row and a duplicated-URL line in earlier drafts here; only a full top-to-bottom
   pass caught both.
+
+> **Correction (see PM-004):** item 3 above guessed that the divider row's behaviour "depends on the
+> posting path". It does not. The divider row is markdown; it was never valid in a v2 wiki body, in
+> any posting path. The real fault was that the whole body was markdown while the endpoint was wiki.
+
+### PM-004 — Markdown drafted into a wiki-markup endpoint; literal `*` shipped on 10 tickets (2026-07-23, OLS-252 + 9)
+
+**Surface:** the body string of any Jira comment sent to `/rest/api/2/issue/{key}/comment` — the v2
+wiki-markup endpoint used for every FE retest (Step 7c), and by the unattended retest bot.
+
+**What happened.** The OLS-252 retest comment rendered as `*Retest Result: PASSED*`, `*Env:*`,
+`*No.*` — bold text visibly wrapped in asterisks. User: "ต้องไม่มีดอกจันทร์แบบนี้อะ ผิดๆๆๆๆ". The
+body had been drafted in **markdown** (`**bold**`, `---`, `| --- |`) and POSTed to the **wiki**
+endpoint. Wiki bold is a single `*`, so `**X**` parses as *bold containing a literal `*X*`*. Nothing
+errored — HTTP 200, table rendered, images rendered. An audit of all 51 OLS tickets carrying retest
+comments found the same defect on **10** of them, dating back to 2026-07-15, plus a second silent
+failure mode (below) that had destroyed a whole table on OLS-108 unnoticed.
+
+**Root cause — the template taught markdown for a wiki endpoint.**
+
+1. **`WORKFLOW.md` Step 6's "Template core" was fenced ` ```markdown `** and written in markdown,
+   while Step 3/7c route FE bugs to v2 wiki. The two languages share `|`, `*` and `-`, so a markdown
+   body is *accepted* by the wiki parser and renders as plausible-looking garbage.
+2. **`WORKFLOW.md` said the bold rule "applies to both markdown (MCP) and v2 wiki"** and gave only
+   the markdown form — the one line most likely to be obeyed literally was the wrong one.
+3. **`worked-example.md`'s "tight PASSED format"** (commit `8b75993`, added the same day) had been
+   transcribed from a correct wiki comment **into markdown** while anonymising it, then served as the
+   drafting source. PM-003 corrected the *posted comment* and never touched the template that
+   produced it — so the defect kept shipping.
+4. **Every gate was a human-eye gate.** `jira-comment-post-review.md` did list "no literal `**`", but
+   a markdown draft reads as *correct* when proof-read, because markdown is what the author meant.
+   Only a scan of the outgoing string finds it, and no step scanned the string.
+
+**Second failure mode found by the same audit — unknown `{macro}`.** A bare `{id}` in prose (from
+`/api/course/{id}`) is parsed as a macro that never closes: on OLS-108 it silently turned the second
+table, a horizontal rule and three bullets into raw text, **while all five images still rendered**.
+Image-count checks pass straight through this. Already in memory as `feedback_jira-no-literal-braces`
+— it recurred because nothing mechanical enforced it.
+
+**Prevention (enforced in the skill — apply, don't re-derive):**
+
+- **Draft in the target endpoint's syntax from the first keystroke.** Never "draft in markdown and
+  convert at post time". Step 6 now carries a v2-wiki template and a markdown/ADF template as
+  separate blocks; pick by `COMMENT_FORMAT`, never mix.
+- **Run the Step 7 syntax gate as a string scan of the exact outgoing body** — `**`, `^---$`,
+  `^\|\s*-{3,}`, `![](`, backticks, unescaped `{word}`. Reading the draft does not substitute.
+- **Verify structure by counting, not by looking**: rendered `<table>` == source `||` header rows,
+  `<hr>` == `----`, `<img>` == `!…!`, and zero `*` / `||` / `----` in the tag-stripped rendered text.
+- **Thai and other unspaced scripts break wiki bold** — `คำ*เน้น*ต่อ` renders literal because `*`
+  needs whitespace on the outside. Use `{*}เน้น{*}` mid-word.
+- **Not every `*` is a defect.** Footnote markers, required-field markers quoted off a form, and CSS
+  selectors like `[class*=Toast]` are content. Scan output is triaged, never auto-stripped.
+- **When a rendering bug is found, fix the generator/template in the same pass as the comment.**
+  PM-003 fixed one comment; the template kept emitting the fault for another nine.
+- **Correct posted comments in place** with `PUT …/comment/{id}` — never delete and repost.

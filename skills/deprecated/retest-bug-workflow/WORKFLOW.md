@@ -186,32 +186,42 @@ Follow [defect-report-completeness.md](../../../references/defect-report-complet
 
 **Do not post until the user approves** (unless they explicitly waive approval).
 
-Template core:
+**Draft in the syntax of the endpoint chosen at Step 3 — never in markdown "and convert later".**
+Markdown and Jira wiki markup are different languages that share characters, so a markdown draft
+posted to `/rest/api/2/` does not error — it renders as visible garbage (`**x**` → `*<b>x</b>*`).
+Pick the template below that matches `COMMENT_FORMAT`; the syntax map is in
+[gotchas.md](references/gotchas.md) § markdown → wiki.
 
-```markdown
-**Retest Result: PASSED ✅**   (or **FAILED ❌**)
+**Template core — v2 wiki markup** (`/rest/api/2/…`; FE bugs, anything with screenshots):
 
-**Env:** {ENV} (`{url}`)
-**API:** `{METHOD} {path}`   (if API bug)
-**Swagger:** {link}
-**Date:** {YYYY-MM-DD}
-**Fixture:** {what was used, and whether it was restored}
+```text
+*Retest Result: PASSED* ✅   (or *Retest Result: FAILED* ❌)
 
----
+*Env:* {ENV} ({url})
+*API:* {METHOD} {path}   (if API bug)
+*Swagger:* {link}
+*Date:* {YYYY-MM-DD}
+*Fixture:* {what was used, and whether it was restored}
 
-**Test Step (from ticket):** …
-**Expected Result (from ticket, verbatim):** …
+----
 
-| **No.** | **Expected result item** | **Actual** | **Status** |
-|-----|-----------|-------|--------|
-| 1 | {item quoted from the ticket} | {observed} | ✅/❌ |
+*Test Step (from ticket):* …
+*Expected Result (from ticket, verbatim):* …
 
-**Expected-result coverage:** {n} / {total} items met
+||*No.*||*Expected result item*||*Actual*||*Status*||
+|1|{item quoted from the ticket}|{observed}|✅/❌|
 
----
+*Expected-result coverage:* {n} / {total} items met
 
-**Evidence** — full cURL + response per case (API) or screenshots (FE)
+----
+
+*Evidence* — full cURL + response per case (API) or screenshots (FE)
 ```
+
+**Template core — markdown/ADF** (MCP `addCommentToJiraIssue` or `/rest/api/3/…`): identical
+content, but `**bold**`, `---`, and a `| col | col |` table with a `|---|` divider row.
+
+Never mix the two in one body.
 
 **Verbosity ceiling:** a PASSED comment stays inside the template above — no added narrative
 paragraphs, no restating the ticket, no "why this matters" prose. Each field line holds only its
@@ -243,7 +253,7 @@ comment**, never "post now and explain in chat". Also confirm: every scope word 
 `any entry point`, `only when …`) traces to a repro-matrix row, and no observation in the draft is under an
 unresolved contradiction.
 
-**Table headers:** every column MUST carry an explicit, all-English header. Give the row-number column the header `No.` — a bare `#` renders as a **blank** header cell in Jira. Applies to both markdown (MCP) and v2 wiki (`|| No. || … ||`) tables. **Headers MUST be bold** (`| **No.** | **Test Case** | …`) — Jira doesn't auto-bold markdown table headers.
+**Table headers:** every column MUST carry an explicit, all-English header. Give the row-number column the header `No.` — a bare `#` renders as a **blank** header cell in Jira. **Headers MUST be bold, in the syntax of the target endpoint** — v2 wiki `||*No.*||*Test Case*||…` (single asterisk, `||` delimiters, **no divider row**); markdown/ADF `| **No.** | **Test Case** | …` followed by a `|---|` divider. A `**No.**` in a v2 body renders as literal `*No.*`, and a `|---|` divider row in a v2 body renders as a visible row of dashes.
 
 Show the full draft in chat and wait.
 
@@ -257,6 +267,31 @@ Show the full draft in chat and wait.
 - [ ] Issue keys in body wrapped or avoided if auto-link is unwanted
 - [ ] ASCII-safe JS if using JXA (`/[^\x00-\x7F]/.test(js)` false)
 - [ ] v2 vs v3 endpoint matches format
+
+#### Syntax gate — scan the body string before the request (mandatory, v2 wiki path)
+
+Grep the exact body you are about to send. Any hit = **fix the body, do not post**. This is a string
+scan, not a read-through: markdown leaks are invisible when proof-reading because they look correct.
+
+| Pattern in a v2 body | Renders as | Correct wiki form |
+|----------------------|-----------|-------------------|
+| `**` (anywhere) | `*<b>text</b>*` — literal asterisks | `*text*` |
+| `^---$` | em-dash character, no rule | `----` (4+ dashes) |
+| `^\|\s*-{3,}` (divider row) | visible row of dashes | delete it — `\|\|` headers need no divider |
+| `![alt](url)` | literal text | `!file.png\|width=450!` |
+| `` `code` `` | literal backticks | `{{code}}` |
+| `(?<!\\)\{[a-z]\w*\}` not a real macro (e.g. `{id}`, `{status}`) | unknown-macro parse break — **silently kills every table, rule and list after it** | `\{id\}` |
+
+Then check **bold next to non-space**: wiki `*bold*` only opens after whitespace/line-start and only
+closes before whitespace/punctuation. Thai (and any unspaced script) breaks this — `คำ*เน้น*ต่อ`
+renders literal. Use `{*}เน้น{*}` there. A trailing lone `*` that is genuinely content (footnote
+marker, required-field marker, a CSS selector like `[class*=x]`) is fine — leave it.
+
+**Post-post structural check (7d, mechanical):** re-fetch the comment with
+`?expand=renderedBody` and assert against the source body — `<table>` count == `||` header-row
+count, `<hr>` count == `----` count, `<img>` count == `!…!` count, and **zero** `*`, `||` or `----`
+in the tag-stripped rendered text apart from the intentional literals above. Counting images alone
+is not enough: a broken macro leaves images intact while destroying every table below it.
 
 ### 7a. Choose method based on content
 
