@@ -18,6 +18,8 @@ Follow [shared-preamble.md](../../references/shared-preamble.md).
 
 **Jira bodies** (after approval): neutral English — no "Retested by:", no honorifics. If reproduction is unclear or results conflict with dev claims, follow [qa-debug-discipline.md](../../references/qa-debug-discipline.md) before posting PASSED/FAILED.
 
+**Any verdict that is not a clean PASSED** is governed by [defect-report-completeness.md](../../references/defect-report-completeness.md) — the comment must answer the reader's five questions (what, **which entry points**, what it should be instead, why that is a fail, **what changes and who decides**) before it is posted. A question asked after posting means a section was missing; the fix is the comment, not a chat reply.
+
 Use plain chat for URLs/credentials; AskUserQuestion only for choices (e.g. approve comment).
 
 ## Refusal-first (precondition gate)
@@ -146,6 +148,14 @@ Load OpenAPI/Swagger from config URL.
 
 Swagger is source of truth — not stale ticket text alone.
 
+### 4f. Repro matrix + settle + contradiction gate (mandatory for every non-PASSED item)
+
+Follow [defect-report-completeness.md](../../references/defect-report-completeness.md) §2–§3. Three things happen **during the run**, not while drafting — you cannot reconstruct them later:
+
+1. **Exercise every entry point, one at a time.** For a UI defect that means at minimum: the direct URL/route **and** the in-app path a real user takes to the same surface (list card, menu, CTA, deep link). Capture a separate screenshot per entry point and name it per path. One row per entry point in the matrix; a path you did not exercise is recorded `not tested` — **never inferred from another path**.
+2. **Settle after every state change.** After a fixture step that changes server state (publish / unpublish / approve / delete / role change), hard-reload each surface before observing it. A view that was already open holds pre-change data; recording it is reporting your own test timing as the product's behavior. A stale window worth reporting is a **separate timing note** with the measured delay — not a matrix row.
+3. **Resolve contradictions before drafting.** If two of your observations of the same surface disagree, name the contradiction, re-run that surface cleanly, and record which observation was the artifact and why. Never resolve it in favour of the verdict you already have. Unresolvable after a clean re-run → that item is **BLOCKED**, not FAILED.
+
 ---
 
 ## Step 5 — Evidence
@@ -185,20 +195,47 @@ Template core:
 **API:** `{METHOD} {path}`   (if API bug)
 **Swagger:** {link}
 **Date:** {YYYY-MM-DD}
+**Fixture:** {what was used, and whether it was restored}
 
 ---
 
 **Test Step (from ticket):** …
-**Expected Result:** …
+**Expected Result (from ticket, verbatim):** …
 
-| **No.** | **Test Case** | **Input** | **Result** | **Status** |
-|-----|-----------|-------|--------|--------|
-| 1 | Bug case | … | … | ✅/❌ |
+| **No.** | **Expected result item** | **Actual** | **Status** |
+|-----|-----------|-------|--------|
+| 1 | {item quoted from the ticket} | {observed} | ✅/❌ |
+
+**Expected-result coverage:** {n} / {total} items met
 
 ---
 
 **Evidence** — full cURL + response per case (API) or screenshots (FE)
 ```
+
+### 6a. Extra sections REQUIRED when the verdict is FAILED or BLOCKED
+
+A PASSED comment stops at the template above. **Anything else adds these three blocks**, in this order, per [defect-report-completeness.md](../../references/defect-report-completeness.md) §1–§4:
+
+| Block | Content | Answers |
+|-------|---------|---------|
+| **Repro matrix** | one row per entry point exercised: entry point · steps · observed · reproduces? · evidence file. Untried paths listed as `not tested` | "does this only happen from a direct URL?" |
+| **Why this item failed** | the failing expected-result line **quoted verbatim**, then *should be* vs *is now* as implementable facts (which elements render, which are disabled, which route) | "what should it look like instead, and which line did I break?" |
+| **Resolution options** | the two mutually exclusive outcomes with a named owner each — spec owner updates the expected result (no code change) **or** dev changes `{exact route/surface}` and leaves `{what already passes}` alone | "do I change code or do you change the ticket, and who decides?" |
+
+Also state plainly, in one line, whether the **originally reported symptom is gone** — a FAILED verdict on a
+different deviation is routinely misread as "the fix didn't work".
+
+**Never edit the ticket's expected-result field** to match observed behavior. QA reports the conflict and names
+the decision-maker; QA does not resolve it.
+
+### 6b. Dev-question gate (MUST pass before the draft goes to the user)
+
+Read your own draft as the developer who will act on it. Run the six-question gate in
+[defect-report-completeness.md](../../references/defect-report-completeness.md) §5. Any "no" → **fix the
+comment**, never "post now and explain in chat". Also confirm: every scope word in the draft (`always`,
+`any entry point`, `only when …`) traces to a repro-matrix row, and no observation in the draft is under an
+unresolved contradiction.
 
 **Table headers:** every column MUST carry an explicit, all-English header. Give the row-number column the header `No.` — a bare `#` renders as a **blank** header cell in Jira. Applies to both markdown (MCP) and v2 wiki (`|| No. || … ||`) tables. **Headers MUST be bold** (`| **No.** | **Test Case** | …`) — Jira doesn't auto-bold markdown table headers.
 
@@ -277,6 +314,8 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌** (not ambiguous text).
 - [ ] `Verdict: PASSED` or `Verdict: FAILED` with issue link.
+- [ ] **Non-PASSED verdict:** Step 6a's three blocks present — repro matrix (one row per entry point, untried paths `not tested`), why-this-item-failed with the expected-result line quoted verbatim, resolution options with a named owner each — plus the one-line statement of whether the originally reported symptom is gone.
+- [ ] **Step 6b dev-question gate passed before the first post**; every scope word traces to a matrix row; no unresolved contradiction between your own observations.
 - [ ] v2/v3 format matches Step 3 lock; FE bugs have screenshots attached before wiki embed.
 - [ ] API cases: full cURL + response per row (no "same as above").
 - [ ] Jira issue re-opened after post: comment visible, not truncated.
@@ -408,6 +447,27 @@ If a verdict changes after the notification was sent (e.g. PASSED→FAILED on re
 
 ---
 
+## Step 10 — A question arrives after the comment was posted
+
+A follow-up question is a **defect in the comment**, not a normal step. Handle it in this order — see
+[defect-report-completeness.md](../../references/defect-report-completeness.md) §6.
+
+1. **Re-verify before answering.** If the answer is not already backed by a labelled evidence file from
+   this retest, re-run that surface first. Never answer from memory of an earlier run, and never answer
+   from the comment you wrote — the comment is what is being questioned.
+2. **Check your own evidence set for the contradiction first.** If two captures disagree, that is the
+   answer's real subject; resolve it per §3b before replying.
+3. **Answer in the shape asked** (§7): direct answer first, then at most one line of why. If the user
+   says it is too long, shorten the same answer — do not re-emit it at the same length.
+4. **Fold the answer into the original comment** (edit in place, same comment id) so the next reader
+   never needs the chat thread. Re-run Step 7d after the edit.
+5. **If an earlier statement was wrong**, correct it **visibly in both places**: the in-place comment edit
+   states which claim is being corrected, **and** a follow-up message goes into the thread where the wrong
+   answer was given. Never a silent edit — people have already replied to the wrong version.
+6. Record which Step 6a block would have prevented the question, so the next retest writes it up front.
+
+---
+
 ## Skill composition
 
 | Situation | See |
@@ -456,6 +516,16 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST set `--pass-count N` + `--summary "Retest of dev fix"` + `--owner-label "QA Owner"` on every Discord retest notify | Defaults produce wrong output (0/0/0 + wrong label); learned from 3-resend incident |
 | MUST fetch the notify recipient from the ticket's QA Owner field (per project guide) per ticket, and verify the @mention person = that field's value — NEVER the Reporter, never a name carried over from another ticket | Label said "QA Owner" but pinged the Reporter → 3 wrong pings, user correction 2026-07-15 |
 | MUST verdict from the bug's OWN expected results — PASSED only when ALL items are met (character-exact where wording is specified); parent AC is supplement, never substitute | Bug details are the contract; partial match = FAILED (user rule 2026-07-15) |
+| MUST exercise **every** entry point to a failing surface separately (direct route **and** the in-app path a user takes) and give each its own repro-matrix row + screenshot; untried paths are written `not tested` | A path with no evidence row is a guess. OLS-108: "happens via both entry points" was published from one run, the dev acted on it, and it had to be retracted in-ticket |
+| MUST NOT write a scope word (`always`, `any entry point`, `both ways`, `only when …`) that no repro-matrix row supports | The scope claim is the first thing a dev builds on |
+| MUST hard-reload every surface after a state-changing fixture step before observing or capturing it; report a stale-data window only as a separate timing note with the measured delay | An already-open view holds pre-change data — recording it publishes your test timing as product behavior (OLS-108: card looked clickable ~5s after unpublish) |
+| MUST resolve any disagreement between your own observations with one clean re-run before drafting, and record which was the artifact; unresolvable → BLOCKED, not FAILED | Resolving it in favour of the verdict you already reached is how the wrong repro path shipped |
+| MUST include the Step 6a blocks on every non-PASSED comment — repro matrix, why-failed with the expected-result line quoted verbatim, resolution options with a named owner per option | These are exactly the questions a dev asks next; answering them in chat instead leaves the ticket unreadable |
+| MUST state in one line whether the originally reported symptom is gone, even when the verdict is FAILED on a different deviation | "FAILED" alone reads as "the fix did not work" |
+| MUST NOT edit the ticket's expected-result field to match observed behavior — name the decision owner instead | The spec owner decides; QA reports the conflict |
+| MUST pass the Step 6b dev-question gate before the FIRST post — never "post now, explain in chat" | The gate exists so the answers land in the comment, not in a round-trip that ends in an edited comment (OLS-108) |
+| MUST re-verify (re-run the surface) before answering any question that arrives after posting, then fold the answer into the original comment in place and re-run Step 7d | Answering from memory published a wrong claim once already |
+| MUST correct a wrong published statement **visibly in both places** — in-place comment edit naming the corrected claim **and** a follow-up in the thread where the wrong answer was given | People already replied to the wrong version; a silent edit makes the thread unreadable |
 | MUST run the Step 9 pre-notify review gate (5 checks on dry-run output) before EVERY send, including resends | Catches wrong recipient/link/counts before they go live (user rule 2026-07-15) |
 | MUST embed FE screenshots as inline images (`!file.png\|width=450!`) in Jira comments — never leave as filename-only text | Screenshots must be visible inline; filename text is unreadable evidence |
 | MUST NOT use `await` in superpowers-chrome eval — use setTimeout + window.__var | `await` returns undefined; callback pattern required |

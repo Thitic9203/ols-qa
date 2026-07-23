@@ -18,6 +18,8 @@ Follow [shared-preamble.md](../../references/shared-preamble.md).
 
 **Gates:** MUST NOT start Playwright until Phase C confirm; MUST NOT update external results until Phase G confirm — because runs and writes are costly to undo. Credentials are session-only.
 
+**Every FAILED or BLOCKED scenario** is governed by [defect-report-completeness.md](../../references/defect-report-completeness.md) — the write-up must answer the reader's five questions (what, **which entry points**, what it should be instead, why that is a fail, **what changes and who decides**) before it leaves this workflow. A question asked afterwards means a section was missing; the fix is the write-up, not a chat reply.
+
 **Long sessions:** optional todos per [long-workflow-todos.md](../../references/long-workflow-todos.md).
 
 ## Refusal-first (precondition gate)
@@ -111,6 +113,24 @@ Run confirmed scenarios; record **PASSED** / **FAILED** / **BLOCKED** / **NOT TE
 
 Internal failures: note for chat summary only — **do not create Jira/GitHub issues in this workflow.**
 
+### E1 — For every FAILED scenario, capture the repro shape *during the run*
+
+These three cannot be reconstructed while writing Phase F — do them before moving to the next scenario
+([defect-report-completeness.md](../../references/defect-report-completeness.md) §2–§3):
+
+1. **Every entry point, one at a time.** Reach the failing surface by the direct route **and** by the
+   in-app path a real user takes (list card, menu, CTA, deep link). One screenshot per path, one
+   **repro-matrix row** per path. A path you did not exercise is recorded `not tested` — never inferred
+   from another path, never silently dropped.
+2. **Settle after every state change.** After a fixture step that changes server state (publish /
+   unpublish / approve / delete / role change), hard-reload each surface before observing it. An
+   already-open view holds pre-change data; recording it reports your test timing as the product's
+   behavior. A stale window worth reporting is a **separate timing note** with the measured delay.
+3. **Resolve contradictions before writing anything down.** If two of your observations of the same
+   surface disagree, name it, re-run that surface cleanly, record which was the artifact and why. Never
+   resolve it in favour of the result you already wrote. Unresolvable after a clean re-run → **BLOCKED**,
+   not FAILED.
+
 ---
 
 ## Phase F — Summarize in this chat (mandatory)
@@ -140,11 +160,31 @@ List issues found **without filing tickets**:
 | 1 | ...   | High     | Confirmed  | ...      |
 ```
 
+**Each defect row expands into a complete write-up** — this is what gets pasted into a bug, a Jira
+comment, or a sheet cell later, so it must stand alone
+([defect-report-completeness.md](../../references/defect-report-completeness.md) §1–§4):
+
+| Block | Content | Answers |
+|-------|---------|---------|
+| **Repro matrix** | one row per entry point exercised: entry point · steps · observed · reproduces? · evidence file; untried paths `not tested` | "does this only happen from a direct URL?" |
+| **Expected vs Actual** | the failing acceptance/expected line **quoted verbatim**, then *should be* vs *is now* as implementable facts (which elements render, which are disabled, which route) | "what should it look like, and which line did I break?" |
+| **Resolution options** | when the behavior deviates from the written expectation but the feature otherwise works: the two mutually exclusive outcomes with a named owner each — spec owner updates the expectation (no code change) **or** dev changes `{exact route/surface}` and leaves `{what already passes}` alone | "do I change code or does the spec change, and who decides?" |
+
+**Never rewrite the ticket's acceptance/expected text to match observed behavior.** Report the conflict and
+name the decision-maker.
+
+### F4 — Reader gate (MUST pass before Phase G)
+
+Read F2 + F3 as the developer who will act on them. Run the six-question gate in
+[defect-report-completeness.md](../../references/defect-report-completeness.md) §5. Any "no" → fix the
+write-up. Also confirm: every scope word (`always`, `any entry point`, `only when …`) traces to a
+repro-matrix row, and no observation is under an unresolved contradiction.
+
 If the user wants these logged as bugs:
 
 > Say **Create bug** from `/helix`, or ask me to switch to the **create-bug-workflow**.
 
-**Do not proceed to Phase G until F1–F3 are posted.**
+**Do not proceed to Phase G until F1–F4 are posted.**
 
 ---
 
@@ -211,6 +251,11 @@ exist and were not uploaded by you. See [result-update-discipline.md](references
   `2026-07-23`, `007`); and make every row exactly as wide as the range so nothing shifts into
   the wrong column.
 - Include evidence references where the format allows (screenshot names, bug keys as `{{KEY}}` in Jira wiki).
+- **A FAILED/BLOCKED row carries its F3 write-up, not just the word "FAILED".** Whatever the destination
+  allows (actual-result cell, Jira comment, remark column) must state which entry points reproduce it,
+  the expected line verbatim vs what actually happens, and — when the deviation is from the written
+  expectation rather than a broken feature — who decides between updating the expectation and changing
+  the code. A bare status forces the next reader back to you.
 
 ### G6 — Review before “complete” (mandatory)
 
@@ -249,12 +294,34 @@ If verification failed partially, state what succeeded and what did not — NEVE
 
 ---
 
+## Phase H — A question arrives after results were published
+
+A follow-up question is a **defect in the write-up**, not a normal step
+([defect-report-completeness.md](../../references/defect-report-completeness.md) §6).
+
+1. **Re-verify before answering.** If the answer is not already backed by a labelled evidence file from
+   this run, re-run that surface. Never answer from memory of an earlier run, and never answer from the
+   write-up being questioned.
+2. **Check your own evidence set for a contradiction first** — if two captures disagree, that is the real
+   subject of the question; resolve it per E1·3 before replying.
+3. **Answer in the shape asked** (§7): direct answer first, at most one line of why. If the user says it
+   is too long, shorten the same answer — never re-emit it at the same length.
+4. **Fold the answer back into the published result** (edit in place — same comment id, same row) and
+   re-run the Phase G6 verification, so the next reader never needs the chat thread.
+5. **If an earlier statement was wrong**, correct it **visibly in both places**: the in-place edit names
+   the corrected claim, **and** a follow-up goes into the thread where the wrong answer was given.
+6. Record which F3 block would have prevented the question.
+
+---
+
 ## QA closing (mandatory before session end)
 
 Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
 
-- [ ] F1–F3 posted before any external update.
+- [ ] F1–F4 posted before any external update.
 - [ ] Every scenario has PASSED/FAILED/BLOCKED/NOT TESTED with evidence reference.
+- [ ] Every FAILED/BLOCKED defect has its repro matrix (one row per entry point, untried paths `not tested`), expected-line-verbatim vs actual, and — where the deviation is from the written expectation — resolution options with a named owner.
+- [ ] **F4 reader gate passed before Phase G**; every scope word traces to a matrix row; no unresolved contradiction between your own observations.
 - [ ] If Phase G ran: destination re-read matches agreed column formats.
 - [ ] Close-out includes `Verified:` (or partial-failure honesty per Phase F).
 - [ ] Phase G6 fix-verify completed when Phase G ran.
@@ -297,3 +364,11 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST NOT open Jira/GitHub bugs in this workflow | Use create-bug-workflow |
 | MUST NOT run Playwright before Phase C confirm | Wrong scope/credentials |
 | MUST re-read destination after Phase G writes | Silent partial failure |
+| MUST exercise every entry point to a failing surface separately (direct route **and** the in-app path a user takes), one repro-matrix row + screenshot each; untried paths written `not tested` | A path with no evidence row is a guess published as a finding (learned OLS-108) |
+| MUST NOT write a scope word (`always`, `any entry point`, `both ways`, `only when …`) that no repro-matrix row supports | The scope claim is the first thing a dev builds on |
+| MUST hard-reload every surface after a state-changing fixture step before observing it; a stale-data window is a separate timing note with a measured delay, never a repro row | An already-open view holds pre-change data — recording it publishes your test timing as product behavior |
+| MUST resolve any disagreement between your own observations with one clean re-run before writing F2/F3; unresolvable → BLOCKED, not FAILED | Resolving it in favour of the result you already wrote is how a wrong repro path ships |
+| MUST give every FAILED/BLOCKED defect the F3 blocks — repro matrix, expected line quoted verbatim vs actual, resolution options with a named owner | These are the questions the reader asks next; answering them in chat leaves the record incomplete |
+| MUST NOT rewrite a ticket's acceptance/expected text to match observed behavior | The spec owner decides; QA reports the conflict and names them |
+| MUST pass the F4 reader gate before Phase G | The gate exists so answers land in the write-up, not in a round-trip that ends in an edited record |
+| MUST re-verify before answering any question that arrives after publishing, then fold the answer into the published record in place (Phase H) | Answering from memory publishes wrong claims |
