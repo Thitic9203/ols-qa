@@ -16,7 +16,7 @@
 3. **Phase D:** Designed happy + 401 + 400 validation per endpoint.
 4. **Phase E:** Caught missing 404 on `GET` — added `TC_API_Orders_05`.
 5. **Phase F:** Draft in chat → user `approve`.
-6. **Phase G1:** Wrote `references/orders_API_TC.md` + CSV via [csv-export-rules.md](../../../references/csv-export-rules.md).
+6. **Phase G1:** Wrote `references/orders_API_TC.md` + CSV via [csv-export-rules.md](../../../../references/csv-export-rules.md).
 
 ## Output snippet
 

@@ -17,16 +17,18 @@ A **QA workflow workspace** — no build/compile/test commands. Everything is Ma
 
 ```
 skills/helix/SKILL.md          ← active router skill (entry point)
+skills/<name>/SKILL.md         ← thin discovery stub, one per workflow — what the agent
+                                 discovers and announces; loads the WORKFLOW.md below
 skills/deprecated/<name>/WORKFLOW.md ← active workflow implementations
-                                 (directory named "deprecated" but files are current — 
-                                  routing happens via helix → deprecated/<name>/WORKFLOW.md)
+                                 (directory named "deprecated" but files are current —
+                                  routing: helix → stub → deprecated/<name>/WORKFLOW.md)
 skills/in-progress/            ← unreleased skills
-commands/helix.md              ← canonical menu shown to users
+commands/helix.md              ← canonical menu shown to users (menu text: references/menu-text.md)
 commands/<workflow>.md         ← one file per workflow command
 references/                    ← shared rule fragments, linked by skills (not standalone)
 ```
 
-**How skills compose:** Skills link to `references/` fragments instead of duplicating rules. When editing a skill, follow links to understand the full rule set. Do not copy-paste reference content into skills — link with `[name](../../references/name.md)`.
+**How skills compose:** Skills link to `references/` fragments instead of duplicating rules. When editing a skill, follow links to understand the full rule set. Do not copy-paste reference content into skills — link relative to the file's own depth: from `skills/<name>/SKILL.md` that is `[name](../../references/name.md)`; from `skills/deprecated/<name>/WORKFLOW.md` it is **`../../../references/name.md`** (one level deeper).
 
 ### Key reference files
 

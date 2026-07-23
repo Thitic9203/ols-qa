@@ -14,13 +14,13 @@ Run **Playwright-based** testing for a **single ticket** after intake and confir
 
 ## Discipline
 
-Follow [shared-preamble.md](../../references/shared-preamble.md).
+Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
 **Gates:** MUST NOT start Playwright until Phase C confirm; MUST NOT update external results until Phase G confirm — because runs and writes are costly to undo. Credentials are session-only.
 
-**Every FAILED or BLOCKED scenario** is governed by [defect-report-completeness.md](../../references/defect-report-completeness.md) — the write-up must answer the reader's five questions (what, **which entry points**, what it should be instead, why that is a fail, **what changes and who decides**) before it leaves this workflow. A question asked afterwards means a section was missing; the fix is the write-up, not a chat reply.
+**Every FAILED or BLOCKED scenario** is governed by [defect-report-completeness.md](../../../references/defect-report-completeness.md) — the write-up must answer the reader's five questions (what, **which entry points**, what it should be instead, why that is a fail, **what changes and who decides**) before it leaves this workflow. A question asked afterwards means a section was missing; the fix is the write-up, not a chat reply.
 
-**Long sessions:** optional todos per [long-workflow-todos.md](../../references/long-workflow-todos.md).
+**Long sessions:** optional todos per [long-workflow-todos.md](../../../references/long-workflow-todos.md).
 
 ## Refusal-first (precondition gate)
 
@@ -38,9 +38,9 @@ If **VPN** is required per user and environment is unreachable in Phase D, stop 
 
 ## Core constraints
 
-Recite once at the start of Phase A (first response only) from [helix-session-constraints.md](../../references/helix-session-constraints.md) — **All Helix workflows** block, then the **Testing ticket** block.
+Recite once at the start of Phase A (first response only) from [helix-session-constraints.md](../../../references/helix-session-constraints.md) — **All Helix workflows** block, then the **Testing ticket** block.
 
-Then follow [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) for **Testing ticket** and show [intake-one-pager.md](../../references/intake-one-pager.md) (Testing ticket section).
+Then follow [workspace-guide-discovery.md](../../../references/workspace-guide-discovery.md) for **Testing ticket** and show [intake-one-pager.md](../../../references/intake-one-pager.md) (Testing ticket section).
 
 ---
 
@@ -64,12 +64,12 @@ Collect these **seven** items (one grouped message when possible; skip fields al
 
 ## Phase B — Load context
 
-Use [parallel-prep.md](../../references/parallel-prep.md) when Jira fetch and Confluence/Swagger are independent.
+Use [parallel-prep.md](../../../references/parallel-prep.md) when Jira fetch and Confluence/Swagger are independent.
 
 1. Fetch **Ticket** (Jira or user paste).
 2. **Confluence** / **Swagger** if provided.
 3. Build numbered **test plan** (in-scope, out-of-scope, API vs UI).
-4. Fill [test-execution-plan-template.md](../../references/test-execution-plan-template.md) in chat (environment, auth, in-scope table, pass criteria, risks).
+4. Fill [test-execution-plan-template.md](../../../references/test-execution-plan-template.md) in chat (environment, auth, in-scope table, pass criteria, risks).
 
 **Design reference (Figma) — view when a ticket links one:** for expected-UI context, prefer the **Figma Dev Mode MCP** (`get_screenshot` / `get_metadata` / `get_design_context`) — needs the Figma desktop app with **Dev Mode MCP Server enabled** (Figma menu → Preferences) and the file open; `node-id` in a Figma URL uses `-`, the MCP `nodeId` uses `:` (`?node-id=1234-5678` → `1234:5678`). If that server is off, **fall back to the browser-automation MCP**: open the file URL (a logged-in browser session persists auth), let the canvas render, then screenshot the node. Dismiss the **"Want to view this file in Dev Mode?"** modal with **"Not now"** — NEVER "Request access" (it sends a seat request). A View+Comment account is enough to read and screenshot the design.
 
@@ -97,13 +97,13 @@ Reply **confirm** to start Playwright, or tell me what to change.
 
 **Do not start Phase D until confirmed.**
 
-If results contradict expectations or tests are flaky, follow [qa-debug-discipline.md](../../references/qa-debug-discipline.md) before changing pass/fail wording.
+If results contradict expectations or tests are flaky, follow [qa-debug-discipline.md](../../../references/qa-debug-discipline.md) before changing pass/fail wording.
 
 ---
 
 ## Phase D — Pre-flight (mandatory)
 
-Follow [playwright-preflight.md](../../references/playwright-preflight.md) end-to-end. MUST NOT start Phase E until **Ready to run: YES**.
+Follow [playwright-preflight.md](../../../references/playwright-preflight.md) end-to-end. MUST NOT start Phase E until **Ready to run: YES**.
 
 ---
 
@@ -116,7 +116,7 @@ Internal failures: note for chat summary only — **do not create Jira/GitHub is
 ### E1 — For every FAILED scenario, capture the repro shape *during the run*
 
 These three cannot be reconstructed while writing Phase F — do them before moving to the next scenario
-([defect-report-completeness.md](../../references/defect-report-completeness.md) §2–§3):
+([defect-report-completeness.md](../../../references/defect-report-completeness.md) §2–§3):
 
 1. **Every entry point, one at a time.** Reach the failing surface by the direct route **and** by the
    in-app path a real user takes (list card, menu, CTA, deep link). One screenshot per path, one
@@ -162,7 +162,7 @@ List issues found **without filing tickets**:
 
 **Each defect row expands into a complete write-up** — this is what gets pasted into a bug, a Jira
 comment, or a sheet cell later, so it must stand alone
-([defect-report-completeness.md](../../references/defect-report-completeness.md) §1–§4):
+([defect-report-completeness.md](../../../references/defect-report-completeness.md) §1–§4):
 
 | Block | Content | Answers |
 |-------|---------|---------|
@@ -176,7 +176,7 @@ name the decision-maker.
 ### F4 — Reader gate (MUST pass before Phase G)
 
 Read F2 + F3 as the developer who will act on them. Run the six-question gate in
-[defect-report-completeness.md](../../references/defect-report-completeness.md) §5. Any "no" → fix the
+[defect-report-completeness.md](../../../references/defect-report-completeness.md) §5. Any "no" → fix the
 write-up. Also confirm: every scope word (`always`, `any entry point`, `only when …`) traces to a
 repro-matrix row, and no observation is under an unresolved contradiction.
 
@@ -276,7 +276,7 @@ Before telling the user updates are done:
    - [ ] **Nothing was damaged**: written cells read back exactly what was sent, every formula
          that was there is still a formula, no new `#REF!/#NAME?/#VALUE!/#N/A` anywhere, and the
          header row is unchanged.
-3. If any mismatch → fix and re-check. **Maximum 3 fix rounds** — then report specific failures with best available workaround (see [jira-comment-post-review.md](../../references/jira-comment-post-review.md)).
+3. If any mismatch → fix and re-check. **Maximum 3 fix rounds** — then report specific failures with best available workaround (see [jira-comment-post-review.md](../../../references/jira-comment-post-review.md)).
 
 ### G7 — Close
 
@@ -297,7 +297,7 @@ If verification failed partially, state what succeeded and what did not — NEVE
 ## Phase H — A question arrives after results were published
 
 A follow-up question is a **defect in the write-up**, not a normal step
-([defect-report-completeness.md](../../references/defect-report-completeness.md) §6).
+([defect-report-completeness.md](../../../references/defect-report-completeness.md) §6).
 
 1. **Re-verify before answering.** If the answer is not already backed by a labelled evidence file from
    this run, re-run that surface. Never answer from memory of an earlier run, and never answer from the
@@ -316,7 +316,7 @@ A follow-up question is a **defect in the write-up**, not a normal step
 
 ## QA closing (mandatory before session end)
 
-Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
+Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific:
 
 - [ ] F1–F4 posted before any external update.
 - [ ] Every scenario has PASSED/FAILED/BLOCKED/NOT TESTED with evidence reference.
@@ -326,20 +326,20 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 - [ ] Close-out includes `Verified:` (or partial-failure honesty per Phase F).
 - [ ] Phase G6 fix-verify completed when Phase G ran.
 - [ ] **Fresh-eyes:** re-read F2 before Phase G when **> 15 scenarios**.
-- [ ] [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Testing ticket section).
+- [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (Testing ticket section).
 - [ ] Suggest **create-bug** if F3 has defects; handoff if long run.
 
 ---
 
 ## Out of scope
 
-- Filing bugs, retest, TC prep, full-app regression — see [skill-routing.md](../../references/skill-routing.md)
+- Filing bugs, retest, TC prep, full-app regression — see [skill-routing.md](../../../references/skill-routing.md)
 
 ---
 
 ## Next workflows
 
-See [skill-routing.md](../../references/skill-routing.md) — **Handoffs** after this workflow.
+See [skill-routing.md](../../../references/skill-routing.md) — **Handoffs** after this workflow.
 
 ---
 
@@ -357,7 +357,7 @@ See [skill-routing.md](../../references/skill-routing.md) — **Handoffs** after
 
 ## MUST / NEVER
 
-Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Skill-specific:
+Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). Skill-specific:
 
 | Rule | Because |
 |------|---------|

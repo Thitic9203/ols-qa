@@ -12,7 +12,7 @@ File **one or more bug reports** on the tracker the user names (Jira, GitHub Iss
 
 ## Discipline
 
-Follow [shared-preamble.md](../../references/shared-preamble.md).
+Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
 **Gates:** MUST NOT create issues until Phase C confirm. MUST NOT file without evidence. MUST verify each URL in Phase F before saying done — because create APIs can return IDs for empty bodies.
 
@@ -22,7 +22,7 @@ MUST refuse to reach Phase B until **A1 (target)**, **A2 (format)**, and **A3 (b
 
 If pre-flight fails (auth, repo missing), stop — MUST NOT create issues silently.
 
-On first response after constraints, follow [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) for **Create bug**, then show [intake-one-pager.md](../../references/intake-one-pager.md) (Create bug section).
+On first response after constraints, follow [workspace-guide-discovery.md](../../../references/workspace-guide-discovery.md) for **Create bug**, then show [intake-one-pager.md](../../../references/intake-one-pager.md) (Create bug section).
 
 ---
 
@@ -157,19 +157,19 @@ Verdict: CREATED {N}/{N} — verified at destination
 
 ## QA closing (mandatory before "done")
 
-Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
+Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific:
 
 - [ ] Every created issue has URL/key from tool output (not guessed).
 - [ ] Each URL opened or fetched — title visible.
 - [ ] Close-out includes `Verdict: CREATED x/y`.
-- [ ] [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Create bug section).
+- [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (Create bug section).
 - [ ] Suggest **retest** after fix; handoff if blocked.
 
 ---
 
 ## Out of scope
 
-- Running a full test pass, retest, TC prep, result updates — see [skill-routing.md](../../references/skill-routing.md)
+- Running a full test pass, retest, TC prep, result updates — see [skill-routing.md](../../../references/skill-routing.md)
 
 ---
 
@@ -185,7 +185,7 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 
 ## MUST / NEVER
 
-Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Skill-specific:
+Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). Skill-specific:
 
 | Rule | Because |
 |------|---------|

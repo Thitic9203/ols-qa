@@ -13,7 +13,7 @@
 
 ## Repro — agent steps (abbreviated)
 
-1. **Phase A:** Recited [helix-session-constraints.md](../../../references/helix-session-constraints.md) testing-ticket block.
+1. **Phase A:** Recited [helix-session-constraints.md](../../../../references/helix-session-constraints.md) testing-ticket block.
 2. **Phase C:** User replied `confirm` on 3-scenario plan.
 3. **Phase E:** TC1 login happy PASSED; TC2 empty password FAILED (toast shown); TC3 locked account BLOCKED (no seed user).
 4. **Phase F:** Posted F1–F3 in chat; listed defect in F3 without filing Jira issue.

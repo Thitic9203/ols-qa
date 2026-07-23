@@ -2,7 +2,7 @@
 
 Rules for choosing the Thai wording used inside test case content.
 
-The glossary itself is **project data, not skill content**. Its published-sheet URL, tab name, `gid`, and local CSV path are recorded in the project guide (for this workspace: [ols-project-guide.md](ols-project-guide.md) § TC glossary). Skills MUST read the location from the project guide rather than hardcoding a URL.
+The glossary itself is **project data, not skill content**. Its published-sheet URL, tab name, `gid`, and local CSV path are recorded in the workspace's own project guide (`references/<project>-project-guide.md`, § TC glossary) — see [workspace-guide-discovery.md](workspace-guide-discovery.md). Skills MUST read the location from that guide rather than hardcoding a URL.
 
 ## Precedence
 

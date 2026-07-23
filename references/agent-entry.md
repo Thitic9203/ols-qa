@@ -42,7 +42,7 @@ Or: “Use skill helix and show the menu.”
 /skills list
 ```
 
-Then ask to use skill `helix`, or name a workflow skill (e.g. `tc-fe-prep-workflow`).
+Then ask to use skill `helix`, or a workflow stub by name (e.g. `tc-fe-prep-workflow`). After install, expect **6 skills** in `~/.gemini/skills/`.
 
 ## Cline
 
@@ -54,7 +54,7 @@ Use the helix skill — show the Helix QA menu in English and wait for my workfl
 
 ## Codex CLI
 
-Skills under `~/.codex/skills/`. Ask the agent to load `helix` or a specific `*-workflow` skill.
+Skills under `~/.codex/skills/` (**helix + 5 workflow stubs**). Ask the agent to load `helix` or a specific `*-workflow` skill.
 
 Tool mapping: [codex-tools.md](codex-tools.md).
 

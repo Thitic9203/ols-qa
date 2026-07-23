@@ -1,5 +1,5 @@
 # In-progress skills
 
-Place work-in-progress skills here: `skills/in-progress/<skill-name>/SKILL.md`.
+Skills under development before they ship in `skills/<name>/SKILL.md` and `plugin.json`.
 
-These are not routed by Helix until moved to the active directory and registered.
+The repo **link-skills** install step **does not** symlink skills under `in-progress/` or `deprecated/` (procedures only). Shipped discovery stubs live at `skills/<name>/SKILL.md` — not here.

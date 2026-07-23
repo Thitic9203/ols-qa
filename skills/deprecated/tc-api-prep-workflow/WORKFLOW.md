@@ -14,7 +14,7 @@ Prepare **API manual test cases** from an **API spec** and **Swagger/OpenAPI**, 
 
 ## Discipline
 
-Follow [shared-preamble.md](../../references/shared-preamble.md).
+Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
 **Gates:** MUST NOT post a comment or write files until the user approves the draft in chat (Phase F) — because delivery is irreversible without rework.
 
@@ -29,7 +29,7 @@ MUST refuse to start Phase D (design) until **both** are available:
 
 If Phase A load fails after user input, stop and report — do not invent endpoints.
 
-On first response after constraints, follow [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) for **TC API prep**, then show [intake-one-pager.md](../../references/intake-one-pager.md) (TC API section).
+On first response after constraints, follow [workspace-guide-discovery.md](../../../references/workspace-guide-discovery.md) for **TC API prep**, then show [intake-one-pager.md](../../../references/intake-one-pager.md) (TC API section).
 
 ---
 
@@ -52,11 +52,11 @@ Load the spec:
 
 If load fails → stop and report; ask for export file or VPN.
 
-If the API surface is **large** (~15+ operations or whole-service scope), follow [tc-api-chunked-scope.md](../../references/tc-api-chunked-scope.md) before Phase D — agree chunks with the user.
+If the API surface is **large** (~15+ operations or whole-service scope), follow [tc-api-chunked-scope.md](../../../references/tc-api-chunked-scope.md) before Phase D — agree chunks with the user.
 
 ### Phase A optional — Swagger / spec diff
 
-If the user mentions Swagger **changed**, a **new API version**, or updating existing API TCs, run [swagger-diff-phase.md](../../references/swagger-diff-phase.md) before Phase D.
+If the user mentions Swagger **changed**, a **new API version**, or updating existing API TCs, run [swagger-diff-phase.md](../../../references/swagger-diff-phase.md) before Phase D.
 
 ---
 
@@ -144,7 +144,7 @@ Follow [spec-coverage-review.md](references/spec-coverage-review.md):
 
 ### E2 — International TC quality (ISTQB + ISO/IEC/IEEE 29119-3)
 
-Follow [tc-quality-standards.md](../../references/tc-quality-standards.md) on every row.
+Follow [tc-quality-standards.md](../../../references/tc-quality-standards.md) on every row.
 
 Also verify writing rules in [api-tc-guidelines.md](references/api-tc-guidelines.md) (status codes, payloads, no secrets).
 
@@ -156,7 +156,7 @@ MUST NOT post the full TC table until **Ready for draft: YES**.
 
 ### E3b — Coverage delta summary
 
-Post the table from [coverage-delta-template.md](../../references/coverage-delta-template.md) (API section).
+Post the table from [coverage-delta-template.md](../../../references/coverage-delta-template.md) (API section).
 
 If review fails → revise Phase D and re-run E1–E3b (max 2 rounds).
 
@@ -189,8 +189,8 @@ State clearly: **Not posted / no file written yet.**
 ### G1 — File export (if user chose B)
 
 1. Write markdown with the table to `references/{SCOPE}_API_TC.md` (or user path).
-2. **CSV:** export per [csv-export-rules.md](../../references/csv-export-rules.md) to `references/{SCOPE}_API_TC.csv` (in-agent by default).
-3. **Excel:** `.xlsx` only if user asked Excel or `both` — follow the Excel/xlsx section in [csv-export-rules.md](../../references/csv-export-rules.md) (Python + openpyxl inline; never silently produce CSV when xlsx was requested).
+2. **CSV:** export per [csv-export-rules.md](../../../references/csv-export-rules.md) to `references/{SCOPE}_API_TC.csv` (in-agent by default).
+3. **Excel:** `.xlsx` only if user asked Excel or `both` — follow the Excel/xlsx section in [csv-export-rules.md](../../../references/csv-export-rules.md) (Python + openpyxl inline; never silently produce CSV when xlsx was requested).
 
 `{SCOPE}` = user-provided name, ticket key, or short slug from API title.
 
@@ -200,7 +200,7 @@ Tell the user the **workspace-relative paths** to download.
 
 After writing the CSV/xlsx files, immediately build ADF JSON from the same approved table:
 
-1. Convert every `<br>` in table cells → `{"type": "hardBreak"}` ADF node (rules: [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md))
+1. Convert every `<br>` in table cells → `{"type": "hardBreak"}` ADF node (rules: [jira-linebreak-conversion.md](../../../references/jira-linebreak-conversion.md))
 2. Build complete ADF document — no attachment placeholders needed for API TC (no CSV upload required unless user chose both A + B)
 3. Store ADF string in agent context (transient)
 
@@ -208,7 +208,7 @@ If user chose both A (comment) and B (file), include `__ATT1_ID__` placeholder i
 
 ### G2 — Comment on link (if user chose A)
 
-ADF is already built from G1 — proceed directly to fast publish. Full JS patterns: [jira-fast-publish.md](../../references/jira-fast-publish.md).
+ADF is already built from G1 — proceed directly to fast publish. Full JS patterns: [jira-fast-publish.md](../../../references/jira-fast-publish.md).
 
 1. Draft comment body preview in chat (same table; **bold every header cell** — e.g. `| **Test Case ID** | **Module / Feature** | **Test Title** | ...`).
 2. Show draft comment → user may waive second approval if they already approved Phase F table.
@@ -221,7 +221,7 @@ ADF is already built from G1 — proceed directly to fast publish. Full JS patte
 
 ### G-verify — Post-publish review (mandatory)
 
-After G1 and/or G2, run the **full review checklist** from [jira-comment-post-review.md](../../references/jira-comment-post-review.md):
+After G1 and/or G2, run the **full review checklist** from [jira-comment-post-review.md](../../../references/jira-comment-post-review.md):
 
 1. Re-open the file path or comment URL on the destination.
 2. Checklist:
@@ -238,17 +238,17 @@ After G1 and/or G2, run the **full review checklist** from [jira-comment-post-re
 
 MUST NOT run G3 close until post-publish review passes — because first export/post is often wrong.
 
-**Fresh-eyes:** MUST re-read the full draft table before G2/G1 when **> 15 rows** ([skill-rules-style.md](../../references/skill-rules-style.md)).
+**Fresh-eyes:** MUST re-read the full draft table before G2/G1 when **> 15 rows** ([skill-rules-style.md](../../../references/skill-rules-style.md)).
 
 ### G3 — Close
 
-Only after **G-verify** pass, follow [session-closing.md](../../references/session-closing.md) (artifact index, next workflow, handoff if needed, `Verdict:`).
+Only after **G-verify** pass, follow [session-closing.md](../../../references/session-closing.md) (artifact index, next workflow, handoff if needed, `Verdict:`).
 
 ---
 
 ## QA closing (mandatory before "done")
 
-Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
+Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific:
 
 - [ ] Phase E review block posted with **Ready for draft: YES** and endpoint matrix complete.
 - [ ] Spec/Swagger coverage complete; out-of-scope documented; tc-quality-standards PASS.
@@ -256,18 +256,18 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 - [ ] If comment delivery: destination UI shows full table, no stray HTML/markup tags, numbered items on separate lines.
 - [ ] If comment delivery: CSV/Excel attached to the same issue and footer link works.
 - [ ] If file delivery: CSV/xlsx opens with bold header row + N data rows.
-- [ ] Post-publish review passed per [jira-comment-post-review.md](../../references/jira-comment-post-review.md).
+- [ ] Post-publish review passed per [jira-comment-post-review.md](../../../references/jira-comment-post-review.md).
 - [ ] Close-out includes `Verified:` and test case count.
 - [ ] G-verify completed (at least one re-read of destination).
-- [ ] [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (TC API section).
+- [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (TC API section).
 
 ---
 
 ## Out of scope
 
 - Automated API test scripts (Postman/Playwright API) unless user asks separately
-- Executing tests — see [skill-routing.md](../../references/skill-routing.md)
-- Opening bugs — see [skill-routing.md](../../references/skill-routing.md)
+- Executing tests — see [skill-routing.md](../../../references/skill-routing.md)
+- Opening bugs — see [skill-routing.md](../../../references/skill-routing.md)
 
 ---
 
@@ -281,14 +281,14 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 | [markdown-template.md](references/markdown-template.md) | Table skeleton |
 | [worked-example.md](references/worked-example.md) | On-demand: anonymized sample (read only when format reference needed) |
 | [spec-coverage-review.md](references/spec-coverage-review.md) | Spec + Swagger traceability review |
-| [tc-quality-standards.md](../../references/tc-quality-standards.md) | ISTQB / 29119-3 TC quality |
+| [tc-quality-standards.md](../../../references/tc-quality-standards.md) | ISTQB / 29119-3 TC quality |
 | [scripts/README.md](scripts/README.md) | Optional CSV helper pointer |
 
 ---
 
 ## MUST / NEVER
 
-Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Skill-specific:
+Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). Skill-specific:
 
 | Rule | Because |
 |------|---------|
@@ -297,7 +297,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST NOT invent endpoints not in spec/Swagger | False coverage |
 | MUST run Phase E review before draft table | Prevents out-of-scope API cases |
 | MUST apply tc-quality-standards on every row | ISTQB / 29119-3 consistency |
-| MUST convert `<br>` to Jira-native line breaks before posting (see [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md)) | `<br>` renders as literal text on Jira |
-| MUST pass post-publish review ([jira-comment-post-review.md](../../references/jira-comment-post-review.md)) before reporting "commented" or "done" to user | Prevents false success claims with broken formatting |
+| MUST convert `<br>` to Jira-native line breaks before posting (see [jira-linebreak-conversion.md](../../../references/jira-linebreak-conversion.md)) | `<br>` renders as literal text on Jira |
+| MUST pass post-publish review ([jira-comment-post-review.md](../../../references/jira-comment-post-review.md)) before reporting "commented" or "done" to user | Prevents false success claims with broken formatting |
 | MUST attach CSV/Excel to Jira issue when file was generated and user chose delivery A (not just workspace) | User expects downloadable file on the issue |
 | MUST verify destination UI when using delivery A | Truncation + literal `<br>` |

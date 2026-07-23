@@ -16,7 +16,7 @@
 3. **Step 4 QA:** Caught missing EC_02 on first pass → added `TC_Schedule_06` before draft.
 4. **Step 4.5:** Posted Thai↔English term table (kept `Status`, `Dropdown` → `รายการแบบเลื่อนลง`) → user confirmed.
 5. **Step 5:** Draft table in chat (Type column present) → user replied `approve`.
-6. **Step 6:** Suite gate — reused existing OLS suite `Schedule > Edit`; wrote `references/PROJ-100_FE_TC.md`, `references/Draft_Jira_PROJ-100.csv`, and `references/Import_Qase_PROJ-100.csv` in the **user's workspace** (per [csv-export-rules.md](../../../references/csv-export-rules.md) + [qase-import-format.md](qase-import-format.md)).
+6. **Step 6:** Suite gate — reused existing OLS suite `Schedule > Edit`; wrote `references/PROJ-100_FE_TC.md`, `references/Draft_Jira_PROJ-100.csv`, and `references/Import_Qase_PROJ-100.csv` in the **user's workspace** (per [csv-export-rules.md](../../../../references/csv-export-rules.md) + [qase-import-format.md](qase-import-format.md)).
 7. **Step 7:** Uploaded both CSVs → posted via MCP; **fix-verify:** re-opened issue → 6 rows visible, both attachment links work, footer shows 2 lines.
 
 ## Output snippet (draft header only)

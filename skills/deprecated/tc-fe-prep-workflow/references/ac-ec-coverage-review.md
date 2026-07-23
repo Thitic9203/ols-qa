@@ -1,6 +1,6 @@
 # FE test cases — AC / EC coverage review
 
-Run **after Step 3 (design)** and **before Step 5 (draft in chat)**. Pair with [tc-quality-standards.md](../../../references/tc-quality-standards.md) for ISTQB / 29119-3 row quality.
+Run **after Step 3 (design)** and **before Step 5 (draft in chat)**. Pair with [tc-quality-standards.md](../../../../references/tc-quality-standards.md) for ISTQB / 29119-3 row quality.
 
 ---
 
@@ -72,6 +72,6 @@ Ready for draft: YES | NO — {reason}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Then post the **Coverage delta** table per [coverage-delta-template.md](../../../references/coverage-delta-template.md) (FE section).
+Then post the **Coverage delta** table per [coverage-delta-template.md](../../../../references/coverage-delta-template.md) (FE section).
 
 MUST NOT post the full draft table until **Ready for draft: YES** and the delta table is posted.

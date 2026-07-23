@@ -5,10 +5,12 @@ Treat Helix like any **AGENTS.md**-driven repo: read skills from disk, execute s
 | Need | Codex approach |
 |------|----------------|
 | Router | Read `skills/helix/SKILL.md` or `AGENTS.md` |
-| Workflow | Read `commands/{workflow}.md` (loads the matching `WORKFLOW.md` internally) |
+| Workflow | Read `skills/{name}/SKILL.md` (stub → `skills/deprecated/{name}/WORKFLOW.md`) or `commands/{workflow}.md` |
 | Jira | MCP or API if user configured; else draft in chat |
-| Playwright | `npx playwright test` per user project — never assume Credit-Port paths |
+| Playwright | `npx playwright test` per user project — never assume project-specific paths |
 | Long tasks | Split phases; optional todos per [long-workflow-todos.md](long-workflow-todos.md) |
+
+After install, `~/.codex/skills/` should contain **helix + 5 workflow stubs**.
 
 **Priority:** user message > Helix `SKILL.md` > default Codex behavior.
 

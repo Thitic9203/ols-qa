@@ -2,7 +2,7 @@
 
 Run **after Step 7 post-publish review passes** and any fixes are applied. Compare the **published** TC set (Jira comment + attachment, or final approved draft if publish was skipped) against the **story ticket** (AC, EC, description, business rules).
 
-Pair with [ac-ec-coverage-review.md](ac-ec-coverage-review.md) (pre-draft gate) and [tc-quality-standards.md](../../../references/tc-quality-standards.md).
+Pair with [ac-ec-coverage-review.md](ac-ec-coverage-review.md) (pre-draft gate) and [tc-quality-standards.md](../../../../references/tc-quality-standards.md).
 
 **This is not a substitute for Step 4.** Step 4 gates the draft before user approval; this report certifies the **final** TC set the user receives at session close.
 
@@ -171,7 +171,7 @@ Compared final TC against story **{ISSUE_KEY}** ({summary short}).
 - **FAIL** overall → fix and re-run; do not proceed to Step 8.
 - **PASS** with optional improvements → proceed to Step 8; list improvements without blocking.
 - Keep prose concise; tables carry the evidence.
-- Language: follow [user-communication.md](../../../references/user-communication.md) for chat (English default). Match ticket language for quoted UI strings and error messages.
+- Language: follow [user-communication.md](../../../../references/user-communication.md) for chat (English default). Match ticket language for quoted UI strings and error messages.
 
 ---
 
@@ -180,5 +180,5 @@ Compared final TC against story **{ISSUE_KEY}** ({summary short}).
 | Gate | When | Output |
 |------|------|--------|
 | Step 4 — [ac-ec-coverage-review.md](ac-ec-coverage-review.md) | Before draft in chat | `Ready for draft: YES` + coverage delta |
-| Step 7 — [jira-comment-post-review.md](../../../references/jira-comment-post-review.md) | After Jira post | Formatting / attachment checks |
+| Step 7 — [jira-comment-post-review.md](../../../../references/jira-comment-post-review.md) | After Jira post | Formatting / attachment checks |
 | **This report** | Before session close | Four-axis PASS/FAIL + traceability |

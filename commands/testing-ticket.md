@@ -4,7 +4,7 @@ description: |
   Do NOT use for opening bugs (create-bug), retest-after-fix on a bug (retest-bug), or drafting manual TC tables (tc-fe-prep / tc-api-prep).
 ---
 
-Read and follow [the testing-ticket workflow](../skills/deprecated/testing-ticket-workflow/WORKFLOW.md) end-to-end.
+Read and follow [the testing-ticket workflow](../skills/testing-ticket-workflow/SKILL.md) end-to-end.
 
 Pass any arguments after `/testing-ticket` as the Jira issue key or URL. If none were provided, start Phase A intake (all seven fields).
 

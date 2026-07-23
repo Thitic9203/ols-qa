@@ -1,6 +1,6 @@
 # API test cases — spec & Swagger coverage review
 
-Run **after Phase D (design)** and **before Phase F (draft in chat)**. Pair with [tc-quality-standards.md](../../../references/tc-quality-standards.md) for ISTQB / 29119-3 row quality.
+Run **after Phase D (design)** and **before Phase F (draft in chat)**. Pair with [tc-quality-standards.md](../../../../references/tc-quality-standards.md) for ISTQB / 29119-3 row quality.
 
 ---
 
@@ -79,6 +79,6 @@ Ready for draft: YES | NO — {reason}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Then post the **Coverage delta** table per [coverage-delta-template.md](../../../references/coverage-delta-template.md) (API section).
+Then post the **Coverage delta** table per [coverage-delta-template.md](../../../../references/coverage-delta-template.md) (API section).
 
 MUST NOT post the full draft table until **Ready for draft: YES** and the delta table is posted.

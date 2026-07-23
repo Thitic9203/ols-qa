@@ -20,22 +20,7 @@ Show the menu and route to the correct workflow skill. Full text: [commands/heli
 
 Respond in **English only** — never Thai in menus, questions, or replies, even if the user writes Thai. Be concise.
 
-```text
-Hi — I'm Helix, your QA assistant. I help with test-case preparation, ticket testing, bug retests, and related Jira workflows so you spend less time on repetitive steps.
-
-**Scope note:** I work best when the goal is well bounded—a specific ticket, spec, or bug, plus the environment and what you consider "done." If the scope is still fuzzy, we can narrow it together; otherwise you may see extra back-and-forth and results that need more revision.
-
-What would you like to do?
-
-1. **TC FE Preparation** — manual frontend test cases from a story (AC/EC), draft comment + CSV/Excel
-2. **TC API Preparation** — API test cases from spec + Swagger; confirm columns; comment link or CSV/Excel
-3. **Retest Bug** — verify a fix on a Jira bug (API or UI), evidence, comment, transition
-4. **Testing Ticket** — Playwright test for a ticket; summarize in chat; optionally update results elsewhere
-5. **Create Bug** — open bug(s) on Jira or GitHub (target link, format, details → confirm → file)
-6. **Other** — describe what you need
-
-Reply with **1**–**6**, or the option name. You can also pass a Jira key or URL with your choice.
-```
+Show the menu from [menu-text.md](../../references/menu-text.md) (Opening block — copy verbatim).
 
 Wait for the user's choice before starting a workflow.
 
@@ -49,7 +34,7 @@ Follow [shared-preamble.md](../../references/shared-preamble.md).
 
 This skill only routes — it does not run tests or post to Jira.
 
-If the user’s goal is already clear (e.g. “write FE TC for PROJ-123”), **skip the menu** and read the matching workflow SKILL.md directly — because an extra menu round wastes time.
+If the user’s goal is already clear (e.g. “write FE TC for PROJ-123”), **skip the menu** and load the matching workflow stub (`skills/{name}/SKILL.md`) — because an extra menu round wastes time.
 
 ## Intent shortcuts (Thai / mixed input)
 
@@ -73,11 +58,11 @@ Say the number/name to start, or ignore. (Set HELIX_PROACTIVE=0 to silence.)
 
 | User choice | Action |
 |-------------|--------|
-| 1, TC FE, FE test cases | Read and follow [tc-fe-prep-workflow](../deprecated/tc-fe-prep-workflow/WORKFLOW.md) |
-| 2, TC API, Swagger API TC | Read and follow [tc-api-prep-workflow](../deprecated/tc-api-prep-workflow/WORKFLOW.md) |
-| 3, retest, verify fix | Read and follow [retest-bug-workflow](../deprecated/retest-bug-workflow/WORKFLOW.md) |
-| 4, testing ticket, Playwright | Read and follow [testing-ticket-workflow](../deprecated/testing-ticket-workflow/WORKFLOW.md) |
-| 5, create bug, file bug | Read and follow [create-bug-workflow](../deprecated/create-bug-workflow/WORKFLOW.md) |
+| 1, TC FE, FE test cases | Read and follow [tc-fe-prep-workflow](../tc-fe-prep-workflow/SKILL.md) |
+| 2, TC API, Swagger API TC | Read and follow [tc-api-prep-workflow](../tc-api-prep-workflow/SKILL.md) |
+| 3, retest, verify fix | Read and follow [retest-bug-workflow](../retest-bug-workflow/SKILL.md) |
+| 4, testing ticket, Playwright | Read and follow [testing-ticket-workflow](../testing-ticket-workflow/SKILL.md) |
+| 5, create bug, file bug | Read and follow [create-bug-workflow](../create-bug-workflow/SKILL.md) |
 | 6, other | Clarify; suggest closest workflow |
 
 Handoffs: [skill-routing.md](../../references/skill-routing.md).

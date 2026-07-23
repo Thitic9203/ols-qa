@@ -14,11 +14,11 @@ End-to-end retest from a Jira bug ticket: fetch ticket → test → compare Swag
 
 ## Discipline
 
-Follow [shared-preamble.md](../../references/shared-preamble.md).
+Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
-**Jira bodies** (after approval): neutral English — no "Retested by:", no honorifics. If reproduction is unclear or results conflict with dev claims, follow [qa-debug-discipline.md](../../references/qa-debug-discipline.md) before posting PASSED/FAILED.
+**Jira bodies** (after approval): neutral English — no "Retested by:", no honorifics. If reproduction is unclear or results conflict with dev claims, follow [qa-debug-discipline.md](../../../references/qa-debug-discipline.md) before posting PASSED/FAILED.
 
-**Any verdict that is not a clean PASSED** is governed by [defect-report-completeness.md](../../references/defect-report-completeness.md) — the comment must answer the reader's five questions (what, **which entry points**, what it should be instead, why that is a fail, **what changes and who decides**) before it is posted. A question asked after posting means a section was missing; the fix is the comment, not a chat reply.
+**Any verdict that is not a clean PASSED** is governed by [defect-report-completeness.md](../../../references/defect-report-completeness.md) — the comment must answer the reader's five questions (what, **which entry points**, what it should be instead, why that is a fail, **what changes and who decides**) before it is posted. A question asked after posting means a section was missing; the fix is the comment, not a chat reply.
 
 Use plain chat for URLs/credentials; AskUserQuestion only for choices (e.g. approve comment).
 
@@ -28,7 +28,7 @@ MUST refuse to start Step 2 until the user provides a **Jira bug key or browse U
 
 MUST refuse to run tests without **reachable environment config** (workspace `*-retest-guide.md` or answers from [project-config-template.md](references/project-config-template.md)) — because URLs and credentials must not be hardcoded in the skill.
 
-On first response after constraints, follow [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) for **Retest bug**, then show [intake-one-pager.md](../../references/intake-one-pager.md) (Retest section).
+On first response after constraints, follow [workspace-guide-discovery.md](../../../references/workspace-guide-discovery.md) for **Retest bug**, then show [intake-one-pager.md](../../../references/intake-one-pager.md) (Retest section).
 
 ---
 
@@ -87,7 +87,7 @@ Capture: environment, test steps, expected/actual results, API endpoint, bug typ
 
 ## Step 2b — Fix claim vs verification plan (mandatory)
 
-Follow [retest-fix-intake.md](../../references/retest-fix-intake.md). Post the retest plan block before executing tests.
+Follow [retest-fix-intake.md](../../../references/retest-fix-intake.md). Post the retest plan block before executing tests.
 
 ---
 
@@ -150,7 +150,7 @@ Swagger is source of truth — not stale ticket text alone.
 
 ### 4f. Repro matrix + settle + contradiction gate (mandatory for every non-PASSED item)
 
-Follow [defect-report-completeness.md](../../references/defect-report-completeness.md) §2–§3. Three things happen **during the run**, not while drafting — you cannot reconstruct them later:
+Follow [defect-report-completeness.md](../../../references/defect-report-completeness.md) §2–§3. Three things happen **during the run**, not while drafting — you cannot reconstruct them later:
 
 1. **Exercise every entry point, one at a time.** For a UI defect that means at minimum: the direct URL/route **and** the in-app path a real user takes to the same surface (list card, menu, CTA, deep link). Capture a separate screenshot per entry point and name it per path. One row per entry point in the matrix; a path you did not exercise is recorded `not tested` — **never inferred from another path**.
 2. **Settle after every state change.** After a fixture step that changes server state (publish / unpublish / approve / delete / role change), hard-reload each surface before observing it. A view that was already open holds pre-change data; recording it is reporting your own test timing as the product's behavior. A stale window worth reporting is a **separate timing note** with the measured delay — not a matrix row.
@@ -215,7 +215,7 @@ Template core:
 
 ### 6a. Extra sections REQUIRED when the verdict is FAILED or BLOCKED
 
-A PASSED comment stops at the template above. **Anything else adds these three blocks**, in this order, per [defect-report-completeness.md](../../references/defect-report-completeness.md) §1–§4:
+A PASSED comment stops at the template above. **Anything else adds these three blocks**, in this order, per [defect-report-completeness.md](../../../references/defect-report-completeness.md) §1–§4:
 
 | Block | Content | Answers |
 |-------|---------|---------|
@@ -232,7 +232,7 @@ the decision-maker; QA does not resolve it.
 ### 6b. Dev-question gate (MUST pass before the draft goes to the user)
 
 Read your own draft as the developer who will act on it. Run the six-question gate in
-[defect-report-completeness.md](../../references/defect-report-completeness.md) §5. Any "no" → **fix the
+[defect-report-completeness.md](../../../references/defect-report-completeness.md) §5. Any "no" → **fix the
 comment**, never "post now and explain in chat". Also confirm: every scope word in the draft (`always`,
 `any entry point`, `only when …`) traces to a repro-matrix row, and no observation in the draft is under an
 unresolved contradiction.
@@ -257,7 +257,7 @@ Show the full draft in chat and wait.
 | Content | Method |
 |---------|--------|
 | Comment ≤ 3 table rows OR text-only (no table) | MCP `addCommentToJiraIssue` — fast for short results |
-| Comment > 3 table rows | ADF-direct via browser JS (Pattern D in [jira-fast-publish.md](../../references/jira-fast-publish.md)) |
+| Comment > 3 table rows | ADF-direct via browser JS (Pattern D in [jira-fast-publish.md](../../../references/jira-fast-publish.md)) |
 | FE bug with screenshots | v2 wiki markup via browser JS (Step 7c) |
 
 **Definition of "table":** `| col | col |` rows with data — the evidence summary block (`**Env:** staging`, `**API:** …`) is NOT a table.
@@ -267,12 +267,12 @@ Show the full draft in chat and wait.
 
 **For ADF-direct path (> 3 table rows):**
 
-1. Build ADF JSON from approved draft. Convert `<br>` → `{"type": "hardBreak"}` nodes. Full rules: [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md).
+1. Build ADF JSON from approved draft. Convert `<br>` → `{"type": "hardBreak"}` nodes. Full rules: [jira-linebreak-conversion.md](../../../references/jira-linebreak-conversion.md).
 2. Set `window.__adfBody` on page (Pattern A — ADF only, no CSV data needed).
 3. Run Pattern D (comment-only): single JS fetch to `/rest/api/3/issue/{KEY}/comment`.
 4. Read `window.__fastPublish` via Pattern C; check `status: 'ok'`.
 
-Full JS patterns and error recovery: [jira-fast-publish.md](../../references/jira-fast-publish.md).
+Full JS patterns and error recovery: [jira-fast-publish.md](../../../references/jira-fast-publish.md).
 
 ### 7b. Fallback for MCP path only
 
@@ -291,7 +291,7 @@ Use **v2** wiki markup and `/rest/api/2/issue/{KEY}/comment`.
 
 ### 7d — Post-publish review (mandatory)
 
-Before Step 8 transition, run review per [jira-comment-post-review.md](../../references/jira-comment-post-review.md):
+Before Step 8 transition, run review per [jira-comment-post-review.md](../../../references/jira-comment-post-review.md):
 
 1. Re-open `https://{JIRA_DOMAIN}/browse/{ISSUE_KEY}` (or equivalent).
 2. Checklist:
@@ -310,7 +310,7 @@ MUST NOT transition, assign, or report "done" until 7d passes — because stakeh
 
 ## QA closing (mandatory before "done")
 
-Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
+Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific:
 
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌** (not ambiguous text).
 - [ ] `Verdict: PASSED` or `Verdict: FAILED` with issue link.
@@ -323,7 +323,7 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 - [ ] **Step 8·0 format-completeness gate passed BEFORE any transition** — FE bug: screenshots embedded inline + render-verified; API bug: full cURL/response per row.
 - [ ] Bug landed in Done → **Step 8d** run: stories it blocked either moved to ready-for-QA or left with their remaining blockers reported.
 - [ ] Step 9 QA notify sent if the project configures a channel (retest verdict + Jira comment link + @mention).
-- [ ] [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Retest section).
+- [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (Retest section).
 
 ---
 
@@ -417,7 +417,7 @@ Include the 8d outcome: which stories were moved, and which stayed blocked and b
 
 After the transition, if the project defines a **QA notify channel** (Discord/Slack/chat), post a **retest-result** notification so the reporter / QA owner sees the outcome.
 
-- Load channel, format, recipient, and any helper from the workspace `*-retest-guide.md` / project guide. **Never hardcode webhook URLs, tokens, machine paths, or user IDs in this skill** ([portable-content.md](../../references/portable-content.md)) — they live in project config or local agent memory.
+- Load channel, format, recipient, and any helper from the workspace `*-retest-guide.md` / project guide. **Never hardcode webhook URLs, tokens, machine paths, or user IDs in this skill** ([portable-content.md](../../../references/portable-content.md)) — they live in project config or local agent memory.
 - Message = the single **retest verdict** (PASSED ✅ / FAILED ❌), a short bullet of what was checked, a link to the Jira retest comment, and an @mention of the recipient.
 - **Recipient resolution (mandatory):** read the recipient from the ticket field the project guide names (e.g. a "QA Owner" custom field) — fetch that field's value from the bug itself for **every** notify; do not reuse a name from an earlier ticket, and do not default to the Reporter. The label printed next to the mention MUST match the field the value came from (label "QA Owner" ⇒ value from the QA Owner field). If the field is empty or the guide names no field, ask the user before sending.
 - This is a **result FYI**, not a "please review" request (the retest is already closed) — do not reuse the full-test-run "QA Review Requested / pending review" wording.
@@ -450,7 +450,7 @@ If a verdict changes after the notification was sent (e.g. PASSED→FAILED on re
 ## Step 10 — A question arrives after the comment was posted
 
 A follow-up question is a **defect in the comment**, not a normal step. Handle it in this order — see
-[defect-report-completeness.md](../../references/defect-report-completeness.md) §6.
+[defect-report-completeness.md](../../../references/defect-report-completeness.md) §6.
 
 1. **Re-verify before answering.** If the answer is not already backed by a labelled evidence file from
    this retest, re-run that surface first. Never answer from memory of an earlier run, and never answer
@@ -482,13 +482,13 @@ A follow-up question is a **defect in the comment**, not a normal step. Handle i
 
 ## Out of scope
 
-- TC prep, full ticket Playwright, filing new bugs — see [skill-routing.md](../../references/skill-routing.md)
+- TC prep, full ticket Playwright, filing new bugs — see [skill-routing.md](../../../references/skill-routing.md)
 
 ---
 
 ## MUST / NEVER
 
-Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Skill-specific:
+Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). Skill-specific:
 
 | Rule | Because |
 |------|---------|

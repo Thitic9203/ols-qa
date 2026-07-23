@@ -4,7 +4,7 @@ description: |
   Do NOT use for API-only Swagger TC (tc-api-prep), retest-after-fix (retest-bug), or Playwright ticket runs (testing-ticket).
 ---
 
-Read and follow [the TC FE prep workflow](../skills/deprecated/tc-fe-prep-workflow/WORKFLOW.md) end-to-end.
+Read and follow [the TC FE prep workflow](../skills/tc-fe-prep-workflow/SKILL.md) end-to-end.
 
 Pass any arguments after `/tc-fe-prep` as the Jira issue key or URL. If none were provided, ask the user which story to use.
 

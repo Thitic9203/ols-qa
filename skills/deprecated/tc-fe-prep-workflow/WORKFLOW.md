@@ -14,7 +14,7 @@ Prepare **frontend manual test cases** from a Jira **story** (acceptance criteri
 
 ## Discipline
 
-Follow [shared-preamble.md](../../references/shared-preamble.md). Ask one focused question at a time when setup is missing.
+Follow [shared-preamble.md](../../../references/shared-preamble.md). Ask one focused question at a time when setup is missing.
 
 ## Refusal-first (precondition gate)
 
@@ -28,7 +28,7 @@ Read [references/prerequisites.md](references/prerequisites.md) and [references/
 
 **Before Step 0:** confirm the **story** issue key with the user; NEVER post to Jira until they approve the draft in chat — because premature comments are hard to retract cleanly.
 
-On first response after constraints, follow [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) for **TC FE prep**.
+On first response after constraints, follow [workspace-guide-discovery.md](../../../references/workspace-guide-discovery.md) for **TC FE prep**.
 
 ---
 
@@ -208,7 +208,7 @@ Then handle user decisions in chat:
 
 The Thai wording inside test cases comes from a project glossary that the team edits between runs. A cached copy is not evidence.
 
-Rules: [tc-glossary.md](../../references/tc-glossary.md). Sheet URL, tab, and `gid`: the project guide loaded in Step 1.
+Rules: [tc-glossary.md](../../../references/tc-glossary.md). Sheet URL, tab, and `gid`: the project guide loaded in Step 1.
 
 ### 2.6.1 — Re-fetch the glossary
 
@@ -245,7 +245,7 @@ Scan **only the terms this ticket's test cases will use** — do not interrogate
 
 **Wait for the user's answers.** Record each decision for the Step 4.5 table.
 
-Writing a guess and tagging it *provisional* / *pending confirmation* / *documented fallback* is **not** asking. See the red flags in [tc-glossary.md](../../references/tc-glossary.md).
+Writing a guess and tagging it *provisional* / *pending confirmation* / *documented fallback* is **not** asking. See the red flags in [tc-glossary.md](../../../references/tc-glossary.md).
 
 Do NOT proceed to Step 3 until Step 2.6 gaps are resolved.
 
@@ -434,7 +434,7 @@ Follow [ac-ec-coverage-review.md](references/ac-ec-coverage-review.md):
 
 ### 4b — International TC quality (ISTQB + ISO/IEC/IEEE 29119-3)
 
-Follow [tc-quality-standards.md](../../references/tc-quality-standards.md) on every row (objective, preconditions, steps, expected results, priority, observability).
+Follow [tc-quality-standards.md](../../../references/tc-quality-standards.md) on every row (objective, preconditions, steps, expected results, priority, observability).
 
 ### 4c — Post review summary in chat
 
@@ -444,7 +444,7 @@ MUST NOT show the full TC table until **Ready for draft: YES** — because stake
 
 ### 4d — Coverage delta summary
 
-Post the table from [coverage-delta-template.md](../../references/coverage-delta-template.md) (FE section) — even when all rows are `OK`.
+Post the table from [coverage-delta-template.md](../../../references/coverage-delta-template.md) (FE section) — even when all rows are `OK`.
 
 If review fails → fix Step 3 design and re-run 4a–4d (max 2 rounds).
 
@@ -540,7 +540,7 @@ After approval (and Suite confirmed), write **four files** inside the user's pro
 | `references/Integration_Test_{ISSUE_KEY}.csv` | only if Type = `Integration Test` TCs exist | **Typed content CSV** — 9 Thai columns; TCs filtered to Type = `Integration Test`, content mapped to Integration Test template columns (Step 6 mapping); summary footer |
 | `references/System_Test_{ISSUE_KEY}.csv` | only if Type = `System Test` TCs exist | **Typed content CSV** — 9 Thai columns; TCs filtered to Type = `System Test`, content mapped to System Test template columns (Step 6 mapping); summary footer |
 
-Both CSV files (`Draft_Jira` + `Import_Qase`) are always produced together and both are uploaded to Jira (Step 7). Follow [csv-export-rules.md](../../references/csv-export-rules.md) for cell cleaning (convert `<br>`, strip tags, preserve Thai) — applies to all CSV files. Never silently produce only one when both are required.
+Both CSV files (`Draft_Jira` + `Import_Qase`) are always produced together and both are uploaded to Jira (Step 7). Follow [csv-export-rules.md](../../../references/csv-export-rules.md) for cell cleaning (convert `<br>`, strip tags, preserve Thai) — applies to all CSV files. Never silently produce only one when both are required.
 
 ### Qase import CSV column mapping (`Import_Qase_{ISSUE_KEY}.csv`)
 
@@ -626,7 +626,7 @@ Then report to user: "Files saved. ADF ready. Publishing..."
 
 **Target:** `{ISSUE_KEY}` story the user specified.
 
-ADF is already built from Step 6 — proceed directly to fast publish. Full JS patterns: [jira-fast-publish.md](../../references/jira-fast-publish.md).
+ADF is already built from Step 6 — proceed directly to fast publish. Full JS patterns: [jira-fast-publish.md](../../../references/jira-fast-publish.md).
 
 **Comment content:**
 
@@ -682,13 +682,13 @@ TC tables always go ADF-direct — do NOT try MCP first.
 1. Navigate to the Jira issue page (if not already there)
 2. Pattern A: set `window.__csv1Data`, `window.__csv2Data`, `window.__adfBody` on `window.*`
 3. Pattern B: single JS call — upload `Draft_Jira` → upload `Import_Qase` → post ADF comment. Upload order: `Draft_Jira` first, `Import_Qase` second, then typed CSVs in order (`Unit_Test`, `Integration_Test`, `System_Test` — add upload steps for each present file before the comment post)
-4. Pattern C: read `window.__fastPublish` → check `status: 'ok'`; on error follow recovery rules in [jira-fast-publish.md](../../references/jira-fast-publish.md)
+4. Pattern C: read `window.__fastPublish` → check `status: 'ok'`; on error follow recovery rules in [jira-fast-publish.md](../../../references/jira-fast-publish.md)
 
 Attachment IDs captured in Pattern B are substituted into the ADF footer links automatically. Never write filenames as plain text.
 
 **After publish — mandatory post-publish review on Jira UI:**
 
-Run the **full review checklist** from [jira-comment-post-review.md](../../references/jira-comment-post-review.md). Key checks:
+Run the **full review checklist** from [jira-comment-post-review.md](../../../references/jira-comment-post-review.md). Key checks:
 
 - [ ] All TC rows visible (not header only) — count must match approved draft.
 - [ ] **No literal `<br>`, HTML tags, or `**` markers** visible as text in any cell (zero tolerance).
@@ -699,7 +699,7 @@ Run the **full review checklist** from [jira-comment-post-review.md](../../refer
 
 If any check fails → fix and re-post → re-verify on Jira UI (max 3 rounds).
 
-**MUST NOT tell user "commented" or "done" until all checks pass.** See [jira-comment-post-review.md](../../references/jira-comment-post-review.md) for fix procedures and reporting templates.
+**MUST NOT tell user "commented" or "done" until all checks pass.** See [jira-comment-post-review.md](../../../references/jira-comment-post-review.md) for fix procedures and reporting templates.
 
 ---
 
@@ -720,7 +720,7 @@ Follow [tc-final-review-report.md](references/tc-final-review-report.md):
 
 ## QA closing (mandatory before "done")
 
-Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-specific:
+Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific:
 
 - [ ] Step 2a AC/EC internal consistency check completed; results shown in pre-draft review HTML; user decision applied (if issues found).
 - [ ] Step 2.5 conflict check completed; results shown in pre-draft review HTML; no unresolved conflicts before Step 3.
@@ -739,12 +739,12 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 - [ ] Typed CSVs generated only for Types that have TCs; each filtered and content mapped to its template columns; all generated files uploaded to Jira; footer links present only for uploaded files; skipped types noted in comment.
 - [ ] Disclaimer appended as **last line** of the Jira comment, after all attachment links (exact wording, not translated or shortened).
 - [ ] Jira UI matches approved draft (not MCP output alone).
-- [ ] Post-publish review passed per [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — no stray tags, numbered items on separate lines, attachment present.
+- [ ] Post-publish review passed per [jira-comment-post-review.md](../../../references/jira-comment-post-review.md) — no stray tags, numbered items on separate lines, attachment present.
 - [ ] Step 7.5 final TC review report posted per [tc-final-review-report.md](references/tc-final-review-report.md) — all four axes **PASS**.
 - [ ] Close-out includes `Verified:` after Jira re-open.
 - [ ] Publish fix-verify (Step 7) completed — at least one Jira UI re-read.
 - [ ] **Fresh-eyes:** re-read full draft before publish when table **> 15 rows**.
-- [ ] [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (TC FE section).
+- [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (TC FE section).
 
 ---
 
@@ -752,9 +752,9 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + skill-spe
 
 **Prerequisite:** Step 7.5 final review report posted with overall **PASS**.
 
-Follow [session-closing.md](../../references/session-closing.md) — artifact index, one-line next workflow (e.g. `/testing-ticket` on same story), handoff file if long session, `Verdict:` block.
+Follow [session-closing.md](../../../references/session-closing.md) — artifact index, one-line next workflow (e.g. `/testing-ticket` on same story), handoff file if long session, `Verdict:` block.
 
-Complete [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (TC FE section).
+Complete [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (TC FE section).
 
 ---
 
@@ -773,21 +773,21 @@ Complete [verify-closing-checklist.md](../../references/verify-closing-checklist
 | [ac-ec-coverage-review.md](references/ac-ec-coverage-review.md) | AC/EC traceability + scope review (pre-draft) |
 | [html-pre-draft-review-template.md](references/html-pre-draft-review-template.md) | Pre-draft review HTML template (Step 2a + 2.5) |
 | [tc-final-review-report.md](references/tc-final-review-report.md) | Four-axis final review + close-out report template |
-| [tc-glossary.md](../../references/tc-glossary.md) | Terminology source of truth: re-check gate, precedence, gap/ambiguity policy |
-| [tc-quality-standards.md](../../references/tc-quality-standards.md) | ISTQB / 29119-3 TC quality |
+| [tc-glossary.md](../../../references/tc-glossary.md) | Terminology source of truth: re-check gate, precedence, gap/ambiguity policy |
+| [tc-quality-standards.md](../../../references/tc-quality-standards.md) | ISTQB / 29119-3 TC quality |
 | [scripts/README.md](scripts/README.md) | Optional CSV/xlsx helper pointer |
 
 ---
 
 ## Out of scope
 
-- API TC prep, Playwright ticket test, retest, create bug — see [skill-routing.md](../../references/skill-routing.md)
+- API TC prep, Playwright ticket test, retest, create bug — see [skill-routing.md](../../../references/skill-routing.md)
 
 ---
 
 ## MUST / NEVER
 
-Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Skill-specific:
+Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). Skill-specific:
 
 | Rule | Because |
 |------|---------|
@@ -824,8 +824,8 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST post the Step 2.5 conflict report block even when no conflicts found | Gives user visibility that cross-check was done |
 | MUST run Step 4 review before draft table | Prevents out-of-scope cases reaching Jira |
 | MUST apply tc-quality-standards on every row | ISTQB / 29119-3 consistency |
-| MUST convert `<br>` to Jira-native line breaks before posting (see [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md)) | `<br>` renders as literal text on Jira |
-| MUST pass post-publish review ([jira-comment-post-review.md](../../references/jira-comment-post-review.md)) before reporting "commented" or "done" to user | Prevents false success claims with broken formatting |
+| MUST convert `<br>` to Jira-native line breaks before posting (see [jira-linebreak-conversion.md](../../../references/jira-linebreak-conversion.md)) | `<br>` renders as literal text on Jira |
+| MUST pass post-publish review ([jira-comment-post-review.md](../../../references/jira-comment-post-review.md)) before reporting "commented" or "done" to user | Prevents false success claims with broken formatting |
 | MUST post Step 7.5 final review report ([tc-final-review-report.md](references/tc-final-review-report.md)) with overall **PASS** before Step 8 or any "TC prep complete" message | User receives certified four-axis review of final TC |
 | MUST attach CSV/Excel to Jira issue when file was generated (not just workspace) | User expects downloadable file on the issue |
 | MUST NOT use `\n` inside **chat draft** markdown table cells | Breaks table row in markdown renderers |
