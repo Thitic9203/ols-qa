@@ -17,6 +17,11 @@ Single-JS publish patterns for Jira comment + CSV upload. Reduces publish from 8
 
 **Definition of "table":** A `| col | col |` markdown table with data rows. The evidence summary block (`**Env:** staging`) is NOT a table.
 
+**Body language follows the row you picked** — the v2 row means **wiki markup**, not markdown. A
+markdown body on the v2 path posts fine (HTTP 200) and renders wrong: `**x**` → `*<b>x</b>*`,
+`---` → an em-dash, `|---|` → a visible row of dashes. Syntax map + pre/post gates:
+[jira-wiki-vs-markdown.md](jira-wiki-vs-markdown.md).
+
 **Never try MCP first for TC tables** — TC tables always have many rows; MCP truncates consistently.
 
 ---

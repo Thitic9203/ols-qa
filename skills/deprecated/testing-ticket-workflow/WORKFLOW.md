@@ -227,7 +227,7 @@ Reply **confirm** to apply updates, or correct the mapping.
 - Open or fetch the destination (browser, API, MCP, or file read).
 - **Match existing layout** — headers, row order, language, status vocabulary already in use.
 - For Google Sheets: read headers and sample rows before writing. **Detect the result columns from the header row — never assume fixed column letters**, and confirm the tab name and tab id refer to the same tab.
-- For Jira comments: draft in chat; use v2 wiki vs v3 ADF per project guide if present.
+- For Jira comments: draft in chat; use v2 wiki vs v3 ADF per project guide if present. **The chat draft's markdown is not the posted body** — on the v2 path rewrite it as wiki markup and run both gates in [jira-wiki-vs-markdown.md](../../../references/jira-wiki-vs-markdown.md); markdown posts with HTTP 200 and renders wrong.
 - If access fails (auth, 403, VPN) → report exactly what failed; **do not claim success.**
 
 **Claim the scope (layer 1 — hard gate).** Snapshot the destination, then classify every target

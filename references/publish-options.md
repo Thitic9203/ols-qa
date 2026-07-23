@@ -16,6 +16,11 @@ Comment has a markdown table?
 
 **FE bug retest with screenshots (any table size):** Always v2 wiki markup (Option B variant) — required for `!image!` embed syntax.
 
+**Whichever option you pick, the body must be written in that option's language** — v2 takes wiki
+markup, MCP takes markdown, ADF-direct takes ADF JSON. A markdown body sent to v2 returns HTTP 200
+and renders as garbage with no error. Syntax map + mandatory pre/post gates:
+[jira-wiki-vs-markdown.md](jira-wiki-vs-markdown.md).
+
 Full JS patterns, decision rules, and error recovery: [jira-fast-publish.md](jira-fast-publish.md).
 
 ---

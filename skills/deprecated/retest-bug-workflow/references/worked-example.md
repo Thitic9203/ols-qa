@@ -19,6 +19,9 @@
 
 ## Output snippet (summary only)
 
+API bug → `COMMENT_FORMAT=v3`, so this body is **markdown** (MCP converts it to ADF). The same text
+on the v2 path would have to be wiki markup — see example 2 below.
+
 ```markdown
 **Retest Result: FAILED ❌**
 

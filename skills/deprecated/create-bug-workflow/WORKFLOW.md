@@ -121,6 +121,11 @@ Capture returned issue URL.
 
 Attach screenshots to Jira before embedding `!file.png|width=600!` in wiki bodies.
 
+**Write the body in the locked format's language.** MCP takes markdown; the v2 path takes wiki
+markup (`*bold*`, `----`, `||header||` with no divider row). A markdown body on the v2 path returns
+HTTP 200 and renders as garbage — run both gates in
+[jira-wiki-vs-markdown.md](../../../references/jira-wiki-vs-markdown.md) before and after posting.
+
 ---
 
 ## Phase E — Falsification (before create)
