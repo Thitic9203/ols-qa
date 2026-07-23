@@ -213,6 +213,12 @@ Template core:
 **Evidence** — full cURL + response per case (API) or screenshots (FE)
 ```
 
+**Verbosity ceiling:** a PASSED comment stays inside the template above — no added narrative
+paragraphs, no restating the ticket, no "why this matters" prose. Each field line holds only its
+value. Evidence captions for FE screenshots are **one short line each**, placed directly above the
+embed (e.g. "Reported-content list — pending review queue:") — never a paragraph. If a field doesn't
+apply (e.g. **API**/**Swagger** on an FE bug), omit the line entirely rather than writing "N/A".
+
 ### 6a. Extra sections REQUIRED when the verdict is FAILED or BLOCKED
 
 A PASSED comment stops at the template above. **Anything else adds these three blocks**, in this order, per [defect-report-completeness.md](../../../references/defect-report-completeness.md) §1–§4:
@@ -496,6 +502,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST include full cURL/response per API case | Evidence must stand alone |
 | MUST treat Swagger (+ error docs) over stale ticket text | Ticket may be wrong |
 | MUST use **PASSED ✅** or **FAILED ❌** only in summary line | Scanability for dev/QA |
+| MUST keep a PASSED comment inside the Step 6 template fields only — no narrative padding, one-line evidence captions | A tight comment is scannable in seconds; prose bloat buries the verdict (locked from OLS-251 accepted format 2026-07-23) |
 | MUST give every table column an explicit English header; row-number column = `No.` | bare `#` renders as a blank header cell in Jira |
 | MUST bold every table header cell (`\| **No.** \| **Test Case** \| …`) | Jira doesn't auto-bold markdown headers; non-bold looks unprofessional |
 | MUST compare actual text against expected (customfield_12116) character-by-character when expected specifies exact wording | Any text difference = FAIL — no "minor wording" or "cosmetic" exceptions |

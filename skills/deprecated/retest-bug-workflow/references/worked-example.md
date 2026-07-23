@@ -32,3 +32,46 @@
 
 - Swagger said 400 for invalid range; server still returned 500 → FAILED, not PASSED.
 - NEVER switch v2/v3 mid-session after choosing v3 at Step 3.
+
+---
+
+## Worked example 2 (anonymized) — PASSED, FE, tight format
+
+**Bug:** `PROJ-88` — admin review action shows wrong button label
+**Result:** PASSED ✅
+
+Output (full comment — this is the entire body, nothing added):
+
+```markdown
+**Retest Result: PASSED** ✅
+
+**Env:** Staging (`app.staging.example.com`)
+**Date:** 2026-07-23
+**Fixture:** Existing queue item — no new fixture created or modified
+
+---
+
+**Test Step (from ticket):** Admin opens the review action on a flagged item
+**Expected Result (from ticket, verbatim):** Reject button reads "Review Failed"
+
+| **No.** | **Expected result item** | **Actual** | **Status** |
+| --- | --- | --- | --- |
+| 1 | Reject button reads "Review Failed" | Button text confirmed via DOM extraction, char-exact | ✅ |
+
+**Expected-result coverage:** 1 / 1 items met
+
+---
+
+**Evidence**
+
+Review queue list:
+![](...)
+Review modal — button labels confirmed:
+![](...)
+```
+
+## Lessons (example 2)
+
+- No **API**/**Swagger** lines — FE bug, so they're omitted, not written as "N/A".
+- Each screenshot gets one short caption line, not a paragraph.
+- Nothing outside the template fields — this is the whole comment.
