@@ -265,3 +265,42 @@ finished only when a developer who has never seen the ticket needs to ask nothin
 - **A question arriving after posting = re-verify, answer in the shape asked, then fold the answer back
   into the comment in place.** A wrong published statement is corrected visibly in both places — the
   in-place edit and the thread where it was given. Never a silent edit.
+
+### PM-003 — Retest comment used the generic helix template instead of this project's own house style (2026-07-23, OLS-252)
+
+**Surface:** the Jira retest comment body (retest-bug-workflow Step 6).
+
+**What happened.** The OLS-252 PASSED retest comment was drafted from
+`retest-bug-workflow/references/worked-example.md` (generic, anonymized) instead of from this
+project's own prior retest comments. Result: a `**Fixture:**` line the project never uses, `---`
+horizontal-rule dividers between sections that the project never uses, column labels
+("Expected result item" / "Actual" / "Expected-result coverage") that don't match the project's actual
+wording ("Expected Result" / "Observed now" / "Result:"), the closing emoji placed inside the bold
+marker instead of outside it, a markdown-style `[text](url)` link (invalid Jira wiki markup — rendered
+as a duplicated raw URL), and a markdown table divider row `| --- | --- |` copied verbatim from the
+template snippet (also invalid in Jira wiki tables — rendered as a visible garbage row of literal
+dashes). The user had to say so three times before the comment was corrected in place.
+
+**Root cause.** Same failure shape as PM-001: a template/reference document was treated as the
+authority for a user-facing format, instead of the last real artifact accepted on that surface. This
+project has an established house style, visible in its own prior Jira comments (e.g. OLS-199 comments
+`80459`/`80901`) — that style had already silently diverged from the generic skill template through
+practice, and nobody had reconciled the two. Drafting from the template instead of from precedent
+reintroduced every difference at once, plus two literal markup bugs the template snippet carries
+(`[text](url)` and `| --- |` are markdown syntax, not valid Jira wiki notation — Jira wiki uses
+`[text|url]` for links and `||header||` rows with no separator row for tables).
+
+**Prevention:**
+
+- **Before drafting a retest comment in an established project, fetch a real prior PASSED and FAILED
+  comment from the same Jira project first** (`getJiraIssue` with `fields:["comment"]` on a recently
+  closed bug of the same type) and match its structure — labels, section order, divider use, emoji
+  placement — over the generic `worked-example.md`. The generic template is a fallback for a project
+  with no history yet, not a default to prefer once history exists.
+- **Never copy a markdown table divider row (`| --- | --- |`) or a markdown link (`[text](url)`) into
+  Jira wiki markup.** Jira wiki tables need no separator row; links use `[text|url]` (or a bare URL,
+  which auto-links). Treat any markdown-flavored snippet in a *reference* doc as needing translation to
+  wiki syntax, not literal copy-paste.
+- **Re-render and read the full comment top to bottom after every post or edit** — a partial scroll-check
+  (as was done initially here) missed both the duplicated-URL line and the garbage dash row until the
+  user flagged the format mismatch generally, not the specific bugs.
