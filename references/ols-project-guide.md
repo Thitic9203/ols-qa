@@ -181,6 +181,7 @@ Re-fetch and confirm with the user **before every TC design run** — see [tc-gl
 | Env | URL |
 |-----|-----|
 | Dev | `https://<DEV_HOST>/` — **VPN required** · auth via NDLP68 SSO |
+| Pre-prod | `https://<PREPROD_HOST>/` — **no VPN required** (public) · same NDLP68 SSO iframe (`<SSO_PORTAL_HOST>/sign-in/embed`) · verified working 2026-07-23 with the 5 dev pool accounts (local agent memory `reference_ols-test-accounts` has the cross-env role table) — **one account's role did not carry over** (Region Admin dev account → plain Learner on pre-prod), confirm before assuming dev role = pre-prod role |
 | Staging | *(not configured — ask user and update this table)* |
 | Production | *(not configured — ask user and update this table)* |
 
