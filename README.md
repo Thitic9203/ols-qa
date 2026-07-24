@@ -276,6 +276,18 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
 
 ## Changelog
 
+### v1.16.5 — qa-owner-sync hardening + regression-tc-sync manual-only (24 Jul 2026)
+
+- **qa-owner-sync `Code.gs` hardened** against the 2026-07-24 mass-append-garbage incident — `LockService`
+  on every mutating trigger, `_healGarbage()` drops empty-key/`#REF!` rows before any write, an abort-guard
+  refuses an append when `missing >= existing` (the mass-append signature), and appends now set col A
+  explicitly. Deploy blocked by the Apps Script API user-toggle being off for `<QA_SERVICE_ACCOUNT>`; contained
+  meanwhile by `progress_guardian.py` (launchd, clear-not-delete). รายละเอียด: [docs/qa-owner-sync/README.md](docs/qa-owner-sync/README.md)
+- **Regression-tc-sync auto-schedule confirmed OFF** — launchd `com.<USER>.ols-regression-sync` stays
+  retired (disabled 23 Jul 2026, plist renamed off the auto-load dir); `references/ols-project-guide.md`
+  updated to say **manual only** instead of the stale Mon–Fri 10:30/17:00 schedule. Script itself untouched
+  — run on demand: `python3 ~/ols-qa-testing-bot/regression_sync.py`. รายละเอียด: [docs/regression-tc-sync.md](docs/regression-tc-sync.md)
+
 ### v1.16.4 — retest-bug: auto-unblock linked stories once a bug reaches Done (23 Jul 2026)
 
 - **New Step 8d in `/retest-bug`** — the moment a retested bug lands in **Done** (verdict PASSED), the
@@ -290,14 +302,6 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
   live statuses; nothing is transitioned silently.
 - Root-cause note for a related notify-format bug fixed the same week: [CLAUDE.md § Post-mortems, PM-001](CLAUDE.md#post-mortems).
 - รายละเอียด: [retest-bug-workflow/WORKFLOW.md § Step 8d](skills/deprecated/retest-bug-workflow/WORKFLOW.md)
-
-### v1.16.3 — Post-run close-out: progress sort/highlight + QA-Owner handoff (22 Jul 2026)
-
-- **Test Progress sort + yellow** — หลังทุก test run: `sort_test_progress.py` เรียง tab `Test Progress - ALL TC` ตาม **% Passed มากสุดก่อน** (เท่ากัน→ **Total TC มากกว่าก่อน**) + ไฮไลต์แถวที่ AI รันเป็น **สีเหลือง**; ใช้ native `sortRange` + self-heal guard คืน col A ถ้า tab-sync ทำพัง (`=OLS-xx` → `#NAME?`)
-- **QA Owner handoff** — หลัง AI เทสสตอรี่เสร็จ: คืน **QA Owner** จากบัญชี AI (QA Lead) → **คนเดิมล่าสุด** ทั้งใน Jira (`customfield_12120`) + ชีท (Summary G / Test Progress B), การ์ด**คงที่ `TESTING`**, แล้วเม้นแท็ก QA Owner จริงให้ recheck + เทสเคสที่เหลือ (assignee ไม่แตะ)
-- **QA Owner B ลาออก → ใช้ QA Owner A แทน** ทุกที่ (Jira/Sheet/Discord); ไม่ ping/assign QA Owner B อีก
-- **Discord** — ทุก QA notify/handoff ส่งเฉพาะ thread `🏂 ปั่นเทสด้วย AI` (`<DISCORD_QA_THREAD_ID>`); ต้องมี `?thread_id=` เสมอ, ticket key เป็นลิงก์ Jira `[OLS-xx](…/browse/OLS-xx)`
-- รายละเอียด: section [Post-run close-out](#post-run-close-out-runs-after-every-ai-test-run-per-story)
 
 ---
 

@@ -115,7 +115,7 @@ Customer-facing regression sheet — HI-QA runs delivery-gate regression from it
 |-------|-------|
 | Sheet | https://docs.google.com/spreadsheets/d/<CUSTOMER_UAT_SHEET_ID>/edit |
 | OLS tab | `OLS: TC List` (gid `2084955184`) — cols B–G = Module · Test case name · Pre-requisite · Test data · Test step · Expected Result. **Only B–G are ours**; col A (No.) pre-filled, cols H+ = SKL-QA/HI-QA tester columns — never touch. Other tabs (ELMS/CBMS/EvMS/…) never touch. |
-| Auto-sync | launchd `com.<USER>.ols-regression-sync` Mon–Fri 10:30+17:00 runs `~/ols-qa-testing-bot/regression_sync.py` — appends System-Test PASSED cases from DONE stories, idempotent. Details: [regression-tc-sync.md](../docs/regression-tc-sync.md) |
+| Sync | **Manual only** (auto-schedule disabled 2026-07-23) — run `python3 ~/ols-qa-testing-bot/regression_sync.py` on demand; appends System-Test PASSED cases from DONE stories, idempotent. Re-enable auto: `launchctl load ~/Library/LaunchAgents/com.<USER>.ols-regression-sync.plist` (rename off `.disabled-2026-07-23` first). Details: [regression-tc-sync.md](../docs/regression-tc-sync.md) |
 
 ## Screenshot evidence (Drive)
 
