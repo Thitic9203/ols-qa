@@ -241,10 +241,10 @@ are both reachable without the NDLP VPN, so this one runs every weekday regardle
 
 Two steps the AI/bot performs to hand a story back to its human QA Owner once the automated cases are done. **The card stays at `TESTING`** — AI only pre-runs; the real QA Owner does the final recheck + closes.
 
-**1. Sort + highlight the progress tab** — `~/ols-qa-testing-bot/sort_test_progress.py [--apply] [--ai-ticket OLS-xx ...]`
-- Re-sorts the QA sheet **`Test Progress - ALL TC`** tab by **`% Passed` (col D) descending**, tie-break **`Total TC` (col C) descending** — most-complete tickets float to the top.
-- Paints every **AI-tested** ticket's row **solid yellow** (union of existing yellow rows + `--ai-ticket`).
-- Uses native `sortRange` (moves whole rows, formulas recompute) + a **surgical** self-heal that repairs **only** an exact bare `=OLS-nn` cell (→ `#NAME?`) back to plain text. It must **never** touch `=HYPERLINK(…,"OLS-nn")` tab-link formulas — stripping their `=` turns them into dead literals and breaks the whole tab (root cause of the 2026-07-22 corruption; see [docs/qa-owner-sync/README.md](docs/qa-owner-sync/README.md#incident-2026-07-22--test-progress-tab-corruption-fixed)).
+**1. Progress tab — nothing to do (RETIRED 2026-07-24)**
+- `sort_test_progress.py` and the whole `progress_closeout.sh` chain are **deprecated** (the sorter now hard-refuses on start); their target tab `Test Progress - ALL TC` was **deleted**. Do not run them.
+- The tab is now **`Test Progress - ALL TC - Revised`**, rebuilt atomically from source by the single writer `progress_build.py` (launchd, every 5 min) — it already sorts `% Passed` desc, tie-break ticket number asc. See [docs/progress-tab-single-flow.md](docs/progress-tab-single-flow.md).
+- **No row highlighting.** The AI-row solid-yellow highlight was **removed 2026-07-24** at the user's request; the builder resets the whole data block to white every run. Do not re-add it.
 
 **2. Hand QA Owner back to the real person** — after posting the result comment:
 - Revert **QA Owner** from the AI account (`QA Lead`) to the story's **most-recent prior owner** (from the Jira field changelog) in BOTH Jira field **`customfield_12120`** and the sheet (`Summary` col G + `Test Progress` col B).
