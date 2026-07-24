@@ -13,6 +13,44 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 > runtime — never write the resolved value back into any file in this repo. See
 > [SECURITY.md](SECURITY.md).
 
+## 🔴 กฎเหล็ก — ห้ามมีข้อมูลบริษัทใน repo (อ่านก่อนเขียนไฟล์ใดๆ)
+
+**`ols-qa` เป็น public repo บน GitHub (public ตั้งแต่ 2026-06-11) ใครก็อ่านได้ ทุกอย่างที่ commit = เผยแพร่สู่สาธารณะถาวร**
+ข้อมูลในนี้เป็น**ข้อมูลภายในของบริษัท (<ORG> / ลูกค้า)** → **ห้ามมีข้อมูลสำคัญอยู่ใน repo เด็ดขาด ทั้ง repo ไม่ใช่แค่บางโฟลเดอร์**
+
+### ห้าม commit เด็ดขาด (ไม่มีข้อยกเว้น)
+
+| ประเภท | ตัวอย่าง |
+|---|---|
+| **รหัสผ่าน / credential** | password, API key, token, secret, refresh token, service-account JSON, PEM/private key |
+| **บัญชีผู้ใช้จริง** | email/username ของ test account หรือพนักงาน |
+| **Host / URL ภายใน** | โดเมนภายในองค์กร, auth-API host, env host (dev/uat/preprod/prod) |
+| **Resource ID** | Google Sheet / Drive **(รวมลิงก์หลักฐาน `drive.google.com/file/d/…`)** / Figma / Confluence / Jira tenant |
+| **ชื่อลูกค้า / ระบบภายใน** | ชื่อองค์กรลูกค้า, ชื่อโปรเจกต์ภายในที่ไม่ใช่ของเรา |
+| **Path เครื่องคน** | `/Users/<name>/…`, `C:\Users\…` |
+
+### แล้วเก็บของจริงไว้ที่ไหน
+
+- ค่าจริงทั้งหมด → `~/.ols-qa-secrets/ols-secrets.md` (**นอก repo ทั้งสองตัว**) หรือ local agent memory
+- ในไฟล์ที่ commit ใช้ **placeholder เท่านั้น** → `{ISSUE_KEY}` · `{JIRA_DOMAIN}` · `{PORTAL}` · `<QA_TRACKING_SHEET_ID>`
+- **ลิงก์หลักฐานการเทส** อยู่ในคอลัมน์ Capture ของ Google Sheet เท่านั้น **ห้ามเขียนลง md ที่ commit**
+  *(บทเรียนจริง 2026-07-24: session record มีลิงก์ Drive 16 อัน ต้องย้ายไปเก็บนอก repo)*
+
+### เจอ secret หลุดเข้าไปแล้ว → ลบไฟล์เฉยๆ ไม่พอ
+
+commit ที่ผ่านไปแล้วยังอยู่ใน git history และอาจถูก clone/cache/index ไปแล้ว ต้อง **rewrite history + หมุน (rotate) ค่าที่หลุดทุกตัว**
+แจ้ง user ทันที **ห้ามเงียบ ห้ามแก้เองแบบลบไฟล์แล้วจบ** — ดู [SECURITY.md](SECURITY.md)
+
+### Guard ไม่ใช่ใบอนุญาต
+
+`scripts/check-no-secrets.sh` + pre-commit/pre-push จับให้ได้ระดับหนึ่ง แต่มันคือ **ตาข่ายกันพลาด ไม่ใช่ตัวตัดสินว่าปลอดภัย**
+ของใหม่ที่ยังไม่อยู่ใน denylist มันจับไม่ได้ → **คนเขียนต้องไม่ใส่ตั้งแต่แรก**
+**ห้ามใช้ `--no-verify` ทุกกรณี** (bypass guard = ทางเดียวที่ secret หลุดขึ้น GitHub ได้จริง)
+
+> ⚠️ ตอนที่ repo ยังเป็น private เคยออกแบบให้ OLS secret มากองรวมที่ ols-qa เพื่อปกป้อง helix
+> พอ repo กลายเป็น public โมเดลนั้นกลับหัวทันที — audit เจอ credential/host/resource id กระจาย **71 ไฟล์**
+> **ตอนนี้ทั้ง ols-qa และ helix เป็น public → ปฏิบัติเหมือนกันทุกประการ**
+
 ## What this repo is
 
 A **QA workflow workspace** — no build/compile/test commands. Everything is Markdown. The agent reads skill files, executes QA workflows, and writes back results to Jira/GitHub via MCP tools.
