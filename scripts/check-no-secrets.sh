@@ -84,13 +84,20 @@ bad = 0
 for rel in sys.argv[1:]:
     path = os.path.join(ROOT, rel)
     try:
-        with open(path, "r", encoding="utf-8", errors="ignore") as fh:
-            lines = fh.read().splitlines()
+        with open(path, "rb") as fh:
+            raw = fh.read()
     except (FileNotFoundError, IsADirectoryError):
         continue
     except OSError as exc:
         print(f"[guard] ERROR reading {rel}: {exc}", file=sys.stderr)
         sys.exit(2)
+    # Binary (png/jpg/pdf/mp4/…): decoded byte runs produce bogus SHAPE hits — a screenshot's pixel
+    # data matched the 17-digit snowflake rule. A secret in a binary is not text-detectable anyway,
+    # so scanning it buys nothing and only makes a full-tree scan unusable. NUL is the sniff, not the
+    # extension, so an odd-suffixed text file is still scanned.
+    if b"\0" in raw[:8192]:
+        continue
+    lines = raw.decode("utf-8", "ignore").splitlines()
 
     for n, line in enumerate(lines, 1):
         if rel not in EXEMPT_TIER1:
