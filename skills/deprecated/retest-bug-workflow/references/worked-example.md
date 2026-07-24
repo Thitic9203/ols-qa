@@ -58,7 +58,7 @@ Output (full comment — this is the entire body, nothing added):
 *Test Step (from ticket):* Admin opens the review action on a flagged item
 *Expected Result (from ticket, verbatim):* Reject button reads "Review Failed"
 
-||*No.*||*Expected result item*||*Actual*||*Status*||
+||*No.*||*Expected Result*||*Actual Result*||*Status*||
 |1|Reject button reads "Review Failed"|Button text confirmed via DOM extraction, char-exact|✅|
 
 *Expected-result coverage:* 1 / 1 items met

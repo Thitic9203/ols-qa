@@ -208,7 +208,7 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 *Test Step (from ticket):* …
 *Expected Result (from ticket, verbatim):* …
 
-||*No.*||*Expected result item*||*Actual*||*Status*||
+||*No.*||*Expected Result*||*Actual Result*||*Status*||
 |1|{item quoted from the ticket}|{observed}|✅/❌|
 
 *Expected-result coverage:* {n} / {total} items met
@@ -253,7 +253,7 @@ comment**, never "post now and explain in chat". Also confirm: every scope word 
 `any entry point`, `only when …`) traces to a repro-matrix row, and no observation in the draft is under an
 unresolved contradiction.
 
-**Table headers:** every column MUST carry an explicit, all-English header. Give the row-number column the header `No.` — a bare `#` renders as a **blank** header cell in Jira. **Headers MUST be bold, in the syntax of the target endpoint** — v2 wiki `||*No.*||*Test Case*||…` (single asterisk, `||` delimiters, **no divider row**); markdown/ADF `| **No.** | **Test Case** | …` followed by a `|---|` divider. A `**No.**` in a v2 body renders as literal `*No.*`, and a `|---|` divider row in a v2 body renders as a visible row of dashes.
+**Table headers:** every column MUST carry an explicit, all-English header. The verdict table's header row is fixed and MUST read exactly `No.` · `Expected Result` · `Actual Result` · `Status` — the first two columns mirror the ticket's own field names (**Expected Result** / **Actual Result**), so a reader compares the comment against the ticket without translating column names. Never `Expected result item`, never a bare `Actual`. A bare `#` for the row-number column renders as a **blank** header cell in Jira. **Headers MUST be bold, in the syntax of the target endpoint** — v2 wiki `||*No.*||*Test Case*||…` (single asterisk, `||` delimiters, **no divider row**); markdown/ADF `| **No.** | **Test Case** | …` followed by a `|---|` divider. A `**No.**` in a v2 body renders as literal `*No.*`, and a `|---|` divider row in a v2 body renders as a visible row of dashes.
 
 Show the full draft in chat and wait.
 
@@ -524,6 +524,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST use **PASSED ✅** or **FAILED ❌** only in summary line | Scanability for dev/QA |
 | MUST keep a PASSED comment inside the Step 6 template fields only — no narrative padding, one-line evidence captions | A tight comment is scannable in seconds; prose bloat buries the verdict (locked from OLS-251 accepted format 2026-07-23) |
 | MUST give every table column an explicit English header; row-number column = `No.` | bare `#` renders as a blank header cell in Jira |
+| MUST head the verdict table exactly `No.` · `Expected Result` · `Actual Result` · `Status` — never `Expected result item`, never a bare `Actual` | the columns must carry the ticket's own field names so a reader lines the comment up against the ticket with no translation (user correction 2026-07-24, OLS-250/OLS-249) |
 | MUST bold every table header cell (`\| **No.** \| **Test Case** \| …`) | Jira doesn't auto-bold markdown headers; non-bold looks unprofessional |
 | MUST compare actual text against expected (customfield_12116) character-by-character when expected specifies exact wording | Any text difference = FAIL — no "minor wording" or "cosmetic" exceptions |
 | MUST lock v2/v3 at Step 3; FE → v2 + screenshots | Rewrites waste time |
