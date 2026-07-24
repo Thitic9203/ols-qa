@@ -7,6 +7,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 @CONTEXT.md
 @references/ols-project-guide.md
 
+> ⚠️ **This repo is PUBLIC** (github.com/Thitic9203/ols-qa). `references/ols-project-guide.md`
+> holds the workflow knowledge but only **placeholders** for every real value. Resolve a
+> placeholder from the local, untracked store `~/.ols-qa-secrets/ols-secrets.md` (chmod 600) at
+> runtime — never write the resolved value back into any file in this repo. See
+> [SECURITY.md](SECURITY.md).
+
 ## What this repo is
 
 A **QA workflow workspace** — no build/compile/test commands. Everything is Markdown. The agent reads skill files, executes QA workflows, and writes back results to Jira/GitHub via MCP tools.
@@ -50,12 +56,18 @@ references/                    ← shared rule fragments, linked by skills (not 
 
 - แก้ไข .md ไฟล์ใน `skills/`, `references/`, `commands/`
 - แก้ SKILL.md / WORKFLOW.md content (ไม่ใช่ rename/delete ไฟล์)
-- อัปเดต `references/ols-project-guide.md` เมื่อได้ข้อมูลใหม่จาก user
+- อัปเดต `references/ols-project-guide.md` เมื่อได้ข้อมูลใหม่จาก user — **เขียนได้เฉพาะ placeholder**
+  (`<JIRA_DOMAIN>`, `<DEV_HOST>`, `<TEST_ACCOUNT_1>`, `QA Owner A`, …) ค่าจริงไปอยู่ที่
+  `~/.ols-qa-secrets/ols-secrets.md` เท่านั้น
 - เพิ่ม reference ใหม่ใน `references/`
 
 ต้องถามก่อน:
 - ลบ/rename skill directory ทั้ง folder
 - แก้ hooks/ config
+
+**ห้ามเด็ดขาด (repo นี้ public):** เขียน password / อีเมล test account / hostname จริง / Jira tenant /
+Google Sheet–Drive ID / Figma ID / Discord id / ชื่อจริงพนักงาน / `/Users/<name>` ลงไฟล์ใดๆ ใน repo นี้
+รวมถึง commit message. `pre-commit` จะบล็อกให้ แต่ห้ามพึ่ง hook อย่างเดียว
 
 ## Skill sync → helix plugin (mandatory) + OLS-secret guard
 
@@ -63,14 +75,31 @@ The **active** skills Claude Code runs are the **helix** plugin (`~/.claude/skil
 
 **Rule (automatic):** whenever a **shared** file under `skills/` · `references/` · `commands/` (one that also exists in helix) is committed here, it is **auto-synced to helix and a new helix version is deployed** — via the `post-commit` hook → `scripts/sync-skills-to-helix.sh` → helix `pre-commit` (guard + auto version-bump) → push. Any **skill-tree markdown change** (`skills/**.md`, `commands/*.md`, top-level `references/*.md`) bumps the patch version = the deploy. NEW generic skills absent from helix are **not** auto-created unless `HELIX_SYNC_NEW=1` (they must be introduced deliberately; the sync logs what it skipped). Run `bash scripts/setup-hooks.sh` once per clone to activate (`core.hooksPath=scripts/hooks`). OLS-specific files (e.g. `references/ols-project-guide.md`) don't exist in helix → never synced.
 
-**Hard guard — 5 layers, helix holds ZERO cleartext OLS data:** `check-no-secrets.sh` runs at (1) ols-qa `pre-commit`, (2) sync source pre-scan, (3) sync post-copy scan, (4) helix `pre-commit`, (5) helix `pre-push`, + server-side CI. Layers 1 & 4 scan the **staged blob** (not the dirty worktree), and **fail closed** (a scanner error, a missing guard while a shared file is staged, or a dirty helix worktree all BLOCK). Detection = three independent mechanisms:
+> 🔴 **2026-07-24 — the model below was built when ols-qa was PRIVATE.** It protected *helix* by
+> routing every OLS secret **into** ols-qa. ols-qa went public on 2026-06-11, which inverted the
+> threat model: the guard kept passing green while the vault itself was open. An audit found
+> credentials, internal hosts, tenant and resource ids across 71 files. History was rewritten and
+> the ols-qa `pre-commit` no longer exempts any path. **Both repos are public now — treat them
+> identically.** See [SECURITY.md](SECURITY.md).
+
+**Hard guard — 5 layers, BOTH repos hold ZERO cleartext OLS data:** ols-qa runs its own
+`scripts/check-no-secrets.sh` over **every** staged text blob (1) at ols-qa `pre-commit`; the helix
+copy then runs at (2) sync source pre-scan, (3) sync post-copy scan, (4) helix `pre-commit`,
+(5) helix `pre-push`, + server-side CI. Layers 1 & 4 scan the **staged blob** (not the dirty
+worktree), and **fail closed** (a scanner error, a missing guard, or a dirty helix worktree all
+BLOCK). Detection = three independent mechanisms:
 - **Shape regex** (generic, names no customer): `*.go.th`, hardcoded Google-resource URLs, `Bearer …`, discord webhook URLs, `.jira_token`/`.discord_webhook`/`.gcp-oauth`, reCAPTCHA/PEM/`xox…`/`gh…`/`AKIA` tokens. Forbidden everywhere.
 - **Portable** (`/Users/`, `C:\Users`, `~/.helix`, other-customer strings) — skills/ + commands/ only; `gotchas.md` is exempt from this tier only (it teaches the rule) but is still fully shape+hash scanned.
-- **Hash tier**: exact OLS identifiers — test password, usernames, resource IDs (Sheet/Drive/Figma/Confluence), infra hosts (`<ORG>.atlassian.net`, `<OTHER_CUSTOMER_HOST>`, `dev-ols`, `ndlp68`, …) — live in helix **only as SHA-256 of the lowercased token**. The cleartext literal is never in the public repo, yet an exact appearance is still caught. helix stays a **generic** plugin — use placeholders `{ISSUE_KEY}` / `{JIRA_DOMAIN}` / `{PORTAL}` only.
+- **Hash tier**: exact OLS identifiers — test password, usernames, resource IDs (Sheet/Drive/Figma/Confluence), Jira tenant, env + auth-API hosts, other-customer hosts — live in **both** repos **only as SHA-256 of the lowercased token** (never enumerate the cleartext here; the list lives in `~/.ols-qa-secrets/ols-secrets.md`). The cleartext literal is never in the public repo, yet an exact appearance is still caught. helix stays a **generic** plugin — use placeholders `{ISSUE_KEY}` / `{JIRA_DOMAIN}` / `{PORTAL}` only.
 - **Add a new OLS secret:** append the literal to the LOCAL, off-repo `~/.helix-ols-denylist` (chmod 600, never committed) → `bash ~/GitHub/helix/scripts/gen-secret-hashes.sh` → paste the printed block into `check-no-secrets.sh` (`HASH_ALL=…`). For a *structural* leak shape (new URL/token form), add a generic regex to TIER1 instead. Ad-hoc/local runs can also set `HELIX_EXTRA_DENYLIST=/path` to hash extra literals without editing the file.
 - **Residual risk (documented, not hidden):** GitHub's free tier has no server-side pre-receive hook, so a local `git push --no-verify` bypasses layers 4–5; the CI guard then runs **after** the push (blocks the release, but the blob is briefly on GitHub). Mitigation: never use `--no-verify` on helix; the CI guard is the backstop. This is a platform limit, not a config gap.
 
-**When editing skills manually (AI):** put generic skill logic in the shared file (auto-reaches helix); keep OLS-specific config (URLs, accounts, sheet/Drive/Confluence IDs) ONLY in `references/ols-project-guide.md` (ols-qa-only). Never paste OLS creds/URLs into a shared skill/reference — the guard will block the deploy anyway.
+**When editing skills manually (AI):** put generic skill logic in the shared file (auto-reaches
+helix). OLS-specific *structure* (which sheet, which env, which role) goes in
+`references/ols-project-guide.md` **as placeholders**; the resolved values live ONLY in
+`~/.ols-qa-secrets/ols-secrets.md`, outside both repos. Never paste a real cred/URL/id into any
+file in either repo — the guard blocks it, and a blocked commit is the cheap outcome; a pushed one
+is not.
 
 ## Default decisions (ไม่ต้องถาม)
 
@@ -81,20 +110,24 @@ The **active** skills Claude Code runs are the **helix** plugin (`~/.claude/skil
 ## Workspace Guide Pattern
 
 เมื่อ AI ต้องถามคำถามเกี่ยวกับ project-specific config:
-1. ตรวจก่อนว่ามี guide ใน `references/ols-project-guide.md` ที่ตอบได้แล้วหรือยัง
-2. ถ้ามี → ใช้คำตอบจาก guide ไม่ต้องถาม
-3. ถ้ายังไม่มี → ถาม user แล้วเพิ่มลง guide ทันที
+1. ตรวจก่อนว่ามี guide ใน `references/ols-project-guide.md` ที่ตอบได้แล้วหรือยัง (placeholder)
+2. ถ้ามี → resolve placeholder จาก `~/.ols-qa-secrets/ols-secrets.md` ไม่ต้องถาม
+3. ถ้ายังไม่มี → ถาม user แล้วเพิ่ม **placeholder** ลง guide + **ค่าจริง** ลง `~/.ols-qa-secrets/`
+   ทันที (สองที่ แยกกันเสมอ)
 
 ## Link discovery rule (mandatory)
 
 **Before asking the user for any URL or link** (Jira domain, Confluence space, Figma file, staging URL, etc.) — always search the repo first:
 
-1. Read `references/ols-project-guide.md` — primary source for all OLS project links
-2. Search `references/` for any `*-guide.md` files that may contain the link
-3. Only ask the user if the link is genuinely not found in any `references/` file
+1. Read `~/.ols-qa-secrets/ols-secrets.md` — **the only place real URLs live** (local, untracked)
+2. Read `references/ols-project-guide.md` — tells you *which* placeholder to resolve, and what it means
+3. Search `references/` for any `*-guide.md` files that may name the placeholder
+4. Only ask the user if the link is genuinely in neither store
 
-**Never ask for a link that is already recorded in `references/ols-project-guide.md`.**
-When a new link is provided by the user → add it to `references/ols-project-guide.md` immediately.
+**Never ask for a link that is already recorded in `~/.ols-qa-secrets/ols-secrets.md`.**
+When a new link is provided by the user → add the **placeholder** to
+`references/ols-project-guide.md` and the **real URL** to `~/.ols-qa-secrets/ols-secrets.md`.
+Never the real URL into the repo — it is public.
 
 ## Jira comment formatting rules (learned from OLS-22 session)
 

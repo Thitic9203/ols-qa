@@ -1,5 +1,7 @@
 #!/bin/bash
-# Inject OLS QA workspace context at session start
+# Inject OLS QA workspace context at session start.
+# This repo is PUBLIC — no real URLs, hosts, ids or accounts may be hardcoded here.
+# Live links come from the local, untracked secrets store.
 cd "$CLAUDE_PROJECT_DIR" 2>/dev/null || exit 0
 
 # Auto-update skills from remote
@@ -11,9 +13,16 @@ if [ "$BEFORE" != "$AFTER" ]; then
 fi
 
 echo "=== OLS QA Workspace ==="
-echo "Jira:       https://<ORG>.atlassian.net/jira/software/projects/OLS/boards/818/backlog"
-echo "Confluence: https://<ORG>.atlassian.net/wiki/spaces/<CONFLUENCE_SPACE>/folder/<CONFLUENCE_FOLDER_ID>"
-echo "Figma:      https://www.figma.com/design/<FIGMA_FILE_ID>/OLS_Working-file"
+
+SECRETS="$HOME/.ols-qa-secrets/ols-secrets.md"
+if [ -f "$SECRETS" ]; then
+  echo "Config store: $SECRETS (local, untracked — holds the real URLs/accounts/ids)"
+  echo "Repo docs use placeholders only: <JIRA_DOMAIN> <DEV_HOST> <TEST_ACCOUNT_n> ..."
+else
+  echo "!!  $SECRETS not found — OLS links/accounts unavailable this session."
+  echo "    Restore it from your password manager or ask the QA Lead; do NOT paste"
+  echo "    real values into this repo, it is public."
+fi
 echo ""
 echo "Helix commands: /helix  /tc-fe-prep  /tc-api-prep  /retest-bug  /testing-ticket  /create-bug"
 echo ""

@@ -3,3 +3,38 @@
 /tmp/
 __pycache__/
 .worktrees/
+
+# --- secrets: never commit (this repo is PUBLIC) ---
+# Real OLS values live in ~/.ols-qa-secrets/ols-secrets.md, outside this repo.
+# Any *.local.* file here is a working copy that must stay untracked.
+*.local.md
+*.local.json
+*.local.sh
+.ols-secrets*
+*-secrets.md
+.env
+.env.*
+
+# --- stray capture output at repo root (never intentional) ---
+/*.png
+/*.jpg
+/*.jpeg
+/*.mp4
+/*.webm
+/[0-9][0-9][0-9]-*
+/TC_*
+/TC[0-9]*
+/ols[0-9]*
+/ols-[0-9]*
+/clean-*
+/after-*
+/debug-*
+/check-*
+/current-state
+/login-*
+/media-*
+/lp-*
+/preflight-*
+/embed-*
+/ndlp68-*
+/tc[0-9]-*

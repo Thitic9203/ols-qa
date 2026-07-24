@@ -1,48 +1,53 @@
 #!/bin/bash
-# ols-qa pre-commit — EARLIEST guard: block committing an OLS secret into a SHARED
-# skill file (one that also exists in the helix plugin), before it can ever be synced —
-# and before it lands in this PUBLIC ols-qa repo. Non-shared OLS files (e.g.
-# references/ols-project-guide.md) are EXEMPT — this workspace legitimately holds OLS
-# config; only the generic/shared files must stay clean.
+# ols-qa pre-commit — THIS REPO IS PUBLIC.
+#
+# Guards EVERY staged text file, not just the ones shared with helix. The old version
+# exempted non-shared paths (references/ols-project-guide.md etc.) on the assumption that
+# this workspace was a private vault for OLS config. That assumption died when the repo
+# was made public on 2026-06-11 — the exemption is what let credentials, internal hosts and
+# resource ids reach GitHub. Real values now live in ~/.ols-qa-secrets/ols-secrets.md,
+# outside the repo, and repo docs carry placeholders only.
+#
+# Fails CLOSED: a missing or erroring scanner blocks the commit.
 set -uo pipefail
 
 ROOT="$(git rev-parse --show-toplevel)"
-HELIX="${HELIX_REPO:-$HOME/GitHub/helix}"
-GUARD="$HELIX/scripts/check-no-secrets.sh"
+GUARD="$ROOT/scripts/check-no-secrets.sh"
 
-# Which staged files are SHARED (present in helix)?
-STAGED="$(git diff --cached --name-only --diff-filter=ACM)"
-SHARED=()
+# Staged text files (skip binaries — screenshots are scanned by eye, not by regex).
+STAGED=()
 while IFS= read -r f; do
   [ -n "$f" ] || continue
-  case "$f" in skills/*|references/*|commands/*) ;; *) continue ;; esac
-  [ -f "$HELIX/$f" ] || continue          # "shared" = present in helix
-  SHARED+=("$f")
-done <<< "$STAGED"
+  case "$f" in
+    *.png|*.jpg|*.jpeg|*.gif|*.webm|*.mp4|*.pdf|*.zip|*.csv) continue ;;
+  esac
+  STAGED+=("$f")
+done < <(git diff --cached --name-only --diff-filter=ACM)
 
-[ "${#SHARED[@]}" -gt 0 ] || exit 0        # nothing shared staged → nothing to guard
+[ "${#STAGED[@]}" -gt 0 ] || exit 0
 
-# Shared file staged but guard unavailable → FAIL CLOSED (never commit a shared file
-# unguarded into a public repo).
 if [ ! -x "$GUARD" ]; then
-  echo "[ols-qa pre-commit] ❌ secret guard not found at $GUARD but SHARED skill file(s) are staged."
-  echo "  Restore the helix guard (or unstage the shared files). Commit BLOCKED (fail-closed)."
+  echo "[ols-qa pre-commit] ❌ secret guard missing or not executable: $GUARD"
+  echo "  Restore it (chmod +x). Commit BLOCKED (fail-closed) — this repo is public."
   exit 1
 fi
 
-# Scan the STAGED blobs (not the dirty working tree) via a mirrored temp tree.
-echo "[ols-qa pre-commit] scanning ${#SHARED[@]} staged shared skill file(s) for OLS secrets…"
+echo "[ols-qa pre-commit] scanning ${#STAGED[@]} staged file(s) for OLS secrets…"
+
+# Scan the STAGED blobs, not the dirty working tree.
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
-for f in "${SHARED[@]}"; do
+for f in "${STAGED[@]}"; do
   mkdir -p "$TMP/$(dirname "$f")"
   git show ":$f" > "$TMP/$f" 2>/dev/null || continue
 done
 
-if ! SCAN_ROOT="$TMP" "$GUARD" "${SHARED[@]}"; then
-  echo "[ols-qa pre-commit] ❌ OLS secret in a SHARED skill file — commit BLOCKED."
-  echo "  Move OLS config (URLs/accounts/IDs) into references/ols-project-guide.md (ols-qa-only, never synced),"
-  echo "  and use placeholders {ISSUE_KEY}/{JIRA_DOMAIN}/{PORTAL} in shared skills."
+SCAN_ROOT="$TMP" "$GUARD" "${STAGED[@]}"
+rc=$?
+if [ "$rc" -ne 0 ]; then
+  echo "[ols-qa pre-commit] ❌ commit BLOCKED (guard exit $rc)."
+  echo "  Use the placeholder instead of the real value. Mapping:"
+  echo "    ~/.ols-qa-secrets/ols-secrets.md"
   exit 1
 fi
 exit 0
