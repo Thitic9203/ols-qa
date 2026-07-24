@@ -18,6 +18,14 @@ Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
 **Jira bodies** (after approval): neutral English — no "Retested by:", no honorifics. If reproduction is unclear or results conflict with dev claims, follow [qa-debug-discipline.md](../../../references/qa-debug-discipline.md) before posting PASSED/FAILED.
 
+**Root cause is mandatory, never inferred.** Every item that is not a clean PASSED gets a full
+investigation per [root-cause-investigation.md](../../../references/root-cause-investigation.md) —
+run at **Step 4g**, before the draft exists. That reference also governs every sentence in this
+workflow that states or implies a cause, wherever it is written (chat, comment, notify). Start it by
+invoking a real debugging skill — **`superpowers:systematic-debugging`** first, its Phases 1–3 only
+(QA diagnoses; QA does not patch product code). No cause without a captured artifact and a
+`Confirmed` / `Suspected` / `Unknown — not investigated` label.
+
 **Any verdict that is not a clean PASSED** is governed by [defect-report-completeness.md](../../../references/defect-report-completeness.md) — the comment must answer the reader's five questions (what, **which entry points**, what it should be instead, why that is a fail, **what changes and who decides**) before it is posted. A question asked after posting means a section was missing; the fix is the comment, not a chat reply.
 
 Use plain chat for URLs/credentials; AskUserQuestion only for choices (e.g. approve comment).
@@ -100,11 +108,12 @@ Follow [retest-fix-intake.md](../../../references/retest-fix-intake.md). Post th
 
 Set flag `COMMENT_FORMAT=v2` or `v3` here. **Do not change later** — rewriting between formats wastes time.
 
-### Optional extra skills
+### Extra skills
 
 | Need | Use |
 |------|-----|
-| Deep investigation | `references/debug-discipline.md` |
+| **Any non-PASSED item — mandatory** | [root-cause-investigation.md](../../../references/root-cause-investigation.md) + the debugging skill it names (`superpowers:systematic-debugging`, Phases 1–3) |
+| Retest-specific FAILED vs BLOCKED triage | `references/debug-discipline.md` |
 | Real browser UI | Browser automation / DevTools available in the environment |
 | Complex multi-case proof | Verification discipline before claiming done |
 
@@ -155,6 +164,34 @@ Follow [defect-report-completeness.md](../../../references/defect-report-complet
 1. **Exercise every entry point, one at a time.** For a UI defect that means at minimum: the direct URL/route **and** the in-app path a real user takes to the same surface (list card, menu, CTA, deep link). Capture a separate screenshot per entry point and name it per path. One row per entry point in the matrix; a path you did not exercise is recorded `not tested` — **never inferred from another path**.
 2. **Settle after every state change.** After a fixture step that changes server state (publish / unpublish / approve / delete / role change), hard-reload each surface before observing it. A view that was already open holds pre-change data; recording it is reporting your own test timing as the product's behavior. A stale window worth reporting is a **separate timing note** with the measured delay — not a matrix row.
 3. **Resolve contradictions before drafting.** If two of your observations of the same surface disagree, name the contradiction, re-run that surface cleanly, and record which observation was the artifact and why. Never resolve it in favour of the verdict you already have. Unresolvable after a clean re-run → that item is **BLOCKED**, not FAILED.
+
+### 4g. Root-cause investigation (mandatory for every non-PASSED item — run it before Step 6)
+
+Follow [root-cause-investigation.md](../../../references/root-cause-investigation.md) end to end.
+The whole investigation happens **while the environment is still open** — a boundary you did not
+capture during the run cannot be reconstructed while drafting, and reconstructing it is guessing.
+
+1. **Invoke the debugging skill and announce it** — `superpowers:systematic-debugging` first
+   (fallbacks in §0 of the reference). Follow its Phases 1–3; skip Phase 4 (QA does not patch
+   product code). Record the skill name in the investigation block.
+2. **Complete the 8-boundary evidence sweep** (§1): surface · console · network request+response ·
+   auth/session/role · server-side truth via a direct API call · **is the behaviour even in the
+   deployed build** (grep the bundle for the feature's own strings/route/param; probe the endpoint)
+   · fixture state read back from the API · environment (env, build id, flag, VPN). Every boundary
+   ends as an artifact or the literal words `not checked` — never blank, never a guess. Do not stop
+   at the first anomaly; it is often downstream of the real one.
+3. **Compare against something that works** (§2) — the same action on another record, role, entry
+   point, environment, or a sibling feature that shares the endpoint. List every difference.
+4. **One falsifiable hypothesis at a time** (§3), each killed or confirmed by the single smallest
+   check. Keep falsified hypotheses in the record with their artifacts.
+5. **Label the result** (§4): `Confirmed` · `Suspected` (+ the exact check that would confirm it and
+   why it was not run) · `Unknown — not investigated` (+ what is needed and from whom). A hedge word
+   (`probably`, `น่าจะ`, `flaky`, `cache issue`, `environment issue`) is never a cause.
+
+The investigation block goes **into the comment** at Step 6a — not only into chat.
+
+**BLOCKED is not an escape from this step.** A BLOCKED item still records the sweep up to the
+boundary that blocked it, and names the access/person needed to continue.
 
 ---
 
@@ -231,12 +268,13 @@ apply (e.g. **API**/**Swagger** on an FE bug), omit the line entirely rather tha
 
 ### 6a. Extra sections REQUIRED when the verdict is FAILED or BLOCKED
 
-A PASSED comment stops at the template above. **Anything else adds these three blocks**, in this order, per [defect-report-completeness.md](../../../references/defect-report-completeness.md) §1–§4:
+A PASSED comment stops at the template above. **Anything else adds these four blocks**, in this order, per [defect-report-completeness.md](../../../references/defect-report-completeness.md) §1–§4 and [root-cause-investigation.md](../../../references/root-cause-investigation.md) §5:
 
 | Block | Content | Answers |
 |-------|---------|---------|
 | **Repro matrix** | one row per entry point exercised: entry point · steps · observed · reproduces? · evidence file. Untried paths listed as `not tested` | "does this only happen from a direct URL?" |
 | **Why this item failed** | the failing expected-result line **quoted verbatim**, then *should be* vs *is now* as implementable facts (which elements render, which are disabled, which route) | "what should it look like instead, and which line did I break?" |
+| **Root cause** | the Step 4g investigation block verbatim: one-sentence cause + `Confirmed`/`Suspected`/`Unknown — not investigated` label, the skill used, the 8-boundary evidence lines, hypotheses ruled out, and (Suspected) the check that would confirm it | "why does it happen, which layer do I open, and how sure are you?" |
 | **Resolution options** | the two mutually exclusive outcomes with a named owner each — spec owner updates the expected result (no code change) **or** dev changes `{exact route/surface}` and leaves `{what already passes}` alone | "do I change code or do you change the ticket, and who decides?" |
 
 Also state plainly, in one line, whether the **originally reported symptom is gone** — a FAILED verdict on a
@@ -252,6 +290,21 @@ Read your own draft as the developer who will act on it. Run the six-question ga
 comment**, never "post now and explain in chat". Also confirm: every scope word in the draft (`always`,
 `any entry point`, `only when …`) traces to a repro-matrix row, and no observation in the draft is under an
 unresolved contradiction.
+
+**Cause gate (same pass, no exceptions):** read every sentence in the draft that states or implies a
+cause and check each one —
+
+- [ ] It cites a **captured artifact** from the Step 4g sweep (status code, response field, console
+      error, bundle probe, fixture read-back), not a recollection and not another record's behaviour.
+- [ ] It carries a label — `Confirmed` / `Suspected` / `Unknown — not investigated` — and the label
+      matches what was actually run: `Confirmed` only if the falsifying check was run.
+- [ ] It contains **no hedge word standing in for a cause** (`probably`, `น่าจะ`, `seems`, `flaky`,
+      `cache issue`, `environment issue`, `race condition`).
+- [ ] It does not restate the symptom as the cause, and every `not checked` boundary is still visible
+      in the block rather than quietly dropped.
+
+Any box unchecked → delete the sentence or go back to Step 4g and earn it. Do not soften it into a
+hedge.
 
 **Table headers:** every column MUST carry an explicit, all-English header. The verdict table's header row is fixed and MUST read exactly `No.` · `Expected Result` · `Actual Result` · `Status` — the first two columns mirror the ticket's own field names (**Expected Result** / **Actual Result**), so a reader compares the comment against the ticket without translating column names. Never `Expected result item`, never a bare `Actual`. A bare `#` for the row-number column renders as a **blank** header cell in Jira. **Headers MUST be bold, in the syntax of the target endpoint** — v2 wiki `||*No.*||*Test Case*||…` (single asterisk, `||` delimiters, **no divider row**); markdown/ADF `| **No.** | **Test Case** | …` followed by a `|---|` divider. A `**No.**` in a v2 body renders as literal `*No.*`, and a `|---|` divider row in a v2 body renders as a visible row of dashes.
 
@@ -340,8 +393,9 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌** (not ambiguous text).
 - [ ] `Verdict: PASSED` or `Verdict: FAILED` with issue link.
-- [ ] **Non-PASSED verdict:** Step 6a's three blocks present — repro matrix (one row per entry point, untried paths `not tested`), why-this-item-failed with the expected-result line quoted verbatim, resolution options with a named owner each — plus the one-line statement of whether the originally reported symptom is gone.
-- [ ] **Step 6b dev-question gate passed before the first post**; every scope word traces to a matrix row; no unresolved contradiction between your own observations.
+- [ ] **Non-PASSED verdict:** Step 6a's four blocks present — repro matrix (one row per entry point, untried paths `not tested`), why-this-item-failed with the expected-result line quoted verbatim, **root cause**, resolution options with a named owner each — plus the one-line statement of whether the originally reported symptom is gone.
+- [ ] **Step 4g root-cause investigation ran for every non-PASSED item** (including BLOCKED): debugging skill invoked and named, 8-boundary sweep complete with `not checked` written where it applies, hypotheses ruled out recorded, cause labelled `Confirmed` / `Suspected` (+ the confirming check) / `Unknown — not investigated` (+ what is needed).
+- [ ] **Step 6b dev-question gate + cause gate passed before the first post**; every scope word traces to a matrix row; every cause sentence cites an artifact and carries a label; no hedge word used as a cause; no unresolved contradiction between your own observations.
 - [ ] v2/v3 format matches Step 3 lock; FE bugs have screenshots attached before wiki embed.
 - [ ] API cases: full cURL + response per row (no "same as above").
 - [ ] Jira issue re-opened after post: comment visible, not truncated.
@@ -548,7 +602,12 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST NOT write a scope word (`always`, `any entry point`, `both ways`, `only when …`) that no repro-matrix row supports | The scope claim is the first thing a dev builds on |
 | MUST hard-reload every surface after a state-changing fixture step before observing or capturing it; report a stale-data window only as a separate timing note with the measured delay | An already-open view holds pre-change data — recording it publishes your test timing as product behavior (OLS-108: card looked clickable ~5s after unpublish) |
 | MUST resolve any disagreement between your own observations with one clean re-run before drafting, and record which was the artifact; unresolvable → BLOCKED, not FAILED | Resolving it in favour of the verdict you already reached is how the wrong repro path shipped |
-| MUST include the Step 6a blocks on every non-PASSED comment — repro matrix, why-failed with the expected-result line quoted verbatim, resolution options with a named owner per option | These are exactly the questions a dev asks next; answering them in chat instead leaves the ticket unreadable |
+| MUST include the Step 6a blocks on every non-PASSED comment — repro matrix, why-failed with the expected-result line quoted verbatim, **root cause**, resolution options with a named owner per option | These are exactly the questions a dev asks next; answering them in chat instead leaves the ticket unreadable |
+| MUST run the Step 4g root-cause investigation for EVERY non-PASSED item (FAILED and BLOCKED alike), starting by invoking `superpowers:systematic-debugging` (Phases 1–3) and naming it in the comment | Improvised reasoning is where guessing enters; the process is also faster than guess-and-check |
+| MUST complete the 8-boundary sweep while the environment is still open, writing `not checked` where a boundary was not reached | A boundary not captured during the run cannot be reconstructed later — reconstruction is fabrication |
+| MUST attach a captured artifact to every cause statement and label it `Confirmed` / `Suspected` / `Unknown — not investigated`, carrying the label wherever the sentence is copied (comment, sheet, notify) | A `Suspected` cause read as `Confirmed` sends a developer to the wrong layer |
+| MUST NOT use a hedge (`probably`, `น่าจะ`, `seems`, `flaky`, `cache issue`, `environment issue`) as a cause, restate the symptom as the cause, or infer a cause from a different record/role/run/entry point | Hedged guessing is still guessing, and it ships as QA's finding |
+| MUST NOT patch product code while investigating — QA hands off the isolated boundary + evidence | Fixing the product is the dev's call, not QA's |
 | MUST state in one line whether the originally reported symptom is gone, even when the verdict is FAILED on a different deviation | "FAILED" alone reads as "the fix did not work" |
 | MUST NOT edit the ticket's expected-result field to match observed behavior — name the decision owner instead | The spec owner decides; QA reports the conflict |
 | MUST pass the Step 6b dev-question gate before the FIRST post — never "post now, explain in chat" | The gate exists so the answers land in the comment, not in a round-trip that ends in an edited comment (OLS-108) |

@@ -35,6 +35,10 @@ Include:
 - Expected (Swagger / ticket)
 - Clear diff
 
-### 4. Optional: invoke systematic debugging
+### 4. Invoke systematic debugging — mandatory, not optional
 
-For complex regressions, use your environment's structured debugging skill if available.
+This file is the **retest-specific FAILED vs BLOCKED triage**. The cause itself is governed by
+[root-cause-investigation.md](../../../../references/root-cause-investigation.md): invoke
+`superpowers:systematic-debugging` (Phases 1–3 — QA does not patch product code), complete the
+8-boundary evidence sweep, and label the cause `Confirmed` / `Suspected` / `Unknown — not
+investigated`. A cause without a captured artifact is not written down.

@@ -20,6 +20,14 @@ Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
 **Every FAILED or BLOCKED scenario** is governed by [defect-report-completeness.md](../../../references/defect-report-completeness.md) — the write-up must answer the reader's five questions (what, **which entry points**, what it should be instead, why that is a fail, **what changes and who decides**) before it leaves this workflow. A question asked afterwards means a section was missing; the fix is the write-up, not a chat reply.
 
+**Root cause is mandatory, never inferred.** Every FAILED or BLOCKED scenario gets a full
+investigation per [root-cause-investigation.md](../../../references/root-cause-investigation.md) —
+run at **E2**, during the run, before Phase F exists. That reference also governs every sentence in
+this workflow that states or implies a cause, wherever it ends up (chat, Jira comment, sheet cell,
+notify). Start it by invoking a real debugging skill — **`superpowers:systematic-debugging`** first,
+its Phases 1–3 only (QA diagnoses; QA does not patch product code). No cause without a captured
+artifact and a `Confirmed` / `Suspected` / `Unknown — not investigated` label.
+
 **Long sessions:** optional todos per [long-workflow-todos.md](../../../references/long-workflow-todos.md).
 
 ## Refusal-first (precondition gate)
@@ -97,7 +105,8 @@ Reply **confirm** to start Playwright, or tell me what to change.
 
 **Do not start Phase D until confirmed.**
 
-If results contradict expectations or tests are flaky, follow [qa-debug-discipline.md](../../../references/qa-debug-discipline.md) before changing pass/fail wording.
+If results contradict expectations or tests are flaky, follow [qa-debug-discipline.md](../../../references/qa-debug-discipline.md) before changing pass/fail wording. "Flaky" is a hypothesis, not a
+conclusion — it needs the E2 investigation and an artifact like any other cause.
 
 ---
 
@@ -131,6 +140,36 @@ These three cannot be reconstructed while writing Phase F — do them before mov
    resolve it in favour of the result you already wrote. Unresolvable after a clean re-run → **BLOCKED**,
    not FAILED.
 
+### E2 — Root-cause investigation (mandatory for every FAILED and BLOCKED scenario, during the run)
+
+Follow [root-cause-investigation.md](../../../references/root-cause-investigation.md) end to end,
+**before moving to the next scenario** — the browser, the session and the fixture state are open now
+and cannot be reconstructed in Phase F. Reconstruction is guessing.
+
+1. **Invoke the debugging skill and announce it** — `superpowers:systematic-debugging` first
+   (fallbacks in §0 of the reference). Follow its Phases 1–3; skip Phase 4 (QA does not patch product
+   code; repairing our own test/selector/fixture/environment is in scope). Name the skill in the
+   write-up.
+2. **Complete the 8-boundary evidence sweep** (§1): surface · console · network request+response ·
+   auth/session/role · server-side truth via a direct API call · **is the behaviour even in the
+   deployed build** (grep the bundle for the feature's own strings/route/param; probe the endpoint) ·
+   fixture state read back from the API · environment (env, build id, flag, VPN). Each boundary ends
+   as an artifact or the literal words `not checked`. Do not stop at the first anomaly.
+3. **Compare against something that works** (§2) — another record, role, entry point, environment, or
+   a sibling feature sharing the endpoint. List every difference.
+4. **One falsifiable hypothesis at a time** (§3), each killed or confirmed by the single smallest
+   check; falsified ones stay in the record with their artifacts.
+5. **Label the result** (§4): `Confirmed` · `Suspected` (+ the exact check that would confirm it and
+   why it was not run) · `Unknown — not investigated` (+ what is needed and from whom).
+
+**A test-side cause counts too, and is stated as such** — selector drift, stale auth, missing
+fixture, VPN. Fix our side, re-run, and record it as a test defect, never as a product FAILED
+([qa-debug-discipline.md](../../../references/qa-debug-discipline.md)). And never the reverse: a real
+product bug is never filed away as "flaky".
+
+**BLOCKED is not an escape.** A BLOCKED scenario still records the sweep up to the boundary that
+blocked it and names the access/person needed to continue.
+
 ---
 
 ## Phase F — Summarize in this chat (mandatory)
@@ -160,14 +199,19 @@ List issues found **without filing tickets**:
 | 1 | ...   | High     | Confirmed  | ...      |
 ```
 
+The **Confidence** column carries the E2 label — `Confirmed` / `Suspected` / `Unknown — not
+investigated` — and it describes the **cause**, not how strongly you feel about the defect.
+
 **Each defect row expands into a complete write-up** — this is what gets pasted into a bug, a Jira
 comment, or a sheet cell later, so it must stand alone
-([defect-report-completeness.md](../../../references/defect-report-completeness.md) §1–§4):
+([defect-report-completeness.md](../../../references/defect-report-completeness.md) §1–§4 and
+[root-cause-investigation.md](../../../references/root-cause-investigation.md) §5):
 
 | Block | Content | Answers |
 |-------|---------|---------|
 | **Repro matrix** | one row per entry point exercised: entry point · steps · observed · reproduces? · evidence file; untried paths `not tested` | "does this only happen from a direct URL?" |
 | **Expected vs Actual** | the failing acceptance/expected line **quoted verbatim**, then *should be* vs *is now* as implementable facts (which elements render, which are disabled, which route) | "what should it look like, and which line did I break?" |
+| **Root cause** | the E2 investigation block verbatim: one-sentence cause + `Confirmed`/`Suspected`/`Unknown — not investigated` label, the skill used, the 8-boundary evidence lines, hypotheses ruled out, and (Suspected) the check that would confirm it | "why does it happen, which layer do I open, and how sure are you?" |
 | **Resolution options** | when the behavior deviates from the written expectation but the feature otherwise works: the two mutually exclusive outcomes with a named owner each — spec owner updates the expectation (no code change) **or** dev changes `{exact route/surface}` and leaves `{what already passes}` alone | "do I change code or does the spec change, and who decides?" |
 
 **Never rewrite the ticket's acceptance/expected text to match observed behavior.** Report the conflict and
@@ -179,6 +223,18 @@ Read F2 + F3 as the developer who will act on them. Run the six-question gate in
 [defect-report-completeness.md](../../../references/defect-report-completeness.md) §5. Any "no" → fix the
 write-up. Also confirm: every scope word (`always`, `any entry point`, `only when …`) traces to a
 repro-matrix row, and no observation is under an unresolved contradiction.
+
+**Cause gate (same pass, no exceptions)** — read every sentence in F1–F3 that states or implies a
+cause:
+
+- [ ] It cites a **captured artifact** from the E2 sweep (status code, response field, console error,
+      bundle probe, fixture read-back) — not a recollection, not another scenario's behaviour.
+- [ ] It carries a label matching what was actually run — `Confirmed` only if the falsifying check ran.
+- [ ] It contains **no hedge standing in for a cause** (`probably`, `น่าจะ`, `seems`, `flaky`,
+      `cache issue`, `environment issue`, `race condition`).
+- [ ] It does not restate the symptom as the cause, and `not checked` boundaries are still visible.
+
+Any box unchecked → delete the sentence or return to E2 and earn it. Never soften it into a hedge.
 
 If the user wants these logged as bugs:
 
@@ -253,9 +309,13 @@ exist and were not uploaded by you. See [result-update-discipline.md](references
 - Include evidence references where the format allows (screenshot names, bug keys as `{{KEY}}` in Jira wiki).
 - **A FAILED/BLOCKED row carries its F3 write-up, not just the word "FAILED".** Whatever the destination
   allows (actual-result cell, Jira comment, remark column) must state which entry points reproduce it,
-  the expected line verbatim vs what actually happens, and — when the deviation is from the written
+  the expected line verbatim vs what actually happens, **the root cause with its `Confirmed` /
+  `Suspected` / `Unknown — not investigated` label**, and — when the deviation is from the written
   expectation rather than a broken feature — who decides between updating the expectation and changing
   the code. A bare status forces the next reader back to you.
+- **The cause label travels with the sentence.** If the destination is too narrow for the full E2
+  block, write the one-sentence cause **with its label** and link the full block; never publish a
+  `Suspected` cause with its label stripped off.
 
 ### G6 — Review before “complete” (mandatory)
 
@@ -320,8 +380,9 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 
 - [ ] F1–F4 posted before any external update.
 - [ ] Every scenario has PASSED/FAILED/BLOCKED/NOT TESTED with evidence reference.
-- [ ] Every FAILED/BLOCKED defect has its repro matrix (one row per entry point, untried paths `not tested`), expected-line-verbatim vs actual, and — where the deviation is from the written expectation — resolution options with a named owner.
-- [ ] **F4 reader gate passed before Phase G**; every scope word traces to a matrix row; no unresolved contradiction between your own observations.
+- [ ] Every FAILED/BLOCKED defect has its repro matrix (one row per entry point, untried paths `not tested`), expected-line-verbatim vs actual, **root cause**, and — where the deviation is from the written expectation — resolution options with a named owner.
+- [ ] **E2 root-cause investigation ran for every FAILED and BLOCKED scenario** (during the run, not in Phase F): debugging skill invoked and named, 8-boundary sweep complete with `not checked` written where it applies, hypotheses ruled out recorded, cause labelled `Confirmed` / `Suspected` (+ the confirming check) / `Unknown — not investigated` (+ what is needed).
+- [ ] **F4 reader gate + cause gate passed before Phase G**; every scope word traces to a matrix row; every cause sentence cites an artifact and carries a label; no hedge word used as a cause; no unresolved contradiction between your own observations.
 - [ ] If Phase G ran: destination re-read matches agreed column formats.
 - [ ] Close-out includes `Verified:` (or partial-failure honesty per Phase F).
 - [ ] Phase G6 fix-verify completed when Phase G ran.
@@ -349,6 +410,7 @@ See [skill-routing.md](../../../references/skill-routing.md) — **Handoffs** af
 |------|-----|
 | [session-intake.md](references/session-intake.md) | Intake fields |
 | [playwright-discipline.md](references/playwright-discipline.md) | Playwright rules |
+| [root-cause-investigation.md](../../../references/root-cause-investigation.md) | E2 — mandatory cause investigation, evidence-only |
 | [result-update-discipline.md](references/result-update-discipline.md) | Sheets, Jira, Confluence update rules |
 | [workspace-guide-template.md](references/workspace-guide-template.md) | Optional non-secret defaults |
 | [worked-example.md](references/worked-example.md) | On-demand: anonymized sample (read only when format reference needed) |
@@ -368,7 +430,13 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST NOT write a scope word (`always`, `any entry point`, `both ways`, `only when …`) that no repro-matrix row supports | The scope claim is the first thing a dev builds on |
 | MUST hard-reload every surface after a state-changing fixture step before observing it; a stale-data window is a separate timing note with a measured delay, never a repro row | An already-open view holds pre-change data — recording it publishes your test timing as product behavior |
 | MUST resolve any disagreement between your own observations with one clean re-run before writing F2/F3; unresolvable → BLOCKED, not FAILED | Resolving it in favour of the result you already wrote is how a wrong repro path ships |
-| MUST give every FAILED/BLOCKED defect the F3 blocks — repro matrix, expected line quoted verbatim vs actual, resolution options with a named owner | These are the questions the reader asks next; answering them in chat leaves the record incomplete |
+| MUST give every FAILED/BLOCKED defect the F3 blocks — repro matrix, expected line quoted verbatim vs actual, **root cause**, resolution options with a named owner | These are the questions the reader asks next; answering them in chat leaves the record incomplete |
+| MUST run the E2 root-cause investigation for EVERY FAILED and BLOCKED scenario, during the run, starting by invoking `superpowers:systematic-debugging` (Phases 1–3) and naming it in the write-up | The session state is open only during the run; improvised reasoning afterwards is where guessing enters |
+| MUST complete the 8-boundary sweep and write `not checked` where a boundary was not reached | A boundary not captured during the run cannot be reconstructed later — reconstruction is fabrication |
+| MUST attach a captured artifact to every cause statement and label it `Confirmed` / `Suspected` / `Unknown — not investigated`, carrying the label into every destination the sentence is copied to | A `Suspected` cause read as `Confirmed` sends a developer to the wrong layer |
+| MUST NOT use a hedge (`probably`, `น่าจะ`, `seems`, `flaky`, `cache issue`, `environment issue`) as a cause, restate the symptom as the cause, or infer a cause from another scenario/role/record | Hedged guessing is still guessing, and it ships as QA's finding |
+| MUST classify a test-side cause (selector drift, stale auth, missing fixture, VPN) as a test defect — fix our side and re-run — and MUST NOT file a real product bug as "flaky" | Both directions of the mix-up destroy the run's credibility |
+| MUST NOT patch product code while investigating — QA hands off the isolated boundary + evidence | Fixing the product is the dev's call, not QA's |
 | MUST NOT rewrite a ticket's acceptance/expected text to match observed behavior | The spec owner decides; QA reports the conflict and names them |
 | MUST pass the F4 reader gate before Phase G | The gate exists so answers land in the write-up, not in a round-trip that ends in an edited record |
 | MUST re-verify before answering any question that arrives after publishing, then fold the answer into the published record in place (Phase H) | Answering from memory publishes wrong claims |

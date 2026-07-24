@@ -2,6 +2,12 @@
 
 Use when **Playwright fails intermittently**, **retest result disagrees with dev**, **environment unreachable**, or **evidence contradicts the chat summary**. Inspired by systematic root-cause practice — scoped to QA, not application code fixes.
 
+> **This file is triage, not the whole contract.** Any result that is not a clean PASSED must also run
+> the full investigation in [root-cause-investigation.md](root-cause-investigation.md) — invoke
+> `superpowers:systematic-debugging` (Phases 1–3), complete the 8-boundary evidence sweep, and label
+> the cause `Confirmed` / `Suspected` / `Unknown — not investigated`. Nothing below permits a cause
+> statement without a captured artifact.
+
 ## Iron rule
 
 ```

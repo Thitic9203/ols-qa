@@ -20,6 +20,18 @@ When you notice these thoughts, **stop** and follow the linked reference or skil
 | “Trace is too big, skip” | Use [qa-debug-discipline.md](qa-debug-discipline.md) — sample failing request |
 | “I'll increase timeout until green” | Find root cause — do not mask flake |
 
+## Cause statements ([root-cause-investigation.md](root-cause-investigation.md))
+
+| Rationalization | Correct action |
+|-----------------|----------------|
+| “It's obviously a cache/env issue” | Not a cause until a boundary artifact shows it — run the 8-boundary sweep |
+| “Probably the same as the other record” | A cause inferred from another record/role/run is fabrication — re-run this one |
+| “Verdict is FAILED anyway, cause won't change it” | The cause is what the reader acts on; the verdict is not the deliverable |
+| “I'll write ‘likely caused by …’ to be safe” | A hedge is a cause claim wearing a disguise — label it `Suspected` + name the confirming check, or drop it |
+| “I know why, no need to invoke a debugging skill” | Invoke `superpowers:systematic-debugging` first and name it — improvised reasoning is where guessing enters |
+| “Boundary wasn't reachable, leave the row out” | Write `not checked` — a blank row reads as “fine” |
+| “It's BLOCKED, so skip the investigation” | BLOCKED still records the sweep up to the blocking boundary + who can unblock it |
+
 ## Test cases
 
 | Rationalization | Correct action |
