@@ -243,7 +243,7 @@ Two steps the AI/bot performs to hand a story back to its human QA Owner once th
 
 **1. Progress tab — nothing to do (RETIRED 2026-07-24)**
 - `sort_test_progress.py` and the whole `progress_closeout.sh` chain are **deprecated** (the sorter now hard-refuses on start); their target tab `Test Progress - ALL TC` was **deleted**. Do not run them.
-- The tab is now **`Test Progress - ALL TC - Revised`**, rebuilt atomically from source by the single writer `progress_build.py` (launchd, every 5 min) — it already sorts `% Passed` desc, tie-break ticket number asc. See [docs/progress-tab-single-flow.md](docs/progress-tab-single-flow.md).
+- The tab is now **`Test Progress - ALL TC - Revised`**, rebuilt atomically from source by the single writer `progress_build.py` (launchd, every 5 min) — it already sorts `% Passed` desc, tie-break ticket number asc. See [docs/progress-tab-single-flow.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/progress-tab-single-flow.md).
 - **No row highlighting.** The AI-row solid-yellow highlight was **removed 2026-07-24** at the user's request; the builder resets the whole data block to white every run. Do not re-add it.
 
 **2. Hand QA Owner back to the real person** — after posting the result comment:
@@ -282,11 +282,11 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
   on every mutating trigger, `_healGarbage()` drops empty-key/`#REF!` rows before any write, an abort-guard
   refuses an append when `missing >= existing` (the mass-append signature), and appends now set col A
   explicitly. Deploy blocked by the Apps Script API user-toggle being off for `<QA_SERVICE_ACCOUNT>`; contained
-  meanwhile by `progress_guardian.py` (launchd, clear-not-delete). รายละเอียด: [docs/qa-owner-sync/README.md](docs/qa-owner-sync/README.md)
+  meanwhile by `progress_guardian.py` (launchd, clear-not-delete). รายละเอียด: [docs/qa-owner-sync/README.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/qa-owner-sync/README.md)
 - **Regression-tc-sync auto-schedule confirmed OFF** — launchd `com.<USER>.ols-regression-sync` stays
   retired (disabled 23 Jul 2026, plist renamed off the auto-load dir); `references/ols-project-guide.md`
   updated to say **manual only** instead of the stale Mon–Fri 10:30/17:00 schedule. Script itself untouched
-  — run on demand: `python3 ~/ols-qa-testing-bot/regression_sync.py`. รายละเอียด: [docs/regression-tc-sync.md](docs/regression-tc-sync.md)
+  — run on demand: `python3 ~/ols-qa-testing-bot/regression_sync.py`. รายละเอียด: [docs/regression-tc-sync.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/regression-tc-sync.md)
 
 ### v1.16.4 — retest-bug: auto-unblock linked stories once a bug reaches Done (23 Jul 2026)
 

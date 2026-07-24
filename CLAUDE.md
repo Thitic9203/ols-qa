@@ -51,7 +51,8 @@ commit ที่ผ่านไปแล้วยังอยู่ใน git hi
 
 > ⚠️ ตอนที่ repo ยังเป็น private เคยออกแบบให้ OLS secret มากองรวมที่ ols-qa เพื่อปกป้อง helix
 > พอ repo กลายเป็น public โมเดลนั้นกลับหัวทันที — audit เจอ credential/host/resource id กระจาย **71 ไฟล์**
-> **ตอนนี้ทั้ง ols-qa และ helix เป็น public → ปฏิบัติเหมือนกันทุกประการ**
+> **ตอนนี้: `ols-qa` = public (skill pack อย่างเดียว) · `helix` = private · `ols-qa-evidence` = private**
+> evidence/หลักฐาน/docs ที่มีข้อมูลลูกค้า ย้ายออกไป `ols-qa-evidence` แล้ว (2026-07-24) — **ห้ามย้ายกลับ**
 
 ## What this repo is
 
@@ -119,8 +120,9 @@ The **active** skills Claude Code runs are the **helix** plugin (`~/.claude/skil
 > routing every OLS secret **into** ols-qa. ols-qa went public on 2026-06-11, which inverted the
 > threat model: the guard kept passing green while the vault itself was open. An audit found
 > credentials, internal hosts, tenant and resource ids across 71 files. History was rewritten and
-> the ols-qa `pre-commit` no longer exempts any path. **Both repos are public now — treat them
-> identically.** See [SECURITY.md](SECURITY.md).
+> the ols-qa `pre-commit` no longer exempts any path. **`ols-qa` is the only public repo now** —
+> `helix` and `ols-qa-evidence` are private. Treat all three as if they were public. See
+> [SECURITY.md](SECURITY.md).
 
 **Hard guard — 5 layers, BOTH repos hold ZERO cleartext OLS data:** ols-qa runs its own
 `scripts/check-no-secrets.sh` over **every** staged text blob (1) at ols-qa `pre-commit`; the helix
@@ -203,7 +205,7 @@ Jira ตีความ `1.` ที่ขึ้นต้น cell เป็น or
 > test) run headless with no attached browser and must never touch the user's screen — they write
 > Jira over the REST API (`curl -u "$OLS_JIRA_CREDS"`, see `prompt-retest.md`) and never use
 > `Control_Chrome` / `Claude_in_Chrome` / `computer-use`. See the always-headless rule in
-> `docs/ols-login-runbook.md` and the design spec addendum (2026-07-18).
+> [`docs/ols-login-runbook.md`](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ols-login-runbook.md) and the design spec addendum (2026-07-18).
 
 Atlassian MCP `addCommentToJiraIssue` ไม่รองรับ file upload — ต้องใช้ browser JS แทน:
 
