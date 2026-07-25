@@ -1,17 +1,22 @@
-# WIP — Regression Lot2 non-PASSED retest (EXECUTING, 2026-07-25)
+# WIP — Regression Lot2 non-PASSED retest (✅ COMPLETE, 2026-07-25)
 
 **Active plan + living results + full handoff:** `continue/ols-lot2-nonpassed-retest-24jul.md` in the
 **private** `ols-qa-evidence` repo. It has a **🧭 SESSION HANDOFF** block at the top — read that whole
 block first; it carries progress, the reusable tooling map, and 9 hard-won gotchas.
 
-## 🔴 Rule #0 (user, 2026-07-25): finish ALL 14 tickets today
-OLS-225 ✅ · OLS-18 ✅ · OLS-33 · OLS-37 (TC_01–09 ✅, TC_10–27 pending) · OLS-58 ✅ · OLS-84 ✅ · OLS-85 ✅ ·
-OLS-205 · OLS-206 · OLS-207 · OLS-209 ✅ · OLS-221 ✅ · OLS-222 ✅ · OLS-226 ✅. Done = every non-PASSED
-case has a real verdict + evidence + written to its sheet tab.
+## ✅ Rule #0 (user, 2026-07-25): finish ALL 14 tickets today — DONE
+OLS-225 ✅ · OLS-18 ✅ · OLS-33 ✅ · OLS-37 ✅ (all 27) · OLS-58 ✅ · OLS-84 ✅ · OLS-85 ✅ ·
+OLS-205 ✅ · OLS-206 ✅ · OLS-207 ✅ · OLS-209 ✅ · OLS-221 ✅ · OLS-222 ✅ · OLS-226 ✅. Every non-PASSED
+case has a real verdict + evidence + written to its sheet tab. **0 cases left NOT STARTED.**
 
-## Progress: 113 / 174 written
+## ✅ Progress: 174 / 174 — COMPLETE (92 PASSED · 12 PWMI · 27 FAILED · 48 BLOCKED)
+- Open items for the user (see plan §FINAL): fresh bugs for the 27 FAILED (esp. the triangulated
+  missing-live-stats defect: OLS-33 TC_04/10 + OLS-206 TC_05 + OLS-207 TC_05); roster fix (petsri =
+  Content Admin, not Learner+Creator); `[QA TEST]` badge cleanup on boripot; BLOCKED cases needing
+  dev / a 2nd learner account / a real (non-headless) browser.
 - **G1 OLS-21** (5) + **G2 OLS-18** (16) + **OLS-58** (14) + **G3 OLS-222/209/221** (36) + **G5 OLS-37
-  TC_01–09** (9) + **G6 OLS-226/84/85/225** (34) done, all written, rollup pending refresh. OLS-37's
+  TC_01–09** (9) + **G6 OLS-226/84/85/225** (34) + **G4 OLS-207** (11) + **G7/G8 OLS-37 TC_10–27** (18) +
+  **Live G9/G10/G11 OLS-33/205/206** (29) — all done, all written, rollup refreshed. OLS-37's
   remaining TC_10–27 (G7/G8) still pending — do not mark OLS-37 done in the Rule #0 list above until
   those land too.
 - **Override grant is ACTIVE** (user 2026-07-25): retest + write any testable/human row regardless of
