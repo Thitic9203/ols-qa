@@ -1,37 +1,49 @@
-# WIP — Regression Lot2 non-PASSED retest (planned 2026-07-24, not yet executed)
+# WIP — Regression Lot2 non-PASSED retest (EXECUTING, 2026-07-25)
 
-**Active plan:** `continue/ols-lot2-nonpassed-retest-24jul.md` in the **private** `ols-qa-evidence`
-repo. Read it before touching any Lot2 ticket — it is both the plan and the living results table.
+**Active plan + living results + full handoff:** `continue/ols-lot2-nonpassed-retest-24jul.md` in the
+**private** `ols-qa-evidence` repo. It has a **🧭 SESSION HANDOFF** block at the top — read that whole
+block first; it carries progress, the reusable tooling map, and 9 hard-won gotchas.
 
-- **Scope:** the 22 tickets tagged `Regression Lot2` in the Test Progress tab, filtered to Jira status
-  `READY TO TEST` or `TESTING` ⇒ **15 tickets / 174 non-PASSED cases**. 7 tickets (85 cases) are excluded
-  and each one's real next action is recorded — they are not a coverage gap.
-- **Env: Dev only** (user decision 2026-07-24, no exception). Pre-prod evidence from the 125-case
-  customer-UAT regression run **cannot** close a case in this plan.
-- **Run order is LOCKED** — §3.1 FINAL RUN QUEUE, 11 groups ordered by estimated minutes per case
-  *including each group's own gate cost*. Walk it top to bottom; only two reorder triggers are allowed.
-- **Sheet write happens at the END of every group**, not once at the end of the batch (user rule). That
-  is why the two heavy tickets are split across several groups — 11 write checkpoints.
-- **Write scope:** Google Sheet per-ticket tabs + Drive only. Jira is read-only apart from the
-  `READY TO TEST → TESTING` transition. No Jira comment, no bug opened, no Discord notify.
-- **Still open:** the named-row override grant for **24 human-owned rows** (rows a QA person already
-  filled). It does not block the queue — those cases are run and their row objects parked in
-  `pending-grant/<TICKET>.rows.json`, written at the first checkpoint after the grant lands.
+## 🔴 Rule #0 (user, 2026-07-25): finish ALL 14 tickets today
+OLS-225 · OLS-18 ✅ · OLS-33 · OLS-37 · OLS-58 ✅ · OLS-84 · OLS-85 · OLS-205 · OLS-206 · OLS-207 ·
+OLS-209 · OLS-221 · OLS-222 · OLS-226. Done = every non-PASSED case has a real verdict + evidence +
+written to its sheet tab.
 
-## Traps already found — do not re-derive
+## Progress: 35 / 174 written
+- **G1 OLS-21** (5) + **G2 OLS-18** (16) + **OLS-58** (14) done, all written, rollup rebuilt.
+- **Override grant is ACTIVE** (user 2026-07-25): retest + write any testable/human row regardless of
+  owner; **preserve QA Remark/Linked-Bug cells** (omit `remark` from sheet_write row objects).
+- Remaining: **12 tickets / 139 cases = G3→G11.** Next: run `capture/lot2_g3_ols222.js` (built, 18
+  cases), then build the OLS-209/221 user-admin runner, then G4→G11.
 
-- **6 of the 15 tickets still have Jira `TC Status = TO DO`** (69 cases; they were not in the 2026-07-23
-  review batch below) ⇒ a TC review pass is a gate on those groups. Cost is folded into the group
-  estimate, not treated as a separate phase.
-- **One ticket's 16 BLOCKED rows were blocked on a *different env*** (a Mica preprod host). Those reasons
-  are out of env and must be re-probed on dev before any of them keeps a BLOCKED verdict.
-- **Sheet Summary status and Jira status disagree on 2 tickets.** Jira wins; check it live per session.
-- **One FAILED row's linked bug is still `To Do`** ⇒ expect a FAILED re-confirm, never argue it to PASSED.
-- Evidence rule splits by row: **MP4 for the 149 first-run cases** (story testing), **screenshots only
-  for the 25 re-verified rows** (retest). BLOCKED rows are exempt from MP4.
+## Environment + write scope (unchanged, mandatory)
+- **Dev only** (`<DEV_HOST>`, VPN up). Never pre-prod/staging/prod. Pre-prod evidence can't close a case.
+- Write **Sheet + Drive only**. Jira read-only except `READY TO TEST → TESTING`. No Jira comment, no
+  bug opened, no Discord.
+- Always headless. No screen hijack.
 
-## Previous WIP (finished — kept as a pointer)
+## Must-not-miss (full list in the plan's handoff block)
+- **TLS:** Bitdefender re-signs TLS → node/curl need `NODE_EXTRA_CA_CERTS=~/ols-qa-testing-bot/certs/ca-bundle.pem`
+  (set by `capture/lot2_env.js`). Chromium is fine. Never `-k`.
+- **Login is proven sound (16/16)**; "did not land" = transient blip; `rotate()` retries. Don't rewrite login.
+- **`automatetanapoom.int0909_stg68` (User Admin)** is the only account that opens `/admin/achievement`
+  + `/admin/user`. Content Admin = creator-only (403). `test.sys*` rotate last.
+- **Detect the login drawer structurally** (role=dialog + iframe `/sign-in/embed`), never by Thai text —
+  it's titled "เข้าสู่ระบบ", not "กรุณาเข้าสู่ระบบ" (real wording gap, OLS-21 TC_12/14).
+- **sheet_write.py:** links go in `links` field, not `capture`; `--dry-run` first; then
+  `progress_build.py --apply` to refresh the rollup. Secret guard flags `.go.th` — name gov hosts
+  generically. `ols-qa-evidence` has no pre-commit hook (task spawned to add one).
 
-TC review/draft batch across 16 READY-TO-TEST tickets: **DONE** (2026-07-23). Method is recorded in
-`references/ols-project-guide.md` and agent memory `feedback_ols-tc-autodraft-method`; the Sheets
-"Table object" dropdown gotcha is in the project guide.
+## Confirmed findings (reuse, already written)
+- **NEW defect:** `POST /api/activities/{media|course}/{id}/view` → HTTP 500 for legacy non-UUIDv7 owner
+  ids (view count can't accumulate). From OLS-21 TC_03.
+- **OLS-58 ThaID:** DOPA host blocked by network gateway → all ThaID cases BLOCKED (env, not defect).
+- **OLS-18:** SSO carry works on dev; preprod-400 reasons were out-of-env → 3 flipped PASSED.
+- **`/admin/user` has NO role filter** (status + sort only) → OLS-209 TC_02/TC_10 will be FAILED.
+  Active=ปกติ, Inactive=ถูกตัดสิทธิ์.
+- **Badge page** structure captured (8 cols, 4 summary cards, dropdowns, row actions); **5-tab strip is
+  not a real element** — the runner investigates group-filtering live.
+
+## Previous WIP (finished)
+TC review/draft batch, 16 tickets: DONE (2026-07-23). Method in `references/ols-project-guide.md` +
+memory `feedback_ols-tc-autodraft-method`.
