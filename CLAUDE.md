@@ -468,11 +468,14 @@ was correct; only OLS-248 was wrong.)
    correct it. Registered notifies were protected; this one fell outside.
 
 **Prevention (mechanical, applied — don't re-derive):**
-- **Resolve the ping from the live Jira field by stable accountId.** `discord_qa_notify.py` now takes
-  `--jira-key OLS-<key>`: it re-reads `customfield_12120` at send time, pings by the owner's
-  **accountId** (roster accountId→id map), and **overrides** a disagreeing `--qa-owner`, printing
-  `WARN: passed --qa-owner … != live Jira QA Owner …`. Both bot prompts pass it on every call. The
-  visible name string is never trusted to pick who gets pinged.
+- **Resolve the ping from the live Jira field by stable accountId — by default, on every send.**
+  `discord_qa_notify.py` re-reads `customfield_12120` at send time (keyed off `--ticket`, so it can't
+  be forgotten — the original fix keyed it off an easily-skipped `--jira-key` flag, the same "depends
+  on remembering" shape as the bug). It pings by the owner's **accountId** (roster accountId→id map)
+  and **overrides** a disagreeing `--qa-owner`, printing `WARN: passed --qa-owner … != live Jira QA
+  Owner …`. If Jira is unreachable it **fails closed** — pings no one (owner as plain text, recoverable
+  later via `sync_qa_owner.py`) rather than risk a stale name. The visible name string is never trusted
+  to pick who gets pinged. Opt out only with `--no-jira-verify`.
 - **`--registry` on every send**, so `sync_qa_owner.py` can reconcile any owner change made *after* the
   send. An untracked notify now also prints a `WARN`.
 - **Mention identity is the live Jira field, not a name that "looks right".** A name string can be
