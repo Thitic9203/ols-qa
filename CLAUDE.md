@@ -442,3 +442,51 @@ Image-count checks pass straight through this. Already in memory as `feedback_ji
 - **When a rendering bug is found, fix the generator/template in the same pass as the comment.**
   PM-003 fixed one comment; the template kept emitting the fault for another nine.
 - **Correct posted comments in place** with `PUT …/comment/{id}` — never delete and repost.
+
+### PM-005 — Retest QA-notify resolved the QA Owner to a different Discord id than the field named (2026-07-25, OLS-248)
+
+**Surface:** the `👤 QA Owner:` mention line of the Discord retest notify (retest-bug-workflow Step 9),
+built by the notify helper (`discord_qa_notify.py`) from the ticket's QA Owner field.
+
+**What happened.** Two retest notifies posted to the QA channel a day apart carried the **same** QA
+Owner — `customfield_12120` held one identical person (same `accountId`) on both OLS-203 and OLS-248
+(verified in Jira). The first rendered the mention as that person's full server nickname (the
+`Name (Nick, ไทย)` form); the later one (OLS-248) rendered as a short unrelated handle. In one server a
+given `<@id>` always renders identically, so two different renders means the helper resolved the same
+QA Owner to **two different Discord ids** — OLS-248 pinged an account that is not the one the field
+named. (The only benign alternative — the same person renaming their Discord handle between the two
+sends — was ruled out by the user, who asked for the ping to be corrected.) User: "แก้ไขมา และ อย่าให้เป็น
+แบบนี้อีก".
+
+**Root cause — recipient resolved by a display-name string, and every recipient gate was a human eye.**
+1. The helper maps a QA-Owner **name string** → Discord id through a local roster. A name-keyed lookup
+   is not stable: a near/stale/duplicate row, or a differently-formed `--qa-owner` value, resolves to a
+   wrong id and still returns *an* id, so nothing errors — the mention posts, the pill renders, the
+   counts are right, the send looks clean.
+2. The Step 9 pre-send recipient check ("confirm the resolved `<@id>` maps to that name in the roster")
+   is a **human-eye** check. The unattended bot never runs it, and by eye one Discord pill looks as
+   valid as another — the same failure shape as PM-004, where only a mechanical check catches the fault
+   and none ran.
+3. Discord renders `<@id>` as that user's own server nickname, which the bot can't control — so a wrong
+   id is invisible unless you tie the resolved id back to the QA Owner's **stable identity**
+   (`accountId`), never to how it renders.
+
+**Underlying mistake:** resolving a person by a display string instead of by their stable id, then
+trusting a "looks-like-a-mention" render as proof the right person was reached.
+
+**Prevention (enforced in the skill — apply, don't re-derive):**
+- **Resolve the recipient by the QA Owner field's `accountId`, never by the display-name string.** Key
+  the roster on that id; the name is only a label to print, never the lookup key.
+- **Fail closed.** If the accountId has no roster entry, or the resolved chat-id can't be tied back to
+  that same person → **do not send**: ask the user (interactive) or mark the notify Blocked and report
+  (unattended). Never ping a best-guess handle.
+- **The recipient check is mechanical and runs on every path, unattended included** — assert
+  `resolved_id == roster[owner_accountId]` in code before the send call, not a human glance at the
+  dry-run.
+- **Fix the generator, not the message.** A wrong ping means the helper's resolution is wrong — patch
+  the name→id resolution to key on `accountId` and fail closed, then correct the already-posted message
+  in place with a PATCH edit (PM-001: never delete-and-repost).
+- The roster (`accountId` → Discord id) and the webhook are **secrets** — local agent memory /
+  `~/.ols-qa-secrets` only, never either repo.
+- Wired into retest-bug-workflow Step 9 (recipient resolution + pre-notify gate check 5 + MUST/NEVER)
+  and `references/ols-project-guide.md` (Retest-bug QA notify).
