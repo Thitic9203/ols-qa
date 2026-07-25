@@ -5,17 +5,21 @@
 block first; it carries progress, the reusable tooling map, and 9 hard-won gotchas.
 
 ## 🔴 Rule #0 (user, 2026-07-25): finish ALL 14 tickets today
-OLS-225 · OLS-18 ✅ · OLS-33 · OLS-37 · OLS-58 ✅ · OLS-84 · OLS-85 · OLS-205 · OLS-206 · OLS-207 ·
-OLS-209 · OLS-221 · OLS-222 · OLS-226. Done = every non-PASSED case has a real verdict + evidence +
-written to its sheet tab.
+OLS-225 ✅ · OLS-18 ✅ · OLS-33 · OLS-37 (TC_01–09 ✅, TC_10–27 pending) · OLS-58 ✅ · OLS-84 ✅ · OLS-85 ✅ ·
+OLS-205 · OLS-206 · OLS-207 · OLS-209 ✅ · OLS-221 ✅ · OLS-222 ✅ · OLS-226 ✅. Done = every non-PASSED
+case has a real verdict + evidence + written to its sheet tab.
 
-## Progress: 79 / 174 written
+## Progress: 113 / 174 written
 - **G1 OLS-21** (5) + **G2 OLS-18** (16) + **OLS-58** (14) + **G3 OLS-222/209/221** (36) + **G5 OLS-37
-  TC_01–09** (9) done, all written, rollup rebuilt. OLS-37's remaining TC_10–27 (G7/G8) still pending —
-  do not mark OLS-37 done in the Rule #0 list above until those land too.
+  TC_01–09** (9) + **G6 OLS-226/84/85/225** (34) done, all written, rollup pending refresh. OLS-37's
+  remaining TC_10–27 (G7/G8) still pending — do not mark OLS-37 done in the Rule #0 list above until
+  those land too.
 - **Override grant is ACTIVE** (user 2026-07-25): retest + write any testable/human row regardless of
   owner; **preserve QA Remark/Linked-Bug cells** (omit `remark` from sheet_write row objects).
-- Remaining: **G6 running** (OLS-226/84/85/225 badge forms, User-Admin lane), then G4/G7/G8/G9–G11.
+- 🔴 **New rule (2026-07-25, retroactive):** `PASSED WITH MINOR ISSUE` only when the defect classifies
+  Lowest/Low/Medium on the Bug Priority & Severity Matrix (Confluence PLUT `3316318229`); High/Highest
+  → FAILED, never PWMI. State the Priority in the Actual Result.
+- Remaining: **G7/G8 next** (OLS-37 TC_10–27, now unblocked — G6's badges are ready), then G4/G9–G11.
   Full detail + next-action pointer in the private plan's SESSION HANDOFF block.
 
 ## Environment + write scope (unchanged, mandatory)
@@ -45,6 +49,14 @@ written to its sheet tab.
   Active=ปกติ, Inactive=ถูกตัดสิทธิ์.
 - **Badge page** structure captured (8 cols, 4 summary cards, dropdowns, row actions); **5-tab strip is
   not a real element** — the runner investigates group-filtering live.
+- **Badge duplicate-detection keys on (metric, content scope, learning goal, target value), not name** —
+  a copy that only renames still 409s against its own source. OLS-226 TC_04 FAILED on this.
+- **Badge create/edit forms have NO image-upload control at all** (Standalone or Tiered) — fixed 9-icon
+  gallery only, zero `<input type=file>` in the DOM. OLS-84 TC_09/10/11 FAILED, control absent.
+- **OLS-85 TC_11 (Activity has 0 Tiered templates) FAILED** — the Tiered section renders nothing at all
+  for that combination, no empty-state message (verified against raw DOM).
+- **OLS-225 TC_05 re-confirmed FAILED** — bug OLS-289 still `To Do`; same defect, restored the shared
+  fixture badge afterward.
 
 ## Previous WIP (finished)
 TC review/draft batch, 16 tickets: DONE (2026-07-23). Method in `references/ols-project-guide.md` +
