@@ -442,3 +442,41 @@ Image-count checks pass straight through this. Already in memory as `feedback_ji
 - **When a rendering bug is found, fix the generator/template in the same pass as the comment.**
   PM-003 fixed one comment; the template kept emitting the fault for another nine.
 - **Correct posted comments in place** with `PUT …/comment/{id}` — never delete and repost.
+
+### PM-005 — QA-review notify pinged the wrong person: a stale owner name, not the live Jira field (2026-07-25, OLS-248)
+
+**Surface:** the `👤 QA Owner` @mention line of the Discord QA-review / retest notify
+(`discord_qa_notify.py` → the QA thread).
+
+**What happened.** OLS-248's retest notify pinged the *previous* QA Owner (whose Discord name renders
+as an unfamiliar short handle) instead of the current one. Two notifies for tickets with the **same**
+QA Owner rendered two **different** people — that mismatch is the tell that one mention was wrong, not
+merely "a different format". Jira `customfield_12120` had been changed to the current owner **~3 hours
+before** the notify was sent; the send still used the pre-change name. (OLS-203, the earlier notify,
+was correct; only OLS-248 was wrong.)
+
+**Root cause — a cached owner name, resolved with no cross-check.**
+1. **Stale input.** The owner passed to the notifier (`--qa-owner`) came from a cached read / a lagging
+   Sheet cell, not a fresh read of `customfield_12120` at send time. A prose rule ("re-read
+   `customfield_12120`, don't trust memory") already existed and was still violated — a reminder is not
+   a guard.
+2. **The generator trusted the name blindly.** `discord_qa_notify.py` resolved whatever name string it
+   was handed via a local name→id roster and pinged it, with **no** check against the live Jira field.
+   A stale name became a confident, wrong ping — the script did its job; the input was wrong.
+3. **Sent without `--registry`.** So the message was untracked and `sync_qa_owner.py` — the existing
+   net that re-reads Jira and edits the owner line in place when it drifts — could neither detect nor
+   correct it. Registered notifies were protected; this one fell outside.
+
+**Prevention (mechanical, applied — don't re-derive):**
+- **Resolve the ping from the live Jira field by stable accountId.** `discord_qa_notify.py` now takes
+  `--jira-key OLS-<key>`: it re-reads `customfield_12120` at send time, pings by the owner's
+  **accountId** (roster accountId→id map), and **overrides** a disagreeing `--qa-owner`, printing
+  `WARN: passed --qa-owner … != live Jira QA Owner …`. Both bot prompts pass it on every call. The
+  visible name string is never trusted to pick who gets pinged.
+- **`--registry` on every send**, so `sync_qa_owner.py` can reconcile any owner change made *after* the
+  send. An untracked notify now also prints a `WARN`.
+- **Mention identity is the live Jira field, not a name that "looks right".** A name string can be
+  stale, duplicated, or reformatted; the accountId cannot. When two notifies share an owner they must
+  render the same mention — a difference is a bug, never a "format".
+- **Correct a wrong posted notify in place** (webhook `PATCH …/messages/{id}`, owner id only) — never
+  delete and repost.
