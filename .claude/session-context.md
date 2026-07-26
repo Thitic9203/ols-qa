@@ -1,41 +1,39 @@
-# WIP — `/sync-tc-result` build (PLAN v6 · System+Integration LIVE · Unit blocked on user · 2026-07-26)
+# WIP — `/sync-tc-result` (System+Integration LIVE · Unit image = 2 user-clicks away · 2026-07-27)
 
-**อ่านแผนก่อน (private):** https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/2026-07-26-sync-tc-result.md
-**Probe (real ids, gitignored):** `~/GitHub/ols-qa/natty-doc/{validate,validate2,epic_check,probe_v5}.py`
-**Real ids (off-repo):** `~/.ols-qa-secrets/ §5.1` + `~/ols-qa-testing-bot/sync_tc_config.json`. ห้ามเขียน id จริงลงไฟล์ใน repo นี้ (public) — placeholder เท่านั้น.
+**แผน (private):** https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/2026-07-26-sync-tc-result.md
+**Real ids (off-repo):** `~/.ols-qa-secrets/ §5.1` + `~/ols-qa-testing-bot/sync_tc_config.json`. ห้ามเขียน id จริงลง repo นี้ (public) — placeholder เท่านั้น.
 
 ## งาน
-Sync ผลทดสอบ: TC QA source sheet → 3 deliverable (System/Unit/Integration `- 03 OLS`) แยกตาม test type.
-อัตโนมัติทุก 1 ชม. (launchd) + `/sync-tc-result` (ไม่รับ arg). ทุกรอบครบ+ถูก หรือไม่เขียนเลย.
+Sync ผลทดสอบ: QA source sheet → 3 deliverable (System/Integration/Unit `- 03 OLS`) แยกตาม Type.
+launchd ทุก 1 ชม. + `/sync-tc-result`. ทุกรอบครบ+ถูก หรือไม่เขียนเลย (5-layer gate).
 
-## 🟢 สถานะ (2026-07-26 pm)
-- ✅ **System + Integration = APPLIED 10/10 tabs, 0 fail** (`tc_result_sync.py --apply`). rows: SYS GUASE105·LEARNER449·CREATOR428·CONTENT_ADMIN118·SYSTEM_ADMIN91 · INTEG 21·95·100·28·48. seed/template เก่าถูก clear, summary-formula block ล่างเก็บไว้, L5 readback ผ่านทุก tab → 0 restore.
-- ✅ **Item 2** guard: `.gitignore` clasp/oauth; SYS/INTEG/UNIT id → off-repo denylist + `check-no-secrets.sh` HASHES (self-tested: จับ id, clean บน edits). **pending:** hash script-id หลังได้ (item 5).
-- ✅ **Item 3** data files off-repo: `epic_map.json`·`role_lexicon.json`·`subtab_split.json` (61/61 parent mapped, 0 UNMAPPED backbone). title→sheetId resolve live (`resolve_targets`).
-- ✅ **Item 4** `tc_result_sync.py`: dry-run (Phase A) + `--preview` (per-tab block/#REF plan) + `--apply` (Phase B, S+I) รันจริงแล้ว. bucket 165/610/159 · role fallback 3% · 0 STATUS-UNMAPPED.
-- ⏳ **Item 1** gate-0 spike — GAS **เขียน+พร้อมแล้ว** (`docs/tc-result-img/{Code.gs,appsscript.json}`, id-free, committed). **user only:** clasp bring-up (plan §9.2) → set Script Property `SPIKE_FILE_ID` = real Unit-shot Drive fileId → Run **`spike`** → กด **Allow (Drive)** → paste 4 ค่ากลับ: data: accepted? · size cap KB? · thumbnail renders? · **altText marker readback? (finding R1, critical — reconcile พึ่งอันนี้)**. embedUnitImages() finalize จากค่าเหล่านี้.
-- ⏳ **Item 5** Code.gs = `spike()` final + `embedUnitImages()` **skeleton PENDING SPIKE** (constants `SIZE_CAP_KB`/`USE_THUMBNAIL` = 0/null จน spike ตอบ). Python Unit-upsert (manifest `_img_manifest` + col N + lease) **ยังไม่สร้าง** — coupled กับ marker-readback contract → รอ spike ยืนยันก่อน (plan บังคับ gate-0 ก่อน commit method).
-- ⏳ **Item 6** Unit `--apply` (keyed upsert col N) — หลัง item 1/5.
-- ⏳ **Item 7** plist ทุก 1 ชม. + `commands/sync-tc-result.md`.
-- ⏳ **Item 8** update `references/ols-project-guide.md` (placeholder) + merge md → main.
+## 🟢 สถานะ
+- ✅ **System + Integration = LIVE** (`tc_result_sync.py --apply`, 10/10 tabs, verified, 0 restore, #REF repaired ×3). rows SYS 105·449·428·118·91 · INTEG 21·95·100·28·48.
+- ✅ **Items 2,3,4,7,8 done** · guide+command+guard+plist(staged OFF)+GAS ทั้งหมด committed→main.
+- 🟡 **Unit image (item 1/5)** — โค้ดเสร็จหมด รอ user click:
+  - GAS committed `docs/tc-result-img/{Code.gs,appsscript.json}`: real DriveApp embed by fileId · `authorizeAndRun()` = one-shot (self-test in-cell render → embed all → install hourly trigger) · owns col I เท่านั้น · scopes = spreadsheets + drive.readonly.
+  - Python matcher `tc_img_manifest.py` **สร้าง+dry-run แล้ว**: match Unit case → Drive Capture evidence (จับ TCID ปนๆ: `TC03_`, `TC_17_`, subfolder `TC_13/`, ER suffix). **coverage ~63% (73/116 · 43 no-file-match** = ไฟล์ไม่ตั้งชื่อตาม TCID หรือไม่มี shot ราย TC). manifest JSON: `~/ols-qa-testing-bot/logs/tc_img_manifest.json`.
+  - clasp = local 3.3.0 (`~/ols-qa-gas-tc-img/`, `npm i` แล้ว), login ค้างตั้งแต่ 24 Jul (valid).
+- 🔴 **Item 6 (Unit write) ยังไม่สร้าง** — `tc_result_sync.apply()` = S+I เท่านั้น. ต้องเพิ่ม Unit upsert (write A–H,J–N keyed col N + hidden `_img_manifest` tab จาก manifest JSON) — **production write, ต้อง approve**.
 
-## Write model (จาก DECISION user: rebuild-from-source, seed ทิ้งได้, เราเป็นเจ้าของ 3 sheet)
-- **Sys/Integ = rebuild ทุกรอบ:** เขียน data row 2..N sorted (natkey) + timestamp col H (เฉพาะ row ที่ tested) + hidden key col K (`ticket|TCID`) · **clear seed/template tail** ใต้ data ถึงก่อน formula-block · **KEEP** bottom QA summary-formula block · **repair** System `=COUNTIF(#REF!,"ไม่ผ่าน")` → mirror passed-count G-range (3 tab: LEARNER/CREATOR/CONTENT_ADMIN; GUASE/SYSTEM_ADMIN ไม่ต้อง). Integration formula ไม่มี #REF ไม่แตะ.
-- **Unit = keyed upsert** (hidden key col N) ให้ CellImage col I ติดแถว — via Apps Script (item 5).
-- 5-layer fail-closed gate ต่อ tab (L0 snapshot→L2 re-derive status/key→L3 pre-structure→write RAW+clear+fix→L5 readback, restore-on-fail). snapshot → `~/ols-qa-testing-bot/logs/tc_result_sync_snap/`.
+## 🔴 morning: 2 user clicks (Google security — AI ทำแทนไม่ได้ ทั้งคู่)
+1. **เปิด Apps Script API:** `script.google.com/home/usersettings` → toggle **ON** → บอก AI "done"
+2. AI: (a) เขียน Unit rows + `_img_manifest` ลง Unit sheet [**approve production write ก่อน**] (b) `clasp create-script --type sheets --parentId <UNIT>` + `clasp push` (headless, ได้หลัง API on)
+3. **Run `authorizeAndRun` → กด Allow** (Unit sheet ▸ Extensions ▸ Apps Script) → self-test เช็ค in-cell render → embed รูป + ตั้ง trigger ราย ชม.
+   - ⚠️ **data-URL-in-CellImage render ยังไม่ยืนยัน** (finding R1). self-test ตอบตอน Run ครั้งแรก. ถ้า fail → fallback = `insertImage()` over-cell (พิมพ์ได้ แต่ไม่ติด cell เป๊ะ).
+- เหตุผลต้องปริ้นได้ → **ต้องรูป inline จริง** (ลิงก์ปริ้นไม่ออก) = user ยืนยัน 27 Jul.
 
-## NOTES / open decisions
-- **Integration failed-count quirk (surfaced, ไม่แก้):** ทั้ง 5 Integration tab failed-count เริ่ม `G11/G15` ไม่ใช่ `G2` (customer template quirk, ไม่ใช่ #REF) → ปล่อยไว้. ถ้าจะแก้ต้อง user เคาะ (แตะ formula ลูกค้า).
-- **D9 Badge 14** unmapped (OLS-225 ×5 config→เสนอ TC012 · OLS-37 ×9 engine→TC011/TC012) — report-only default, ยังไม่บล็อก. รวม unmapped 49 = 35 no-TOR (Profile23·Course6·LP6) + 14 Badge.
-- **D1** Unit TESTING/SKIPPED = 0 เคส → default (TESTING→Not Started, SKIPPED→N/A) ไม่มีผลจริง.
+## Write model (S+I, live)
+rebuild data row 2..N sorted + timestamp tested rows + hidden key col K · clear seed/template tail ถึงก่อน formula-block · **KEEP** bottom QA summary-formula block · **repair** System `=COUNTIF(#REF!,…)` → mirror passed-count G-range. Integration failed-count เริ่ม G11/G15 (customer quirk, ไม่แตะ). snapshot `logs/tc_result_sync_snap/`.
 
-## รอ user (เหลือ)
-1. **clasp + Drive consent** (item 1) — Unit images เท่านั้น. Sys/Integ ไม่ต้องรอ (live แล้ว).
-2. D9 Badge 14 (report-only default ได้ ถ้าไม่เคาะ).
+## เปิดค้าง / decisions
+- **D9 Badge 14** unmapped (OLS-225 ×5 · OLS-37 ×9) — report-only default ได้.
+- **arm auto ทุก 1 ชม.?** plist staged OFF (`~/Library/LaunchAgents/…ols-tc-result-sync.plist.disabled-2026-07-26`). S+I only จน Unit เสร็จ.
+- unmatched Unit 43 เคส: ไม่มีรูป auto — อาจต้อง manual link หรือยอมรับ col I ว่างเคสนั้น.
+- **Drive scope discovery:** `.gcp-oauth.json` = full `auth/drive` (แผน §6 บอก "Sheets-only" ผิด) → Python อ่าน/เขียน Drive+Sheets ได้หมด. แต่ base64 data-URL ใหญ่เกิน cell 50k → script ยังต้อง DriveApp fetch เอง (เลยต้อง drive.readonly consent).
 
 ## Reuse (`~/ols-qa-testing-bot/`)
-`progress_build.py` (gtok·meta·batch_get·values_batch_update·norm_status·hdr_col·a1col·LABELS) · `sheet_write.py` (plan·snapshot·write_row RAW) · `sheet_guard.py` (Gate).
-⚠️ `values_batch_update` default USER_ENTERED → บังคับ RAW. Unit tabs = plain grid. `norm_status` คืน "" ทั้ง blank+unknown → แยกเองด้วย raw (blank→NOT STARTED, non-empty→STATUS-UNMAPPED).
+`progress_build.py`(gtok·meta·batch_get·values_batch_update·norm_status·hdr_col·LABELS) · `sheet_write.py` · `sheet_guard.py` · `drive_upload.py`(mint_token·list_folder — full drive scope). ⚠️ batch_update default USER_ENTERED → RAW. `norm_status` คืน "" ทั้ง blank+unknown.
 
 ## Prior WIP (เสร็จ)
-Lot2 non-PASSED retest = COMPLETE (174/174). archive: `natty-doc/ols-lot2-nonpassed-retest-24jul.md`
+Lot2 non-PASSED retest COMPLETE (174/174). archive `natty-doc/ols-lot2-nonpassed-retest-24jul.md`.
