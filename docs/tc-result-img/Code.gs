@@ -20,7 +20,8 @@ var COL_N = 14;                    // hidden Python key `ticket|TCID` — the ro
 var MANIFEST_TAB = "_img_manifest"; // hidden: A ticket · B TCID · C fileId · D extraIds(csv) · F1 lease
 var LEASE_CELL   = "F1";           // "writing" (Python) | "embedding" (this) | "idle"
 var TC_TAB_RE    = /^TC0\d\d\b/;   // Unit function tabs; excludes TOR / "…ตัวอย่าง"
-var SIZE_CAP_KB  = 800;            // blobs larger than this fall back to getThumbnail()
+var COL_I_WIDTH  = 470;            // px: Actual-Result column width = image display width
+var TBC_TEXT     = "TBC – จะแนบภาพหลักฐานหลังทดสอบผ่าน";  // non-passed rows (evidence pending pass)
 
 // ── THE single entry the user runs once (authorizes + embeds + installs trigger) ──────────
 function authorizeAndRun() {
@@ -29,8 +30,9 @@ function authorizeAndRun() {
                 : "self-test: in-cell data-URL image DID NOT render ✗ — see log; NOT embedding (tell the dev).");
   if (!ok) return;
   var n = embedUnitImages();
-  installHourlyTrigger();
-  Logger.log("DONE — embedded/updated " + n + " image(s); hourly trigger installed. You never need to run this again.");
+  try { installHourlyTrigger(); Logger.log("hourly trigger installed."); }
+  catch (e) { Logger.log("WARN: trigger not installed (" + e + ") — image embed still works; harmless."); }
+  Logger.log("DONE — embedded/updated " + n + " image(s).");
 }
 
 // ── self-test (plan §6.1 / finding R1): does newCellImage(dataUrl) render + read back in-cell? ─
@@ -61,30 +63,34 @@ function selfTestInCellImage() {
 function embedUnitImages() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   if (!_leaseAcquire(ss)) { Logger.log("Python holds the lease (writing) — skip this round."); return 0; }
-  var count = 0;
+  var count = 0, tbc = 0;
   try {
     var man = _manifest(ss);
     ss.getSheets().forEach(function (sh) {
       if (!TC_TAB_RE.test(sh.getName())) return;
       var last = sh.getLastRow();
       if (last < 2) return;
+      sh.setColumnWidth(COL_I, COL_I_WIDTH);
       var keys = sh.getRange(2, COL_N, last - 1, 1).getValues();
       var cur  = sh.getRange(2, COL_I, last - 1, 1).getValues();
       for (var r = 0; r < keys.length; r++) {
         var key = String(keys[r][0] || "").trim();
-        var want = key ? man[key] : null;
-        var haveImg = cur[r][0] && cur[r][0].valueType === SpreadsheetApp.ValueType.IMAGE;
-        var marker = haveImg ? cur[r][0].getAltTextDescription() : null;
-        if (!want || !want.fileId) { if (haveImg) sh.getRange(r + 2, COL_I).clearContent(); continue; }
-        if (marker === want.fileId) continue;                       // unchanged → skip, no re-download
-        _embed(sh.getRange(r + 2, COL_I), want.fileId);
-        if (want.extras && want.extras.length) {                    // §6.4 multi-file → links in a note
-          sh.getRange(r + 2, COL_I).setNote("More evidence:\n" +
-            want.extras.map(function (id) { return "https://drive.google.com/file/d/" + id + "/view"; }).join("\n"));
+        if (!key) continue;                                         // label / blank row — never touch
+        var want = man[key];
+        var cell = sh.getRange(r + 2, COL_I);
+        var isImg = cur[r][0] && cur[r][0].valueType === SpreadsheetApp.ValueType.IMAGE;
+        if (want && want.fileId) {                                  // PASSED + evidence → image
+          var marker = isImg ? cur[r][0].getAltTextDescription() : null;
+          if (marker !== want.fileId) { _embed(cell, want.fileId); count++; }
+          if (want.rowH) sh.setRowHeight(r + 2, want.rowH);         // readable height (from manifest)
+        } else {                                                    // not passed / no image → TBC
+          if (isImg) cell.clearContent();
+          if (String(isImg ? "" : (cur[r][0] || "")).trim() !== TBC_TEXT) cell.setValue(TBC_TEXT);
+          tbc++;
         }
-        count++;
       }
     });
+    Logger.log("embed: " + count + " image(s) set, " + tbc + " TBC cell(s).");
   } finally {
     _leaseRelease(ss);
   }
@@ -95,21 +101,17 @@ function embedUnitImages() {
 function _manifest(ss) {
   var sh = ss.getSheetByName(MANIFEST_TAB), out = {};
   if (!sh || sh.getLastRow() < 2) return out;
-  var v = sh.getRange(2, 1, sh.getLastRow() - 1, 4).getValues();    // ticket, TCID, fileId, extraIds(csv)
+  var v = sh.getRange(2, 1, sh.getLastRow() - 1, 5).getValues();    // ticket, TCID, fileId, extra, rowH
   v.forEach(function (row) {
     var key = String(row[0]).trim() + "|" + String(row[1]).trim();
-    out[key] = { fileId: String(row[2] || "").trim(),
-                 extras: String(row[3] || "").split(/[,\s]+/).filter(String) };
+    out[key] = { fileId: String(row[2] || "").trim(), rowH: Number(row[4]) || 0 };
   });
   return out;
 }
 
 function _embed(range, fileId) {
-  var file = DriveApp.getFileById(fileId);
-  var blob = file.getBlob();
-  if (Math.round(blob.getBytes().length / 1024) > SIZE_CAP_KB) {
-    try { var t = file.getThumbnail(); if (t) blob = t; } catch (e) { /* keep full */ }
-  }
+  // full-resolution blob (composite is already width-normalized by Python) → crisp in-cell image
+  var blob = DriveApp.getFileById(fileId).getBlob();
   var dataUrl = "data:" + blob.getContentType() + ";base64," + Utilities.base64Encode(blob.getBytes());
   range.setValue(SpreadsheetApp.newCellImage().setSourceUrl(dataUrl).setAltTextDescription(fileId).build());
 }

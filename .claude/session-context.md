@@ -1,39 +1,39 @@
-# WIP — `/sync-tc-result` (System+Integration LIVE · Unit image = 2 user-clicks away · 2026-07-27)
+# WIP — `/sync-tc-result` (System+Integration LIVE · Unit rows+images DONE · 2026-07-27)
 
 **แผน (private):** https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/2026-07-26-sync-tc-result.md
-**Real ids (off-repo):** `~/.ols-qa-secrets/ §5.1` + `~/ols-qa-testing-bot/sync_tc_config.json`. ห้ามเขียน id จริงลง repo นี้ (public) — placeholder เท่านั้น.
+**Real ids off-repo:** `~/.ols-qa-secrets/ §5.1` · `~/ols-qa-testing-bot/sync_tc_config.json`. Repo นี้ public → placeholder เท่านั้น.
 
-## งาน
-Sync ผลทดสอบ: QA source sheet → 3 deliverable (System/Integration/Unit `- 03 OLS`) แยกตาม Type.
-launchd ทุก 1 ชม. + `/sync-tc-result`. ทุกรอบครบ+ถูก หรือไม่เขียนเลย (5-layer gate).
+## 🟢 สถานะ (ทำเสร็จคืน 26→27 Jul, user ไปนอน สั่งทำครบเอง)
+- ✅ **System + Integration = LIVE** (10/10 tabs, verified, #REF repaired).
+- ✅ **Unit deliverable = เขียนครบ**: `unit_apply.py --write` → **116 rows / 9 tabs** (TC001·002·004·005·006·007·008·010·012). cols A–N, Python owns A–H+J–N, Apps Script owns col I.
+- ✅ **รูป Unit**: matcher `tc_img_manifest.py` → **manifest 66 images** (Passed/PWMI + มีรูป ER); multi-shot → **composite แนวตั้ง gray-gap** (Pillow) → `_composites` folder (33 ไฟล์); rowH คำนวณให้อ่านออก. Apps Script `<UNIT_SCRIPT_ID>` (owner <QA_ACCOUNT>) push แล้ว + **hourly trigger ติดตั้ง** → embed col I (idempotent marker-skip, self-heal ข้ามรอบ). data-URL render + marker readback = **พิสูจน์แล้ว** (TC012 user เห็นรูปจริง).
+- 🔎 **ยัง verify ไม่ได้ = image RENDER ครบ 66**: Sheets REST API มองไม่เห็น CellImage (คืน {} เสมอ) + รัน Apps Script เองไม่ได้ → ต้อง**ดูตา** หรือ run `verifyImages` (ยังไม่เขียน). trigger จะ embed ให้ภายในไม่กี่รอบ ชม.
 
-## 🟢 สถานะ
-- ✅ **System + Integration = LIVE** (`tc_result_sync.py --apply`, 10/10 tabs, verified, 0 restore, #REF repaired ×3). rows SYS 105·449·428·118·91 · INTEG 21·95·100·28·48.
-- ✅ **Items 2,3,4,7,8 done** · guide+command+guard+plist(staged OFF)+GAS ทั้งหมด committed→main.
-- 🟡 **Unit image (item 1/5)** — โค้ดเสร็จหมด รอ user click:
-  - GAS committed `docs/tc-result-img/{Code.gs,appsscript.json}`: real DriveApp embed by fileId · `authorizeAndRun()` = one-shot (self-test in-cell render → embed all → install hourly trigger) · owns col I เท่านั้น · scopes = spreadsheets + drive.readonly.
-  - Python matcher `tc_img_manifest.py` **สร้าง+dry-run แล้ว**: match Unit case → Drive Capture evidence (จับ TCID ปนๆ: `TC03_`, `TC_17_`, subfolder `TC_13/`, ER suffix). **coverage ~63% (73/116 · 43 no-file-match** = ไฟล์ไม่ตั้งชื่อตาม TCID หรือไม่มี shot ราย TC). manifest JSON: `~/ols-qa-testing-bot/logs/tc_img_manifest.json`.
-  - clasp = local 3.3.0 (`~/ols-qa-gas-tc-img/`, `npm i` แล้ว), login ค้างตั้งแต่ 24 Jul (valid).
-- 🔴 **Item 6 (Unit write) ยังไม่สร้าง** — `tc_result_sync.apply()` = S+I เท่านั้น. ต้องเพิ่ม Unit upsert (write A–H,J–N keyed col N + hidden `_img_manifest` tab จาก manifest JSON) — **production write, ต้อง approve**.
+## Logic (เคาะกับ user)
+- **Image** เฉพาะ `Passed`/`Passed with minor` + มีรูป ER. หลายรูป → ต่อแนวตั้ง gray-gap เป็นรูปเดียว. อื่น → script เขียน **TBC** ("TBC – จะแนบภาพหลักฐานหลังทดสอบผ่าน") ใน col I.
+- **K Test Date** = createdTime ไฟล์รูป (วัน capture) DD/MM/YYYY สำหรับ tested (Passed/PWMI/Failed มีรูป); **cell-history API เข้าไม่ได้** (Drive Activity 403 · revisions เหลือ 1 pruned) → capture date จริงสุดที่ได้. ไม่มีรูป/ยังไม่เทส/ข้าม/blocked → **TBC**.
+- **L Test By** = QA owner ชื่อแรกอังกฤษ (source col K → `Firstname` (ต.ย.); ตัด `.k`/`(Nick)`); not-tested → TBC.
+- Row layout = flat rebuild (label rows "Function:/Sub Function:" เดิมถูก unmerge ทิ้ง — decision "we own"). C=Test Title · D=Acceptance Criteria (source ไม่มี Scenario/Description แยก) · B Sub Function = ว่าง.
 
-## 🔴 morning: 2 user clicks (Google security — AI ทำแทนไม่ได้ ทั้งคู่)
-1. **เปิด Apps Script API:** `script.google.com/home/usersettings` → toggle **ON** → บอก AI "done"
-2. AI: (a) เขียน Unit rows + `_img_manifest` ลง Unit sheet [**approve production write ก่อน**] (b) `clasp create-script --type sheets --parentId <UNIT>` + `clasp push` (headless, ได้หลัง API on)
-3. **Run `authorizeAndRun` → กด Allow** (Unit sheet ▸ Extensions ▸ Apps Script) → self-test เช็ค in-cell render → embed รูป + ตั้ง trigger ราย ชม.
-   - ⚠️ **data-URL-in-CellImage render ยังไม่ยืนยัน** (finding R1). self-test ตอบตอน Run ครั้งแรก. ถ้า fail → fallback = `insertImage()` over-cell (พิมพ์ได้ แต่ไม่ติด cell เป๊ะ).
-- เหตุผลต้องปริ้นได้ → **ต้องรูป inline จริง** (ลิงก์ปริ้นไม่ออก) = user ยืนยัน 27 Jul.
+## Bugs แก้แล้ว (systematic-debug, ไม่เดา)
+1. **merged-cell collapse** — Unit tabs มี merged band (Function/Sub-Function label เดิม) → เขียนลง merged row ยุบเหลือ top-left = ว่าง. Fix: `unmergeCells` ก่อนเขียน.
+2. **URL 404 บน tab มี `/`** (TC007) — `urllib.parse.quote` default `safe='/'` ไม่ encode `/` → path พัง. Fix: `safe=''`.
+3. **owner `.k`** — email handle → ตัด `.`/`@`/`,` ด้วย.
 
-## Write model (S+I, live)
-rebuild data row 2..N sorted + timestamp tested rows + hidden key col K · clear seed/template tail ถึงก่อน formula-block · **KEEP** bottom QA summary-formula block · **repair** System `=COUNTIF(#REF!,…)` → mirror passed-count G-range. Integration failed-count เริ่ม G11/G15 (customer quirk, ไม่แตะ). snapshot `logs/tc_result_sync_snap/`.
+## Off-repo tools (`~/ols-qa-testing-bot/`)
+- `unit_apply.py` — orchestrator (route→evidence→date→composite→write rows+manifest). `--write` / `--tab TC0NN`.
+- `tc_img_manifest.py` — matcher (confidence HIGH/MULTI/FOLDER, correctness-first) + composite (Pillow, W=460, gray gap 22, rowH cap 1400).
+- `tc_result_sync.py` — route/S+I apply (เพิ่ม `ac`,`owner` ใน placement).
+- clasp login = <QA_ACCOUNT> (`~/.clasprc.json`); push ผ่าน **Apps Script API ตรง** (clasp CLI 3.3.0 token bug → 404, ใช้ API `projects/{id}/content` แทน).
 
-## เปิดค้าง / decisions
-- **D9 Badge 14** unmapped (OLS-225 ×5 · OLS-37 ×9) — report-only default ได้.
-- **arm auto ทุก 1 ชม.?** plist staged OFF (`~/Library/LaunchAgents/…ols-tc-result-sync.plist.disabled-2026-07-26`). S+I only จน Unit เสร็จ.
-- unmatched Unit 43 เคส: ไม่มีรูป auto — อาจต้อง manual link หรือยอมรับ col I ว่างเคสนั้น.
-- **Drive scope discovery:** `.gcp-oauth.json` = full `auth/drive` (แผน §6 บอก "Sheets-only" ผิด) → Python อ่าน/เขียน Drive+Sheets ได้หมด. แต่ base64 data-URL ใหญ่เกิน cell 50k → script ยังต้อง DriveApp fetch เอง (เลยต้อง drive.readonly consent).
+## Shares ที่ทำ (ผ่าน <DRIVE_OWNER> .gcp-oauth = เจ้าของ)
+Capture folder + Unit sheet → share ให้ **<QA_ACCOUNT>** (script รันเป็น qa ต้องเข้าถึงรูป+sheet). `_composites` folder อยู่ใน Capture root → qa inherit.
 
-## Reuse (`~/ols-qa-testing-bot/`)
-`progress_build.py`(gtok·meta·batch_get·values_batch_update·norm_status·hdr_col·LABELS) · `sheet_write.py` · `sheet_guard.py` · `drive_upload.py`(mint_token·list_folder — full drive scope). ⚠️ batch_update default USER_ENTERED → RAW. `norm_status` คืน "" ทั้ง blank+unknown.
+## เหลือ / ควรทำต่อ
+- **ดูรูปจริง** ว่า embed ครบ 66 + ขนาด/gap โอเค (user เห็น TC012 แล้ว OK).
+- Content ยังหยาบ: B Sub Function ว่าง · C/D = Title/AC. ถ้าลูกค้าอยากได้ grouping → refine.
+- Image coverage ~63% (unmatched passed → TBC date + no image; naming ไฟล์ Drive ปนกัน). 43 เคสไม่มีรูป auto.
+- Sys/Integ automation plist staged OFF · commit code files · D9 Badge 14 (report-only).
 
 ## Prior WIP (เสร็จ)
 Lot2 non-PASSED retest COMPLETE (174/174). archive `natty-doc/ols-lot2-nonpassed-retest-24jul.md`.
