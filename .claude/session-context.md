@@ -13,8 +13,8 @@ Sync ผลทดสอบ: TC QA source sheet → 3 deliverable (System/Unit/In
 - ✅ **Item 2** guard: `.gitignore` clasp/oauth; SYS/INTEG/UNIT id → off-repo denylist + `check-no-secrets.sh` HASHES (self-tested: จับ id, clean บน edits). **pending:** hash script-id หลังได้ (item 5).
 - ✅ **Item 3** data files off-repo: `epic_map.json`·`role_lexicon.json`·`subtab_split.json` (61/61 parent mapped, 0 UNMAPPED backbone). title→sheetId resolve live (`resolve_targets`).
 - ✅ **Item 4** `tc_result_sync.py`: dry-run (Phase A) + `--preview` (per-tab block/#REF plan) + `--apply` (Phase B, S+I) รันจริงแล้ว. bucket 165/610/159 · role fallback 3% · 0 STATUS-UNMAPPED.
-- ⏳ **Item 1** gate-0 image — **user only:** `clasp login` + Run `embedUnitImages` + กด **Allow (Drive)** (OAuth, AI ทำแทนไม่ได้).
-- ⏳ **Item 5** Code.gs+appsscript.json+trigger (Unit CellImage) — หลัง item 1.
+- ⏳ **Item 1** gate-0 spike — GAS **เขียน+พร้อมแล้ว** (`docs/tc-result-img/{Code.gs,appsscript.json}`, id-free, committed). **user only:** clasp bring-up (plan §9.2) → set Script Property `SPIKE_FILE_ID` = real Unit-shot Drive fileId → Run **`spike`** → กด **Allow (Drive)** → paste 4 ค่ากลับ: data: accepted? · size cap KB? · thumbnail renders? · **altText marker readback? (finding R1, critical — reconcile พึ่งอันนี้)**. embedUnitImages() finalize จากค่าเหล่านี้.
+- ⏳ **Item 5** Code.gs = `spike()` final + `embedUnitImages()` **skeleton PENDING SPIKE** (constants `SIZE_CAP_KB`/`USE_THUMBNAIL` = 0/null จน spike ตอบ). Python Unit-upsert (manifest `_img_manifest` + col N + lease) **ยังไม่สร้าง** — coupled กับ marker-readback contract → รอ spike ยืนยันก่อน (plan บังคับ gate-0 ก่อน commit method).
 - ⏳ **Item 6** Unit `--apply` (keyed upsert col N) — หลัง item 1/5.
 - ⏳ **Item 7** plist ทุก 1 ชม. + `commands/sync-tc-result.md`.
 - ⏳ **Item 8** update `references/ols-project-guide.md` (placeholder) + merge md → main.
