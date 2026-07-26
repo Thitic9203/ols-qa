@@ -15,6 +15,16 @@ __pycache__/
 .env
 .env.*
 
+# --- Apps Script / clasp + OAuth material (belongs off-repo; never commit) ---
+# (appsscript.json is generic — no ids — and stays COMMITTABLE; do NOT ignore it)
+.clasp.json
+.clasprc.json
+.gcp-oauth.json
+.gcp-sa.json
+.jira_token
+.sheet_tok
+/ols-qa-gas-tc-img/
+
 # --- stray capture output at repo root (never intentional) ---
 /*.png
 /*.jpg

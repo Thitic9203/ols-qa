@@ -1,68 +1,41 @@
-# WIP — Regression Lot2 non-PASSED retest (✅ COMPLETE, 2026-07-25)
+# WIP — `/sync-tc-result` build (PLAN v6 · System+Integration LIVE · Unit blocked on user · 2026-07-26)
 
-**Active plan + living results + full handoff:** `continue/ols-lot2-nonpassed-retest-24jul.md` in the
-**private** `ols-qa-evidence` repo. It has a **🧭 SESSION HANDOFF** block at the top — read that whole
-block first; it carries progress, the reusable tooling map, and 9 hard-won gotchas.
+**อ่านแผนก่อน (private):** https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/2026-07-26-sync-tc-result.md
+**Probe (real ids, gitignored):** `~/GitHub/ols-qa/natty-doc/{validate,validate2,epic_check,probe_v5}.py`
+**Real ids (off-repo):** `~/.ols-qa-secrets/ §5.1` + `~/ols-qa-testing-bot/sync_tc_config.json`. ห้ามเขียน id จริงลงไฟล์ใน repo นี้ (public) — placeholder เท่านั้น.
 
-## ✅ Rule #0 (user, 2026-07-25): finish ALL 14 tickets today — DONE
-OLS-225 ✅ · OLS-18 ✅ · OLS-33 ✅ · OLS-37 ✅ (all 27) · OLS-58 ✅ · OLS-84 ✅ · OLS-85 ✅ ·
-OLS-205 ✅ · OLS-206 ✅ · OLS-207 ✅ · OLS-209 ✅ · OLS-221 ✅ · OLS-222 ✅ · OLS-226 ✅. Every non-PASSED
-case has a real verdict + evidence + written to its sheet tab. **0 cases left NOT STARTED.**
+## งาน
+Sync ผลทดสอบ: TC QA source sheet → 3 deliverable (System/Unit/Integration `- 03 OLS`) แยกตาม test type.
+อัตโนมัติทุก 1 ชม. (launchd) + `/sync-tc-result` (ไม่รับ arg). ทุกรอบครบ+ถูก หรือไม่เขียนเลย.
 
-## ✅ Progress: 174 / 174 — COMPLETE (92 PASSED · 12 PWMI · 27 FAILED · 48 BLOCKED)
-- Open items for the user (see plan §FINAL): fresh bugs for the 27 FAILED (esp. the triangulated
-  missing-live-stats defect: OLS-33 TC_04/10 + OLS-206 TC_05 + OLS-207 TC_05); roster fix (petsri =
-  Content Admin, not Learner+Creator); `[QA TEST]` badge cleanup on boripot; BLOCKED cases needing
-  dev / a 2nd learner account / a real (non-headless) browser.
-- **G1 OLS-21** (5) + **G2 OLS-18** (16) + **OLS-58** (14) + **G3 OLS-222/209/221** (36) + **G5 OLS-37
-  TC_01–09** (9) + **G6 OLS-226/84/85/225** (34) + **G4 OLS-207** (11) + **G7/G8 OLS-37 TC_10–27** (18) +
-  **Live G9/G10/G11 OLS-33/205/206** (29) — all done, all written, rollup refreshed. OLS-37's
-  remaining TC_10–27 (G7/G8) still pending — do not mark OLS-37 done in the Rule #0 list above until
-  those land too.
-- **Override grant is ACTIVE** (user 2026-07-25): retest + write any testable/human row regardless of
-  owner; **preserve QA Remark/Linked-Bug cells** (omit `remark` from sheet_write row objects).
-- 🔴 **New rule (2026-07-25, retroactive):** `PASSED WITH MINOR ISSUE` only when the defect classifies
-  Lowest/Low/Medium on the Bug Priority & Severity Matrix (Confluence PLUT `3316318229`); High/Highest
-  → FAILED, never PWMI. State the Priority in the Actual Result.
-- Remaining: **G7/G8 next** (OLS-37 TC_10–27, now unblocked — G6's badges are ready), then G4/G9–G11.
-  Full detail + next-action pointer in the private plan's SESSION HANDOFF block.
+## 🟢 สถานะ (2026-07-26 pm)
+- ✅ **System + Integration = APPLIED 10/10 tabs, 0 fail** (`tc_result_sync.py --apply`). rows: SYS GUASE105·LEARNER449·CREATOR428·CONTENT_ADMIN118·SYSTEM_ADMIN91 · INTEG 21·95·100·28·48. seed/template เก่าถูก clear, summary-formula block ล่างเก็บไว้, L5 readback ผ่านทุก tab → 0 restore.
+- ✅ **Item 2** guard: `.gitignore` clasp/oauth; SYS/INTEG/UNIT id → off-repo denylist + `check-no-secrets.sh` HASHES (self-tested: จับ id, clean บน edits). **pending:** hash script-id หลังได้ (item 5).
+- ✅ **Item 3** data files off-repo: `epic_map.json`·`role_lexicon.json`·`subtab_split.json` (61/61 parent mapped, 0 UNMAPPED backbone). title→sheetId resolve live (`resolve_targets`).
+- ✅ **Item 4** `tc_result_sync.py`: dry-run (Phase A) + `--preview` (per-tab block/#REF plan) + `--apply` (Phase B, S+I) รันจริงแล้ว. bucket 165/610/159 · role fallback 3% · 0 STATUS-UNMAPPED.
+- ⏳ **Item 1** gate-0 image — **user only:** `clasp login` + Run `embedUnitImages` + กด **Allow (Drive)** (OAuth, AI ทำแทนไม่ได้).
+- ⏳ **Item 5** Code.gs+appsscript.json+trigger (Unit CellImage) — หลัง item 1.
+- ⏳ **Item 6** Unit `--apply` (keyed upsert col N) — หลัง item 1/5.
+- ⏳ **Item 7** plist ทุก 1 ชม. + `commands/sync-tc-result.md`.
+- ⏳ **Item 8** update `references/ols-project-guide.md` (placeholder) + merge md → main.
 
-## Environment + write scope (unchanged, mandatory)
-- **Dev only** (`<DEV_HOST>`, VPN up). Never pre-prod/staging/prod. Pre-prod evidence can't close a case.
-- Write **Sheet + Drive only**. Jira read-only except `READY TO TEST → TESTING`. No Jira comment, no
-  bug opened, no Discord.
-- Always headless. No screen hijack.
+## Write model (จาก DECISION user: rebuild-from-source, seed ทิ้งได้, เราเป็นเจ้าของ 3 sheet)
+- **Sys/Integ = rebuild ทุกรอบ:** เขียน data row 2..N sorted (natkey) + timestamp col H (เฉพาะ row ที่ tested) + hidden key col K (`ticket|TCID`) · **clear seed/template tail** ใต้ data ถึงก่อน formula-block · **KEEP** bottom QA summary-formula block · **repair** System `=COUNTIF(#REF!,"ไม่ผ่าน")` → mirror passed-count G-range (3 tab: LEARNER/CREATOR/CONTENT_ADMIN; GUASE/SYSTEM_ADMIN ไม่ต้อง). Integration formula ไม่มี #REF ไม่แตะ.
+- **Unit = keyed upsert** (hidden key col N) ให้ CellImage col I ติดแถว — via Apps Script (item 5).
+- 5-layer fail-closed gate ต่อ tab (L0 snapshot→L2 re-derive status/key→L3 pre-structure→write RAW+clear+fix→L5 readback, restore-on-fail). snapshot → `~/ols-qa-testing-bot/logs/tc_result_sync_snap/`.
 
-## Must-not-miss (full list in the plan's handoff block)
-- **TLS:** Bitdefender re-signs TLS → node/curl need `NODE_EXTRA_CA_CERTS=~/ols-qa-testing-bot/certs/ca-bundle.pem`
-  (set by `capture/lot2_env.js`). Chromium is fine. Never `-k`.
-- **Login is proven sound (16/16)**; "did not land" = transient blip; `rotate()` retries. Don't rewrite login.
-- **`automatetanapoom.int0909_stg68` (User Admin)** is the only account that opens `/admin/achievement`
-  + `/admin/user`. Content Admin = creator-only (403). `test.sys*` rotate last.
-- **Detect the login drawer structurally** (role=dialog + iframe `/sign-in/embed`), never by Thai text —
-  it's titled "เข้าสู่ระบบ", not "กรุณาเข้าสู่ระบบ" (real wording gap, OLS-21 TC_12/14).
-- **sheet_write.py:** links go in `links` field, not `capture`; `--dry-run` first; then
-  `progress_build.py --apply` to refresh the rollup. Secret guard flags `.go.th` — name gov hosts
-  generically. `ols-qa-evidence` has no pre-commit hook (task spawned to add one).
+## NOTES / open decisions
+- **Integration failed-count quirk (surfaced, ไม่แก้):** ทั้ง 5 Integration tab failed-count เริ่ม `G11/G15` ไม่ใช่ `G2` (customer template quirk, ไม่ใช่ #REF) → ปล่อยไว้. ถ้าจะแก้ต้อง user เคาะ (แตะ formula ลูกค้า).
+- **D9 Badge 14** unmapped (OLS-225 ×5 config→เสนอ TC012 · OLS-37 ×9 engine→TC011/TC012) — report-only default, ยังไม่บล็อก. รวม unmapped 49 = 35 no-TOR (Profile23·Course6·LP6) + 14 Badge.
+- **D1** Unit TESTING/SKIPPED = 0 เคส → default (TESTING→Not Started, SKIPPED→N/A) ไม่มีผลจริง.
 
-## Confirmed findings (reuse, already written)
-- **NEW defect:** `POST /api/activities/{media|course}/{id}/view` → HTTP 500 for legacy non-UUIDv7 owner
-  ids (view count can't accumulate). From OLS-21 TC_03.
-- **OLS-58 ThaID:** DOPA host blocked by network gateway → all ThaID cases BLOCKED (env, not defect).
-- **OLS-18:** SSO carry works on dev; preprod-400 reasons were out-of-env → 3 flipped PASSED.
-- **`/admin/user` has NO role filter** (status + sort only) → OLS-209 TC_02/TC_10 will be FAILED.
-  Active=ปกติ, Inactive=ถูกตัดสิทธิ์.
-- **Badge page** structure captured (8 cols, 4 summary cards, dropdowns, row actions); **5-tab strip is
-  not a real element** — the runner investigates group-filtering live.
-- **Badge duplicate-detection keys on (metric, content scope, learning goal, target value), not name** —
-  a copy that only renames still 409s against its own source. OLS-226 TC_04 FAILED on this.
-- **Badge create/edit forms have NO image-upload control at all** (Standalone or Tiered) — fixed 9-icon
-  gallery only, zero `<input type=file>` in the DOM. OLS-84 TC_09/10/11 FAILED, control absent.
-- **OLS-85 TC_11 (Activity has 0 Tiered templates) FAILED** — the Tiered section renders nothing at all
-  for that combination, no empty-state message (verified against raw DOM).
-- **OLS-225 TC_05 re-confirmed FAILED** — bug OLS-289 still `To Do`; same defect, restored the shared
-  fixture badge afterward.
+## รอ user (เหลือ)
+1. **clasp + Drive consent** (item 1) — Unit images เท่านั้น. Sys/Integ ไม่ต้องรอ (live แล้ว).
+2. D9 Badge 14 (report-only default ได้ ถ้าไม่เคาะ).
 
-## Previous WIP (finished)
-TC review/draft batch, 16 tickets: DONE (2026-07-23). Method in `references/ols-project-guide.md` +
-memory `feedback_ols-tc-autodraft-method`.
+## Reuse (`~/ols-qa-testing-bot/`)
+`progress_build.py` (gtok·meta·batch_get·values_batch_update·norm_status·hdr_col·a1col·LABELS) · `sheet_write.py` (plan·snapshot·write_row RAW) · `sheet_guard.py` (Gate).
+⚠️ `values_batch_update` default USER_ENTERED → บังคับ RAW. Unit tabs = plain grid. `norm_status` คืน "" ทั้ง blank+unknown → แยกเองด้วย raw (blank→NOT STARTED, non-empty→STATUS-UNMAPPED).
+
+## Prior WIP (เสร็จ)
+Lot2 non-PASSED retest = COMPLETE (174/174). archive: `natty-doc/ols-lot2-nonpassed-retest-24jul.md`

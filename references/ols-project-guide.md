@@ -121,6 +121,25 @@ Customer-facing regression sheet — HI-QA runs delivery-gate regression from it
 | **Trimmed to 125 (2026-07-24)** | Pre-delivery cut 307 → **125** cases, No. renumbered 1–125. Only rows still `READY TO TEST` were deleted; every row already carrying a verdict (PASSED/FAILED/SKIPPED, 32 rows + their evidence links) was untouched. Selection = happy path + core lifecycle + main validation per feature; status-permutation duplicates reduced to one representative each. Coverage was re-reviewed afterwards and 7 cases swapped back in to close zero-coverage concerns (consent-not-accepted, permission-negative on another creator's content, status-filter tabs, duplicate vote, admin reported-list, LP publish with an unavailable course). **Before appending anything (e.g. `regression_sync.py`), re-check the trim intent** — a blind append re-inflates the suite past 125. Full pre-trim backup + the list of removed cases live off-repo at `~/ols-qa-testing-bot/out/uat-trim-2026-07-24/`. |
 | Sync | **Manual only** (auto-schedule disabled 2026-07-23) — run `python3 ~/ols-qa-testing-bot/regression_sync.py` on demand; appends System-Test PASSED cases from DONE stories, idempotent. Re-enable auto: `launchctl load ~/Library/LaunchAgents/com.<USER>.ols-regression-sync.plist` (rename off `.disabled-2026-07-23` first). Details: [regression-tc-sync.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/regression-tc-sync.md) |
 
+## Test-type deliverable sheets — `sync-tc-result` (System / Integration / Unit)
+
+Customer-facing deliverables (one spreadsheet per test type, **`- 03 OLS`** variant — CBMS/EvMS/ELMS
+tabs are other systems, never touched). `sync-tc-result` routes every TC result from the QA source
+sheet into these, split by **Type**. Real ids live in `~/.ols-qa-secrets/ §5.1`; tool is off-repo
+(`~/ols-qa-testing-bot/tc_result_sync.py` + `sync_tc_config.json`).
+
+| File | Placeholder | Tabs |
+|------|-------------|------|
+| System | `<SYS_SHEET_ID>` | 5 role tabs `TC00N ROLE - thai` (GUASE·LEARNER·CREATOR·CONTENT_ADMIN·SYSTEM_ADMIN) |
+| Integration | `<INTEG_SHEET_ID>` | same 5 role tabs |
+| Unit | `<UNIT_SHEET_ID>` | 12 function tabs `TC0NN …` + TOR (excludes the `…ตัวอย่าง` example tab) |
+
+- Header A–J (row 1): Ticket · ลำดับ · โมดูล · รายการทดสอบ · ขั้นตอน · ผลคาดหวัง · **G ผลการทดสอบ** · วันที่ · ผู้ทดสอบ · หมายเหตุ. Hidden key col K (Sys/Integ) / N (Unit) = `ticket|TCID`.
+- **Status → col G (Sys/Integ):** PASSED / PWMI → `ผ่าน` · FAILED → `ไม่ผ่าน` · BLOCKED / SKIPPED / TESTING → `อยู่ระหว่างดำเนินการ` · NOT STARTED / blank → `รอการทดสอบ`.
+- **Write model (we own the 3 sheets):** rebuild data rows each run + timestamp tested rows + **keep** the bottom QA summary-formula block + **repair** System `=COUNTIF(#REF!,"ไม่ผ่าน")` (mirror the passed-count G-range). Integration failed-count starts `G11`/`G15` not `G2` — a customer template quirk, left as-is (touching it needs user approval). 5-layer fail-closed gate per tab, restore-on-fail; snapshots under `~/ols-qa-testing-bot/logs/tc_result_sync_snap/`.
+- **Unit** = keyed upsert (col N) so the CellImage in col I rides its row — wired via a bound Apps Script; needs a one-time Drive OAuth consent (`clasp login` + Allow).
+- **Status:** System + Integration **LIVE** (first apply 2026-07-26, 10/10 tabs). Unit pending the Drive consent + Apps Script.
+
 ## Screenshot evidence (Drive)
 
 Per-ticket screenshot capture for QA evidence — one folder per ticket.
