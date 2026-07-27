@@ -157,12 +157,12 @@ Load OpenAPI/Swagger from config URL.
 
 Swagger is source of truth — not stale ticket text alone.
 
-### 4f. Repro matrix + settle + contradiction gate (mandatory for every non-PASSED item)
+### 4f. Entry-point coverage + settle + contradiction gate (mandatory for every non-PASSED item)
 
 Follow [defect-report-completeness.md](../../../references/defect-report-completeness.md) §2–§3. Three things happen **during the run**, not while drafting — you cannot reconstruct them later:
 
-1. **Exercise every entry point, one at a time.** For a UI defect that means at minimum: the direct URL/route **and** the in-app path a real user takes to the same surface (list card, menu, CTA, deep link). Capture a separate screenshot per entry point and name it per path. One row per entry point in the matrix; a path you did not exercise is recorded `not tested` — **never inferred from another path**.
-2. **Settle after every state change.** After a fixture step that changes server state (publish / unpublish / approve / delete / role change), hard-reload each surface before observing it. A view that was already open holds pre-change data; recording it is reporting your own test timing as the product's behavior. A stale window worth reporting is a **separate timing note** with the measured delay — not a matrix row.
+1. **Exercise every entry point, one at a time.** For a UI defect that means at minimum: the direct URL/route **and** the in-app path a real user takes to the same surface (list card, menu, CTA, deep link). Capture a separate screenshot per entry point (each becomes an `Evidence`-cell image), and name the exercised paths in the `Fixture` line; a path you did not exercise is **never inferred from another path** — don't claim it.
+2. **Settle after every state change.** After a fixture step that changes server state (publish / unpublish / approve / delete / role change), hard-reload each surface before observing it. A view that was already open holds pre-change data; recording it is reporting your own test timing as the product's behavior. A stale window worth reporting is a **separate timing note** with the measured delay — not a verdict row.
 3. **Resolve contradictions before drafting.** If two of your observations of the same surface disagree, name the contradiction, re-run that surface cleanly, and record which observation was the artifact and why. Never resolve it in favour of the verdict you already have. Unresolvable after a clean re-run → that item is **BLOCKED**, not FAILED.
 
 ### 4g. Root-cause investigation (mandatory for every non-PASSED item — run it before Step 6)
@@ -206,16 +206,15 @@ boundary that blocked it, and names the access/person needed to continue.
 
 ### FE bugs
 
-- Screenshot **every** case — upload as issue attachment first, then embed inline
+- Screenshot **every** case — upload as issue attachment first, then embed it **in the verdict table's `Evidence` cell** (the column between `Actual Result` and `Status`), one screenshot per row.
 - Name files `tc{N}-{short-desc}.png`
 - Max ~3 bullets per case in the comment
-- **Inline image embedding (mandatory):** after uploading each screenshot as an attachment, embed it in the v2 wiki comment using `!filename.png|width=450!` (≈50% of Jira comment column width). Images MUST render inline — never leave them as filename-only text references.
+- **In-cell image embedding (mandatory):** reference the uploaded screenshot in the `Evidence` cell as `!filename.png!` — **no `|width=…` parameter**. Inside a wiki table cell the `|` in `!img|width=N!` collides with the cell delimiter and splits the row, so size the image **before** upload (resize to ~600–640 px wide) and embed it bare. Images MUST render as pictures inside the cell — never leave them as filename-only text.
 
 **Upload + embed flow:**
-1. Save screenshots to `docs/result/{ISSUE_KEY}/`
-2. Serve via local CORS server (127.0.0.1) for browser-based upload
-3. Upload each file: `fetch('/rest/api/3/issue/{KEY}/attachments', {method:'POST', headers:{'X-Atlassian-Token':'no-check'}, body: formData})` using authenticated browser session on Jira page
-4. Reference in v2 wiki comment body: `!filename.png|width=450!` — one image per evidence item
+1. Save screenshots to a scratch dir outside the repo, then **resize each to ~600–640 px wide** (e.g. `sips -Z 640 in.png --out out.png`) so the bare `!file.png!` renders at a readable in-cell size.
+2. Upload each file: `POST /rest/api/3/issue/{KEY}/attachments` with `X-Atlassian-Token: no-check` (curl `-u email:token`, or authenticated browser fetch).
+3. Reference in the `Evidence` cell of the verdict table: `!filename.png!` — one image per row, no size param.
 
 ---
 
@@ -245,15 +244,17 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 *Test Step (from ticket):* …
 *Expected Result (from ticket, verbatim):* …
 
-||*No.*||*Expected Result*||*Actual Result*||*Status*||
-|1|{item quoted from the ticket}|{observed}|✅/❌|
+||*No.*||*Expected Result*||*Actual Result*||*Evidence*||*Status*||
+|1|{item quoted from the ticket}|{observed}|!tc1.png!|✅/❌|
 
 *Expected-result coverage:* {n} / {total} items met
-
-----
-
-*Evidence* — full cURL + response per case (API) or screenshots (FE)
 ```
+
+The **`Evidence` column** (between `Actual Result` and `Status`) holds the case's screenshot **in the
+cell** — `!file.png!`, pre-resized, **no `|width=…`** (the pipe breaks the row). One image per row,
+for PASSED and FAILED alike. **API bugs have no screenshots** → drop the `Evidence` column
+(`||*No.*||*Expected Result*||*Actual Result*||*Status*||`) and put the full cURL + response for each
+case in a separate `*Evidence*` section below the table instead (a cURL block does not fit in a cell).
 
 **Template core — markdown/ADF** (MCP `addCommentToJiraIssue` or `/rest/api/3/…`): identical
 content, but `**bold**`, `---`, and a `| col | col |` table with a `|---|` divider row.
@@ -262,23 +263,28 @@ Never mix the two in one body.
 
 **Verbosity ceiling:** a PASSED comment stays inside the template above — no added narrative
 paragraphs, no restating the ticket, no "why this matters" prose. Each field line holds only its
-value. Evidence captions for FE screenshots are **one short line each**, placed directly above the
-embed (e.g. "Reported-content list — pending review queue:") — never a paragraph. If a field doesn't
-apply (e.g. **API**/**Swagger** on an FE bug), omit the line entirely rather than writing "N/A".
+value. FE screenshots go **in the `Evidence` cell** — the `Actual Result` cell already describes what
+the image shows, so no separate caption line is needed. If a field doesn't apply (e.g.
+**API**/**Swagger** on an FE bug), omit the line entirely rather than writing "N/A".
 
 ### 6a. Extra sections REQUIRED when the verdict is FAILED or BLOCKED
 
-A PASSED comment stops at the template above. **Anything else adds these four blocks**, in this order, per [defect-report-completeness.md](../../../references/defect-report-completeness.md) §1–§4 and [root-cause-investigation.md](../../../references/root-cause-investigation.md) §5:
+A PASSED comment stops at the template above. **A FAILED / BLOCKED comment adds exactly these two
+blocks**, in this order (the failing behaviour itself already lives in the `Actual Result` cell + its
+`Evidence` screenshot, so it is not repeated as a separate prose block):
 
 | Block | Content | Answers |
 |-------|---------|---------|
-| **Repro matrix** | one row per entry point exercised: entry point · steps · observed · reproduces? · evidence file. Untried paths listed as `not tested` | "does this only happen from a direct URL?" |
-| **Why this item failed** | the failing expected-result line **quoted verbatim**, then *should be* vs *is now* as implementable facts (which elements render, which are disabled, which route) | "what should it look like instead, and which line did I break?" |
-| **Root cause** | the Step 4g investigation block verbatim: one-sentence cause + `Confirmed`/`Suspected`/`Unknown — not investigated` label, the skill used, the 8-boundary evidence lines, hypotheses ruled out, and (Suspected) the check that would confirm it | "why does it happen, which layer do I open, and how sure are you?" |
-| **Resolution options** | the two mutually exclusive outcomes with a named owner each — spec owner updates the expected result (no code change) **or** dev changes `{exact route/surface}` and leaves `{what already passes}` alone | "do I change code or do you change the ticket, and who decides?" |
+| **Root cause** | the Step 4g investigation, condensed: one-sentence cause + a `Confirmed`/`Suspected`/`Unknown — not investigated` label, and the captured artifacts that back it (status code, response field/message, console error, bundle probe, fixture read-back). | "why does it happen, which layer do I open, and how sure are you?" |
+| **Resolution options** | the two mutually exclusive outcomes with a named **role** owner each (role only, never a person's name) — spec owner updates the expected result (no code change) **or** dev changes `{exact route/surface}` and leaves `{what already passes}` alone; end with `Decided by: <role>` | "do I change code or do you change the ticket, and who decides?" |
 
 Also state plainly, in one line, whether the **originally reported symptom is gone** — a FAILED verdict on a
 different deviation is routinely misread as "the fix didn't work".
+
+**Do not add** a separate `Repro matrix` or `Why this item failed` block — the entry point(s) exercised
+go into the `Fixture` line, and the expected-vs-actual comparison is the verdict-table row itself. Keep
+the comment to: header → Env/Role/Date/Fixture → Test Step/Expected → verdict table (with `Evidence`
+cell) → coverage → symptom-gone line → Root cause → Resolution options. Nothing else.
 
 **Never edit the ticket's expected-result field** to match observed behavior. QA reports the conflict and names
 the decision-maker; QA does not resolve it.
@@ -288,8 +294,8 @@ the decision-maker; QA does not resolve it.
 Read your own draft as the developer who will act on it. Run the six-question gate in
 [defect-report-completeness.md](../../../references/defect-report-completeness.md) §5. Any "no" → **fix the
 comment**, never "post now and explain in chat". Also confirm: every scope word in the draft (`always`,
-`any entry point`, `only when …`) traces to a repro-matrix row, and no observation in the draft is under an
-unresolved contradiction.
+`any entry point`, `only when …`) traces to something you actually exercised and captured (a verdict-table
+row + its `Evidence` screenshot), and no observation in the draft is under an unresolved contradiction.
 
 **Cause gate (same pass, no exceptions):** read every sentence in the draft that states or implies a
 cause and check each one —
@@ -306,7 +312,7 @@ cause and check each one —
 Any box unchecked → delete the sentence or go back to Step 4g and earn it. Do not soften it into a
 hedge.
 
-**Table headers:** every column MUST carry an explicit, all-English header. The verdict table's header row is fixed and MUST read exactly `No.` · `Expected Result` · `Actual Result` · `Status` — the first two columns mirror the ticket's own field names (**Expected Result** / **Actual Result**), so a reader compares the comment against the ticket without translating column names. Never `Expected result item`, never a bare `Actual`. A bare `#` for the row-number column renders as a **blank** header cell in Jira. **Headers MUST be bold, in the syntax of the target endpoint** — v2 wiki `||*No.*||*Test Case*||…` (single asterisk, `||` delimiters, **no divider row**); markdown/ADF `| **No.** | **Test Case** | …` followed by a `|---|` divider. A `**No.**` in a v2 body renders as literal `*No.*`, and a `|---|` divider row in a v2 body renders as a visible row of dashes.
+**Table headers:** every column MUST carry an explicit, all-English header. The verdict table's header row is fixed and MUST read exactly `No.` · `Expected Result` · `Actual Result` · `Evidence` · `Status` — the middle two mirror the ticket's own field names (**Expected Result** / **Actual Result**) so a reader lines the comment up against the ticket without translating, and `Evidence` (between `Actual Result` and `Status`) holds each row's screenshot in-cell. **API bugs drop the `Evidence` column** (`No.` · `Expected Result` · `Actual Result` · `Status`) and carry cURL/response in a section below. Never `Expected result item`, never a bare `Actual`. A bare `#` for the row-number column renders as a **blank** header cell in Jira. **Headers MUST be bold, in the syntax of the target endpoint** — v2 wiki `||*No.*||*Expected Result*||…` (single asterisk, `||` delimiters, **no divider row**); markdown/ADF `| **No.** | **Expected Result** | …` followed by a `|---|` divider. A `**No.**` in a v2 body renders as literal `*No.*`, and a `|---|` divider row in a v2 body renders as a visible row of dashes.
 
 Show the full draft in chat and wait.
 
@@ -357,16 +363,17 @@ Full JS patterns and error recovery: [jira-fast-publish.md](../../../references/
 
 When MCP truncates or returns 403 on a ≤ 3 row comment, switch to ADF-direct Pattern D above.
 
-### 7c. FE + screenshots (inline image embedding)
+### 7c. FE + screenshots (in-cell image embedding)
 
 Use **v2** wiki markup and `/rest/api/2/issue/{KEY}/comment`.
 
-**Mandatory flow — images must render inline, not as filename text:**
+**Mandatory flow — each row's screenshot renders inside its `Evidence` cell, not as filename text:**
 
-1. **Upload attachments first** — for each screenshot, POST to `/rest/api/3/issue/{KEY}/attachments` via authenticated browser JS (FormData + `X-Atlassian-Token: no-check`). Serve local files through a CORS server (127.0.0.1) so the browser fetch can read them.
-2. **Embed in wiki body** — reference each uploaded file as `!filename.png|width=450!` (≈50% of comment column). Place the embed directly after its corresponding evidence row or description.
-3. **Post comment** — v2 wiki POST to `/rest/api/2/issue/{KEY}/comment` with the body containing `!file.png|width=450!` references. v2 renders these as inline images automatically.
-4. **Verify (Step 7d)** — confirm images render as visible pictures on Jira, not as `!filename!` text.
+1. **Resize first** — resize every screenshot to ~600–640 px wide (`sips -Z 640 …`) so a bare `!file.png!` renders at a readable in-cell size.
+2. **Upload attachments** — for each screenshot, `POST /rest/api/3/issue/{KEY}/attachments` (curl `-u email:token` with `X-Atlassian-Token: no-check`, or authenticated browser fetch).
+3. **Embed in the `Evidence` cell** — reference each uploaded file as `!filename.png!` **with no `|width=…`** (the pipe would split the table row). One image per verdict-table row.
+4. **Post comment** — v2 wiki `POST /rest/api/2/issue/{KEY}/comment`. v2 renders `!file.png!` as an inline picture inside the cell.
+5. **Verify (Step 7d)** — confirm each image renders as a picture inside its `Evidence` cell (not `!filename!` text) and the table still has all its columns.
 
 ### 7d — Post-publish review (mandatory)
 
@@ -393,9 +400,9 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌** (not ambiguous text).
 - [ ] `Verdict: PASSED` or `Verdict: FAILED` with issue link.
-- [ ] **Non-PASSED verdict:** Step 6a's four blocks present — repro matrix (one row per entry point, untried paths `not tested`), why-this-item-failed with the expected-result line quoted verbatim, **root cause**, resolution options with a named owner each — plus the one-line statement of whether the originally reported symptom is gone.
-- [ ] **Step 4g root-cause investigation ran for every non-PASSED item** (including BLOCKED): debugging skill invoked and named, 8-boundary sweep complete with `not checked` written where it applies, hypotheses ruled out recorded, cause labelled `Confirmed` / `Suspected` (+ the confirming check) / `Unknown — not investigated` (+ what is needed).
-- [ ] **Step 6b dev-question gate + cause gate passed before the first post**; every scope word traces to a matrix row; every cause sentence cites an artifact and carries a label; no hedge word used as a cause; no unresolved contradiction between your own observations.
+- [ ] **Non-PASSED verdict:** Step 6a's two blocks present — **root cause** (Confirmed/Suspected/Unknown + backing artifacts) and **resolution options** (two options, each a named **role** owner, ending `Decided by: <role>`) — plus the one-line statement of whether the originally reported symptom is gone. (No separate repro-matrix / why-failed block — that content lives in the `Fixture` line and the verdict-table row + its `Evidence` screenshot.)
+- [ ] **Step 4g root-cause investigation ran for every non-PASSED item** (including BLOCKED): the cause cites captured artifacts (status code, response field/message, console error, bundle probe, fixture read-back) and is labelled `Confirmed` / `Suspected` (+ the confirming check) / `Unknown — not investigated` (+ what is needed).
+- [ ] **Step 6b dev-question gate + cause gate passed before the first post**; every scope word traces to a verdict-table row + its `Evidence`; every cause sentence cites an artifact and carries a label; no hedge word used as a cause; no unresolved contradiction between your own observations.
 - [ ] v2/v3 format matches Step 3 lock; FE bugs have screenshots attached before wiki embed.
 - [ ] API cases: full cURL + response per row (no "same as above").
 - [ ] Jira issue re-opened after post: comment visible, not truncated.
@@ -415,7 +422,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌**; env + results table present (bold headers, `No.` column).
 - [ ] One result row per expected-result item (the ALL-items check is visible).
-- [ ] **FE / UI bug:** a screenshot for **every executed case**, uploaded as an attachment **and embedded inline** (`!file.png|width=450!`), confirmed rendering on the Jira UI (Step 7d). **A text-only comment for an FE bug FAILS this gate** — the exact-text/values table is not a substitute for the required images.
+- [ ] **FE / UI bug:** a screenshot for **every executed case**, uploaded as an attachment **and embedded in that row's `Evidence` cell** (`!file.png!`, pre-resized, no `|width`), confirmed rendering as a picture inside the cell on the Jira UI (Step 7d). **A text-only comment for an FE bug FAILS this gate** — the exact-text/values table is not a substitute for the required images.
 - [ ] **API bug:** full cURL + response per row (no "same as above").
 - [ ] No local file paths, no literal `<br>`/HTML markup.
 
@@ -578,12 +585,12 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST use **PASSED ✅** or **FAILED ❌** only in summary line | Scanability for dev/QA |
 | MUST keep a PASSED comment inside the Step 6 template fields only — no narrative padding, one-line evidence captions | A tight comment is scannable in seconds; prose bloat buries the verdict (locked from OLS-251 accepted format 2026-07-23) |
 | MUST give every table column an explicit English header; row-number column = `No.` | bare `#` renders as a blank header cell in Jira |
-| MUST head the verdict table exactly `No.` · `Expected Result` · `Actual Result` · `Status` — never `Expected result item`, never a bare `Actual` | the columns must carry the ticket's own field names so a reader lines the comment up against the ticket with no translation (user correction 2026-07-24, OLS-250/OLS-249) |
+| MUST head the FE verdict table exactly `No.` · `Expected Result` · `Actual Result` · `Evidence` · `Status` (API bug: drop `Evidence`) — never `Expected result item`, never a bare `Actual` | the middle columns carry the ticket's own field names so a reader lines the comment up with no translation, and `Evidence` holds each row's screenshot in-cell (user correction 2026-07-24 OLS-250/249; Evidence column added 2026-07-27, OLS-289) |
 | MUST bold every table header cell (`\| **No.** \| **Test Case** \| …`) | Jira doesn't auto-bold markdown headers; non-bold looks unprofessional |
 | MUST compare actual text against expected (customfield_12116) character-by-character when expected specifies exact wording | Any text difference = FAIL — no "minor wording" or "cosmetic" exceptions |
 | MUST lock v2/v3 at Step 3; FE → v2 + screenshots | Rewrites waste time |
 | MUST verify Jira UI after post (Step 7d) before Step 8 | Truncation / wrong endpoint |
-| MUST pass the Step 8·0 format-completeness gate before ANY status transition — FE bug requires screenshots embedded inline **and** render-verified; a text-only FE comment fails the gate | Transitioning on an evidence-incomplete comment silently hides the gap (learned OLS-181: FE bug moved to Done with a text-only comment) |
+| MUST pass the Step 8·0 format-completeness gate before ANY status transition — FE bug requires a screenshot in each row's `Evidence` cell (`!file.png!`, pre-resized, no `\|width`) **and** render-verified; a text-only FE comment fails the gate | Transitioning on an evidence-incomplete comment silently hides the gap (learned OLS-181: FE bug moved to Done with a text-only comment) |
 | MUST NOT offer the user a "skip screenshots / text-only" option for an FE bug — screenshots are mandatory, not optional; if upload is blocked, STOP and resolve, don't bypass | Offering to skip a mandatory step is how the gate got bypassed (OLS-181) |
 | MUST run Step 8 after successful post unless user stopped you | Workflow closure |
 | MUST run Step 8d as soon as the bug lands in Done — Done = fixed = the stories it blocked may be releasable | Otherwise blocked stories sit in the backlog after their blocker is already closed |
@@ -598,11 +605,11 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST set `--pass-count N` + `--summary "Retest of dev fix"` + `--owner-label "QA Owner"` on every Discord retest notify | Defaults produce wrong output (0/0/0 + wrong label); learned from 3-resend incident |
 | MUST fetch the notify recipient from the ticket's QA Owner field (per project guide) per ticket, and verify the @mention person = that field's value — NEVER the Reporter, never a name carried over from another ticket | Label said "QA Owner" but pinged the Reporter → 3 wrong pings, user correction 2026-07-15 |
 | MUST verdict from the bug's OWN expected results — PASSED only when ALL items are met (character-exact where wording is specified); parent AC is supplement, never substitute | Bug details are the contract; partial match = FAILED (user rule 2026-07-15) |
-| MUST exercise **every** entry point to a failing surface separately (direct route **and** the in-app path a user takes) and give each its own repro-matrix row + screenshot; untried paths are written `not tested` | A path with no evidence row is a guess. OLS-108: "happens via both entry points" was published from one run, the dev acted on it, and it had to be retracted in-ticket |
-| MUST NOT write a scope word (`always`, `any entry point`, `both ways`, `only when …`) that no repro-matrix row supports | The scope claim is the first thing a dev builds on |
+| MUST exercise **every** entry point to a failing surface separately (direct route **and** the in-app path a user takes) and capture each with its own screenshot in the `Evidence` cell; name the entry point(s) actually exercised in the `Fixture` line, and never claim a path you did not run | A path with no captured screenshot is a guess. OLS-108: "happens via both entry points" was published from one run, the dev acted on it, and it had to be retracted in-ticket |
+| MUST NOT write a scope word (`always`, `any entry point`, `both ways`, `only when …`) that no exercised-and-captured `Evidence` row supports | The scope claim is the first thing a dev builds on |
 | MUST hard-reload every surface after a state-changing fixture step before observing or capturing it; report a stale-data window only as a separate timing note with the measured delay | An already-open view holds pre-change data — recording it publishes your test timing as product behavior (OLS-108: card looked clickable ~5s after unpublish) |
 | MUST resolve any disagreement between your own observations with one clean re-run before drafting, and record which was the artifact; unresolvable → BLOCKED, not FAILED | Resolving it in favour of the verdict you already reached is how the wrong repro path shipped |
-| MUST include the Step 6a blocks on every non-PASSED comment — repro matrix, why-failed with the expected-result line quoted verbatim, **root cause**, resolution options with a named owner per option | These are exactly the questions a dev asks next; answering them in chat instead leaves the ticket unreadable |
+| MUST include the Step 6a blocks on every non-PASSED comment — **root cause** and **resolution options** (two options, each a named **role** owner, ending `Decided by: <role>`); NO separate repro-matrix / why-failed block (that content is the `Fixture` line + the verdict-table row and its `Evidence` screenshot) | These answer the dev's next questions without bloating the comment; the failing behaviour + evidence already sit in the table row |
 | MUST run the Step 4g root-cause investigation for EVERY non-PASSED item (FAILED and BLOCKED alike), starting by invoking `superpowers:systematic-debugging` (Phases 1–3) and naming it in the comment | Improvised reasoning is where guessing enters; the process is also faster than guess-and-check |
 | MUST complete the 8-boundary sweep while the environment is still open, writing `not checked` where a boundary was not reached | A boundary not captured during the run cannot be reconstructed later — reconstruction is fabrication |
 | MUST attach a captured artifact to every cause statement and label it `Confirmed` / `Suspected` / `Unknown — not investigated`, carrying the label wherever the sentence is copied (comment, sheet, notify) | A `Suspected` cause read as `Confirmed` sends a developer to the wrong layer |
@@ -614,7 +621,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST re-verify (re-run the surface) before answering any question that arrives after posting, then fold the answer into the original comment in place and re-run Step 7d | Answering from memory published a wrong claim once already |
 | MUST correct a wrong published statement **visibly in both places** — in-place comment edit naming the corrected claim **and** a follow-up in the thread where the wrong answer was given | People already replied to the wrong version; a silent edit makes the thread unreadable |
 | MUST run the Step 9 pre-notify review gate (5 checks on dry-run output) before EVERY send, including resends | Catches wrong recipient/link/counts before they go live (user rule 2026-07-15) |
-| MUST embed FE screenshots as inline images (`!file.png\|width=450!`) in Jira comments — never leave as filename-only text | Screenshots must be visible inline; filename text is unreadable evidence |
+| MUST embed each FE screenshot in its verdict-table `Evidence` cell as `!file.png!` — pre-resized (~600–640 px), **no `\|width=…`** (the pipe splits the table row) — never leave as filename-only text | Screenshots must render as pictures inside the cell; a `\|width` param breaks the row, and filename text is unreadable evidence (OLS-289, 2026-07-27) |
 | MUST NOT use `await` in superpowers-chrome eval — use setTimeout + window.__var | `await` returns undefined; callback pattern required |
 | MUST use `mousedown` event (not `click`) for MUI Select/combobox elements | MUI Select ignores regular click events |
 | MUST match OLS buttons by textContent, not generic CSS class | Generic selectors hit wrong button (e.g. "สร้างสื่อ" instead of target) |
