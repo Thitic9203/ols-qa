@@ -131,3 +131,29 @@ function installHourlyTrigger() {
   });
   ScriptApp.newTrigger("embedUnitImages").timeBased().everyHours(1).create();
 }
+
+// ── programmatic verification (the Sheets REST API can't see in-cell images; run this to count them) ──
+function verifyImages() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var man = _manifest(ss), img = 0, tbc = 0, missing = [], wrong = [];
+  ss.getSheets().forEach(function (sh) {
+    if (!TC_TAB_RE.test(sh.getName())) return;
+    var last = sh.getLastRow(); if (last < 2) return;
+    var keys = sh.getRange(2, COL_N, last - 1, 1).getValues();
+    var cur  = sh.getRange(2, COL_I, last - 1, 1).getValues();
+    for (var r = 0; r < keys.length; r++) {
+      var key = String(keys[r][0] || "").trim(); if (!key) continue;
+      var want = man[key], v = cur[r][0];
+      var isImg = v && v.valueType === SpreadsheetApp.ValueType.IMAGE;
+      if (want && want.fileId) {
+        if (isImg && v.getAltTextDescription() === want.fileId) img++;
+        else if (isImg) wrong.push(sh.getName() + " " + key);
+        else missing.push(sh.getName() + " " + key);
+      } else if (!isImg && String(v).indexOf("TBC") === 0) { tbc++; }
+    }
+  });
+  Logger.log("VERIFY: " + img + " image(s) OK · " + tbc + " TBC OK · missing " + missing.length + " · wrong " + wrong.length);
+  if (missing.length) Logger.log("  MISSING: " + missing.slice(0, 25).join(", "));
+  if (wrong.length)   Logger.log("  WRONG-marker: " + wrong.slice(0, 25).join(", "));
+  return { img: img, tbc: tbc, missing: missing, wrong: wrong };
+}
