@@ -22,7 +22,9 @@ is restored from a pre-write snapshot.
 ```bash
 python3 ~/ols-qa-testing-bot/tc_result_sync.py            # dry-run report (read-only, default)
 python3 ~/ols-qa-testing-bot/tc_result_sync.py --preview  # per-tab apply plan (read-only)
-python3 ~/ols-qa-testing-bot/tc_result_sync.py --apply     # write System + Integration
+python3 ~/ols-qa-testing-bot/tc_result_sync.py --apply     # write System + Integration rows
+
+python3 ~/ols-qa-testing-bot/unit_apply.py --write         # write Unit rows + manifest (full run only — never --tab for writes)
 ```
 
 - Config and real ids are **off-repo** (`~/ols-qa-testing-bot/sync_tc_config.json`,
@@ -32,10 +34,11 @@ python3 ~/ols-qa-testing-bot/tc_result_sync.py --apply     # write System + Inte
 
 ## Safety
 
-- `--apply` writes **customer production** sheets. Run `--preview` first and eyeball the per-tab
-  clear/write counts + any `⚠` flags.
+- `--apply` / `--write` writes **customer production** sheets. Run without flags (dry-run) first and
+  eyeball the per-tab clear/write counts + any `⚠` flags.
 - Each tab passes a 5-layer fail-closed gate (snapshot → status/key re-derive → structure → write RAW
   → readback); any mismatch restores that tab from its snapshot. Snapshots live under
   `~/ols-qa-testing-bot/logs/tc_result_sync_snap/`.
-- The hourly launchd job runs the same `--apply`. It is **off by default** — arm it deliberately
-  (see the staged plist in `~/ols-qa-testing-bot/launchd/`).
+- The hourly launchd job (`com.thitichaya.ols-tc-result-sync` in `~/Library/LaunchAgents/`) runs the
+  same `--apply` for System + Integration. **Armed and running** (loaded 2026-07-27). Unit images are
+  synced by the bound Apps Script's own hourly trigger (independent of the Python plist).

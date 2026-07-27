@@ -134,11 +134,12 @@ sheet into these, split by **Type**. Real ids live in `~/.ols-qa-secrets/ §5.1`
 | Integration | `<INTEG_SHEET_ID>` | same 5 role tabs |
 | Unit | `<UNIT_SHEET_ID>` | 12 function tabs `TC0NN …` + TOR (excludes the `…ตัวอย่าง` example tab) |
 
-- Header A–J (row 1): Ticket · ลำดับ · โมดูล · รายการทดสอบ · ขั้นตอน · ผลคาดหวัง · **G ผลการทดสอบ** · วันที่ · ผู้ทดสอบ · หมายเหตุ. Hidden key col K (Sys/Integ) / N (Unit) = `ticket|TCID`.
+- **System/Integration header A–J** (row 1): Ticket(ลบก่อนส่ง) · ลำดับ · โมดูล · รายการทดสอบ · ขั้นตอน · ผลคาดหวัง · **G ผลการทดสอบ** · วันที่ · ผู้ทดสอบ · หมายเหตุ. Hidden key col K = `ticket|TCID`.
+- **Unit header A–N** (row 1): No. · Sub Function · Test Scenario · Test Description · Pre-condition · Test Step · Test Data · Expected Result · **I Actual Result(รูป/TBC)** · **J Test status(dropdown: Passed/Failed/Blocked/N/A/Not Started)** · K Test Date(capture-file createdTime DD/MM/YYYY; ไม่มีรูป→TBC) · L Test By(QA owner first English name; ไม่มี→TBC) · M Comment · N hidden key `ticket|TCID`. Python owns A–H,J–N; Apps Script owns I only.
 - **Status → col G (Sys/Integ):** PASSED / PWMI → `ผ่าน` · FAILED → `ไม่ผ่าน` · BLOCKED / SKIPPED / TESTING → `อยู่ระหว่างดำเนินการ` · NOT STARTED / blank → `รอการทดสอบ`.
-- **Write model (we own the 3 sheets):** rebuild data rows each run + timestamp tested rows + **keep** the bottom QA summary-formula block + **repair** System `=COUNTIF(#REF!,"ไม่ผ่าน")` (mirror the passed-count G-range). Integration failed-count starts `G11`/`G15` not `G2` — a customer template quirk, left as-is (touching it needs user approval). 5-layer fail-closed gate per tab, restore-on-fail; snapshots under `~/ols-qa-testing-bot/logs/tc_result_sync_snap/`.
-- **Unit** = keyed upsert (col N) so the CellImage in col I rides its row — wired via a bound Apps Script; needs a one-time Drive OAuth consent (`clasp login` + Allow).
-- **Status:** System + Integration **LIVE** (first apply 2026-07-26, 10/10 tabs). Unit pending the Drive consent + Apps Script.
+- **Write model — Sys/Integ:** rebuild data rows each run + timestamp tested rows + **keep** the bottom QA summary-formula block + **repair** System `=COUNTIF(#REF!,"ไม่ผ่าน")` (mirror the passed-count G-range). Integration failed-count starts `G11`/`G15` not `G2` — a customer template quirk, left as-is (touching it needs user approval). 5-layer fail-closed gate per tab, restore-on-fail; snapshots under `~/ols-qa-testing-bot/logs/tc_result_sync_snap/`.
+- **Write model — Unit:** keyed upsert by col N (`ticket|TCID`) so the CellImage in col I rides its row across rebuilds. Image embed done by a bound Apps Script (`docs/tc-result-img/Code.gs`; Drive consent obtained, hourly trigger active). PASSED+evidence → composite PNG in col I (multi-image: vertical stack, 460 px wide, 22 px gray gap, ≤1400 px tall, uploaded to `_composites/`). Non-passed → TBC text in col I.
+- **Status:** ALL 3 **LIVE** (2026-07-27). System 10/10 tabs · Integration 10/10 tabs · Unit 116 rows/9 tabs, 82 images embedded, hourly Apps Script trigger active. Hourly Python plist (`com.thitichaya.ols-tc-result-sync`) armed 2026-07-27.
 
 ## Screenshot evidence (Drive)
 
