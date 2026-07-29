@@ -202,6 +202,26 @@ List issues found **without filing tickets**:
 The **Confidence** column carries the E2 label — `Confirmed` / `Suspected` / `Unknown — not
 investigated` — and it describes the **cause**, not how strongly you feel about the defect.
 
+**The `Severity` column is judged only by the [Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md)** — match the observed defect to its row, never invent a severity/priority
+notion. Cheat-sheet (full matrix + hard rule at the link):
+
+| If the defect reads like… | Priority | Verdict |
+|---|---|---|
+| cosmetic / typo / UI misalignment | Low | **PWMI** |
+| minor calculation or display error | Low | **PWMI** |
+| major feature affected **but a workaround exists** | Low | **PWMI** |
+| minor glitch that does **not** block the workflow | Medium | **PWMI** |
+| **optional** feature not working | Medium | **PWMI** |
+| functionality problem affecting **several** users | Medium | **PWMI** |
+| critical feature **partially** broken | Medium | **PWMI** |
+| rarely-used feature **fully** broken | High | **FAILED** |
+| feature issue affecting **some** users | High | **FAILED** |
+| core functionality affected / partial outage | High | **FAILED** |
+| core system failure affecting **most** users | High | **FAILED** |
+| security warning in a minor feature | Highest | **FAILED** |
+| system crash for some users | Highest | **FAILED** |
+| complete outage / data loss / security breach | Highest | **FAILED** |
+
 **Each defect row expands into a complete write-up** — this is what gets pasted into a bug, a Jira
 comment, or a sheet cell later, so it must stand alone
 ([defect-report-completeness.md](../../../references/defect-report-completeness.md) §1–§4 and
@@ -427,6 +447,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST NOT open Jira/GitHub bugs in this workflow | Use create-bug-workflow |
 | MUST NOT run Playwright before Phase C confirm | Wrong scope/credentials |
 | MUST attach complete evidence to every case before the story is "done" — a **whole-flow MP4 + one screenshot per Expected-Result item** for each non-BLOCKED story case (retest-bug re-verify = screenshots only) — and pass the 5-step gate in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) | A story reported "100% passed" while cases have no MP4 (or a minor-issue verdict with no bug) looks finished but is unverified; the pass-rate counts minor-issue as passed and hides the gap |
+| MUST judge defect Priority/Severity ONLY from the [Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md) — never invent a severity notion; PASSED WITH MINOR ISSUE needs a Lowest/Low/Medium bug, FAILED needs High/Highest | Guessing severity produces inconsistent verdicts across testers and tickets |
 | MUST re-read destination after Phase G writes | Silent partial failure |
 | MUST exercise every entry point to a failing surface separately (direct route **and** the in-app path a user takes), one repro-matrix row + screenshot each; untried paths written `not tested` | A path with no evidence row is a guess published as a finding (learned OLS-108) |
 | MUST NOT write a scope word (`always`, `any entry point`, `both ways`, `only when …`) that no repro-matrix row supports | The scope claim is the first thing a dev builds on |

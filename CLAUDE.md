@@ -87,6 +87,7 @@ references/                    ← shared rule fragments, linked by skills (not 
 | `references/shared-must-never.md` | Global MUST/NEVER rules for all skills |
 | `references/qa-evidence-gates.md` | Evidence requirements before claiming "done" |
 | `references/helix-session-constraints.md` | Constraints block recited at workflow start |
+| `references/bug-priority-matrix.md` | Authoritative bug Priority/Severity matrix — never invent a severity |
 
 ### Hooks
 
@@ -109,6 +110,33 @@ references/                    ← shared rule fragments, linked by skills (not 
 **ห้ามเด็ดขาด (repo นี้ public):** เขียน password / อีเมล test account / hostname จริง / Jira tenant /
 Google Sheet–Drive ID / Figma ID / Discord id / ชื่อจริงพนักงาน / `/Users/<name>` ลงไฟล์ใดๆ ใน repo นี้
 รวมถึง commit message. `pre-commit` จะบล็อกให้ แต่ห้ามพึ่ง hook อย่างเดียว
+
+## Bug priority = the matrix, never invented
+
+Every QA verdict that touches bug Priority (PWMI vs FAILED) is judged **only** by the
+[Bug Priority & Severity Matrix](references/bug-priority-matrix.md) — never invent a severity/priority
+notion, never guess. **PWMI** = the case carries a Lowest/Low/Medium bug (state the Priority in the
+write-up). **FAILED** = only a High/Highest bug. A coverage gap is not a defect. When unsure, cite the
+matrix row — don't guess.
+
+| If the defect reads like… | Priority | Verdict |
+|---|---|---|
+| cosmetic / typo / UI misalignment | Low | **PWMI** |
+| minor calculation or display error | Low | **PWMI** |
+| major feature affected **but a workaround exists** | Low | **PWMI** |
+| minor glitch that does **not** block the workflow | Medium | **PWMI** |
+| **optional** feature not working | Medium | **PWMI** |
+| functionality problem affecting **several** users | Medium | **PWMI** |
+| critical feature **partially** broken | Medium | **PWMI** |
+| rarely-used feature **fully** broken | High | **FAILED** |
+| feature issue affecting **some** users | High | **FAILED** |
+| core functionality affected / partial outage | High | **FAILED** |
+| core system failure affecting **most** users | High | **FAILED** |
+| security warning in a minor feature | Highest | **FAILED** |
+| system crash for some users | Highest | **FAILED** |
+| complete outage / data loss / security breach | Highest | **FAILED** |
+
+Full severity definitions + source: [references/bug-priority-matrix.md](references/bug-priority-matrix.md).
 
 ## Skill sync → helix plugin (mandatory) + OLS-secret guard
 

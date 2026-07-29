@@ -89,6 +89,28 @@ Capture: environment, test steps, expected/actual results, API endpoint, bug typ
 - Parent-story AC / Figma are **supplements** for context or when the bug is title-only — they never override or dilute the bug's own expected results. If the bug's expected result and the parent AC conflict, test against the bug's text and flag the conflict to the user.
 - List each expected-result item as its own row in the result table (Step 6) so the ALL-items check is visible, not implied.
 
+**If Priority/Severity context is needed** (citing the original bug's Priority, or scoping a newly
+observed, distinct defect found during retest) — judge it only by the
+[Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md), never invent a
+severity/priority notion. Cheat-sheet (full matrix + hard rule at the link):
+
+| If the defect reads like… | Priority | Verdict |
+|---|---|---|
+| cosmetic / typo / UI misalignment | Low | **PWMI** |
+| minor calculation or display error | Low | **PWMI** |
+| major feature affected **but a workaround exists** | Low | **PWMI** |
+| minor glitch that does **not** block the workflow | Medium | **PWMI** |
+| **optional** feature not working | Medium | **PWMI** |
+| functionality problem affecting **several** users | Medium | **PWMI** |
+| critical feature **partially** broken | Medium | **PWMI** |
+| rarely-used feature **fully** broken | High | **FAILED** |
+| feature issue affecting **some** users | High | **FAILED** |
+| core functionality affected / partial outage | High | **FAILED** |
+| core system failure affecting **most** users | High | **FAILED** |
+| security warning in a minor feature | Highest | **FAILED** |
+| system crash for some users | Highest | **FAILED** |
+| complete outage / data loss / security breach | Highest | **FAILED** |
+
 **Viewing a Figma supplement:** when the bug/parent references a Figma design, prefer the **Figma Dev Mode MCP** (`get_screenshot` / `get_metadata`) — needs the Figma desktop app with **Dev Mode MCP Server enabled** (Figma menu → Preferences) and the file open; `node-id` in the URL uses `-`, the MCP `nodeId` uses `:` (`1234-5678` → `1234:5678`). If that server is off, **fall back to the browser-automation MCP**: open the file URL (a logged-in browser session persists auth), let the canvas render, screenshot the node. Dismiss the **"view this file in Dev Mode?"** modal with **"Not now"** — NEVER "Request access". View+Comment access is enough. (Figma stays a **supplement** — it never overrides the bug's own expected results.)
 
 ---
@@ -605,6 +627,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST set `--pass-count N` + `--summary "Retest of dev fix"` + `--owner-label "QA Owner"` on every Discord retest notify | Defaults produce wrong output (0/0/0 + wrong label); learned from 3-resend incident |
 | MUST fetch the notify recipient from the ticket's QA Owner field (per project guide) per ticket, and verify the @mention person = that field's value — NEVER the Reporter, never a name carried over from another ticket | Label said "QA Owner" but pinged the Reporter → 3 wrong pings, user correction 2026-07-15 |
 | MUST verdict from the bug's OWN expected results — PASSED only when ALL items are met (character-exact where wording is specified); parent AC is supplement, never substitute | Bug details are the contract; partial match = FAILED (user rule 2026-07-15) |
+| MUST judge any Priority/Severity referenced in a retest comment ONLY from the [Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md) — never invent a severity notion | Keeps bug-priority language consistent across QA workflows; no ad hoc severity claims in Jira comments |
 | MUST exercise **every** entry point to a failing surface separately (direct route **and** the in-app path a user takes) and capture each with its own screenshot in the `Evidence` cell; name the entry point(s) actually exercised in the `Fixture` line, and never claim a path you did not run | A path with no captured screenshot is a guess. OLS-108: "happens via both entry points" was published from one run, the dev acted on it, and it had to be retracted in-ticket |
 | MUST NOT write a scope word (`always`, `any entry point`, `both ways`, `only when …`) that no exercised-and-captured `Evidence` row supports | The scope claim is the first thing a dev builds on |
 | MUST hard-reload every surface after a state-changing fixture step before observing or capturing it; report a stale-data window only as a separate timing note with the measured delay | An already-open view holds pre-change data — recording it publishes your test timing as product behavior (OLS-108: card looked clickable ~5s after unpublish) |
