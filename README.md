@@ -266,6 +266,7 @@ otherwise).
 | ↳ Autopoll (inside the listener) | every 2 h | Finds ready tickets → asks in Discord → first click claims + runs on **Yes** (see *Automated testing trigger*) |
 | **TC auto-draft** (`ols-tc-autodraft`) | every 4 h (00/04/08/12/16/20) | Drafts FE test cases for tickets that have none yet (see *Automated TC auto-draft*) |
 | **QA-owner sync** (`ols-qa-owner-sync`) | every 2 min | Keeps the QA Owner shown in already-sent Discord notifications in step with Jira |
+| **Test-type deliverable sync** (`ols-tc-result-sync`) | every 1 h | Rebuilds the 3 customer deliverable sheets (System / Integration / Unit test-type) from the QA source sheet — Sheets/Drive API only, no VPN; each tab behind a 5-layer gate, grid-clamped + per-request timeout + per-leg watchdog (see Changelog) |
 | **Auto-flip to TESTING** (`ols-flip-testing`) | Mon–Fri 10 AM & 5 PM | Flips any story at **READY TO TEST** whose sheet TC tab has **≥1 started case** to **TESTING**, QA Owner untouched (see *Auto-flip stories to TESTING*) |
 | **Login smoke-test** (`ols-login-check`) | Mon–Fri 10:35 AM | Connects the VPN and checks NDLP→OLS SSO login still works; logs the result |
 | **Auth-token check** (`ols-tc-token-check`) | เป็นรอบ | Keeps the headless Claude auth token fresh — unattended runs fail silently on a stale token |
@@ -275,6 +276,23 @@ Separately, a Google Apps Script syncs the tracking sheet's **QA Owner** column 
 anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows up in the sheet on its own.
 
 ## Changelog
+
+### v1.20.5 — sync-tc-result: three test-type deliverables live + hourly hardening (30 Jul 2026)
+
+- **`/sync-tc-result`** routes every TC result from the QA source sheet into the three customer
+  deliverable spreadsheets — **System · Integration · Unit** (split by Type) — each tab behind a
+  5-layer fail-closed gate. Unit rows carry the evidence screenshot embedded in col I by a bound Apps
+  Script (a vertical composite for multi-shot cases). Runs hourly on the QA Mac (`ols-tc-result-sync`)
+  alongside the Apps Script's own image trigger.
+- **Hourly job hardened — two root-cause fixes.** (1) The Unit `--rows-only` leg returned HTTP 400
+  every hour: `write_rows` cleared a hardcoded `A2:H400`/`J2:N400` while the Unit tabs are only 9–39
+  rows (some 13 cols), so `values:batchClear` rejected the out-of-grid range — fixed by growing the
+  grid to fit the data + key column, then clamping the clear to the grid. (2) A no-`timeout` `urllib`
+  call had hung one run for 2.7 days, and launchd (no-overlap) then skipped every run queued behind it
+  — fixed with a per-request `timeout` + retry in every opener **plus** a per-leg wall-clock watchdog.
+  Verified by a clean full run (both legs rc=0, no data/image loss) + a 9-case grid-plan regression test.
+- Layout, status map, and write model: [references/ols-project-guide.md](references/ols-project-guide.md)
+  § Test-type deliverable sheets · command doc: [commands/sync-tc-result.md](commands/sync-tc-result.md).
 
 ### v1.16.5 — qa-owner-sync hardening + regression-tc-sync manual-only (24 Jul 2026)
 
@@ -287,21 +305,6 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
   retired (disabled 23 Jul 2026, plist renamed off the auto-load dir); `references/ols-project-guide.md`
   updated to say **manual only** instead of the stale Mon–Fri 10:30/17:00 schedule. Script itself untouched
   — run on demand: `python3 ~/ols-qa-testing-bot/regression_sync.py`. รายละเอียด: [docs/regression-tc-sync.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/regression-tc-sync.md)
-
-### v1.16.4 — retest-bug: auto-unblock linked stories once a bug reaches Done (23 Jul 2026)
-
-- **New Step 8d in `/retest-bug`** — the moment a retested bug lands in **Done** (verdict PASSED), the
-  workflow reads its `blocks` links, then re-checks each blocked **story's own** "is blocked by" list
-  (not just this bug) so a story with multiple open blockers is never released early.
-- **Only-Done-counts rule** — a blocker sitting in DEPLOYING / REVIEWING / In Progress still leaves the
-  story blocked; only every blocker being **Done** releases it.
-- **Backwards-move guard** — a story already in QA (READY TO TEST / TESTING) or still mid-development
-  (In Progress / REVIEWING) is left untouched even once all blockers clear — Step 8d only moves stories
-  parked in the project's **blocked** status, never pulls one back from further along the pipeline.
-- **Never touches assignee/QA Owner.** Unresolved blockers are reported to the user with their keys and
-  live statuses; nothing is transitioned silently.
-- Root-cause note for a related notify-format bug fixed the same week: [CLAUDE.md § Post-mortems, PM-001](CLAUDE.md#post-mortems).
-- รายละเอียด: [retest-bug-workflow/WORKFLOW.md § Step 8d](skills/deprecated/retest-bug-workflow/WORKFLOW.md)
 
 ---
 
