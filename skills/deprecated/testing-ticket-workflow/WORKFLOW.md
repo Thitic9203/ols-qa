@@ -18,6 +18,12 @@ Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
 **Gates:** MUST NOT start Playwright until Phase C confirm; MUST NOT update external results until Phase G confirm — because runs and writes are costly to undo. Credentials are session-only.
 
+**Test through the real steps.** Drive every scenario through its own surface, following the case's
+steps completely — a UI scenario through the UI (Playwright clicks, not a direct submit call); the API
+is only for creating test data / preconditions, never to perform the action under test. An API
+scenario is driven at the API — that is its real step. Full rule:
+[test-through-real-steps.md](../../../references/test-through-real-steps.md).
+
 **Every FAILED or BLOCKED scenario** is governed by [defect-report-completeness.md](../../../references/defect-report-completeness.md) — the write-up must answer the reader's five questions (what, **which entry points**, what it should be instead, why that is a fail, **what changes and who decides**) before it leaves this workflow. A question asked afterwards means a section was missing; the fix is the write-up, not a chat reply.
 
 **Root cause is mandatory, never inferred.** Every FAILED or BLOCKED scenario gets a full
@@ -119,6 +125,11 @@ Follow [playwright-preflight.md](../../../references/playwright-preflight.md) en
 ## Phase E — Execute tests (Playwright)
 
 Run confirmed scenarios; record **PASSED** / **FAILED** / **BLOCKED** / **NOT TESTED** with evidence (screenshots, console, network).
+
+Drive every scenario through its **real surface** — a UI scenario through the UI (Playwright clicks the
+button / submits the form), following the case's steps completely. The API is for test-data /
+precondition setup only, **never** to perform the action under test; an API scenario is driven at the
+API. See [test-through-real-steps.md](../../../references/test-through-real-steps.md).
 
 Internal failures: note for chat summary only — **do not create Jira/GitHub issues in this workflow.**
 
@@ -446,6 +457,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 |------|---------|
 | MUST NOT open Jira/GitHub bugs in this workflow | Use create-bug-workflow |
 | MUST NOT run Playwright before Phase C confirm | Wrong scope/credentials |
+| MUST drive each scenario through its real surface (UI scenario → Playwright through the UI, every step); API only for test-data/precondition prep; an API scenario is driven at the API | [test-through-real-steps.md](../../../references/test-through-real-steps.md) — an API shortcut for a UI action tests the wrong layer and can pass while the screen is broken |
 | MUST attach complete evidence to every case before the story is "done" — a **whole-flow MP4 + one screenshot per Expected-Result item** for each non-BLOCKED story case (retest-bug re-verify = screenshots only) — and pass the 5-step gate in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) | A story reported "100% passed" while cases have no MP4 (or a minor-issue verdict with no bug) looks finished but is unverified; the pass-rate counts minor-issue as passed and hides the gap |
 | MUST judge defect Priority/Severity ONLY from the [Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md) — never invent a severity notion; PASSED WITH MINOR ISSUE needs a Lowest/Low/Medium bug, FAILED needs High/Highest | Guessing severity produces inconsistent verdicts across testers and tickets |
 | MUST re-read destination after Phase G writes | Silent partial failure |

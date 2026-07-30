@@ -22,3 +22,4 @@ When invoking `testing-ticket-workflow`, also recite:
 > 3. No run without user confirmation on the intake summary
 > 4. No “update complete” without re-reading the destination and verifying every planned write
 > 5. Do not open bugs here — use Create bug workflow
+> 6. Execute each case through its real steps (UI case → drive the UI, every Test Step); the API is only for test-data/precondition prep, never to perform the action under test

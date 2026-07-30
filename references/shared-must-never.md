@@ -8,6 +8,7 @@ These apply to every skill. Each SKILL.md adds skill-specific rows only.
 | MUST announce `Using **{skill}** to {purpose}.` | Skill invocation discipline |
 | MUST NOT claim success without tool output **and** destination verification | [qa-evidence-gates.md](qa-evidence-gates.md) |
 | MUST NOT skip approval gates (draft, post, transition) | Irreversible side effects |
+| MUST execute the action under test through its real surface — a UI/story case driven through the UI, following every Test Step; API allowed **only** for test-data/precondition prep (an API case is driven at the API — that is its real step, not a shortcut) | [test-through-real-steps.md](test-through-real-steps.md) — an API shortcut for a UI action verifies the wrong layer and can pass while the screen is broken |
 | MUST complete at least one fix-verify round after any side effect | First publish is rarely fully correct |
 | MUST NOT report "commented" / "done" for Jira comments until post-publish review passes | [jira-comment-post-review.md](jira-comment-post-review.md) — no stray HTML tags, numbered items on separate lines, attachment present |
 | MUST convert `<br>` to Jira-native line breaks before posting any table to Jira | [jira-linebreak-conversion.md](jira-linebreak-conversion.md) — raw `<br>` renders as literal text |

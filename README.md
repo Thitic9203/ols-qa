@@ -23,8 +23,8 @@ Three ways of working, all pointed at the OLS project:
   - **Automatic (autopoll)** — every 2 h it finds ready tickets and asks in the thread; the first person to
     answer claims them, one **Yes** runs them. See *Automated testing trigger*.
 - **C. Background automations** — scheduled jobs keep the pipeline running unattended: TC drafting, auto-flip
-  of started stories to TESTING, QA-owner sync, a daily login smoke-test, auth-token refresh. See *Background
-  automations*.
+  of started stories to TESTING, QA-owner sync, the hourly test-type deliverable sync, a daily login
+  smoke-test, auth-token refresh. See *Background automations*.
 
 Each is detailed below.
 

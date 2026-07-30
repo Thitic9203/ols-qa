@@ -28,6 +28,12 @@ invoking a real debugging skill — **`superpowers:systematic-debugging`** first
 
 **Any verdict that is not a clean PASSED** is governed by [defect-report-completeness.md](../../../references/defect-report-completeness.md) — the comment must answer the reader's five questions (what, **which entry points**, what it should be instead, why that is a fail, **what changes and who decides**) before it is posted. A question asked after posting means a section was missing; the fix is the comment, not a chat reply.
 
+**Test through the real steps.** Drive the behaviour under verification through its own surface,
+following the ticket's Test Steps completely — a UI bug through the UI (click, fill, submit), never a
+direct API call to perform the tested action. The API is allowed **only** to prepare the case's test
+data / precondition (Step 4c). For an **API-layer** bug the API call in Step 4d *is* the real step,
+not a shortcut. Full rule: [test-through-real-steps.md](../../../references/test-through-real-steps.md).
+
 Use plain chat for URLs/credentials; AskUserQuestion only for choices (e.g. approve comment).
 
 ## Refusal-first (precondition gate)
@@ -161,6 +167,11 @@ Use browser automation: navigate to login URL, fill credentials from config (or 
 4. Ask the user only for data you cannot synthesize.
 
 Do not modify unrelated production records; record IDs you create.
+
+**This is setup only — the boundary is strict.** Creating data via API is allowed to reach a case's
+**precondition**. The **action under test** is never performed via API: run it through the ticket's
+real Test Steps (UI bug → through the UI). For an API-layer bug, the API call in Step 4d *is* the real
+step. See [test-through-real-steps.md](../../../references/test-through-real-steps.md).
 
 ### 4d. API testing
 
@@ -618,6 +629,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST run Step 8d as soon as the bug lands in Done — Done = fixed = the stories it blocked may be releasable | Otherwise blocked stories sit in the backlog after their blocker is already closed |
 | MUST check EVERY "is blocked by" link on a story before moving it in Step 8d, treat only **Done** as resolved, and move only stories parked in the blocked status | This bug is often not the story's only blocker; moving a still-blocked story sends untestable work back to QA, and touching a story already in QA/dev moves it backwards |
 | MUST create test data when possible | "No data" is not an excuse |
+| MUST perform the action under test through its real surface (UI bug → through the UI, every Test Step); API only for test-data/precondition prep, and for an API-layer bug the API call is the real step | [test-through-real-steps.md](../../../references/test-through-real-steps.md) — an API shortcut for a UI action verifies the wrong layer and can pass while the screen is broken |
 | MUST NOT change COMMENT_FORMAT after Step 3 | v2/v3 rewrite cost |
 | MUST NOT include local file paths in Jira comments (`docs/result/`, absolute home/machine paths, etc.) | Meaningless to Jira readers; user enforced "เน้นๆๆ ห้ามผิดอีก" |
 | MUST scan Jira comment for local paths before posting | Catches leaks: `docs/`, `~/`, absolute paths |
