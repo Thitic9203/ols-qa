@@ -39,6 +39,10 @@ python3 ~/ols-qa-testing-bot/unit_apply.py --write         # write Unit rows + m
 - Each tab passes a 5-layer fail-closed gate (snapshot → status/key re-derive → structure → write RAW
   → readback); any mismatch restores that tab from its snapshot. Snapshots live under
   `~/ols-qa-testing-bot/logs/tc_result_sync_snap/`.
-- The hourly launchd job (`com.thitichaya.ols-tc-result-sync` in `~/Library/LaunchAgents/`) runs the
-  same `--apply` for System + Integration. **Armed and running** (loaded 2026-07-27). Unit images are
-  synced by the bound Apps Script's own hourly trigger (independent of the Python plist).
+- The hourly launchd job (`com.thitichaya.ols-tc-result-sync` in `~/Library/LaunchAgents/`) runs
+  `run_sync_tc_result.sh` every hour = System + Integration (`--apply`) **and** Unit rows
+  (`--rows-only`, reusing already-built composites), each under a **1200 s wall-clock watchdog**; every
+  opener also carries a per-request `timeout=120` + retry so a stalled network can never hang the run
+  (a no-timeout call once blocked it for 2.7 days, which then blocked every queued run behind it).
+  **Armed and running** (loaded 2026-07-27, hardened 2026-07-30). Unit col-I images are embedded by the
+  bound Apps Script's own hourly trigger (independent of the Python plist).
