@@ -20,6 +20,16 @@ Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
 MUST refuse to reach Phase B until **A1 (target)**, **A2 (format)**, and **A3 (bug details)** are sufficient to draft — because guessing tracker fields produces junk issues.
 
+**MUST NOT file a defect whose "expected / spec" side is an UNVERIFIED assumption.** "App differs from
+what you *assume* the spec says" is **not a bug** — a bug is "app differs from the *verified* spec." Before
+drafting, the expected behavior/label/value MUST be confirmed against the **authoritative source** (design
+file / Figma, PRD, AC, or the PO) — never derived from a transliteration, an English feature name, or
+prose/verb usage, and read **char-exact** on both sides for any wording claim. If the expected side carries
+a hedge ("please confirm with design/PO", "should be…", "probably", "ตามสเปก" unchecked), the spec is
+unconfirmed → it is a **question, not a bug**: resolve it (or mark BLOCKED / ask the owner) first. Do not
+file. (Root cause this prevents: a phantom label bug filed against a transliterated word never in the
+design — the real spec matched the app all along.)
+
 If pre-flight fails (auth, repo missing), stop — MUST NOT create issues silently.
 
 On first response after constraints, follow [workspace-guide-discovery.md](../../../references/workspace-guide-discovery.md) for **Create bug**, then show [intake-one-pager.md](../../../references/intake-one-pager.md) (Create bug section).
