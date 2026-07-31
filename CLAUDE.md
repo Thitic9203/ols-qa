@@ -11,6 +11,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ถ้า user เคยระบุ env ใน session นั้นแล้ว → ใช้ตามนั้น ไม่ต้องถามซ้ำ
 - บทเรียน (2026-07-30 OLS-294/295): AI default ไปเลือก pre-prod เองเพราะไม่ต้อง VPN ทั้งที่ user ต้องการ dev — root cause = เลือก env เองโดยไม่มีสิทธิ์
 
+## 🔴 กฎ: ห้ามเปิดบัคทั้งที่ไม่ใช่บัค — verify "สเปคที่คาดหวัง" กับแหล่งจริงก่อนเปิดเสมอ
+
+**ห้ามเปิด / escalate defect ใดๆ ถ้ายังไม่ได้ยืนยันฝั่ง "expected / สเปค" กับแหล่ง authoritative จริง (Figma / PRD / AC / PO) — เด็ดขาด** "แอปต่างจากที่ AI *คิดว่า* สเปคเขียน" **ไม่ใช่บัค**. บัค = "แอปต่างจากสเปคที่ *ยืนยันแล้ว*" เท่านั้น. ก่อนเขียนคำว่า FAILED/เปิดบั๊กเรื่อง label/ข้อความ/พฤติกรรม ต้องเปิดแหล่งสเปคจริงอ่าน **char-exact** ทั้งสองฝั่ง (แหล่งจริง + แอป) ก่อน
+
+- **ห้ามเอาคำทับศัพท์ / ชื่อฟีเจอร์อังกฤษ / คำในเนื้อความ (prose/verb) มาตั้งเป็น "label ที่สเปคต้องการ"** — ปุ่มชื่อ `Bookmark` ไม่ได้แปลว่า label ต้องเป็น "บุ๊กมาร์ก"; ต้องเปิด Figma อ่านของจริง (ของจริง = "บันทึก")
+- **เจอ "รบกวนยืนยันกับ Figma/PO" (หรือ hedge ว่ายังไม่ชัวร์) ใน expected result = สัญญาณว่ายังไม่ verify → หยุด ไปยืนยันก่อน ห้ามเปิดบัค** ความไม่ชัวร์เรื่องสเปก = **"คำถาม" ไม่ใช่ "บัค"**
+- สเปกไม่ชัด → ตั้ง BLOCKED / ถาม PO (เหมือนกฎ TC review "unclear spec → BLOCKED + actionable Remark") — **ไม่ใช่เปิด Bug ticket**
+- ก่อน commit verdict FAILED/เปิดบั๊ก ถามตัวเอง: "สเปคฝั่ง expected นี้ ฉัน *อ่านจากแหล่งจริง* แล้วหรือแค่ *เดา/ทับศัพท์*?" ถ้ายังไม่อ่าน → ยังเปิดไม่ได้
+- บทเรียนเต็ม: **PM-006 (OLS-315)** ท้ายไฟล์
+
 ## Auto-loaded docs
 
 @CONTEXT.md
@@ -520,3 +530,43 @@ was correct; only OLS-248 was wrong.)
   render the same mention — a difference is a bug, never a "format".
 - **Correct a wrong posted notify in place** (webhook `PATCH …/messages/{id}`, owner id only) — never
   delete and repost.
+
+### PM-006 — A bug was filed against a spec that was never verified; the "spec word" was an assumption, not the spec (2026-07-31, OLS-315 / OLS-48)
+
+**Surface:** any defect write-up or Bug ticket that claims "app ≠ spec" — testing-ticket-workflow F3,
+create-bug-workflow, retest-bug-workflow, and the QA finding lists they draw from.
+
+**What happened.** OLS-315 was a Bug claiming the media-detail **Bookmark** button showed label
+"บันทึก" but "the spec / Figma requires **'บุ๊กมาร์ก'**". On retest the actual Figma was opened at 100%
+and the live app label was read **char-exact from the DOM** (plus an independent headless guest
+session): **both say "บันทึก"; "บุ๊กมาร์ก" appears nowhere.** The app was correct the whole time — it
+was never a bug. Verdict PASSED / not-a-bug; ticket closed.
+
+**Root cause — a defect filed on an UNVERIFIED, assumed spec.**
+1. **The "spec = บุ๊กมาร์ก" claim was never checked against Figma.** "บุ๊กมาร์ก" is the Thai
+   **transliteration of the English button name "Bookmark"**, and in OLS-48's prose / TC titles it is
+   used only as the **action verb** ("สื่อที่บุ๊กมาร์กไว้") — never as the button's display **label**.
+   The finding (OLS-48 comment F1) elevated that transliteration/verb to "the required label," then
+   compared the app's real label ("บันทึก") against the assumption and reported a phantom mismatch. The
+   authoritative source (Figma) says "บันทึก" and matches the app.
+2. **The uncertainty was visible and ignored.** The bug's own Expected Result carried
+   *"รบกวนยืนยันคำที่ถูกต้องกับ Figma/PO"* — an explicit admission the spec was unconfirmed — yet it was
+   filed as a Bug instead of being resolved as a question first. One look at the Figma the ticket itself
+   referenced would have refuted it. ("Was it maybe fixed?" — no: Figma, the static spec, = "บันทึก", so
+   the app was never "บุ๊กมาร์ก"; there was no fix, the premise was simply wrong.)
+3. **No gate on the filing path.** OLS QA already has an "unclear spec → BLOCKED + actionable Remark,
+   ask PO, don't guess" rule — but only for **TC review**. Defect filing had no equivalent verify-first
+   gate, so an assumed-spec mismatch flowed straight into a Bug.
+
+**Underlying mistake:** treating "app differs from what I *assumed* the spec says" as a defect. A defect
+is only "app differs from the *verified* spec." An unverified expected value is a **question, not a bug**.
+
+**Prevention (now a hard rule — see the 🔴 rule near the top of this file).**
+- Before filing / escalating ANY defect, **verify the expected/spec side against the authoritative
+  source** (Figma / PRD / AC / PO). Never derive a required label or behavior from a transliteration, an
+  English feature name, or prose/verb usage.
+- Any unconfirmed-spec hedge ("รบกวนยืนยันกับ Figma/PO") in an expected result = **STOP, verify first;
+  do not file.** Unclear spec → BLOCKED / question to PO, never a Bug ticket.
+- A wording/label defect does not exist until BOTH the authoritative source AND the app have been read
+  **char-exact** (ties to the "OLS text verdict char-exact" rule and the bookmark-label reference in
+  agent memory).
