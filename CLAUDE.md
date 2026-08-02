@@ -21,6 +21,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ก่อน commit verdict FAILED/เปิดบั๊ก ถามตัวเอง: "สเปคฝั่ง expected นี้ ฉัน *อ่านจากแหล่งจริง* แล้วหรือแค่ *เดา/ทับศัพท์*?" ถ้ายังไม่อ่าน → ยังเปิดไม่ได้
 - บทเรียนเต็ม: **PM-006 (OLS-315)** ท้ายไฟล์
 
+## 🔴 กฎ: ดาต้าเทสไม่เรียบร้อย = ห้ามนำไปใช้เทสเด็ดขาด — ผ่านครบ 5 ชั้นก่อนเท่านั้น
+
+**ไฟล์/ปก/สื่อ (test data) ที่ยังไม่ผ่าน gate ครบทุกชั้น = "ยังไม่เรียบร้อย" → ห้ามนำไปสร้างสื่อ/ห้ามอัป Drive/ห้ามใช้เทสเด็ดขาด · ห้ามบอกว่าเสร็จ · ห้ามจบงานเงียบๆ** เจอผิด → หยุด แก้ที่ root cause แล้วรัน gate ใหม่ตั้งแต่ชั้น 1 (ห้ามปล่อยผ่านบางส่วน ห้าม workaround). แนวทางเต็ม: [plan doc](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/2026-08-02-training-ols-testdata-files-plan.md) (private) — `no-done-until-all-gates-pass`.
+
+### ปก (cover) = Draw Things AI bg + คำไทย overlay — ห้ามพื้นสีเรียบ/gradient/PIL
+
+- ปกทุกใบ = **ภาพถ่าย AI จริงจาก Draw Things** (พื้นหลังตรงเนื้อหา, `/sdapi/v1/txt2img` SDXL, seed=hash(id) คงที่) **+ คำไทย overlay จาก program layer** (`thumb_ai.js` reuse `thumb_final.js`, ฟอนต์ SukhumvitSet) — **โมเดลห้ามเรนเดอร์ตัวอักษรเอง** (`negative_prompt: text, letters, words, thai text, watermark, logo, ui, blurry, lowres`)
+- **ห้ามพื้นสีเรียบ / gradient / PIL-render ไทยเด็ดขาด** (ผิดซ้ำ 2026-08-02 — ทิ้ง ไม่อัป Drive) · reuse tool เดิม (off-repo) ห้ามเขียนใหม่ให้เพี้ยน
+- **Prereq (AI เปิดแอปเองไม่ได้):** user ต้องเปิด Draw Things + API Server ON (`HTTP:7860`) ก่อน · `:7860` ไม่ตอบ = งานปก **BLOCKED** จนกว่าจะเปิด — รายงาน user, ห้ามหันไป fallback พื้นสีเรียบ
+
+### แนวป้องกัน 5 ขั้น (Cover 5-level defense gate) — ผ่านครบทุกชั้นถึงใช้ได้ · ห้ามพลาด
+
+| ชั้น | ตรวจ | ผ่าน = |
+|:--:|:--|:--|
+| **1** แหล่ง bg | พื้นหลังมาจาก Draw Things (`/sdapi/v1/txt2img` หรือ `.dt_bg_cache/<id>.png`) | **ภาพถ่าย variance สูง ไม่ใช่พื้นสีเรียบ/gradient/PIL** |
+| **2** ตรงเนื้อหา | scene ตรงหัวข้อ/หมวด/ประเภท (จาก `cover_prompts.json[title]`) | เปิดดู ภาพเกี่ยวกับเรื่องนั้นจริง |
+| **3** ไม่มี text จากโมเดล | สแกน bg ไม่มีตัวอักษร/โลโก้/ลายน้ำมั่ว | มี → regenerate seed ใหม่ |
+| **4** คำไทย overlay | title/badge/kicker จาก program layer · สะกด char-exact · วรรณยุกต์ครบ · คอนทราสต์ผ่าน (card/scrim) · ไม่มี "OLS"/metric ลวง | อ่านออกครบทุกตัว |
+| **5** visual เทียบ lot จริง | เปิด PNG จริง + เทียบสไตล์ปก lot ล่าสุด (photo + frosted card) — QA ดูเอง ไม่เดา | สไตล์เดียวกัน |
+
+> media/course/LP ก็เข้าหลักเดียวกัน: ต้องผ่าน readback field-ต่อ-field + publish chain + guest verify ครบก่อนนับว่า "เรียบร้อย" (§7 3-ชั้น + §8 5-ชั้น ใน plan doc). ไม่ครบ = ยังใช้เทสไม่ได้.
+
 ## Auto-loaded docs
 
 @CONTEXT.md
