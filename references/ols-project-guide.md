@@ -222,8 +222,8 @@ Re-fetch and confirm with the user **before every TC design run** — see [tc-gl
 
 ### Auth / login flow
 
-> **🛑 Pre-flight all-role login smoke gate — ก่อนเริ่มเทสสตอรี่ทุกครั้ง (บังคับ, user 2026-07-21).**
-> ก่อนเริ่มเทสสตอรี่ **ทุกครั้ง** ต้องลอง **headless login ให้ครบทั้ง 5 role** ก่อน (ไม่ใช่แค่ role ที่เคสใช้) → ทำตารางผลต่อ role (✅/❌ + reason) แจ้ง user. ทุก role ผ่าน → เริ่มเทสได้; มี role ล้ม → หยุด + รายงาน + รอ user (หรือ user สั่งข้าม role นั้น). ดัก auth-backend ล้ม(เช่น NDLP68 `400` — [[ols-ndlp68-login-backend-400]]) ตั้งแต่ต้น. ขั้นตอนเต็ม → template [ai-assisted-testing-template.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ai-assisted-testing-template.md) §2.3.4; สำหรับ unattended bot = mark role ที่ล้มเป็น Blocked ไม่ halt.
+> **🛑 Pre-flight login smoke gate — ก่อนเริ่มเทส/รีเทสทุกครั้ง (บังคับ, user 2026-07-21; scope แก้ 2026-08-02).**
+> ก่อนเริ่มเทสสตอรี่/รีเทส **ทุกครั้ง** ต้องลอง **headless login เฉพาะ role ที่รอบนั้นจะใช้จริง** ก่อน (ดูจากเทสเคสในรอบว่าแตะ role ไหนบ้าง — **ไม่ต้องลองครบทั้ง 5 role**; รอบไหนใช้หลาย role ก็ login ครบเฉพาะ role เหล่านั้น) → ทำตารางผลต่อ role (✅/❌ + reason) แจ้ง user. role ที่จะใช้ผ่านครบ → เริ่มเทสได้; role ที่จะใช้ล้ม → หยุด + รายงาน + รอ user (หรือ user สั่งข้าม role นั้น). ดัก auth-backend ล้ม(เช่น NDLP68 `400` — [[ols-ndlp68-login-backend-400]]) ตั้งแต่ต้น. ขั้นตอนเต็ม → template [ai-assisted-testing-template.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ai-assisted-testing-template.md) §2.3.4; สำหรับ unattended bot = mark role ที่ล้มเป็น Blocked ไม่ halt.
 
 OLS ไม่มีหน้า login ของตัวเอง — login ผ่าน **NDLP68 portal** (`https://<SSO_PORTAL_HOST>`) แล้ว SSO session carry เข้า OLS อัตโนมัติ. NDLP68 เซ็ต auth cookie บน parent domain `<COOKIE_DOMAIN>` → cookie ส่งถึง `<DEV_HOST>` เอง (login ndlp68 สำเร็จ → refresh dev-ols = login แล้ว). Login API: `POST {backend}/auth/login-with-email`, cookie session (`withCredentials`); backend = `school-core-api-{env}<COOKIE_DOMAIN>` (env ∈ dev/uat/preprod/ndlp68/prod).
 

@@ -40,11 +40,11 @@ artifact and a `Confirmed` / `Suspected` / `Unknown — not investigated` label.
 
 MUST refuse to reach Phase B until **Ticket** and **URL** are provided — because the test plan has no target.
 
-**Pre-flight login smoke gate (mandatory before Phase B).** Before running any scenario, verify that login **actually succeeds** for **every role/credential set** the run may use — not only the one role the first case needs. Drive the real login (headless where supported) per role and confirm an authenticated signal (redirect to an authed area, a session/`me` endpoint, or a logged-in UI marker). Produce a per-role pass/fail table.
-- **All roles pass →** proceed to Phase B.
-- **Any role fails →** 🛑 stop, report which role failed and why (backend error, VPN, bad creds), and do **not** start testing until it is cleared or the user explicitly says to skip the failing role. Never mark scenarios PASSED when auth was never verified.
+**Pre-flight login smoke gate (mandatory before Phase B).** Before running any scenario, verify that login **actually succeeds** for **only the role(s)/credential set(s) this run's scenarios will actually use** — not every role the project has. Read the run's scenarios to determine which roles are in scope; a single-role run logs in that one role, a multi-role run logs in each role it uses, nothing more. Drive the real login (headless where supported) per in-scope role and confirm an authenticated signal (redirect to an authed area, a session/`me` endpoint, or a logged-in UI marker). Produce a pass/fail table for the in-scope roles.
+- **All in-scope roles pass →** proceed to Phase B.
+- **Any in-scope role fails →** 🛑 stop, report which role failed and why (backend error, VPN, bad creds), and do **not** start testing until it is cleared or the user explicitly says to skip the failing role. Never mark scenarios PASSED when auth was never verified.
 
-This catches an auth-backend outage (e.g. an IdP returning a 4xx on every login) up front, before opening cases that would all block later. Project-specific role list, accounts, and login steps live in the project's `references/*-guide.md` / login runbook.
+This catches an auth-backend outage (e.g. an IdP returning a 4xx on every login) up front, before opening cases that would all block later — scoped to the roles the run needs, so an unrelated role's outage never blocks a run that doesn't use it. Project-specific role list, accounts, and login steps live in the project's `references/*-guide.md` / login runbook.
 
 If **VPN** is required per user and environment is unreachable in Phase D, stop and report — do not mark scenarios PASSED without evidence.
 
