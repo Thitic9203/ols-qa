@@ -34,7 +34,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   2. เปิด/โฟกัสแอป: `open -a "Draw Things"` (ถ้ายังไม่เปิด รอ ~5–10s ให้แอปโหลด)
   3. เปิด API server ผ่าน computer-use (native app, ต้อง `request_access` "Draw Things" ก่อน): sidebar ซ้าย → **Settings** (ไอคอนเฟือง) → toggle มุมบนเลือก **All** → เลื่อนลงหา section **API Server** → เปิด toggle **"Server Online"** (ปุ่ม **HTTP** ไม่ใช่ gRPC) → เขียว = รันอยู่ที่ `localhost:7860`
   4. ยืนยันซ้ำด้วย curl ข้อ 1 ให้ได้ `200`
-- **เปิดเองไม่สำเร็จจริงๆ** (แอปไม่มี, computer-use ไม่ได้รับสิทธิ์, `:7860` ยัง fail หลังลองครบ) = งานปก **BLOCKED** → รายงาน user ให้เปิดมือ · **ห้าม fallback พื้นสีเรียบ/gradient/PIL เด็ดขาด**
+- **ไม่มีโปรแกรมในเครื่อง** (`open -a "Draw Things"` error `Unable to find application` / `ls /Applications/"Draw Things.app"` ไม่เจอ) → **แชทบอก user ในนี้ก่อนเลยว่าให้ลง Draw Things ก่อน** (Mac App Store: "Draw Things: AI Generation" ฟรี · หรือ https://drawthings.ai) แล้วเปิด API Server ตามขั้นบน — งานปก **BLOCKED** จนกว่าจะลง · ห้ามเงียบ ห้ามข้ามไปทำอย่างอื่นโดยไม่บอก
+- **เปิดเองไม่สำเร็จจริงๆ ทั้งที่มีโปรแกรม** (computer-use ไม่ได้รับสิทธิ์, `:7860` ยัง fail หลังลองครบ) = งานปก **BLOCKED** → รายงาน user ให้เปิดมือ · **ห้าม fallback พื้นสีเรียบ/gradient/PIL เด็ดขาด**
 
 ### แนวป้องกัน 5 ขั้น (Cover 5-level defense gate) — ผ่านครบทุกชั้นถึงใช้ได้ · ห้ามพลาด
 
