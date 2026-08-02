@@ -29,7 +29,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - ปกทุกใบ = **ภาพถ่าย AI จริงจาก Draw Things** (พื้นหลังตรงเนื้อหา, `/sdapi/v1/txt2img` SDXL, seed=hash(id) คงที่) **+ คำไทย overlay จาก program layer** (`thumb_ai.js` reuse `thumb_final.js`, ฟอนต์ SukhumvitSet) — **โมเดลห้ามเรนเดอร์ตัวอักษรเอง** (`negative_prompt: text, letters, words, thai text, watermark, logo, ui, blurry, lowres`)
 - **ห้ามพื้นสีเรียบ / gradient / PIL-render ไทยเด็ดขาด** (ผิดซ้ำ 2026-08-02 — ทิ้ง ไม่อัป Drive) · reuse tool เดิม (off-repo) ห้ามเขียนใหม่ให้เพี้ยน
-- **Prereq (AI เปิดแอปเองไม่ได้):** user ต้องเปิด Draw Things + API Server ON (`HTTP:7860`) ก่อน · `:7860` ไม่ตอบ = งานปก **BLOCKED** จนกว่าจะเปิด — รายงาน user, ห้ามหันไป fallback พื้นสีเรียบ
+- **Prereq — API Server `HTTP:7860` ต้อง ON. รอบหน้า AI เปิดเองก่อนเริ่มทำ (อย่าถาม user ก่อน).** ขั้นตอนเปิดเอง:
+  1. เช็คก่อน: `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:7860/sdapi/v1/options` — ตอบ = ON แล้ว ข้ามได้เลย
+  2. เปิด/โฟกัสแอป: `open -a "Draw Things"` (ถ้ายังไม่เปิด รอ ~5–10s ให้แอปโหลด)
+  3. เปิด API server ผ่าน computer-use (native app, ต้อง `request_access` "Draw Things" ก่อน): sidebar ซ้าย → **Settings** (ไอคอนเฟือง) → toggle มุมบนเลือก **All** → เลื่อนลงหา section **API Server** → เปิด toggle **"Server Online"** (ปุ่ม **HTTP** ไม่ใช่ gRPC) → เขียว = รันอยู่ที่ `localhost:7860`
+  4. ยืนยันซ้ำด้วย curl ข้อ 1 ให้ได้ `200`
+- **เปิดเองไม่สำเร็จจริงๆ** (แอปไม่มี, computer-use ไม่ได้รับสิทธิ์, `:7860` ยัง fail หลังลองครบ) = งานปก **BLOCKED** → รายงาน user ให้เปิดมือ · **ห้าม fallback พื้นสีเรียบ/gradient/PIL เด็ดขาด**
 
 ### แนวป้องกัน 5 ขั้น (Cover 5-level defense gate) — ผ่านครบทุกชั้นถึงใช้ได้ · ห้ามพลาด
 
