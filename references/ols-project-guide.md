@@ -90,6 +90,16 @@ blockers that this retest never touched are not missed.
 | Status value | `Done` *(verify exists as OLS custom Status value before import)* |
 | Suite | reuse existing OLS suite; new suite only with user approval, never a duplicate |
 
+## Training-OLS smoke-test sheet
+
+Smoke-test case list + verdicts for the training-ols (prod) run. Resolve `<SMOKE_SHEET_ID>` from `~/.ols-qa-secrets/`.
+
+| Field | Value |
+|-------|-------|
+| Sheet | `<SMOKE_SHEET_ID>` — tab **"OLS - Smoke test"** (gid `2040945190`), 112 cases |
+| Columns | A Module · B Test case · C Pre-req · D Test data · E Test step · F Expected · **G/H/I = Pre-prod** status/img/bug (do not touch) · **J/K/L = Training-ols** status/img/bug |
+| Write scope | verdict → **col J** · evidence link → **col K** · linked bug → **col L**. Verdict = outcome-state shown in the capture (completeness gate), never "action done". |
+
 ## QA tracking sheet (ticket list + TC status)
 
 Master sheet of OLS tickets with QA/TC status. AI reads this to decide which tickets to test and to load each ticket's reviewed test cases. See workflow: [ai-assisted-testing-template.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ai-assisted-testing-template.md).
