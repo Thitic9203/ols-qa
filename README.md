@@ -277,6 +277,16 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
 
 ## Changelog
 
+### v1.21.5 — login preflight scoped to the roles a run uses (2 Aug 2026)
+
+- **Pre-flight login smoke gate now smokes only the role(s) a run actually uses — not all 5.** Before
+  a testing or retest run, the gate reads the run's scenarios to decide which roles are in scope: a
+  single-role run logs in that one role, a multi-role run logs in each role it uses, nothing more. An
+  unrelated role's auth outage no longer blocks a run that never touches that role. The auth-backend
+  outage catch (e.g. NDLP68 `400` on every login) is unchanged — just scoped. retest-bug-workflow was
+  already single-role. Updated: [references/ols-project-guide.md](references/ols-project-guide.md)
+  § Auth and the shared `testing-ticket-workflow` pre-flight gate.
+
 ### v1.20.5 — sync-tc-result: three test-type deliverables live + hourly hardening (30 Jul 2026)
 
 - **`/sync-tc-result`** routes every TC result from the QA source sheet into the three customer
@@ -293,18 +303,6 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
   Verified by a clean full run (both legs rc=0, no data/image loss) + a 9-case grid-plan regression test.
 - Layout, status map, and write model: [references/ols-project-guide.md](references/ols-project-guide.md)
   § Test-type deliverable sheets · command doc: [commands/sync-tc-result.md](commands/sync-tc-result.md).
-
-### v1.16.5 — qa-owner-sync hardening + regression-tc-sync manual-only (24 Jul 2026)
-
-- **qa-owner-sync `Code.gs` hardened** against the 2026-07-24 mass-append-garbage incident — `LockService`
-  on every mutating trigger, `_healGarbage()` drops empty-key/`#REF!` rows before any write, an abort-guard
-  refuses an append when `missing >= existing` (the mass-append signature), and appends now set col A
-  explicitly. Deploy blocked by the Apps Script API user-toggle being off for `<QA_SERVICE_ACCOUNT>`; contained
-  meanwhile by `progress_guardian.py` (launchd, clear-not-delete). รายละเอียด: [docs/qa-owner-sync/README.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/qa-owner-sync/README.md)
-- **Regression-tc-sync auto-schedule confirmed OFF** — launchd `com.<USER>.ols-regression-sync` stays
-  retired (disabled 23 Jul 2026, plist renamed off the auto-load dir); `references/ols-project-guide.md`
-  updated to say **manual only** instead of the stale Mon–Fri 10:30/17:00 schedule. Script itself untouched
-  — run on demand: `python3 ~/ols-qa-testing-bot/regression_sync.py`. รายละเอียด: [docs/regression-tc-sync.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/regression-tc-sync.md)
 
 ---
 
