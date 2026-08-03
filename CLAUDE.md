@@ -78,6 +78,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Why:** user เคยเจอ session ที่ AI ทำงานเงียบยาวจนแยกไม่ออกว่า "ค้าง" หรือ "กำลังทำ" — ทำให้ต้องนั่งเดา ไม่โอเค. งานที่ดี = user เห็นความคืบหน้าตลอด ไม่ต้องถามว่า "ถึงไหนแล้ว" (กฎ global always-on ข้อ 11 ด้วย)
 
+## 🔴 กฎ: ห้ามปรับ/เปลี่ยนฟอร์แมตโนติ (Discord QA notify) เองเด็ดขาด — user ไม่ได้สั่ง = ห้ามเปลี่ยน
+
+**ฟอร์แมตโนติ QA (Discord) = canonical format ที่ user เคยรับแล้วเท่านั้น ห้าม AI ปรับ/เพิ่ม/ลด/สลับโครงสร้างเองโดยไม่มีคำสั่งชัดจาก user เด็ดขาด** — header `🔔 QA Review Requested`, บรรทัด count ตัวหนา, bullet, link, `👤 @mention` (6 บรรทัด locked). verdict/state อยู่ที่บรรทัด count เท่านั้น ห้ามทำ header/ไอคอนแยกตาม verdict.
+
+**Apply เสมอ ก่อนส่งโนติทุกครั้ง:**
+- ใช้ `discord_qa_notify.py` (helper ที่ประกอบ canonical format) เท่านั้น — ห้าม hand-craft payload เอง
+- **escape อักขระ markdown ในเนื้อความก่อนส่ง** — Discord ตีความ `_text_`=italic, `*`=italic/bold, `~~`=strike, `` ` ``=code, `|`=spoiler. ชื่อสื่อ/หัวข้อบั๊กที่มี `_` หรือ `-` (เช่น `QA_OLS33`, "อักขระพิเศษ _ , -") ที่ใส่ดิบๆ จะทำให้ Discord **auto-italic เอง** = โนติเพี้ยนทั้งที่ไม่ได้ตั้งใจเปลี่ยนฟอร์แมต → escape `\_` หรือครอบ backtick ก่อนเสมอ
+- `--dry-run` ก่อนส่งจริงทุกครั้ง แล้วอ่าน output ให้ครบว่าตรง canonical + ไม่มี italic/markup แปลก
+- เจอโนติที่ render เพี้ยนหลังส่งแล้ว → **PATCH ในข้อความเดิม** (`PATCH /webhooks/{wid}/{wtok}/messages/{mid}?thread_id=…` + `allowed_mentions.users:[id]` + real User-Agent) **ห้ามลบโพสต์ใหม่**
+
+**Why:** OLS-322 (2026-08-03) — โนติ retest render เป็นตัวเอียงเพราะ AI ใส่ `_` (ชื่อสื่อ `QA_OLS33` + หัวข้อบั๊ก) ดิบๆ ใน body ไม่ได้ escape → Discord auto-italic. user เห็นแล้วถาม "ฟอแมตโนติเปลี่ยนเองโดยเราไม่ได้สั่ง" — ถึงจะไม่ใช่การเปลี่ยนเทมเพลตจริง แต่ผลลัพธ์ที่ผู้ใช้เห็นคือฟอร์แมตเพี้ยน = ยอมรับไม่ได้. คลาสเดียวกับ PM-001 (โนติผิดฟอร์แมต) + PM-004 (`_`=italic ใน Jira wiki). memory: `discord-notify-escape-underscore`
+
 ## Auto-loaded docs
 
 @CONTEXT.md
