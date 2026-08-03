@@ -28,6 +28,16 @@ invoking a real debugging skill — **`superpowers:systematic-debugging`** first
 
 **Any verdict that is not a clean PASSED** is governed by [defect-report-completeness.md](../../../references/defect-report-completeness.md) — the comment must answer the reader's five questions (what, **which entry points**, what it should be instead, why that is a fail, **what changes and who decides**) before it is posted. A question asked after posting means a section was missing; the fix is the comment, not a chat reply.
 
+**Challenge every non-PASS before you record it (the "wait, really?" gate).** A retest result that is
+not a clean PASSED is a **hypothesis, not a verdict**. Before it becomes FAILED / BLOCKED — or a posted
+comment — re-verify the **expected** side against an authoritative source, **including the AC/EC of
+related / linked tickets** (the parent story, linked issues, sibling tickets on the same surface),
+read character-exact. The bug's own Expected Result is the primary contract (Step 2), but a related
+ticket may have **superseded** or **clarified** it, and a transliteration or an unconfirmed-spec hedge
+turns a correct app into a phantom FAILED. Run this at **Step 4h**, then **surface it to the user in
+chat** so they can decide whether to adjust the expected/TC, re-test, or confirm the defect. Full gate:
+[non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md).
+
 **Test through the real steps.** Drive the behaviour under verification through its own surface,
 following the ticket's Test Steps completely — a UI bug through the UI (click, fill, submit), never a
 direct API call to perform the tested action. The API is allowed **only** to prepare the case's test
@@ -225,6 +235,30 @@ The investigation block goes **into the comment** at Step 6a — not only into c
 
 **BLOCKED is not an escape from this step.** A BLOCKED item still records the sweep up to the
 boundary that blocked it, and names the access/person needed to continue.
+
+### 4h. Challenge the non-PASS + surface it to the user (mandatory for every non-PASSED item — before Step 6)
+
+Follow [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md) end to end, **before
+the draft exists.** A non-PASS is a hypothesis until it survives this:
+
+1. **Name the discrepancy** — `Expected: {X} (source) · Observed: {Y} (evidence)`. If you cannot name
+   the source of the expected value, stop — you are about to file the app against an assumption.
+2. **Re-verify the expected side against an authoritative source, including related tickets' AC/EC** —
+   the bug's own Expected Result stays the primary contract (Step 2), but read it **char-exact** and
+   cross-check the **parent story's AC/EC, every linked issue, and sibling tickets on the same surface**.
+   A related ticket may have **superseded** or **clarified** the expected; a transliteration/feature-name
+   is not the spec; an unconfirmed-spec hedge ("confirm with PO/Figma", "น่าจะ", "TBD") = a **question,
+   not a defect**.
+   - Expected wrong / superseded → **not a FAILED** → recommend adjusting the expected/TC, cite the ticket.
+   - Expected unclear / conflicting / hedged → **BLOCKED + a remark naming who to ask**, never a FAILED.
+   - Expected confirmed authoritative and the app still differs → it survived; carry it to Step 6.
+3. **Surface to the user in chat and let them steer** — post `expected (+source) · observed · AC/EC
+   finding · recommendation (A adjust the expected/TC · B re-test · C confirm defect)`. For A/B **wait for
+   the user's decision**; for a clearly-confirmed C you may continue, but never silently. Never edit the
+   ticket's expected-result field to match the app on your own — QA reports the conflict and names the owner.
+
+**Unattended / bot mode:** resolve the gate instead of asking — expected wrong/unclear → BLOCKED +
+remark (no bug, no halt); test-side cause → fix and re-run; confirmed defect → draft the comment as normal.
 
 ---
 
@@ -435,6 +469,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] `Verdict: PASSED` or `Verdict: FAILED` with issue link.
 - [ ] **Non-PASSED verdict:** Step 6a's two blocks present — **root cause** (Confirmed/Suspected/Unknown + backing artifacts) and **resolution options** (two options, each a named **role** owner, ending `Decided by: <role>`) — plus the one-line statement of whether the originally reported symptom is gone. (No separate repro-matrix / why-failed block — that content lives in the `Fixture` line and the verdict-table row + its `Evidence` screenshot.)
 - [ ] **Step 4g root-cause investigation ran for every non-PASSED item** (including BLOCKED): the cause cites captured artifacts (status code, response field/message, console error, bundle probe, fixture read-back) and is labelled `Confirmed` / `Suspected` (+ the confirming check) / `Unknown — not investigated` (+ what is needed).
+- [ ] **Step 4h challenge gate ran for every non-PASSED item** ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)): the expected side re-verified char-exact against an authoritative source **including related/linked tickets' AC/EC**; a wrong/superseded expected became an expected/TC adjustment (not a FAILED), an unclear/hedged spec became BLOCKED + a who-to-ask remark (not a bug), and every surviving non-PASS was surfaced to the user in chat (recommendation A/B/C) before the comment was drafted.
 - [ ] **Step 6b dev-question gate + cause gate passed before the first post**; every scope word traces to a verdict-table row + its `Evidence`; every cause sentence cites an artifact and carries a label; no hedge word used as a cause; no unresolved contradiction between your own observations.
 - [ ] v2/v3 format matches Step 3 lock; FE bugs have screenshots attached before wiki embed.
 - [ ] API cases: full cURL + response per row (no "same as above").
@@ -646,6 +681,8 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST resolve any disagreement between your own observations with one clean re-run before drafting, and record which was the artifact; unresolvable → BLOCKED, not FAILED | Resolving it in favour of the verdict you already reached is how the wrong repro path shipped |
 | MUST include the Step 6a blocks on every non-PASSED comment — **root cause** and **resolution options** (two options, each a named **role** owner, ending `Decided by: <role>`); NO separate repro-matrix / why-failed block (that content is the `Fixture` line + the verdict-table row and its `Evidence` screenshot) | These answer the dev's next questions without bloating the comment; the failing behaviour + evidence already sit in the table row |
 | MUST run the Step 4g root-cause investigation for EVERY non-PASSED item (FAILED and BLOCKED alike), starting by invoking `superpowers:systematic-debugging` (Phases 1–3) and naming it in the comment | Improvised reasoning is where guessing enters; the process is also faster than guess-and-check |
+| MUST run the Step 4h challenge gate for EVERY non-PASSED item — re-verify the expected side char-exact against an authoritative source **including related/linked tickets' AC/EC**, then surface expected-vs-observed + the AC/EC finding + a recommendation (adjust expected/TC / re-test / confirm defect) to the user in chat before drafting the comment ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)) | A non-PASS against a stale, superseded, or misread expected is a phantom FAILED; the expected side must be earned, and adjusting a spec or re-testing is the user's call (PM-006) |
+| MUST NOT post a FAILED whose expected turned out wrong, superseded, or unclear — that is an expected/TC adjustment or a BLOCKED question, never a FAILED; unattended bots resolve it as BLOCKED + remark, never a phantom bug and never a halt | Filing the app against an unverified expected is exactly how a phantom bug ships (PM-006, OLS-315) |
 | MUST complete the 8-boundary sweep while the environment is still open, writing `not checked` where a boundary was not reached | A boundary not captured during the run cannot be reconstructed later — reconstruction is fabrication |
 | MUST attach a captured artifact to every cause statement and label it `Confirmed` / `Suspected` / `Unknown — not investigated`, carrying the label wherever the sentence is copied (comment, sheet, notify) | A `Suspected` cause read as `Confirmed` sends a developer to the wrong layer |
 | MUST NOT use a hedge (`probably`, `น่าจะ`, `seems`, `flaky`, `cache issue`, `environment issue`) as a cause, restate the symptom as the cause, or infer a cause from a different record/role/run/entry point | Hedged guessing is still guessing, and it ships as QA's finding |
