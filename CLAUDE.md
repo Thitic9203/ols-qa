@@ -21,14 +21,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ก่อน commit verdict FAILED/เปิดบั๊ก ถามตัวเอง: "สเปคฝั่ง expected นี้ ฉัน *อ่านจากแหล่งจริง* แล้วหรือแค่ *เดา/ทับศัพท์*?" ถ้ายังไม่อ่าน → ยังเปิดไม่ได้
 - บทเรียนเต็ม: **PM-006 (OLS-315)** ท้ายไฟล์
 
-## 🔴 กฎ: ดาต้าเทสไม่เรียบร้อย = ห้ามนำไปใช้เทสเด็ดขาด — ผ่านครบ 5 ชั้นก่อนเท่านั้น
+## 🔴 กฎ: สร้าง test data — ใช้แนวทาง `ols-data-prep.md` เท่านั้น · ต้องสมบูรณ์ก่อนถึงเทสได้
 
-**ไฟล์/ปก/สื่อ (test data) ที่ยังไม่ผ่าน gate ครบทุกชั้น = "ยังไม่เรียบร้อย" → ห้ามนำไปสร้างสื่อ/ห้ามอัป Drive/ห้ามใช้เทสเด็ดขาด · ห้ามบอกว่าเสร็จ · ห้ามจบงานเงียบๆ** เจอผิด → หยุด แก้ที่ root cause แล้วรัน gate ใหม่ตั้งแต่ชั้น 1 (ห้ามปล่อยผ่านบางส่วน ห้าม workaround). แนวทางเต็ม: [plan doc](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/2026-08-02-training-ols-testdata-files-plan.md) (private) — `no-done-until-all-gates-pass`.
+**แนวทาง (single source of truth) เดียวสำหรับสร้าง/แก้/ตรวจ test data ทุกชนิด (media · course · LP · ปก · วิดีโอ · PDF · account · login) = [ols-data-prep.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ols-data-prep.md) (private) เท่านั้น — ห้ามทำนอกแนวทางนี้ ห้ามคิดสูตร/เครื่องมือ/พื้นปกเองใหม่.** ก่อนสร้างอะไรต้องเปิดอ่านไฟล์นี้ก่อนเสมอ แล้วทำตาม §0.0 Intake (ถาม env+account รอ user ยืนยัน) → §5–6 (reuse ของเดิมก่อน · สูตร cover §5.7.2 · วิดีโอ motion-graphics §5.7.2F) → gate §7 (3 ชั้น) + §8 (5 ชั้น) → §11 report. เครื่องมือจริงอยู่ off-repo `~/ols-qa-testing-bot/` (reuse ห้ามเขียนใหม่ให้เพี้ยน).
 
-### ปก (cover) = Draw Things AI bg + คำไทย overlay — ห้ามพื้นสีเรียบ/gradient/PIL
+**ข้อมูลต้อง "สมบูรณ์" (ผ่าน gate ครบทุกชั้น) ก่อนนำไปทดสอบเด็ดขาด — ไม่ครบ = ห้ามใช้.** ไฟล์/ปก/สื่อที่ยังไม่ผ่าน gate = "ยังไม่เรียบร้อย" → **ห้ามนำไปสร้างสื่อ/ห้ามอัป Drive/ห้ามใช้เทส/ห้ามบอกว่าเสร็จ/ห้ามจบงานเงียบๆ.** เจอผิดชั้นไหน → หยุด แก้ที่ root cause แล้วรัน gate ใหม่ตั้งแต่ชั้น 1 (ห้ามปล่อยผ่านบางส่วน ห้าม workaround). — `no-done-until-all-gates-pass`.
 
-- ปกทุกใบ = **ภาพถ่าย AI จริงจาก Draw Things** (พื้นหลังตรงเนื้อหา, `/sdapi/v1/txt2img` SDXL, seed=hash(id) คงที่) **+ คำไทย overlay จาก program layer** (`thumb_ai.js` reuse `thumb_final.js`, ฟอนต์ SukhumvitSet) — **โมเดลห้ามเรนเดอร์ตัวอักษรเอง** (`negative_prompt: text, letters, words, thai text, watermark, logo, ui, blurry, lowres`)
-- **ห้ามพื้นสีเรียบ / gradient / PIL-render ไทยเด็ดขาด** (ผิดซ้ำ 2026-08-02 — ทิ้ง ไม่อัป Drive) · reuse tool เดิม (off-repo) ห้ามเขียนใหม่ให้เพี้ยน
+> 📌 ตัวอย่าง "ห้ามทำแบบนี้" (2026-08-03): media `QA_OLS33_*` ขึ้นปกพื้นฟ้า placeholder (laptop illustration ทั่วไป) = **ตกชั้น 1 ทันที** (ไม่ใช่ภาพถ่าย Draw Things) → ข้อมูลชุดนั้น**ยังไม่เรียบร้อย ห้ามนำไปเทส** ต้อง regen ปกตามสูตร §5.7.2 ให้ผ่าน gate ก่อน.
+
+### ปก (cover) = ภาพถ่าย AI Draw Things (warm-lifestyle) + คำไทย overlay — ห้ามพื้นสีเรียบ/gradient/PIL/placeholder
+
+> สูตร FINAL ที่ลูกค้า approve (refined 2026-08-02) = **`ols-data-prep.md` §5.7.2** — reproduce ให้เป๊ะ (STYLE_TAIL warm-lifestyle · scene single-subject · res 1792 + composite 2x + unsharp · ตัดคำไทย nowrap-span). ค่าจริงทุกตัวอยู่ในไฟล์ off-repo (`dt_client.js · thumb_ai.js · thumb_final.js · thai_wrap.js · cover_prompts.json`).
+
+- ปกทุกใบ = **ภาพถ่าย AI จริงจาก Draw Things** (พื้นหลังตรงเนื้อหา, `/sdapi/v1/txt2img` SDXL-Turbo, seed=hash(id) คงที่, โทน warm-lifestyle) **+ คำไทย overlay จาก program layer** (`thumb_ai.js` reuse `thumb_final.js`, ฟอนต์ SukhumvitSet) — **โมเดลห้ามเรนเดอร์ตัวอักษรเอง** (negative prompt ตัด text/letters/thai text/watermark/logo/gibberish)
+- **ห้ามพื้นสีเรียบ / gradient / PIL-render ไทย / ปก placeholder ของระบบเด็ดขาด** (ผิดซ้ำ 2026-08-02 + 2026-08-03 — ทิ้ง regen ใหม่ ไม่อัป Drive ไม่เอาไปเทส) · reuse tool เดิม (off-repo) ห้ามเขียนใหม่ให้เพี้ยน
+- **🔴 โทน (STYLE_TAIL) กับ ความคม เป็นคนละ lever** — user สั่ง "คมขึ้น" = ดัน res/scale/unsharp เท่านั้น **ห้ามแก้ mood/โทน** (บทเรียน 2026-08-02: ดัน sharpness แล้วเผลอเปลี่ยนเป็น product-photography → ปก plain เย็น ลูกค้า reject)
 - **Prereq — API Server `HTTP:7860` ต้อง ON. รอบหน้า AI เปิดเองก่อนเริ่มทำ (อย่าถาม user ก่อน).** ขั้นตอนเปิดเอง:
   1. เช็คก่อน: `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:7860/sdapi/v1/options` — ตอบ = ON แล้ว ข้ามได้เลย
   2. เปิด/โฟกัสแอป: `open -a "Draw Things"` (ถ้ายังไม่เปิด รอ ~5–10s ให้แอปโหลด)
@@ -45,9 +52,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **2** ตรงเนื้อหา | scene ตรงหัวข้อ/หมวด/ประเภท (จาก `cover_prompts.json[title]`) | เปิดดู ภาพเกี่ยวกับเรื่องนั้นจริง |
 | **3** ไม่มี text จากโมเดล | สแกน bg ไม่มีตัวอักษร/โลโก้/ลายน้ำมั่ว | มี → regenerate seed ใหม่ |
 | **4** คำไทย overlay | title/badge/kicker จาก program layer · สะกด char-exact · วรรณยุกต์ครบ · คอนทราสต์ผ่าน (card/scrim) · ไม่มี "OLS"/metric ลวง | อ่านออกครบทุกตัว |
-| **5** visual เทียบ lot จริง | เปิด PNG จริง + เทียบสไตล์ปก lot ล่าสุด (photo + frosted card) — QA ดูเอง ไม่เดา | สไตล์เดียวกัน |
+| **5** visual เทียบ lot จริง | เปิด PNG จริง + เทียบสไตล์ปก lot ที่ลูกค้า approve (**warm photo + frosted card**) — QA ดูเอง ไม่เดา | สไตล์เดียวกัน |
 
-> media/course/LP ก็เข้าหลักเดียวกัน: ต้องผ่าน readback field-ต่อ-field + publish chain + guest verify ครบก่อนนับว่า "เรียบร้อย" (§7 3-ชั้น + §8 5-ชั้น ใน plan doc). ไม่ครบ = ยังใช้เทสไม่ได้.
+> **วิดีโอ (VIDEO type) = MOTION-GRAPHICS** (client-approved FINAL 2026-08-03, `ols-data-prep.md` §5.7.2F) — Ken Burns + kinetic text, warm editorial, เสียงชายไทย `th-TH-NiwatNeural` +4%, ≤25MB. **ห้ามสไลด์นิ่ง/PowerPoint/พื้นสีเรียบ.**
+>
+> media/course/LP/PDF ก็เข้าหลักเดียวกัน: ต้องผ่าน readback field-ต่อ-field + publish chain + guest verify ครบก่อนนับว่า "เรียบร้อย" (`ols-data-prep.md` **§7** 3-ชั้น + **§8** 5-ชั้น). ไม่ครบ = ยังใช้เทสไม่ได้.
 
 ## 🔴 กฎ: รายงานความคืบหน้าเรื่อยๆ ทุก session — ห้ามเงียบ ห้ามนิ่ง ห้ามค้าง
 
