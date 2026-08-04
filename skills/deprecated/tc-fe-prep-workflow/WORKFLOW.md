@@ -420,9 +420,16 @@ Within each Type group: ACs ascending (AC_01, AC_02, …), then ECs ascending (E
 
 ---
 
-## Step 4 — Coverage & quality review (mandatory; 1–2 rounds)
+## Step 4 — Coverage & quality review (mandatory; loop until zero comments, report EVERY round)
 
 MUST complete **before** Step 5. Do not skip because the first draft “looks fine.”
+
+**Review is a loop, not a fixed number of passes.** Run the checks (4a–4e) and the independent
+reviewer-agent pass (4f), fix every finding, then **re-review**, and keep looping until a review round
+returns **zero actionable comments**. There is no “good enough after 2 rounds” exit — the exit
+condition is a clean round, however many rounds that takes. **Report the outcome of EVERY round to the
+user** as it happens (round number + verdict + what was fixed) — never batch the rounds into one
+end-of-run summary, and never go silent between rounds.
 
 ### 4a — AC / EC coverage (FE scope)
 
@@ -446,7 +453,7 @@ MUST NOT show the full TC table until **Ready for draft: YES** — because stake
 
 Post the table from [coverage-delta-template.md](../../../references/coverage-delta-template.md) (FE section) — even when all rows are `OK`.
 
-If review fails → fix Step 3 design and re-run 4a–4d (max 2 rounds).
+If review fails → fix Step 3 design and re-run 4a–4d. Repeat until a round is clean (no cap).
 
 ### 4e — Unclear spec → BLOCK the case, never guess (mandatory, zero omissions)
 
@@ -471,6 +478,32 @@ For every such case, do ALL of the following — no case may be skipped:
 conflict check, comment triage) MUST end up as a `BLOCKED` row with such a Remark. An uncertainty
 mentioned only in chat, a report, or a commit message — but absent from the sheet row — is a
 workflow violation.
+
+### 4f — Independent reviewer-agent loop (mandatory; report EVERY round)
+
+The agent's own 4a–4e pass is not enough — draft TCs MUST also be checked by **independent reviewer
+subagents** (dispatch via the Agent/Task tool; when the user asks for "superpowers" review, this is it)
+so a second, skeptical set of eyes catches fabrication and coverage gaps the author is blind to.
+
+Run it as a loop, and **tell the user the result of each round the moment it finishes** — round number,
+verdict, and every finding + how it was fixed. Do not proceed to Step 4.5 until a round is clean.
+
+1. **Dispatch reviewer(s).** Give each reviewer the ticket's **verbatim AC/EC + seed** and the current
+   TC draft, and instruct them to judge **only** against the ticket content (no requirements of their
+   own). Each must check: every AC/EC covered; **nothing fabricated** (no invented role, service,
+   surface, count, severity, or EC the ticket never states); scope honored (per the user's Step 2a/2.5
+   decisions); char-exact seed text; correct Thai/glossary terms; Type classification; testability. For
+   a thorough/"2 rounds"/"superpowers" request, run ≥2 independent reviewers per round.
+2. **Reviewer output is binary per round:** `CLEAN` (zero actionable defects) or `HAS-COMMENTS` (a
+   numbered defect list). Nitpicks/optional polish are not defects — only genuine defects against the
+   ticket count.
+3. **Report the round to the user** immediately: `รีวิวรอบ N: CLEAN` or `รีวิวรอบ N: พบ X จุด — …` with
+   the fixes applied. This report is mandatory every round (the user must never wonder whether a round
+   ran or what it found).
+4. **If HAS-COMMENTS →** fix every finding in the draft, then dispatch a **fresh** reviewer round and
+   go back to step 2. **If CLEAN →** the loop is done; continue to Step 4.5.
+5. **No round cap and no silent rounds.** Loop until a reviewer round returns zero comments, however
+   many rounds it takes; a round whose result was never reported to the user does not count.
 
 ---
 
@@ -728,6 +761,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] TC IDs are simple sequential numbers (1, 2, 3) across all outputs — no prefix, no padding.
 - [ ] Type column present on every row with a valid value (`System Test` / `Unit Test` / `Integration Test`); Remark block lists absent types.
 - [ ] Step 4 review block posted with **Ready for draft: YES** and traceability matrix complete.
+- [ ] Step 4f independent reviewer-agent loop run; **every round's verdict reported to the user**; loop exited only on a clean (zero-comment) round.
 - [ ] AC/EC coverage complete; quality checklist PASS per tc-quality-standards.
 - [ ] Step 4.5 Thai↔English term table posted with glossary source line and a `ที่มา` value on every row; user confirmed (or adjustments applied) **before** any file write.
 - [ ] Every Thai term in the final TC matches the Step 2.6 glossary verbatim where a non-empty row exists; no term was invented, and none tagged "provisional".
@@ -823,6 +857,8 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST NOT start Step 3 while conflicts from Step 2.5 are unresolved | Designing TCs on contradictory requirements creates rework |
 | MUST post the Step 2.5 conflict report block even when no conflicts found | Gives user visibility that cross-check was done |
 | MUST run Step 4 review before draft table | Prevents out-of-scope cases reaching Jira |
+| MUST run the Step 4 review as a LOOP that exits only on a clean (zero-comment) round — no fixed 2-round cap — and MUST run the Step 4f independent reviewer-agent pass (≥2 reviewers per round for a thorough/"superpowers" request) | One or two passes can still leave fabricated/uncovered cases; the exit condition is a clean round, not a round count |
+| MUST report the verdict of EVERY review round to the user as it finishes (round number + CLEAN/defects + fixes applied) — never batch rounds into one summary, never go silent between rounds | The user must always know a round ran and what it found; silent multi-round work reads as a stalled session |
 | MUST apply tc-quality-standards on every row | ISTQB / 29119-3 consistency |
 | MUST convert `<br>` to Jira-native line breaks before posting (see [jira-linebreak-conversion.md](../../../references/jira-linebreak-conversion.md)) | `<br>` renders as literal text on Jira |
 | MUST pass post-publish review ([jira-comment-post-review.md](../../../references/jira-comment-post-review.md)) before reporting "commented" or "done" to user | Prevents false success claims with broken formatting |
