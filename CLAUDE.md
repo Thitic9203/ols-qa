@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🔴 กฎ: เรียก Jira issue ว่า "ticket" เท่านั้น — ห้ามเรียก "ตั๋ว"
+
+**ทุกที่ (chat ไทย, รายงาน, สรุป, ทุกช่องทาง) เรียก Jira issue เป็นคำอังกฤษ "ticket" เสมอ — ห้ามใช้คำว่า "ตั๋ว" เด็ดขาด** แม้กำลังพิมพ์ภาษาไทยอยู่ก็คงคำว่า "ticket" ไว้ (เช่น "รีเทส ticket นี้ก่อน", "ticket OLS-315")
+
 ## 🔴 กฎ: ยืนยัน environment กับ user ก่อนทดสอบเสมอ — ห้ามเดา/เลือกเอง
 
 **ก่อนเริ่มทดสอบ/retest ทุกครั้ง ต้อง confirm กับ user ว่าใช้ env ไหน (dev / pre-prod / staging / prod) แล้วรอคำตอบก่อน — ห้าม default หรือเลือก env เองเด็ดขาด** แม้ env นั้นจะสะดวกกว่า (เช่น pre-prod ไม่ต้อง VPN) ก็ห้ามเลือกเองเพราะเหตุผลนั้น การเลือก env เป็นสิทธิ์ของ user ไม่ใช่ AI
