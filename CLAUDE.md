@@ -104,7 +104,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 |:--:|:--|:--|
 | **1 Fail-loud contract** | error ถูกกลืน | capture rc จริงทุก job · ห้าม `\|\| true` / ห้าม silence exception เพื่อให้ผ่าน |
 | **2 Wrapper + watchdog** | hang/crash/timeout เงียบ | harness `run_workflow.sh` — watchdog kill (periodic เท่านั้น · daemon ห้าม kill) + start/end status stamp + notify ตอน non-zero |
-| **3 Loud layered notify** | ตัวแจ้งเตือนเองก็เฟลเงียบได้ | `fail_notify.py` → private channel (`.fail_webhook`) → (ตั้งแล้วแต่ POST ล้ม) fallback QA thread + @mention → macOS notification → **ledger เสมอ** (`logs/sfd/FAILURES.md`). **ยังไม่ตั้ง `.fail_webhook` → local เท่านั้น ห้ามยิงเข้า channel รวม (privacy)** |
+| **3 Loud layered notify** | ตัวแจ้งเตือนเองก็เฟลเงียบได้ | `fail_notify.py` → **DM หา user โดยตรง (หลัก)** ผ่าน bot token (`.discord_bot_token` + `.discord_userid`) → private-channel webhook (`.fail_webhook`, ถ้าตั้งไว้) → macOS notification → **ledger เสมอ** (`logs/sfd/FAILURES.md`) |
 | **4 Heartbeat/liveness** | job ที่**ไม่รันเลย** (ไม่มี fail event ให้จับ) | `workflow_heartbeat.py` (launchd ทุก 5 นาที) อ่าน `launchctl list` **LastExitStatus** + PID จากภายนอก → จับทั้ง exit≠0, overdue (ผ่าน status stamp เท่านั้น กัน false ของ `--quiet` job), daemon down · registry `workflows.json` |
 | **5 Root-cause → rerun → record** | ผิดซ้ำเรื่องเดิม | ได้ notify แล้ว = debug จริง (systematic-debugging **ห้าม workaround/silence**) → fix ต้นเหตุ → **rerun ทันที** ยืนยันเขียว → เขียน post-mortem/memory กัน recur |
 
@@ -113,7 +113,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **ได้ failure notify** → ห้าม ack เฉยๆ · ต้องทำครบ Level 5: root-cause ละเอียด → fix → rerun → บันทึกกฎ. ห้ามปิด alert โดยไม่แก้ต้นเหตุ.
 - **แตะ live launchd plist** → back up ก่อน · แก้ผ่าน `plistlib`/XML ตรง **ห้าม `plutil -extract` แบบไม่มี `-o -`** (มัน rewrite ไฟล์ทับ — memory `reference_plutil-extract-clobbers-plist`) · `plutil -lint` · เลี่ยง reload job ที่รันอยู่ถ้าไม่จำเป็น.
 
-**Why:** user สั่ง (2026-08-05) ว่าทุก workflow ห้ามเฟลเงียบ ต้องแจ้ง DM + หาเหตุจริง + rerun + จดจำห้ามผิดซ้ำ. รอบสร้างนี้ SFD จับ silent failure ที่มีอยู่จริงทันที (`ols-progress-build` rc=1, `ols-qa-owner-sync` rc=2 — เฟลอยู่โดยไม่มีใครรู้). และระหว่างสร้าง AI เองพลาด `plutil -extract` ทับ plist 11 ไฟล์ = ตัวอย่าง Level 5 จริง (กู้จาก `launchctl print` สำเร็จ + จดเป็นกฎ). Setup: user สร้าง private channel + webhook วางใน `.fail_webhook` (ดู `sfd/SETUP-fail-channel.md`) — ก่อนตั้ง alert เป็น local (macOS notif + ledger).
+**Why:** user สั่ง (2026-08-05) ว่าทุก workflow ห้ามเฟลเงียบ ต้องแจ้ง DM + หาเหตุจริง + rerun + จดจำห้ามผิดซ้ำ. รอบสร้างนี้ SFD จับ silent failure ที่มีอยู่จริงทันที (`ols-progress-build` 400, `ols-qa-owner-sync` timeout, `ols-backlog-sync` ค้าง 5 วัน — เฟลอยู่โดยไม่มีใครรู้ · แก้เขียวครบแล้ว). และระหว่างสร้าง AI เองพลาด `plutil -extract` ทับ plist 11 ไฟล์ = ตัวอย่าง Level 5 จริง (กู้จาก `launchctl print` สำเร็จ + จดเป็นกฎ). **Notify = DM หา user คนเดียวเท่านั้น (ไม่ส่งใครอื่น/ไม่เข้าช่องรวม) — user เลือก DM (2026-08-05)**; bot token + user id พร้อมใช้ ไม่ต้อง setup.
 
 ## Auto-loaded docs
 
