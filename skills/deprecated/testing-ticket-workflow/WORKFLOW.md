@@ -84,6 +84,8 @@ Collect these **seven** items (one grouped message when possible; skip fields al
 
 **Wait** until required fields are answered before Phase B.
 
+**Environment + account are a hard intake item — always settle them, never assume.** Confirm both *which environment* and *which account/role* this run uses before any login or Playwright. If the user has **not** stated them yet, ask (one grouped message) and wait — never pick an environment yourself, even if one is more convenient. If they were **already** given (earlier this session, the one-pager, or the project guide), do **not** re-ask: state the values back in chat (`environment=<X> · account=<role/user>`) and let the user confirm with a short yes (or correct them) — they should not have to re-answer from scratch.
+
 ---
 
 ## Phase B — Load context
@@ -359,7 +361,10 @@ Reply **confirm** to apply updates, or correct the mapping.
 row: untested (empty / `NOT STARTED`, no result text, no links) or written by an earlier run of
 yours = **yours to write**; anything a person filled in = **not yours**. Drop the not-yours rows
 here and list them for the user. Same for a shared evidence folder: note which files already
-exist and were not uploaded by you. See [result-update-discipline.md](references/result-update-discipline.md).
+exist and were not uploaded by you. **When the project uses a shared evidence folder, organize
+uploads one subfolder per test-case id** (e.g. `<ticket>/<TC-ID>/…`) rather than dropping every
+file flat in the ticket folder — follow the project guide's exact folder scheme and upload command
+if one is specified. See [result-update-discipline.md](references/result-update-discipline.md).
 
 ### G5 — Apply updates
 

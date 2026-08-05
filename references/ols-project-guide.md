@@ -123,9 +123,16 @@ Master sheet of OLS tickets with QA/TC status. AI reads this to decide which tic
 
 Customer-facing regression sheet — HI-QA runs delivery-gate regression from it.
 
+> 🔴 **Regression run routing (บังคับ — เมื่อรอบนั้นคือ regression):** ถ้ารอบที่กำลังจะเทสคือ **regression** →
+> - **Test cases มาจากชีทนี้เท่านั้น** — `<CUSTOMER_UAT_SHEET_ID>` (tab `OLS: TC List`).
+> - **อัปเดตผลลง `<CUSTOMER_UAT_SHEET_ID>` เท่านั้น — ห้ามไปเขียนชีทอื่น** (ห้ามแตะ QA tracking sheet `<QA_TRACKING_SHEET_ID>`, Test Progress, per-ticket TC tabs, sync-tc-result deliverables — ทั้งหมดนั้นเป็นของ flow per-ticket ไม่ใช่ regression).
+> - **หลักฐานการทดสอบ regression ลงโฟลเดอร์ Drive `<EVIDENCE_DRIVE_FOLDER_4>` เท่านั้น** (regression evidence) — **ไม่ใช่** `<EVIDENCE_DRIVE_ROOT_ID>` (`Capture screen (OLS)`) ที่เป็นของ per-ticket. ใช้ subfolder ต่อ Test Case ID เหมือนกัน: `<EVIDENCE_DRIVE_FOLDER_4>/<TC-ID>/<files>` (`drive_upload.py --parent <EVIDENCE_DRIVE_FOLDER_4> --ticket <regression-key> --tc <TC-ID> …`).
+> - รอบ per-ticket (ปกติ) → ใช้ QA tracking sheet + `<EVIDENCE_DRIVE_ROOT_ID>` ตามเดิม. **ห้ามสลับปลายทางข้ามกันเด็ดขาด.**
+
 | Field | Value |
 |-------|-------|
 | Sheet | https://docs.google.com/spreadsheets/d/<CUSTOMER_UAT_SHEET_ID>/edit |
+| **Regression evidence Drive** | `<EVIDENCE_DRIVE_FOLDER_4>` → https://drive.google.com/drive/folders/<EVIDENCE_DRIVE_FOLDER_4> — regression evidence ลงที่นี่เท่านั้น (subfolder ต่อ TC-ID) |
 | OLS tab | `OLS: TC List` (gid `2084955184`) — cols B–G = Module · Test case name · Pre-requisite · Test data · Test step · Expected Result. **Only B–G are ours**; col A (No.) pre-filled, cols H+ = SKL-QA/HI-QA tester columns — never touch. Other tabs (ELMS/CBMS/EvMS/…) never touch. |
 | **Delivery rounds** | Round 1 = the **9 modules** that carry TCs (Media List and View · Media Management · Course Management · Learning Path Management · Profile Page · Recommendation System · User Moderation · Content Management · Social Interaction). The other **7** modules listed in the `OLS: Summary` tab (Integration NDLP · Authentication · User Management · Live Streaming · Achievement/badge · Backoffice CMS · Report/Stat/Dashboard, all `NOT STARTED`) are **round 2 by plan — not a coverage gap**. Scope any coverage audit to the 9 round-1 modules; do not report the other 7 as missing. |
 | **Trimmed to 125 (2026-07-24)** | Pre-delivery cut 307 → **125** cases, No. renumbered 1–125. Only rows still `READY TO TEST` were deleted; every row already carrying a verdict (PASSED/FAILED/SKIPPED, 32 rows + their evidence links) was untouched. Selection = happy path + core lifecycle + main validation per feature; status-permutation duplicates reduced to one representative each. Coverage was re-reviewed afterwards and 7 cases swapped back in to close zero-coverage concerns (consent-not-accepted, permission-negative on another creator's content, status-filter tabs, duplicate vote, admin reported-list, LP publish with an unavailable course). **Before appending anything (e.g. `regression_sync.py`), re-check the trim intent** — a blind append re-inflates the suite past 125. Full pre-trim backup + the list of removed cases live off-repo at `~/ols-qa-testing-bot/out/uat-trim-2026-07-24/`. |
@@ -154,14 +161,16 @@ sheet into these, split by **Type**. Real ids live in `~/.ols-qa-secrets/ §5.1`
 
 ## Screenshot evidence (Drive)
 
-Per-ticket screenshot capture for QA evidence — one folder per ticket.
+Per-ticket screenshot capture for QA evidence — one folder per ticket, **one subfolder per Test Case ID inside it**.
 
 | Field | Value |
 |-------|-------|
 | Root folder | `Capture screen (OLS)` → https://drive.google.com/drive/folders/<EVIDENCE_DRIVE_ROOT_ID> |
 | Per-ticket folder | `OLS-<key>` (e.g. `OLS-44`) — create it if missing before testing |
-| Naming | one screenshot per Expected Result, e.g. `TC_01-ER_1.png` — mirror `docs/result/OLS-<key>/` |
-| 🔐 **Write scope (บังคับ)** | อัปโหลดผ่าน `drive_upload.py` เท่านั้น — เขียนได้เฉพาะในโฟลเดอร์ `OLS-<key>` · **ไฟล์ที่ QA อัปไว้ = ห้ามทับ ห้ามลบ ห้าม rename และห้ามเอาลิงก์มาอ้างเป็นหลักฐานของรอบ AI** · ชนชื่อ → เปลี่ยนชื่อไฟล์ของรอบเราแล้วอัปใหม่ |
+| **Per-Test-Case subfolder (บังคับ)** | inside `OLS-<key>`, create **one subfolder per Test Case ID** (e.g. `OLS-44/TC_01/`, `OLS-44/TC_02/`) and put that case's evidence there. Structure = `Capture screen (OLS)/OLS-<key>/<TC-ID>/<files>`. Create the subfolder if missing before uploading that case's evidence. |
+| Naming | one screenshot per Expected Result inside its case subfolder, e.g. `OLS-44/TC_01/TC_01-ER_1.png`; whole-flow video `OLS-44/TC_01/<TCID>_<role>.mp4` — mirror `docs/result/OLS-<key>/` |
+| Upload command | `drive_upload.py --parent <EVIDENCE_DRIVE_ROOT_ID> --ticket OLS-<key> --tc <TC-ID> <files…>` — **one call per test case**, `--tc` routes into `OLS-<key>/<TC-ID>/`. (Omitting `--tc` keeps the legacy flat behaviour — new runs must pass `--tc`.) |
+| 🔐 **Write scope (บังคับ)** | อัปโหลดผ่าน `drive_upload.py` เท่านั้น — ด้วย `--tc` เขียนได้เฉพาะในโฟลเดอร์ `OLS-<key>/<TC-ID>` (scope lock ตรวจ 2 ชั้น: ticket folder ใต้ root + TC subfolder ใต้ ticket folder) · **ไฟล์ที่ QA อัปไว้ = ห้ามทับ ห้ามลบ ห้าม rename และห้ามเอาลิงก์มาอ้างเป็นหลักฐานของรอบ AI** · ชนชื่อ → เปลี่ยนชื่อไฟล์ของรอบเราแล้วอัปใหม่ |
 
 ## Bug ticket field schema (where the bug content actually lives)
 
@@ -212,6 +221,12 @@ Thai wording used inside test case content. Rules: [tc-glossary.md](tc-glossary.
 Re-fetch and confirm with the user **before every TC design run** — see [tc-glossary.md](tc-glossary.md) § Re-check gate.
 
 ## Test Environment
+
+> 🔴 **Intake gate — ก่อนเริ่มเทส/รีเทสทุกครั้ง ต้องยืนยัน env + account เสมอ (บังคับ):**
+> 1. ก่อนแตะ Playwright/login ต้องรู้ **(ก) env ไหน** (dev / pre-prod / staging / prod) และ **(ข) account/role ไหน** ที่จะใช้.
+> 2. **ยังไม่เคยระบุในเซสชันนี้** → ถาม user ครั้งเดียวรวม (env + account) แล้ว**รอคำตอบ** ห้าม default/เลือกเอง (แม้ env นึงสะดวกกว่า เช่น pre-prod ไม่ต้อง VPN ก็ห้ามเลือกเอง — เป็นสิทธิ์ user).
+> 3. **เคยระบุแล้ว** (ใน session นี้ หรือ user เพิ่งบอก) → **อย่าถามซ้ำ** ให้ **แจ้งในแชท**ว่าจะใช้ค่าอะไร (`เทส env=<X> · account=<role/ชื่อ>`) แล้วให้ user **confirm สั้นๆ พอ** ("ใช้ตามนี้นะ ถ้าจะเปลี่ยนบอกได้") — ไม่ต้องให้ user ตอบใหม่ทั้งหมด.
+> 4. หลังยืนยัน env → รัน **pre-flight login smoke gate** (ด้านล่าง) เฉพาะ role ที่รอบนั้นใช้จริง ก่อนเริ่มเทส.
 
 | Env | URL |
 |-----|-----|
