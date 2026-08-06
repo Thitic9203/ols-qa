@@ -198,6 +198,26 @@ not `description`. All are ADF (`{"type":"doc",…}`) — parse the text out.
 
 Read call (retest): `GET /rest/api/3/issue/<KEY>?fields=summary,status,issuetype,customfield_12116,customfield_12113,customfield_12112,customfield_12114,customfield_12111,customfield_12122,customfield_12118,customfield_12125,customfield_12120`. If `customfield_12116` is empty, fall back to any expected-result text in a comment/description; if still nothing → **BLOCKED** (cannot verdict without an expected result).
 
+### Bug creation format (OLS) — get it right the FIRST time (บังคับ, กันต้องมาปรับซ้ำ)
+
+When filing a new OLS Bug, produce it in this exact shape so it needs **zero** manual fix-ups afterward
+(learned OLS-368, 2026-08-06 — the first draft had a run-on title with no prefix space and prose-blob
+Actual/Expected, and every one had to be re-edited by hand).
+
+- **Summary** = `[Component][Feature][Role] <concise description>` — bracket-tag prefix then **exactly ONE
+  space** after the closing `]` before the Thai/description text (e.g. `[Archivement][Badge][ผู้ดูแลเนื้อหา] แก้ไข badge …`).
+  Mirror the sibling bug's prefix tags verbatim. Keep the description **concise but complete** — enough to
+  know the flow + symptom, no run-on sentence, drop details that already live in the fields (they duplicate).
+- **Actual result (`customfield_12114`)** and **Expected result (`customfield_12116`)** = **bullet lists**
+  (v2-wiki `* ` one point per line), **never** one long run-on paragraph. One fact per bullet.
+- **Evidence image goes INSIDE the Actual-result field** — attach the screenshot to the issue first, then
+  reference it inline with `!filename.png!` on its own line (one blank line above it, after the bullets).
+  Verify rendered: bullets → `<ul><li>`, image → `<img src=…/attachment/content/…>` (not literal `!…!`).
+- **Full field set + REST mechanics** (required fields, `customfield_12110` root-cause-type must be an
+  **array**, sprint `customfield_10008` = numeric id, epic `parent` per the related story's epic, `labels`
+  e.g. `need_fix`, `POST /rest/api/2/issue`): mirror an existing team bug (e.g. OLS-289/OLS-368) — see local
+  agent memory `reference_ols-bug-create-rest-fields`. QA Owner (`customfield_12120`) NEVER the Reporter.
+
 ## Retest-bug QA notify
 
 After a retest-bug close-out (retest-bug-workflow Step 9), post a **retest-result FYI** to the QA Discord thread.
