@@ -664,3 +664,37 @@ is only "app differs from the *verified* spec." An unverified expected value is 
 - A wording/label defect does not exist until BOTH the authoritative source AND the app have been read
   **char-exact** (ties to the "OLS text verdict char-exact" rule and the bookmark-label reference in
   agent memory).
+
+### PM-007 — A multi-step live-browser retest burned ~70 tool calls fighting `use_browser` port-9222 churn (2026-08-06, OLS-346)
+
+**Surface:** any OLS retest/test driven **live in the browser** that needs more than one step — a
+login **plus** an admin/API action **plus** a screenshot. Here: suspend a user → sign in as them to
+observe the account-suspended login modal → un-suspend.
+
+**What happened.** Driving the login + admin flow through `use_browser` (the shared Chrome on port
+9222), the page kept flipping between the OLS app and the SSO portal, the login drawer's cross-origin
+iframe silently swallowed keystrokes (shared-profile autofill spliced a stale email into the field),
+and the app's own auth session dropped on almost every navigation. `navigate` hit one Chrome instance
+while the auto-captured screenshot came from another — the documented port-9222 multiplexing churn.
+~70 tool calls in, nothing durable had landed. Switching to a dedicated raw-CDP Chrome made the whole
+flow (login → suspend → observe modal → un-suspend) succeed on the first try.
+
+**Root cause.** `use_browser`/port 9222 is shared and non-deterministically multiplexes across ≥2
+Chrome instances, and the OLS in-app login drawer is a flaky re-mounting cross-origin iframe. Both were
+**already** written up in agent memory (`ols-headless-chrome-recovery`, `ols-login-drawer-account-switch`) —
+the mistake was pushing through with `use_browser` first and reading the memory only after the churn.
+
+**Prevention (apply from the start, don't rediscover):**
+- For ANY **multi-step** OLS live-browser retest (login + API/admin action + screenshot), **go straight
+  to a dedicated headless Chrome on a private port + its own `--user-data-dir`, driven by a small
+  raw-CDP script** (one persistent websocket) — skip `use_browser`. Driver pattern + launch command
+  live in agent memory `ols-headless-chrome-recovery`. A single-step check can still use `use_browser`.
+- **Reliable login recipe (same-origin, no iframe):** navigate **top-level** to the SSO **embed
+  sign-in page** → fill the email/password inputs with the React native-value setter → `form.requestSubmit()`;
+  `clear_cookies` between account switches so the previous user's parent-domain SSO cookie doesn't
+  auto-carry. Confirm with the app's own `get-session` before proceeding.
+- **Suspend/ban as a fixture is legitimate precondition setup — but always restore.** Do the admin
+  suspend → observe → un-suspend cycle on a **secondary** account and un-suspend at the end (verify the
+  admin button reverts). Endpoints + the admin account that has User Management: agent memory
+  `ols-user-ban-flow`. The account-level suspended-login modal is checked at login **before** role, so a
+  Creator account demonstrates it just as well as a Learner (state the account role in the evidence).
