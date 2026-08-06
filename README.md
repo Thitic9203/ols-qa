@@ -277,6 +277,19 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
 
 ## Changelog
 
+### v1.21.23 — create-bug: OLS bug format locked so the next bug needs no fix-ups (6 Aug 2026)
+
+- **New OLS bug-creation format spec — a freshly filed bug now comes out right the first time** (learned
+  OLS-368: the first draft needed hand fix-ups). The **summary** carries the `[Component][Feature][Role]`
+  tag-prefix with **exactly one space** after the closing `]` before the description (concise, no run-on);
+  **Actual result** and **Expected result** are written as **bullet lists**, not prose blobs; and the
+  **evidence screenshot is embedded inside the Actual-result field** (attach, then `!filename!` inline),
+  not only loose-attached. Full field set + REST mechanics (root-cause-type is an array, sprint id, epic
+  per the related story) captured alongside. Updated:
+  [references/ols-project-guide.md](references/ols-project-guide.md) § Bug creation format (OLS), plus the
+  generic create-bug `bug-draft-template.md` (portable: tag-prefix space, bullet actual/expected, inline
+  evidence in the actual field).
+
 ### v1.21.5 — login preflight scoped to the roles a run uses (2 Aug 2026)
 
 - **Pre-flight login smoke gate now smokes only the role(s) a run actually uses — not all 5.** Before
@@ -286,23 +299,6 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
   outage catch (e.g. NDLP68 `400` on every login) is unchanged — just scoped. retest-bug-workflow was
   already single-role. Updated: [references/ols-project-guide.md](references/ols-project-guide.md)
   § Auth and the shared `testing-ticket-workflow` pre-flight gate.
-
-### v1.20.5 — sync-tc-result: three test-type deliverables live + hourly hardening (30 Jul 2026)
-
-- **`/sync-tc-result`** routes every TC result from the QA source sheet into the three customer
-  deliverable spreadsheets — **System · Integration · Unit** (split by Type) — each tab behind a
-  5-layer fail-closed gate. Unit rows carry the evidence screenshot embedded in col I by a bound Apps
-  Script (a vertical composite for multi-shot cases). Runs hourly on the QA Mac (`ols-tc-result-sync`)
-  alongside the Apps Script's own image trigger.
-- **Hourly job hardened — two root-cause fixes.** (1) The Unit `--rows-only` leg returned HTTP 400
-  every hour: `write_rows` cleared a hardcoded `A2:H400`/`J2:N400` while the Unit tabs are only 9–39
-  rows (some 13 cols), so `values:batchClear` rejected the out-of-grid range — fixed by growing the
-  grid to fit the data + key column, then clamping the clear to the grid. (2) A no-`timeout` `urllib`
-  call had hung one run for 2.7 days, and launchd (no-overlap) then skipped every run queued behind it
-  — fixed with a per-request `timeout` + retry in every opener **plus** a per-leg wall-clock watchdog.
-  Verified by a clean full run (both legs rc=0, no data/image loss) + a 9-case grid-plan regression test.
-- Layout, status map, and write model: [references/ols-project-guide.md](references/ols-project-guide.md)
-  § Test-type deliverable sheets · command doc: [commands/sync-tc-result.md](commands/sync-tc-result.md).
 
 ---
 
