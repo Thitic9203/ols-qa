@@ -43,7 +43,8 @@ Use the **AskUserQuestion** tool so each step is a real prompt the user answers 
 
 ### Intake 0.1 — Environment + spec source (ask first, wait)
 
-- **Environment** — dev / pre-prod / staging / prod / training-* . Never pick one yourself, even a more convenient one (per CLAUDE.md env-intake rule). Also capture the **account / role** to create with.
+- **Environment** — `dev` / `pre-prod` / `training-*` (staging / prod only if the user names them). Never pick one yourself, even a more convenient one (per CLAUDE.md env-intake rule). **All three of dev, pre-prod, and training require VPN** — none is a "no-VPN" shortcut. There is currently **one** training env; resolve its real host from `~/.ols-qa-secrets/` (never write the host into this public repo).
+- **Account / role** — offer the canonical OLS roles: **System Admin · Admin Content · Learner · Creator**. Capture which role each item is created with (Creator = the default owner for media/course/LP).
 - **Confluence (CF) URL** — the spec / reference page for the content to build. If the user has none, say so explicitly and note there is no CF spec (do not invent requirements).
 
 ### Intake 0.2 — Data type(s) to create (checkbox / multi-select, wait)

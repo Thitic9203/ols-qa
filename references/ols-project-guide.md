@@ -246,14 +246,14 @@ Re-fetch and confirm with the user **before every TC design run** — see [tc-gl
 
 > 🔴 **Intake gate — ก่อนเริ่มเทส/รีเทสทุกครั้ง ต้องยืนยัน env + account เสมอ (บังคับ):**
 > 1. ก่อนแตะ Playwright/login ต้องรู้ **(ก) env ไหน** (dev / pre-prod / staging / prod) และ **(ข) account/role ไหน** ที่จะใช้.
-> 2. **ยังไม่เคยระบุในเซสชันนี้** → ถาม user ครั้งเดียวรวม (env + account) แล้ว**รอคำตอบ** ห้าม default/เลือกเอง (แม้ env นึงสะดวกกว่า เช่น pre-prod ไม่ต้อง VPN ก็ห้ามเลือกเอง — เป็นสิทธิ์ user).
+> 2. **ยังไม่เคยระบุในเซสชันนี้** → ถาม user ครั้งเดียวรวม (env + account) แล้ว**รอคำตอบ** ห้าม default/เลือกเอง (แม้ env นึงจะเข้าง่ายกว่า ก็ห้ามเลือกเอง — เป็นสิทธิ์ user · หมายเหตุ: dev/pre-prod/training **ต้อง VPN ทุกตัว**).
 > 3. **เคยระบุแล้ว** (ใน session นี้ หรือ user เพิ่งบอก) → **อย่าถามซ้ำ** ให้ **แจ้งในแชท**ว่าจะใช้ค่าอะไร (`เทส env=<X> · account=<role/ชื่อ>`) แล้วให้ user **confirm สั้นๆ พอ** ("ใช้ตามนี้นะ ถ้าจะเปลี่ยนบอกได้") — ไม่ต้องให้ user ตอบใหม่ทั้งหมด.
 > 4. หลังยืนยัน env → รัน **pre-flight login smoke gate** (ด้านล่าง) เฉพาะ role ที่รอบนั้นใช้จริง ก่อนเริ่มเทส.
 
 | Env | URL |
 |-----|-----|
 | Dev | `https://<DEV_HOST>/` — **VPN required** · auth via NDLP68 SSO |
-| Pre-prod | `https://<PREPROD_HOST>/` — **no VPN required** (public) · same NDLP68 SSO iframe (`<SSO_PORTAL_HOST>/sign-in/embed`) · verified working 2026-07-23 with the 5 dev pool accounts (local agent memory `reference_ols-test-accounts` has the cross-env role table) — **one account's role did not carry over** (Region Admin dev account → plain Learner on pre-prod), confirm before assuming dev role = pre-prod role |
+| Pre-prod | `https://<PREPROD_HOST>/` — **VPN required** (corrected 2026-08-08 per user; earlier note said no-VPN) · same NDLP68 SSO iframe (`<SSO_PORTAL_HOST>/sign-in/embed`) · verified working 2026-07-23 with the 5 dev pool accounts (local agent memory `reference_ols-test-accounts` has the cross-env role table) — **one account's role did not carry over** (Region Admin dev account → plain Learner on pre-prod), confirm before assuming dev role = pre-prod role |
 | Staging | *(not configured — ask user and update this table)* |
 | Production | *(not configured — ask user and update this table)* |
 
