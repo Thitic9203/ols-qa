@@ -14,6 +14,11 @@ Run **Playwright-based** testing for a **single ticket** after intake and confir
 
 ## Discipline
 
+**Settle and strategize FIRST** — before intake or any tool call, follow
+[settle-and-strategize.md](../../../references/settle-and-strategize.md): invoke
+**`engineering:testing-strategy`** to plan the approach, then hold to the discipline it names —
+no guessing an expected/spec, and no blind retry loops (a repeat failure = stop and diagnose).
+
 Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
 **Gates:** MUST NOT start Playwright until Phase C confirm; MUST NOT update external results until Phase G confirm — because runs and writes are costly to undo. Credentials are session-only.

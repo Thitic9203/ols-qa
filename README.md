@@ -4,7 +4,7 @@ Helix QA assistant pre-configured for the **OLS** project at <ORG>.
 
 Helix skills embedded directly — no separate install needed.
 
-**OLS Workspace version: v1.23.1** (8 Aug 2026) — based on helix v1.5.61
+**OLS Workspace version: v1.23.2** (8 Aug 2026) — based on helix v1.5.61
 
 ## Quick start
 
@@ -292,6 +292,20 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
 
 ## Changelog
 
+### v1.23.2 — testing + retest workflows now settle-and-strategize first (invoke `engineering:testing-strategy`, no guessing, no loops) (8 Aug 2026)
+
+- **`/testing-ticket` and `/retest-bug` now open with a settle-and-strategize gate before any tool
+  call.** Both invoke the **`engineering:testing-strategy`** skill first to plan the approach (what to
+  test, order, definition of done, risk), then hold two disciplines the project keeps re-learning:
+  **never guess an expected/spec** — the app differing from an *assumed* spec is a question (→ BLOCKED +
+  ask PO), not a bug, verify char-exact against Figma/PRD/AC/PO both sides (PM-006); and **no blind
+  retry loops** — the same action failing the same way twice = stop and root-cause with
+  `superpowers:systematic-debugging`, never a third blind retry.
+- New shared fragment [references/settle-and-strategize.md](references/settle-and-strategize.md), linked
+  from both the [testing-ticket-workflow](skills/testing-ticket-workflow/SKILL.md) and
+  [retest-bug-workflow](skills/retest-bug-workflow/SKILL.md) stubs + their WORKFLOW.md `## Discipline`
+  headers (first item, before intake).
+
 ### v1.23.0 — retest evidence = whole-flow MP4 in the Jira comment + a 7-layer MP4 quality/correctness gate (8 Aug 2026)
 
 - **`/retest-bug` re-verify now records a whole-flow MP4 per case — the same capture format as a story
@@ -313,19 +327,6 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
   the testing tech (headless Chrome + Playwright) in *How the tests actually run*.
   > Note: the off-repo unattended retest bot (`~/ols-qa-testing-bot/prompt-retest.md`) carries the matching
   > capture + 7-layer gate change so headless runs produce the MP4 — that file is outside this repo.
-
-### v1.21.23 — create-bug: OLS bug format locked so the next bug needs no fix-ups (6 Aug 2026)
-
-- **New OLS bug-creation format spec — a freshly filed bug now comes out right the first time** (learned
-  OLS-368: the first draft needed hand fix-ups). The **summary** carries the `[Component][Feature][Role]`
-  tag-prefix with **exactly one space** after the closing `]` before the description (concise, no run-on);
-  **Actual result** and **Expected result** are written as **bullet lists**, not prose blobs; and the
-  **evidence screenshot is embedded inside the Actual-result field** (attach, then `!filename!` inline),
-  not only loose-attached. Full field set + REST mechanics (root-cause-type is an array, sprint id, epic
-  per the related story) captured alongside. Updated:
-  [references/ols-project-guide.md](references/ols-project-guide.md) § Bug creation format (OLS), plus the
-  generic create-bug `bug-draft-template.md` (portable: tag-prefix space, bullet actual/expected, inline
-  evidence in the actual field).
 
 ---
 

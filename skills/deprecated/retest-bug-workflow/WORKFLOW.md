@@ -14,6 +14,11 @@ End-to-end retest from a Jira bug ticket: fetch ticket → test → compare Swag
 
 ## Discipline
 
+**Settle and strategize FIRST** — before Step 0 or any tool call, follow
+[settle-and-strategize.md](../../../references/settle-and-strategize.md): invoke
+**`engineering:testing-strategy`** to plan the retest approach, then hold to the discipline it names —
+no guessing an expected/spec, and no blind retry loops (a repeat failure = stop and diagnose).
+
 Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
 **Jira bodies** (after approval): neutral English — no "Retested by:", no honorifics. If reproduction is unclear or results conflict with dev claims, follow [qa-debug-discipline.md](../../../references/qa-debug-discipline.md) before posting PASSED/FAILED.

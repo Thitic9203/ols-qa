@@ -19,7 +19,8 @@ proactive_triggers:
 When invoked:
 
 1. Announce once: `Using **retest-bug-workflow** to retest the bug fix.`
-2. Read and follow [WORKFLOW.md](../deprecated/retest-bug-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
+2. **Settle and strategize first** — before any tool call, follow [settle-and-strategize.md](../../references/settle-and-strategize.md): invoke **`engineering:testing-strategy`** to plan the retest approach, no guessing an expected/spec, no blind retry loops.
+3. Read and follow [WORKFLOW.md](../deprecated/retest-bug-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
 
 Claude Code shortcut: `/retest-bug` → [commands/retest-bug.md](../../commands/retest-bug.md).
 
