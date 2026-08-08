@@ -17,6 +17,8 @@ proactive_triggers:
 
 **Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../deprecated/test-data-prep-workflow/WORKFLOW.md).
 
+> **Maintainer note (user directive 2026-08-08):** when editing THIS skill, invoke **superpowers:writing-skills** first — match the guidance form to the failure and craft precise, well-fitted wording. Sharpness and completeness checks stay strict per [ols-data-prep.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ols-data-prep.md); cover titles must never overflow the frame, break lines badly, or split a compound word (พรากคำ).
+
 When invoked:
 
 1. Announce once: `Using **test-data-prep-workflow** to build OLS test data per ols-data-prep.md.`

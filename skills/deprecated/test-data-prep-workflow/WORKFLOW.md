@@ -123,15 +123,26 @@ Every cover = **a photograph** from Draw Things (SDXL, warm editorial, `seed=has
 
 Tone (STYLE_TAIL) and sharpness are **separate levers** — "make it sharper" means push res/unsharp only, never change mood.
 
-**Cover 5-level gate — pass all, or regenerate:**
+**Sharpness + completeness are judged strictly against [ols-data-prep.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ols-data-prep.md) §5.7.2 — that doc is the authority, not this summary.** Open the rendered PNG and check it by eye; never assume from the pipeline.
+
+**Cover gate — pass EVERY row, or regenerate (fail-closed, no partial pass):**
 
 | Level | Check | Pass = |
 |:--:|:--|:--|
 | 1 | bg from Draw Things | photo, high variance — not solid/gradient/PIL |
 | 2 | scene matches content | opening it, the image is about that topic |
 | 3 | no model-rendered text | no letters/logo/watermark in bg |
-| 4 | Thai overlay | title/badge/kicker char-exact, tone marks intact, contrast passes, no fake "OLS"/metrics |
-| 5 | visual vs approved lot | same style as the client-approved lot (sharp photo + frosted card) — QA looks, does not guess |
+| 4 | Thai overlay char-exact | title/badge/kicker match source char-exact, tone marks intact, contrast passes, no fake "OLS"/metrics |
+| 5 | **title fully inside the card/frame** | every glyph sits inside the frosted card — **zero overflow past any edge (top/bottom/left/right)**; if it spills, shrink-to-fit failed → regenerate, never ship the overflow |
+| 6 | **line-break + word integrity** | Thai wrap is natural: **no orphaned syllable, no split compound word (พรากคำ)** — `ความพร้อม` stays whole, prefixes `ความ/การ/ผู้/นัก/เพื่อ` glued to the next word |
+| 7 | **max sharp** | crisp at dsf3 + unsharp, matches the client-approved lot (sharp photo + frosted card) — QA looks, does not guess |
+
+**Red flags — STOP and regenerate (do not ship, do not upload, do not call done):**
+- any part of the title touches or crosses a card/frame edge
+- a syllable or half of a compound word sits alone on a line
+- the title was left long instead of shrinking to fit
+- the image looks soft / not matching the approved lot's sharpness
+- you are about to accept it from the pipeline **without opening the PNG and looking**
 
 ## Step 5 — Videos (motion-graphics)
 
