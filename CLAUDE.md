@@ -71,7 +71,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **2** ตรงเนื้อหา | scene ตรงหัวข้อ/หมวด/ประเภท (จาก `cover_prompts.json[title]`) | เปิดดู ภาพเกี่ยวกับเรื่องนั้นจริง |
 | **3** ไม่มี text จากโมเดล | สแกน bg ไม่มีตัวอักษร/โลโก้/ลายน้ำมั่ว | มี → regenerate seed ใหม่ |
 | **4** คำไทย overlay | title/badge/kicker จาก program layer · สะกด char-exact · วรรณยุกต์ครบ · คอนทราสต์ผ่าน (card/scrim) · ไม่มี "OLS"/metric ลวง | อ่านออกครบทุกตัว |
-| **5** visual เทียบ lot จริง | เปิด PNG จริง + เทียบสไตล์ปก lot ที่ลูกค้า approve (**warm photo + frosted card**) — QA ดูเอง ไม่เดา | สไตล์เดียวกัน |
+| **5** visual เทียบ lot จริง | เปิด PNG จริง + เทียบสไตล์ปก lot ที่ลูกค้า approve (**ภาพถ่ายคมชัด + frosted card**) — QA ดูเอง ไม่เดา | สไตล์เดียวกัน |
+
+### 🔴 Cover corrections — บทเรียนจาก user (2026-08-08) · ห้ามผิดซ้ำทุกข้อ (บังคับก่อนสร้างปกทุกครั้ง)
+
+user คอมเมนต์แก้ซ้ำหลายรอบใน session สร้างปก training-ols69 → บันทึกเป็นกฎถาวร. ทุกข้อ enforce ในเครื่องมือ off-repo `~/ols-qa-testing-bot/` แล้ว (dt_client.js · thumb_ai.js · thumb_final.js · cover_photo_guard.js). รายละเอียดเต็ม + ค่าจริง → [`ols-data-prep.md`](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ols-data-prep.md) §5.7.2 B2/B3 · memory `reference_ols-cover-goalfallback-doodle` · `reference_ols-cover-title-shrink-to-fit`.
+
+1. **ห้ามปกลาย/doodle/line-art/collage/pattern เด็ดขาด — เป็น "ภาพถ่าย" เท่านั้น.** มี **hard guard** `cover_photo_guard.js` (วัด `domFrac` — สีเด่น >12% หรือ distinct <110 = ตก) เสียบใน `dt_client.background()` → doodle/solid/gradient/pattern **throw ทันที fail-closed** ไม่มีวันหลุด. GOAL_FALLBACK = ภาพถ่ายทุก goal (เดิมเป็น line-art = ต้นเหตุ). LP/course ต้องมี entry ใน `cover_prompts.json` ก่อนเจน (ไม่งั้นตก fallback).
+2. **คำห้ามล้นกรอบการ์ด — shrink-to-fit.** `titleEl` มี `maxH` + `render()` ย่อ font จนพอดีการ์ดเสมอ ชื่อยาวแค่ไหนก็อยู่ในกรอบ (เดิมชื่อ LP ยาว "…ดิจิทัล" ล้นใต้การ์ด).
+3. **โทนสีต้องคละ หนีน้ำตาล — ห้ามน้ำตาลทั้งหมด.** MOOD เป็นสีกลาง (ไม่มี "warm"/"wooden") + **PALETTE color-grade ต่อธีม** (careers=น้ำเงิน · exams=ชมพู · subjects=เขียว · digital=ม่วง · scholarships=อำพัน · languages=คอรัล · default=pool คละ) → พื้นเป็นสีนั้นทั้งภาพ cohesive กับ frosted-card accent. **มู้ดเดิม = ภาพถ่าย lifestyle คมคลีน** (ไม่ใช่ product-shot เย็นๆ).
+4. **ห้ามภาพวัตถุเบิ้ล/ซ้ำ — 1 hero subject เท่านั้น.** bg = **1536×896** (ไม่ใช่ 1792 = SDXL เบิ้ล subject: 2 นาฬิกา/2 หูฟัง) + NEG anti-duplicate + scene "a single X, positioned to one side, close to the camera". เลือก subject ที่ **ไม่ tile** (เลี่ยงของเล็กซ้ำง่าย: นาฬิกาปลุก·กล้องส่องทางไกล·ดินสอ) → ใช้ของเดี่ยวเด่น (บีกเกอร์·แล็ปท็อป·นาฬิกาทราย·หมวกครุย·หุ่นยนต์).
+5. **ภาพต้องสมจริง ไม่ deform.** เลี่ยง subject ที่ AI เรนเดอร์เพี้ยนง่าย (ขาตั้งกล้อง/กลไกซับซ้อน = แหว่ง). ใช้ของแข็งเรียบง่าย ถ่ายสวย.
+6. **ห้าม gibberish/ตัวอักษรมั่วในภาพ.** เลี่ยง subject มีผิวตัวอักษร: กระดาษ·พาสปอร์ต·เอกสาร·แผนที่·**ลูกโลกมี label**·หนังสือเปิด. guard จับแค่ "โครงสร้าง" (doodle/solid) — gibberish ต้องคุมด้วย **subject choice + สายตา gate ชั้น 3**.
+7. **คมชัดสุด.** ต้นเหตุความไม่คม = `thumb_ai.render` เรนเดอร์ที่ **deviceScaleFactor=1 (1280×720)** → แก้เป็น **dsf 3 (3840×2160) + unsharp** (คมมาจาก composite+unsharp ไม่ใช่ bg res เพราะ 1792 เบิ้ล).
+8. **ตัดคำไทยห้ามพรากคำประสม.** `thaiWrapHtml` glue prefix `ความ/การ/ผู้/นัก/เพื่อ` ติดคำถัดไป → "ความพร้อม" ไม่แยกบรรทัด (เดิม "ความ"/"พร้อม" คนละบรรทัด = ผิด).
+9. **ก่อนใช้จริง = ทำตัวอย่างให้ user อนุมัติก่อนเสมอ** (หลาย subject/สี/เรื่อง) — ห้ามสร้าง lot จริงก่อนได้ approve.
+10. **รายงานทุกรอบ + จดทุก comment ที่ user แก้ ลงที่นี่ทันที** — user สั่ง (2026-08-08) ห้ามให้ต้องบอกซ้ำ ห้ามผิดเดิม.
 
 > **วิดีโอ (VIDEO type) = MOTION-GRAPHICS** (client-approved FINAL 2026-08-03, `ols-data-prep.md` §5.7.2F) — Ken Burns + kinetic text, warm editorial, เสียงชายไทย `th-TH-NiwatNeural` +4%, ≤25MB. **ห้ามสไลด์นิ่ง/PowerPoint/พื้นสีเรียบ.**
 >
