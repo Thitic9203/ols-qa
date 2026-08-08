@@ -37,11 +37,50 @@ If any is missing → stop and ask (Gate 0). Covers additionally require Draft T
 
 ## Gate 0 — Intake (mandatory, wait for the user)
 
-Per ols-data-prep.md §0.0 and CLAUDE.md's env-intake rule:
+Per ols-data-prep.md §0.0 and CLAUDE.md's env-intake rule. **Gather EVERY requirement below and get the user's confirmation BEFORE any login, reuse check, or creation.** Ask in the three ordered steps below — do not skip ahead, do not start on a partial answer. Skip a question only if the user already answered it explicitly this session (then state the value back and let them confirm with a short "ok", never re-ask).
 
-- If env + account were **not** stated this session → ask once, combined, and **wait**: "prepare data on which env — dev / pre-prod / …? which account/role?"
-- If already stated this session → do not re-ask; state it back (`env=<X> · account=<role>`) and let the user confirm with a short "ok".
-- Capture: target type(s), how many, the **exact status** each item must end in, and whether this is QA-run data or customer/training content (training content = stricter naming, real-user quality).
+Use the **AskUserQuestion** tool so each step is a real prompt the user answers (the type step is a checkbox / multi-select). Wait for each answer before the next step.
+
+### Intake 0.1 — Environment + spec source (ask first, wait)
+
+- **Environment** — dev / pre-prod / staging / prod / training-* . Never pick one yourself, even a more convenient one (per CLAUDE.md env-intake rule). Also capture the **account / role** to create with.
+- **Confluence (CF) URL** — the spec / reference page for the content to build. If the user has none, say so explicitly and note there is no CF spec (do not invent requirements).
+
+### Intake 0.2 — Data type(s) to create (checkbox / multi-select, wait)
+
+Ask which types to build, as a **multi-select checkbox** (`AskUserQuestion` with `multiSelect: true`). Options:
+
+- **Media** (สื่อ — video / PDF / ePub content item)
+- **Course** (คอร์ส)
+- **Learning Path** (เส้นทางการเรียนรู้ / LP)
+- **Cover only** (regenerate cover art for existing content)
+- **Video (motion-graphics)**
+- **PDF**
+- **Account / Login** (test accounts, roles)
+
+For each selected type, also capture the **exact target status** it must end in (`PUBLISHED · UNPUBLISHED · DRAFT · REJECTED · FLAGGED · PENDING_EDIT`) — not "all published".
+
+### Intake 0.3 — Style / content shape + quantity (ask last, wait)
+
+- **Style / content format** — topic / theme / subject area, tone, language, and the cover style bucket (careers / exams / subjects / digital / scholarships / languages / …) so the per-theme colour grade applies.
+- **Quantity** — how many of each selected type.
+- **Purpose** — QA-run data or customer/training content (training content = stricter naming, real-user quality).
+
+### Intake 0.4 — Detail questions (ask only the ones relevant to the selected types)
+
+Ask these before the confirmation gate whenever they apply — each has a stated default, so a "use the defaults" answer is enough:
+
+- **Reuse policy** — reuse existing published items that already fit, or build all-new? (default: **reuse-first**, per Step 1.)
+- **Owner / creator account per item** — who owns each content item. (default: the intake account.) For creator-isolation / permission cases, name each distinct owner.
+- **Which items need a cover / video** vs text-only — so covers/videos are generated only where wanted.
+- **Delivery destination** — create-on-env only, or also upload evidence / deliverable to a Drive folder or sheet? If yes, which. (default: create-on-env only.)
+- **Lot / grouping label** — e.g. `Regression Lot1` / `Lot2`, if this feeds a regression suite. (default: none.)
+- **Duplicate-name clash handling** — default: **stop and ask** (offer skip / rename / proceed). Confirm if the user wants a different default.
+- **Sample-cover approval** — required before the real lot for any cover/video work. (default: **yes**; confirm.)
+
+Keep it lean: skip a detail question if the selected types make it irrelevant, or if the user already answered it.
+
+**Confirmation gate:** restate the full captured spec (env · account · CF URL · types+status · style · quantity · purpose · any 0.4 details) back to the user in one block and wait for a clear "go" before Step 1. Nothing is created until this is confirmed.
 
 ## Step 1 — Reuse first
 
