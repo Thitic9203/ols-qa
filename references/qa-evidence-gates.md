@@ -42,7 +42,7 @@ completeness; only this gate is.
 |---|---|
 | **Story** test case — PASSED / passed-with-minor / FAILED | whole-flow **MP4** + **one screenshot per Expected-Result item** |
 | **Story** test case — BLOCKED | exempt — the precise blocker reason is the deliverable |
-| **Retest-bug** (re-verify a fixed bug, not a story run) | **screenshots only**, one per Expected Result — no MP4 |
+| **Retest-bug** (re-verify a fixed bug, not a story run) | whole-flow **MP4** per case — **plus** one screenshot per Expected Result on **text-verification** cases (exact wording/label/message/count/values). Attached to the **Jira issue / comment**, never Google Drive. |
 
 **The 5 steps — all must pass:**
 

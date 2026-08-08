@@ -4,7 +4,7 @@ Helix QA assistant pre-configured for the **OLS** project at <ORG>.
 
 Helix skills embedded directly — no separate install needed.
 
-**OLS Workspace version: v1.21.24** (8 Aug 2026) — based on helix v1.5.59
+**OLS Workspace version: v1.21.25** (8 Aug 2026) — based on helix v1.5.59
 
 ## Quick start
 
@@ -28,6 +28,21 @@ Three ways of working, all pointed at the OLS project:
 
 Each is detailed below.
 
+## How the tests actually run (headless Chrome + Playwright)
+
+Both testing skills drive a real browser in **headless Chrome** — invisible, never steals the user's
+screen — using **Playwright** as the automation framework (reached through the `superpowers-chrome`
+`use_browser` tool; MP4 capture uses an off-repo Playwright + ffmpeg harness). Every scenario is driven
+through its **real surface** (UI scenario → clicks through the UI; API-layer scenario → the API call).
+
+| Skill | Browser | Framework | Evidence |
+|-------|---------|-----------|----------|
+| `/testing-ticket` (story test) | headless Chrome | Playwright (+ ffmpeg for MP4) | whole-flow **MP4** + one screenshot per Expected-Result item → Google Sheet + Drive |
+| `/retest-bug` (re-verify a fix) | headless Chrome | Playwright (+ ffmpeg for MP4) | whole-flow **MP4** per case, **plus** a screenshot on text-verification cases — attached to the **Jira comment** (not Drive) |
+
+The unattended `/bot-testing` bots run the same skills fully headless on the QA Mac and write results back
+over the Jira REST API — they never touch a visible browser or the user's screen.
+
 ## Helix commands
 
 | Command | What it does |
@@ -35,7 +50,7 @@ Each is detailed below.
 | `/helix` | Main menu — pick a workflow |
 | `/tc-fe-prep` | Frontend TC (Thai) from a story — รีเช็คคำจาก TC glossary ให้ยืนยันก่อน แล้ว outputs Jira comment + สูงสุด 5 CSV attachments (Draft_Jira, Import_Qase, Unit_Test, Integration_Test, System_Test) |
 | `/tc-api-prep` | API test cases from spec + Swagger |
-| `/retest-bug` | Verify a fix on a Jira bug, add evidence, comment |
+| `/retest-bug` | Verify a fix on a Jira bug, capture a whole-flow MP4 (+ screenshot on text-check cases) into the Jira comment, verdict + comment |
 | `/testing-ticket` | Playwright test for a ticket, optionally update results |
 | `/create-bug` | Open bug(s) on Jira |
 
@@ -277,6 +292,21 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
 
 ## Changelog
 
+### v1.21.25 — retest evidence is now a whole-flow MP4 in the Jira comment (8 Aug 2026)
+
+- **`/retest-bug` re-verify now records a whole-flow MP4 per case — the same capture format as a story
+  test — instead of screenshots only.** The MP4 is attached to the **Jira issue and referenced in the
+  comment** (Evidence cell link `[▶ …mp4|^…mp4]`); it never goes to Google Drive. **Text-verification
+  cases** (exact wording / label / message / count / values) additionally keep an inline screenshot so
+  the exact text is legible in a still — those rows carry **both** the MP4 link and the `!png!` image.
+  This reverses the earlier "retest = screenshots only, no MP4" rule. Updated:
+  [retest-bug-workflow WORKFLOW.md](skills/retest-bug-workflow/SKILL.md) (Step 5 evidence, Step 7c embed,
+  Step 7d + 8·0 gates), [references/qa-evidence-gates.md](references/qa-evidence-gates.md) (evidence-by-
+  workflow table), and the `testing-ticket-workflow` cross-references. Also documented the testing tech
+  (headless Chrome + Playwright) in *How the tests actually run*.
+  > Note: the off-repo unattended retest bot (`~/ols-qa-testing-bot/prompt-retest.md`) needs the matching
+  > capture change to produce the MP4 in headless runs — that is outside this repo.
+
 ### v1.21.23 — create-bug: OLS bug format locked so the next bug needs no fix-ups (6 Aug 2026)
 
 - **New OLS bug-creation format spec — a freshly filed bug now comes out right the first time** (learned
@@ -289,16 +319,6 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
   [references/ols-project-guide.md](references/ols-project-guide.md) § Bug creation format (OLS), plus the
   generic create-bug `bug-draft-template.md` (portable: tag-prefix space, bullet actual/expected, inline
   evidence in the actual field).
-
-### v1.21.5 — login preflight scoped to the roles a run uses (2 Aug 2026)
-
-- **Pre-flight login smoke gate now smokes only the role(s) a run actually uses — not all 5.** Before
-  a testing or retest run, the gate reads the run's scenarios to decide which roles are in scope: a
-  single-role run logs in that one role, a multi-role run logs in each role it uses, nothing more. An
-  unrelated role's auth outage no longer blocks a run that never touches that role. The auth-backend
-  outage catch (e.g. NDLP68 `400` on every login) is unchanged — just scoped. retest-bug-workflow was
-  already single-role. Updated: [references/ols-project-guide.md](references/ols-project-guide.md)
-  § Auth and the shared `testing-ticket-workflow` pre-flight gate.
 
 ---
 
