@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 🔴 กฎ: ยืนยัน environment กับ user ก่อนทดสอบเสมอ — ห้ามเดา/เลือกเอง
 
-**ก่อนเริ่มทดสอบ/retest ทุกครั้ง ต้อง confirm กับ user ว่าใช้ env ไหน (dev / pre-prod / staging / prod) แล้วรอคำตอบก่อน — ห้าม default หรือเลือก env เองเด็ดขาด** แม้ env นั้นจะเข้าง่ายกว่า ก็ห้ามเลือกเองเพราะเหตุผลนั้น การเลือก env เป็นสิทธิ์ของ user ไม่ใช่ AI (หมายเหตุ 2026-08-08: dev/pre-prod/training **ต้อง VPN ทุกตัว** — ไม่มี env ไหนเป็นทางลัด no-VPN)
+**ก่อนเริ่มทดสอบ/retest ทุกครั้ง ต้อง confirm กับ user ว่าใช้ env ไหน (dev / pre-prod / staging / prod) แล้วรอคำตอบก่อน — ห้าม default หรือเลือก env เองเด็ดขาด** แม้ env นั้นจะเข้าง่ายกว่า ก็ห้ามเลือกเองเพราะเหตุผลนั้น การเลือก env เป็นสิทธิ์ของ user ไม่ใช่ AI (หมายเหตุ 2026-08-08: dev/pre-prod **ต้อง VPN** · training **ไม่ต้อง VPN** — ห้ามเลือก training เองเพราะข้าม VPN ได้)
 
 - ถามครั้งเดียวตอนเริ่ม: "เทส env ไหน — dev หรือ pre-prod?" แล้วรอ
 - ห้ามเขียนใน retest plan / subagent prompt ว่า "ใช้ env X" ก่อนที่ user จะยืนยัน
