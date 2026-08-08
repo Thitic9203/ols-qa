@@ -275,7 +275,7 @@ remark (no bug, no halt); test-side cause → fix and re-run; confirmed defect �
 
 **Whole-flow MP4 per case — same capture format as the story-testing flow — attached to the Jira issue and referenced in the comment (NOT Google Drive).**
 
-- **Record a whole-flow MP4 for every executed case** (drive the case's real steps end-to-end, same capture the story-testing flow uses). The MP4 is the retest evidence — it replaces the former screenshot-only rule.
+- **Record a whole-flow MP4 for every executed case** (drive the case's real steps end-to-end, same capture the story-testing flow uses). The MP4 is the retest evidence — it replaces the former screenshot-only rule. Every clip MUST clear the **[MP4 7-layer quality + correctness gate](../../../references/qa-evidence-gates.md)** (max resolution the harness supports; the flow reaches the stated target — "scroll to menu XX" must actually arrive, never cut early; the Expected Result is visible on screen) — fail-closed: a blurry / skipped / early-cut clip = re-capture, the case is not done.
 - **Text-verification case → screenshot AS WELL as the MP4.** When a case verifies exact wording / label / message / count / displayed values (anything judged char-exact against the bug's Expected Result), also embed a still screenshot inline so the exact text is legible in a frame — the row then carries **both** the MP4 link and the `!png!` image. A non-text case carries the MP4 only.
 - **Destination = the Jira issue, in the comment.** Upload every file (MP4 + any screenshot) as an **issue attachment**, then reference it in the verdict table's `Evidence` cell (the column between `Actual Result` and `Status`). A retest never writes to Google Drive — that is the story/bot flow, not this one.
 - **Naming (reuse the story convention):** `{KEY}_TC_{nn}.mp4` for the clip, `TC_{nn}-ER_{n}.png` for a text still.
@@ -458,6 +458,7 @@ Before Step 8 transition, run review per [jira-comment-post-review.md](../../../
    - [ ] **No literal `<br>`, HTML tags, or stray markup** visible as text.
    - [ ] **Numbered items** (`1. ` `2. ` `3. `) each on a separate line — not running together.
    - [ ] No truncation; FE MP4 link resolves + plays, and text-verification screenshots render.
+   - [ ] Each FE MP4 clears the 7-layer quality+correctness gate — plays sharp end-to-end, shows the flow reaching the stated target (no early cut), ER visible.
    - [ ] API evidence: cURL + response present per row.
 3. If any check fails → fix → re-post → re-verify on Jira UI. **Max 3 rounds** — then report specific failures with best available workaround.
 
@@ -477,7 +478,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] **Step 4g root-cause investigation ran for every non-PASSED item** (including BLOCKED): the cause cites captured artifacts (status code, response field/message, console error, bundle probe, fixture read-back) and is labelled `Confirmed` / `Suspected` (+ the confirming check) / `Unknown — not investigated` (+ what is needed).
 - [ ] **Step 4h challenge gate ran for every non-PASSED item** ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)): the expected side re-verified char-exact against an authoritative source **including related/linked tickets' AC/EC**; a wrong/superseded expected became an expected/TC adjustment (not a FAILED), an unclear/hedged spec became BLOCKED + a who-to-ask remark (not a bug), and every surviving non-PASS was surfaced to the user in chat (recommendation A/B/C) before the comment was drafted.
 - [ ] **Step 6b dev-question gate + cause gate passed before the first post**; every scope word traces to a verdict-table row + its `Evidence`; every cause sentence cites an artifact and carries a label; no hedge word used as a cause; no unresolved contradiction between your own observations.
-- [ ] v2/v3 format matches Step 3 lock; FE bugs have the per-case MP4 (and text-verification screenshots) attached before wiki embed.
+- [ ] v2/v3 format matches Step 3 lock; FE bugs have the per-case MP4 (and text-verification screenshots) attached before wiki embed, every MP4 green on the 7-layer quality+correctness gate.
 - [ ] API cases: full cURL + response per row (no "same as above").
 - [ ] Jira issue re-opened after post: comment visible, not truncated.
 - [ ] Step 7d fix-verify completed.
@@ -497,6 +498,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌**; env + results table present (bold headers, `No.` column).
 - [ ] One result row per expected-result item (the ALL-items check is visible).
 - [ ] **FE / UI bug:** a whole-flow **MP4 for every executed case**, uploaded as an attachment **and linked in that row's `Evidence` cell** (`[▶ …mp4|^…mp4]`), the link confirmed to resolve/play from the Jira UI (Step 7d); **plus** an inline screenshot (`!file.png!`, pre-resized, no `|width`) on every **text-verification** row, confirmed rendering as a picture. **A text-only comment for an FE bug FAILS this gate** — the exact-text/values table is not a substitute for the required MP4 (and text stills).
+- [ ] **Every MP4 passes all 7 layers of the [MP4 quality + correctness gate](../../../references/qa-evidence-gates.md)** — max quality, whole flow with no skip, reaches the stated target (never cut early), ER visible on screen, legible/text-backed, file integrity + case match, attached-and-link-verified. Fail-closed: any layer red = re-capture, do NOT transition.
 - [ ] **API bug:** full cURL + response per row (no "same as above").
 - [ ] No local file paths, no literal `<br>`/HTML markup.
 

@@ -4,7 +4,7 @@ Helix QA assistant pre-configured for the **OLS** project at <ORG>.
 
 Helix skills embedded directly — no separate install needed.
 
-**OLS Workspace version: v1.22.0** (8 Aug 2026) — based on helix v1.5.59
+**OLS Workspace version: v1.22.1** (8 Aug 2026) — based on helix v1.5.59
 
 ## Quick start
 
@@ -292,33 +292,33 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
 
 ## Changelog
 
-### v1.21.25 — retest evidence is now a whole-flow MP4 in the Jira comment (8 Aug 2026)
+### v1.22.1 — retest evidence = whole-flow MP4 in the Jira comment + a 7-layer MP4 quality/correctness gate (8 Aug 2026)
 
 - **`/retest-bug` re-verify now records a whole-flow MP4 per case — the same capture format as a story
   test — instead of screenshots only.** The MP4 is attached to the **Jira issue and referenced in the
   comment** (Evidence cell link `[▶ …mp4|^…mp4]`); it never goes to Google Drive. **Text-verification
   cases** (exact wording / label / message / count / values) additionally keep an inline screenshot so
   the exact text is legible in a still — those rows carry **both** the MP4 link and the `!png!` image.
-  This reverses the earlier "retest = screenshots only, no MP4" rule. Updated:
-  [retest-bug-workflow WORKFLOW.md](skills/retest-bug-workflow/SKILL.md) (Step 5 evidence, Step 7c embed,
-  Step 7d + 8·0 gates), [references/qa-evidence-gates.md](references/qa-evidence-gates.md) (evidence-by-
-  workflow table), and the `testing-ticket-workflow` cross-references. Also documented the testing tech
-  (headless Chrome + Playwright) in *How the tests actually run*.
-  > Note: the off-repo unattended retest bot (`~/ols-qa-testing-bot/prompt-retest.md`) needs the matching
-  > capture change to produce the MP4 in headless runs — that is outside this repo.
+  This reverses the earlier "retest = screenshots only, no MP4" rule.
+- **New MP4 7-layer quality + correctness gate (fail-closed) — applies to story tests AND retests.** A
+  clip is only valid when it clears all 7: **(1)** max resolution/sharpness the harness supports (no
+  text-blurring downscale); **(2)** whole flow, no skip, real surface; **(3)** it **reaches the stated
+  target** — "scroll to menu XX" must actually arrive, never cut early (target unreachable ⇒ that case is
+  BLOCKED, not a short clip); **(4)** the Expected Result is visible on screen; **(5)** wording/values are
+  legible (else a screenshot supplements); **(6)** file integrity + correct case match; **(7)** the
+  attached link resolves and plays. Miss any layer ⇒ re-capture; no posting/transition/"done".
+- Updated: [references/qa-evidence-gates.md](references/qa-evidence-gates.md) (evidence-by-workflow table +
+  the 7-layer gate), the [retest-bug-workflow](skills/retest-bug-workflow/SKILL.md) (Step 5 evidence,
+  Step 7c embed, Step 7d + 8·0 gates), and the `testing-ticket-workflow` cross-references. Also documented
+  the testing tech (headless Chrome + Playwright) in *How the tests actually run*.
+  > Note: the off-repo unattended retest bot (`~/ols-qa-testing-bot/prompt-retest.md`) carries the matching
+  > capture + 7-layer gate change so headless runs produce the MP4 — that file is outside this repo.
 
-### v1.21.23 — create-bug: OLS bug format locked so the next bug needs no fix-ups (6 Aug 2026)
+### v1.21.25 — retest evidence is now a whole-flow MP4 in the Jira comment (8 Aug 2026)
 
-- **New OLS bug-creation format spec — a freshly filed bug now comes out right the first time** (learned
-  OLS-368: the first draft needed hand fix-ups). The **summary** carries the `[Component][Feature][Role]`
-  tag-prefix with **exactly one space** after the closing `]` before the description (concise, no run-on);
-  **Actual result** and **Expected result** are written as **bullet lists**, not prose blobs; and the
-  **evidence screenshot is embedded inside the Actual-result field** (attach, then `!filename!` inline),
-  not only loose-attached. Full field set + REST mechanics (root-cause-type is an array, sprint id, epic
-  per the related story) captured alongside. Updated:
-  [references/ols-project-guide.md](references/ols-project-guide.md) § Bug creation format (OLS), plus the
-  generic create-bug `bug-draft-template.md` (portable: tag-prefix space, bullet actual/expected, inline
-  evidence in the actual field).
+- Superseded by v1.21.26 (same feature, plus the 7-layer MP4 quality/correctness gate). `/retest-bug`
+  re-verify records a whole-flow MP4 per case into the Jira comment (not Drive); text-verification cases
+  keep a screenshot as well.
 
 ---
 
