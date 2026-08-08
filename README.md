@@ -292,7 +292,7 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
 
 ## Changelog
 
-### v1.22.1 — retest evidence = whole-flow MP4 in the Jira comment + a 7-layer MP4 quality/correctness gate (8 Aug 2026)
+### v1.23.0 — retest evidence = whole-flow MP4 in the Jira comment + a 7-layer MP4 quality/correctness gate (8 Aug 2026)
 
 - **`/retest-bug` re-verify now records a whole-flow MP4 per case — the same capture format as a story
   test — instead of screenshots only.** The MP4 is attached to the **Jira issue and referenced in the
@@ -314,11 +314,18 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
   > Note: the off-repo unattended retest bot (`~/ols-qa-testing-bot/prompt-retest.md`) carries the matching
   > capture + 7-layer gate change so headless runs produce the MP4 — that file is outside this repo.
 
-### v1.21.25 — retest evidence is now a whole-flow MP4 in the Jira comment (8 Aug 2026)
+### v1.21.23 — create-bug: OLS bug format locked so the next bug needs no fix-ups (6 Aug 2026)
 
-- Superseded by v1.21.26 (same feature, plus the 7-layer MP4 quality/correctness gate). `/retest-bug`
-  re-verify records a whole-flow MP4 per case into the Jira comment (not Drive); text-verification cases
-  keep a screenshot as well.
+- **New OLS bug-creation format spec — a freshly filed bug now comes out right the first time** (learned
+  OLS-368: the first draft needed hand fix-ups). The **summary** carries the `[Component][Feature][Role]`
+  tag-prefix with **exactly one space** after the closing `]` before the description (concise, no run-on);
+  **Actual result** and **Expected result** are written as **bullet lists**, not prose blobs; and the
+  **evidence screenshot is embedded inside the Actual-result field** (attach, then `!filename!` inline),
+  not only loose-attached. Full field set + REST mechanics (root-cause-type is an array, sprint id, epic
+  per the related story) captured alongside. Updated:
+  [references/ols-project-guide.md](references/ols-project-guide.md) § Bug creation format (OLS), plus the
+  generic create-bug `bug-draft-template.md` (portable: tag-prefix space, bullet actual/expected, inline
+  evidence in the actual field).
 
 ---
 
