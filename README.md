@@ -294,6 +294,22 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
 
 ## Changelog
 
+### v1.28.6 — `/create-bug` now re-checks the board before filing (a defect already settled in another ticket is not a bug) (9 Aug 2026)
+
+- **New board-conflict gate in `/create-bug` (WORKFLOW Phase B2), run before any draft/confirm.** For every
+  candidate bug, the skill searches the tracker/board — summaries **and** comment text, open **and** closed
+  tickets — for a prior ticket covering the same screen / field / message / behavior. If a resolved ticket
+  records a decision that the current behavior is intended (e.g. a discussion concluded the error text must
+  be exactly what the app now shows), that candidate is **not a bug**: it is dropped, and the finding is
+  reported to the user in chat **with the reference link** (the concluding comment URL, not just the ticket
+  key) so they can verify the reasoning. A duplicate that is still open points at the existing ticket instead
+  of filing a second one; an uncertain match becomes a question to the PO, not a bug.
+- Wired through the whole skill: the refusal-first precondition gate, the Phase C confirm block (new
+  `Board check:` line), the Phase E falsification step, the QA-closing checklist, and a MUST/NEVER row —
+  plus a one-line note in the [create-bug SKILL stub](skills/create-bug-workflow/SKILL.md). Complements the
+  existing PM-006 "verify the expected/spec against the authoritative source" gate: that stops bugs against
+  an *assumed* spec; this stops bugs against a decision the team already *closed*.
+
 ### v1.28.5 — new `/test-data-prep` skill with a full ordered Gate 0 intake + strict cover gate (9 Aug 2026)
 
 - **New `/test-data-prep` skill** (OLS-local, not synced to helix) — prepare, seed, or fix OLS test/training
@@ -322,28 +338,6 @@ anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows
   from both the [testing-ticket-workflow](skills/testing-ticket-workflow/SKILL.md) and
   [retest-bug-workflow](skills/retest-bug-workflow/SKILL.md) stubs + their WORKFLOW.md `## Discipline`
   headers (first item, before intake).
-
-### v1.23.0 — retest evidence = whole-flow MP4 in the Jira comment + a 7-layer MP4 quality/correctness gate (8 Aug 2026)
-
-- **`/retest-bug` re-verify now records a whole-flow MP4 per case — the same capture format as a story
-  test — instead of screenshots only.** The MP4 is attached to the **Jira issue and referenced in the
-  comment** (Evidence cell link `[▶ …mp4|^…mp4]`); it never goes to Google Drive. **Text-verification
-  cases** (exact wording / label / message / count / values) additionally keep an inline screenshot so
-  the exact text is legible in a still — those rows carry **both** the MP4 link and the `!png!` image.
-  This reverses the earlier "retest = screenshots only, no MP4" rule.
-- **New MP4 7-layer quality + correctness gate (fail-closed) — applies to story tests AND retests.** A
-  clip is only valid when it clears all 7: **(1)** max resolution/sharpness the harness supports (no
-  text-blurring downscale); **(2)** whole flow, no skip, real surface; **(3)** it **reaches the stated
-  target** — "scroll to menu XX" must actually arrive, never cut early (target unreachable ⇒ that case is
-  BLOCKED, not a short clip); **(4)** the Expected Result is visible on screen; **(5)** wording/values are
-  legible (else a screenshot supplements); **(6)** file integrity + correct case match; **(7)** the
-  attached link resolves and plays. Miss any layer ⇒ re-capture; no posting/transition/"done".
-- Updated: [references/qa-evidence-gates.md](references/qa-evidence-gates.md) (evidence-by-workflow table +
-  the 7-layer gate), the [retest-bug-workflow](skills/retest-bug-workflow/SKILL.md) (Step 5 evidence,
-  Step 7c embed, Step 7d + 8·0 gates), and the `testing-ticket-workflow` cross-references. Also documented
-  the testing tech (headless Chrome + Playwright) in *How the tests actually run*.
-  > Note: the off-repo unattended retest bot (`~/ols-qa-testing-bot/prompt-retest.md`) carries the matching
-  > capture + 7-layer gate change so headless runs produce the MP4 — that file is outside this repo.
 
 ---
 

@@ -25,7 +25,7 @@ Claude Code shortcut: `/create-bug` → [commands/create-bug.md](../../commands/
 
 ## Refusal-first (precondition gate)
 
-All preconditions and refusal rules are in WORKFLOW.md. MUST NOT create issues until the user approves each draft.
+All preconditions and refusal rules are in WORKFLOW.md. MUST NOT create issues until the user approves each draft. MUST re-check the tracker/board first (WORKFLOW Phase B2): a defect a prior/closed ticket already settled as intended behavior is not a bug — report it to the user with the reference link instead of filing.
 
 ## QA closing (mandatory before "done")
 

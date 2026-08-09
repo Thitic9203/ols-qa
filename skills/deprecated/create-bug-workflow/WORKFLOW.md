@@ -30,6 +30,15 @@ unconfirmed → it is a **question, not a bug**: resolve it (or mark BLOCKED / a
 file. (Root cause this prevents: a phantom label bug filed against a transliterated word never in the
 design — the real spec matched the app all along.)
 
+**MUST re-check the tracker/board for a prior ticket that already settled this behavior BEFORE filing.**
+A defect the team has already discussed and *concluded is intended* is **not a bug**, even if it looks
+wrong to you. Before drafting, search the board (Phase B2) for existing or closed tickets on the same
+screen / field / message / behavior. If a resolved ticket records a decision that the current behavior is
+correct — e.g. a discussion concluded "the error text here must be exactly X", and the app shows X — then
+it is **not a bug**: report it to the user in chat **with the reference link** (the concluding comment URL,
+not just the ticket key) and do **not** file. (Root cause this prevents: re-filing a defect against a
+point the team already closed with an agreed-upon expected value.)
+
 If pre-flight fails (auth, repo missing), stop — MUST NOT create issues silently.
 
 On first response after constraints, follow [workspace-guide-discovery.md](../../../references/workspace-guide-discovery.md) for **Create bug**, then show [intake-one-pager.md](../../../references/intake-one-pager.md) (Create bug section).
@@ -83,6 +92,36 @@ If pre-flight fails, report and stop — do not create issues silently.
 
 ---
 
+## Phase B2 — Board-conflict re-check (hard gate, before drafting/confirm)
+
+**For every bug about to be filed, search the tracker/board first** — a defect the team already
+discussed and concluded is *intended behavior* is not a bug, and re-filing it wastes a full
+file → retest → close-out round.
+
+1. **Search the board** for existing or closed tickets covering the same **screen / field / message /
+   behavior** as each candidate bug. On Jira use `searchJiraIssuesUsingJql` (search summaries **and**
+   comment text — the deciding conclusion often lives in a comment, not the title); on GitHub search
+   open **and** closed issues. Use the distinctive terms of the finding (the exact error text, the
+   field label, the component) — not just the ticket type.
+2. **Read the conclusion of any match**, including resolved/closed ones. A closed ticket can still hold
+   the authoritative decision.
+3. **Decide per candidate:**
+   - **Conflict — not a bug.** A resolved ticket records that the current behavior is correct (e.g. a
+     discussion concluded the message must be exactly what the app now shows) → **drop this candidate,
+     do not draft or file it.** Report to the user in chat: what you found, the ticket key, and the
+     **direct link to the concluding comment** (`…/browse/KEY?focusedCommentId=<id>` or the GitHub
+     comment anchor) so they can verify the reasoning themselves.
+   - **Duplicate — already open.** The same defect is already filed and unresolved → do not open a
+     second one; point the user at the existing ticket.
+   - **No conflict.** No ticket settles it → proceed to Phase C for this candidate.
+4. **Uncertain whether a match truly settles it?** Treat it as a **question to the user / PO, not a
+   bug** — surface the ticket link and ask, rather than filing over a possible prior decision.
+
+Only candidates that clear this gate move to Phase C. Note in the confirm block that the board was
+checked (see Phase C).
+
+---
+
 ## Phase C — Confirm before create (hard gate)
 
 Show:
@@ -91,7 +130,8 @@ Show:
 ━━━ Create bug — confirm before filing ━━━
 Target:     {Jira PROJ / GitHub owner/repo}
 Format:     {user template name or Helix default}
-Bug count:  {N}
+Board check: {N candidates searched — M dropped as already-settled/duplicate, K to file}
+Bug count:  {K}
 
 Draft summaries:
   1. [{Severity}] {Module} — {title one line}
@@ -142,7 +182,8 @@ HTTP 200 and renders as garbage — run both gates in
 
 For each bug, if not already validated in a prior test:
 
-- One disproof attempt: intentional design? role-only? flake?
+- One disproof attempt: intentional design? role-only? flake? **already settled in another ticket?**
+  (the board-conflict search is Phase B2 — do not skip it just because a bug "looks obvious").
 - Drop or mark **Needs Review** — only create **Confirmed** / user-approved **Likely** items.
 
 ---
@@ -174,6 +215,7 @@ Verdict: CREATED {N}/{N} — verified at destination
 
 Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific:
 
+- [ ] Board-conflict search (Phase B2) ran for every candidate; any dropped as already-settled/duplicate reported to the user with the reference link.
 - [ ] Every created issue has URL/key from tool output (not guessed).
 - [ ] Each URL opened or fetched — title visible.
 - [ ] Close-out includes `Verdict: CREATED x/y`.
@@ -205,5 +247,6 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | Rule | Because |
 |------|---------|
 | MUST NOT invent reproduction steps | False bugs |
+| MUST search the board (Phase B2) before filing; drop any bug already settled as intended in a prior/closed ticket and report it with the reference link | Re-filing a closed decision wastes a full retest round |
 | MUST verify each issue URL in Phase F | Silent partial failure |
 | MUST lock Jira v2/v3 per session when user specifies | Rewrite cost |
