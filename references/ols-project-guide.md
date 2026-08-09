@@ -280,6 +280,15 @@ OLS ไม่มีหน้า login ของตัวเอง — login ผ�
 - **Delete = recoverable soft-delete** (API) แต่ **UI dialog เตือน "ไม่สามารถย้อนกลับได้"** (ขัดกัน) และไม่มีปุ่มกู้คืนใน creator UI → ยืนยันกับ dev ว่าอันไหน authoritative · toast สำเร็จ = "ลบเส้นทางการเรียนรู้เรียบร้อยแล้ว".
 - **Known bug (OLS-26):** ปุ่ม **"บันทึก" (bookmark)** บนหน้า LP/course กดแล้วไม่ทำงาน — ไม่มี network request / state change / console error (ขณะ enroll ทำงานปกติ). LP ใน "การบันทึกของฉัน" เดิมเป็น placeholder id (`learning-path-1/2/3`) เปิดแล้ว error.
 
+### Media object — `status` vs `reviewStatus` are TWO different fields (learned OBEC-training69 smoke, 2026-08-09)
+
+`GET /api/media/{id}` carries **two** state fields — reading the wrong one for a lifecycle precondition check silently gives a stale value:
+
+- **`status`** = the real **lifecycle** state: `DRAFT` (แบบร่าง) · `PUBLISHED` (เผยแพร่) · `UNPUBLISHED` (ยกเลิกการเผยแพร่) · `PENDING_EDIT` (รอแก้ไข). **This is the authoritative state for any publish/unpublish/edit precondition or transition assertion.**
+- **`reviewStatus`** = the **moderation** outcome only: `PENDING_APPROVAL` → `APPROVED`. Once approved it **freezes at `APPROVED`** and does **not** track later lifecycle moves — so a media sitting in `PENDING_EDIT` still reads `reviewStatus=APPROVED`.
+- 🔴 **Precondition/verdict logic MUST key off `status`, never `reviewStatus`.** A checker that reads `reviewStatus` first sees stale "APPROVED" on every already-approved media and will falsely BLOCK/PASS. (This caused a whole media-lifecycle batch to false-BLOCK on the first run before being root-caused.)
+- **Transition wording verified (char-exact, training69):** unpublish → confirm dialog "ยืนยันการยกเลิกการเผยแพร่ ผู้เรียนจะไม่สามารถเข้าถึงเนื้อหานี้ได้…" → toast **"ยกเลิกการเผยแพร่สำเร็จ"** (PUBLISHED→UNPUBLISHED); republish of an already-approved media fires `POST …/republish` **immediately with no confirm dialog**, toast **"เผยแพร่สื่อเรียบร้อยแล้ว"**, goes straight to PUBLISHED (does **not** re-route through รออนุมัติ/PENDING_APPROVAL); edit → dialog "ยืนยันการแก้ไข" ("การแก้ไข มีผลกระทบต่อผู้เรียน…") → toast **"เปลี่ยนสถานะเป็นรอแก้ไขสำเร็จ"** → PENDING_EDIT.
+
 **Test-data recipes — which ticket + role produces which state** (use per M17 when a case is blocked for missing data):
 
 | Need (state/data) | Recipe ticket | Role | Notes |
