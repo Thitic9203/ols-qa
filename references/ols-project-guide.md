@@ -97,8 +97,8 @@ Smoke-test case list + verdicts for the training-ols (prod) run. Resolve `<SMOKE
 | Field | Value |
 |-------|-------|
 | Sheet | `<SMOKE_SHEET_ID>` — tab **"OLS - Smoke test"** (gid `2040945190`), 112 cases |
-| Columns | A Module · B Test case · C Pre-req · D Test data · E Test step · F Expected · **G/H/I = Pre-prod** status/img/bug (do not touch) · **J/K/L = Training-ols** status/img/bug |
-| Write scope | verdict → **col J** · evidence link → **col K** · linked bug → **col L**. Verdict = outcome-state shown in the capture (completeness gate), never "action done". |
+| Columns | A Module · B Test case · C Pre-req · D Test data · E Test step · F Expected · **G/H/I = Training-ols69** status/img·VDO/Remark. *(Restructured 2026-08-09: the old pre-prod section was removed and Training-ols results moved from J/K/L to **G/H/I** — verified live: header `Training-ols69: Test Status / Image/VDO / Remark`, 81 verdicts in col G. **J/K/L are now empty/unused** — do not write them.)* |
+| Write scope | verdict → **col G** · evidence link (`=HYPERLINK(folder,"Link")`) → **col H** · linked bug / remark → **col I**. Verdict = outcome-state shown in the capture (completeness gate), never "action done". Writer = `smoke_write.py` (scoped to G/H/I, RAW status + read-back). |
 
 ## QA tracking sheet (ticket list + TC status)
 
