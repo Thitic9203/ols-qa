@@ -43,6 +43,20 @@ turns a correct app into a phantom FAILED. Run this at **Step 4h**, then **surfa
 chat** so they can decide whether to adjust the expected/TC, re-test, or confirm the defect. Full gate:
 [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md).
 
+**Retest every expected-result item + bug-detail — completeness is a hard gate.** The scope of the
+retest is the bug's own contract: **every** item of its Expected Result **and** each bullet of its
+detail/steps, plus any AC/EC the bug's parent story pins. The retest is not done until each of those
+items is verified AND appears as its **own row** in the verdict table with its own status + evidence.
+It is **never** acceptable to post PASSED on partial coverage and mention the untested/failing item in
+a remark, a note under the table, or in chat — a point worth noticing is worth a **row**. Enforced by
+the **7-layer AC/EC & bug-detail coverage completeness gate** in
+[qa-evidence-gates.md](../../../references/qa-evidence-gates.md): layers 1–2 (enumerate every
+expected-result/detail item char-exact, map each id 1:1 to a table row) run at **Step 2**; layers 3–5
+(verify each on its real surface, row-never-a-remark, partial coverage ≠ PASSED) run at **Step 4**;
+layers 6–7 (reconcile `enumerated ids == rowed-and-statused rows`, fail-closed) run at **Step 6 / 8·0**
+before any post or transition. Fail-closed: any item missing a row, unverified, status-less, or living
+only in a remark ⇒ the retest is **not complete**.
+
 **Test through the real steps.** Drive the behaviour under verification through its own surface,
 following the ticket's Test Steps completely — a UI bug through the UI (click, fill, submit), never a
 direct API call to perform the tested action. The API is allowed **only** to prepare the case's test
@@ -108,7 +122,7 @@ Capture: environment, test steps, expected/actual results, API endpoint, bug typ
 
 - **PASSED** only if the retest satisfies **ALL** expected results stated in the bug — every item, character-exact where the bug specifies wording. Partial match = **FAILED**.
 - Parent-story AC / Figma are **supplements** for context or when the bug is title-only — they never override or dilute the bug's own expected results. If the bug's expected result and the parent AC conflict, test against the bug's text and flag the conflict to the user.
-- List each expected-result item as its own row in the result table (Step 6) so the ALL-items check is visible, not implied.
+- **Enumerate the full contract now (coverage gate layers 1–2).** Extract **every** Expected-Result item **and** each bullet of the bug's detail/steps char-exact, give each a stable id (`ER1…`), and map each id 1:1 to a row you will fill in the Step 6 verdict table — so the ALL-items check is a **visible row per id**, not implied. A compound expected ("shows A **and** B") splits into one row per clause; an item with no row is a coverage gap → add it, never drop it. Nothing verified-or-reported may live outside this list, and nothing in it may be silently omitted.
 
 **If Priority/Severity context is needed** (citing the original bug's Priority, or scoping a newly
 observed, distinct defect found during retest) — judge it only by the
@@ -339,6 +353,14 @@ content, but `**bold**`, `---`, and a `| col | col |` table with a `|---|` divid
 
 Never mix the two in one body.
 
+**AC/EC coverage reconciliation before the draft is final (gate layer 6, fail-closed).** Reconcile the
+Step 2 enumerated `ER*` list against the verdict table: **`enumerated ids == rows carrying a status +
+evidence (or an explicit BLOCKED reason)`**, and `*Expected-result coverage:* {n} / {total}` shows
+`{n} == {total}`. Every expected-result/detail item is its **own row** — none parked only in a remark,
+a note under the table, or chat; no row is status-less; the verdict is **not PASSED** if any item was
+unverified or observed to differ (that item is a FAILED/BLOCKED row). Any shortfall ⇒ the retest is
+**not complete** — add the row / verify the item / re-status the partial case before drafting further.
+
 **Verbosity ceiling:** a PASSED comment stays inside the template above — no added narrative
 paragraphs, no restating the ticket, no "why this matters" prose. Each field line holds only its
 value. FE screenshots go **in the `Evidence` cell** — the `Actual Result` cell already describes what
@@ -478,6 +500,7 @@ MUST NOT transition, assign, or report "done" until 7d passes — because stakeh
 Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific:
 
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌** (not ambiguous text).
+- [ ] **AC/EC & bug-detail coverage gate (7-layer) PASSED — `enumerated Step 2 ER* ids == rows carrying a status + evidence (or explicit BLOCKED)`** ([qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *AC/EC & bug-detail coverage*): every Expected-Result item + bug-detail bullet was enumerated char-exact at Step 2, mapped 1:1 to a verdict-table row, verified on its real surface, and appears as its **own row** — none parked only in a remark/note/chat, no PASSED over partial coverage, a differing item is a FAILED/BLOCKED row not a footnote. Fail closed: any item unverified/unrowed/status-less ⇒ retest not complete.
 - [ ] `Verdict: PASSED` or `Verdict: FAILED` with issue link.
 - [ ] **Non-PASSED verdict:** Step 6a's two blocks present — **root cause** (Confirmed/Suspected/Unknown + backing artifacts) and **resolution options** (two options, each a named **role** owner, ending `Decided by: <role>`) — plus the one-line statement of whether the originally reported symptom is gone. (No separate repro-matrix / why-failed block — that content lives in the `Fixture` line and the verdict-table row + its `Evidence` MP4 / screenshot.)
 - [ ] **Step 4g root-cause investigation ran for every non-PASSED item** (including BLOCKED): the cause cites captured artifacts (status code, response field/message, console error, bundle probe, fixture read-back) and is labelled `Confirmed` / `Suspected` (+ the confirming check) / `Unknown — not investigated` (+ what is needed).
@@ -501,7 +524,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 **Hard gate — do NOT run 8a until the posted comment is complete per the Step 6 / Step 7c format:**
 
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌**; env + results table present (bold headers, `No.` column).
-- [ ] One result row per expected-result item (the ALL-items check is visible).
+- [ ] **AC/EC coverage reconciled (7-layer gate layer 6·7):** `enumerated Step 2 ER* ids == rows carrying a status + evidence (or explicit BLOCKED)`, and `Expected-result coverage: {n}/{total}` has `{n}=={total}`. Every expected-result/detail item is its **own row** — none only in a remark/note/chat; no PASSED verdict over an unverified or differing item. Any shortfall ⇒ do **not** transition; go back and close it.
 - [ ] **FE / UI bug:** a whole-flow **MP4 for every executed case**, uploaded as an attachment **and linked in that row's `Evidence` cell** (`[▶ …mp4|^…mp4]`), the link confirmed to resolve/play from the Jira UI (Step 7d); **plus** an inline screenshot (`!file.png!`, pre-resized, no `|width`) on every **text-verification** row, confirmed rendering as a picture. **A text-only comment for an FE bug FAILS this gate** — the exact-text/values table is not a substitute for the required MP4 (and text stills).
 - [ ] **Every MP4 passes all 7 layers of the [MP4 quality + correctness gate](../../../references/qa-evidence-gates.md)** — max quality, whole flow with no skip, reaches the stated target (never cut early), ER visible on screen, legible/text-backed, file integrity + case match, attached-and-link-verified. Fail-closed: any layer red = re-capture, do NOT transition.
 - [ ] **API bug:** full cURL + response per row (no "same as above").
@@ -687,6 +710,10 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST set `--pass-count N` + `--summary "Retest of dev fix"` + `--owner-label "QA Owner"` on every Discord retest notify | Defaults produce wrong output (0/0/0 + wrong label); learned from 3-resend incident |
 | MUST fetch the notify recipient from the ticket's QA Owner field (per project guide) per ticket, and verify the @mention person = that field's value — NEVER the Reporter, never a name carried over from another ticket | Label said "QA Owner" but pinged the Reporter → 3 wrong pings, user correction 2026-07-15 |
 | MUST verdict from the bug's OWN expected results — PASSED only when ALL items are met (character-exact where wording is specified); parent AC is supplement, never substitute | Bug details are the contract; partial match = FAILED (user rule 2026-07-15) |
+| MUST enumerate **every** Expected-Result item + bug-detail bullet char-exact at Step 2, map each `ER*` id 1:1 to a verdict-table row, and reconcile `enumerated ids == rowed-and-statused rows` (`{n}/{total}` coverage, `{n}=={total}`) before Step 6 / 8·0 (7-layer coverage gate in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md)) | The retest scope is the bug's own contract; an unenumerated or unmapped item is silently unverified |
+| MUST record **every** expected-result/detail result as its own verdict-table row — NEVER park an untested/failing item in a remark, a note under the table, or chat while the verdict reads PASSED | Coverage is proven by rows, not prose beside them; a footnoted gap reads as a clean pass downstream |
+| MUST NOT post PASSED on partial coverage — an item unverified or observed to differ is a FAILED/BLOCKED row (severity per the matrix), and an unreachable item is an explicit BLOCKED row, never dropped | "Fixed except one point" hidden as a caveat is misread as a full pass |
+| MUST NOT transition, notify, or report "done" while any enumerated item lacks a rowed status (coverage gate fail-closed) | Partial coverage is a stop condition; a green verdict over an incomplete table looks finished but is not |
 | MUST judge any Priority/Severity referenced in a retest comment ONLY from the [Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md) — never invent a severity notion | Keeps bug-priority language consistent across QA workflows; no ad hoc severity claims in Jira comments |
 | MUST exercise **every** entry point to a failing surface separately (direct route **and** the in-app path a user takes) and capture each with its own screenshot in the `Evidence` cell; name the entry point(s) actually exercised in the `Fixture` line, and never claim a path you did not run | A path with no captured screenshot is a guess. OLS-108: "happens via both entry points" was published from one run, the dev acted on it, and it had to be retracted in-ticket |
 | MUST NOT write a scope word (`always`, `any entry point`, `both ways`, `only when …`) that no exercised-and-captured `Evidence` row supports | The scope claim is the first thing a dev builds on |

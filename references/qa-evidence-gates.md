@@ -68,6 +68,45 @@ Every MP4 (story test **and** retest) MUST clear all 7 layers before the case co
 
 **Fail-closed:** any layer red on any case ⇒ re-capture that case and re-run the 7 layers. Do not post the comment, do not transition, do not report the story/retest complete until every case is green on all 7.
 
+## AC/EC & bug-detail coverage — 7-layer completeness defense gate (mandatory, fail-closed)
+
+**The scope of what must be tested is the ticket's own contract — every Acceptance Criteria, every
+Expected Condition / Expected Result line, and (for a retest) every item of the bug's Expected Result
+plus each bullet of the bug's own detail/steps. The job is not done until every one of those items is
+tested AND appears as its own row in the results/verdict table with its own verdict + evidence.** A
+point that was worth noticing is worth a row — it is **never** acceptable to mark a case PASSED on
+partial coverage and mention the untested/failing item in a remark, a "หมายเหตุ", a note under the
+table, or in chat. Coverage is proven by rows in the table, not by prose beside it.
+
+Run all 7 layers per ticket. Layers 1–2 run **while building the test plan** (before the confirm gate
+/ before execution); layers 3–5 run **during execution, per item**; layers 6–7 run **before any
+summary, verdict, post, transition, or "done"**.
+
+| # | Layer | Passes only when |
+|:--:|---|---|
+| **1** | **Enumerate the full scope** | Every testable item in the authoritative contract is extracted **char-exact** and given a stable id — the ticket's Acceptance Criteria (`AC1…`), every Expected Condition / Expected Result line (`EC1…` / `ER1…`), and for a **retest** every item of the bug's Expected Result field **plus** each bullet of the bug's detail/steps. **Extract assertions embedded in prose too**, not only bulleted lines — a paragraph "the user can X and the count updates" is two items. **Completeness self-check (the gate is only as strong as this layer):** re-read the AC/EC source **end-to-end** and confirm no testable assertion is missing from the list — under-enumeration here passes layer 6 silently because layer 6 only reconciles against what was enumerated. This numbered list is the coverage baseline: nothing tested-or-reported lives outside it, and no item in it is silently dropped. |
+| **2** | **Map 1:1 to rows — no orphan, no bundling** | Every enumerated id maps to **≥1 row** in the test plan / verdict table (build the coverage matrix `id → row #`). An enumerated id with **no row** = a coverage gap → stop and add the row. A **compound** AC ("does A **and** B **and** C") splits into **one checkable row per clause** — never one row claiming three behaviours it only touched one of. |
+| **3** | **Execute each on its real surface** | Every enumerated id is **actually exercised and observed** — never inferred from a sibling item, never assumed-covered because "the happy path passed". An id you could not reach is an **explicit BLOCKED row** with the reason + who/what is needed — never quietly left off the table. |
+| **4** | **Row, never a remark (anti-footnote)** | Every enumerated id's result is its **own table row** carrying a verdict + evidence cell. It is **forbidden** to record an AC/EC/bug-detail observation **only** in a remark / "หมายเหตุ" / note below-or-beside the table / a trailing paragraph / chat-only. A remark may add context **to** a row; it may **never** be the sole place an AC/EC item is recorded. If it deserves a mention, it deserves a row. |
+| **5** | **Verdict integrity — partial coverage ≠ PASS** | A case/scenario/retest is **PASSED only when every id it covers met its expected** (char-exact where wording is specified). Any covered id **not observed**, or **observed to differ**, makes that row **FAILED / PWMI / BLOCKED** — never a PASS with the exception hidden in a remark. "Works except one point" = a FAILED/PWMI **row for that point**, judged by the [Bug Priority & Severity Matrix](bug-priority-matrix.md), not a footnote on a green case. |
+| **6** | **Reconcile the count before "done"** | Before any summary / verdict / post / external write: `enumerated in-scope ids == rows carrying a verdict + evidence (or an explicit BLOCKED reason)`. **Every id appears as a row; no id lives only in a remark; no row is verdict-less; no id is left `NOT TESTED`.** The **only** id allowed off the table is one **explicitly excluded from scope at the confirm gate** — and it is listed in a visible **Out-of-scope** block, never silently dropped. Any other shortfall fails the gate. |
+| **7** | **Fail-closed = not complete** | Layer 6 not green ⇒ the story/retest is **NOT complete**: do **not** report "PASSED" / "100%" / "complete", do **not** proceed to the external results update / Jira transition / notify, do **not** close the session. Return to the first unmet layer — add the missing row, run the untested id, re-verdict the partial case — then re-run from layer 1. Partial AC/EC coverage is a **stop condition**, not a remark. **Unattended / bot mode:** resolve instead of halting — an unrun or unreachable id becomes a **BLOCKED row** with its reason, and the case/story is reported **incomplete / not-all-passed**; a bot **never** silently marks it PASSED or drops the id. |
+
+**Fail-closed:** any layer red ⇒ close the gap and re-run the gate. A case reported PASSED whose AC/EC
+list is only partially rowed-and-verdicted is treated as **not done**, no matter how the untested item
+was footnoted.
+
+### Coverage red flags — STOP, you are about to pass on partial coverage
+
+- "The main flow passed, this one AC is edge-casey" → it is still a row. Test it or BLOCK it, don't drop it.
+- "I'll just note the remaining point in the remark / หมายเหตุ" → the point is a **row**, not a note.
+- "AC says A and B and C; I checked A, close enough" → one row per clause; B and C are untested until rowed.
+- "It's covered by another case" → then cite that case's row; an id with no row anywhere is uncovered.
+- "PASSED with a minor caveat below the table" → partial coverage/deviation is a FAILED/PWMI row, not a caveat.
+- "Enumerated 9 items, table has 6 rows, but the summary reads complete" → 6 ≠ 9 → not done. Reconcile first.
+
+**All of these mean: add the row (or a BLOCKED row), give it a verdict + evidence, then re-run layer 6.**
+
 ## Wording red flags
 
 Do not use without fresh evidence in the **same** turn:

@@ -49,6 +49,19 @@ correct app. Run this at **E3**, then **surface it to the user in chat** so they
 adjust the test case, re-test, or confirm the defect. Full gate:
 [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md).
 
+**Test every AC/EC — completeness is a hard gate, not a best-effort.** The scope of what must be
+tested is the ticket's own contract: **every** Acceptance Criteria, **every** Expected Condition /
+Expected Result line. The run is not done until each of those items is tested AND appears as its **own
+row** in the results table with its own verdict + evidence. It is **never** acceptable to mark a case
+PASSED on partial coverage and mention the untested/failing item in a remark, a note under the table,
+or in chat — a point worth noticing is worth a **row**. Enforced by the **7-layer AC/EC & bug-detail
+coverage completeness gate** in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md):
+layers 1–2 (enumerate the AC/EC list char-exact, map each id 1:1 to a plan row) run in **Phase B**;
+layers 3–5 (execute each on its real surface, row-never-a-remark, partial coverage ≠ PASS) run in
+**Phase E**; layers 6–7 (reconcile `enumerated ids == rowed-and-verdicted rows`, fail-closed) run in
+**Phase F** before Phase G. Fail-closed: any AC/EC id missing a row, unrun, verdict-less, or living
+only in a remark ⇒ the run is **not complete**.
+
 **Long sessions:** optional todos per [long-workflow-todos.md](../../../references/long-workflow-todos.md).
 
 ## Refusal-first (precondition gate)
@@ -99,8 +112,13 @@ Use [parallel-prep.md](../../../references/parallel-prep.md) when Jira fetch and
 
 1. Fetch **Ticket** (Jira or user paste).
 2. **Confluence** / **Swagger** if provided.
-3. Build numbered **test plan** (in-scope, out-of-scope, API vs UI).
-4. Fill [test-execution-plan-template.md](../../../references/test-execution-plan-template.md) in chat (environment, auth, in-scope table, pass criteria, risks).
+3. **Enumerate the AC/EC contract (coverage gate layers 1–2).** Before writing the plan, extract
+   **every** Acceptance Criteria and Expected Condition / Expected Result line **char-exact** and give
+   each a stable id (`AC1…`, `EC1…`). Then build the numbered **test plan** so **every id maps to ≥1
+   scenario** — record the coverage matrix (`AC/EC id → scenario #`). A compound AC ("does A **and** B")
+   splits into one scenario per clause; an id with no scenario is a coverage gap → add it, never drop it.
+   (in-scope, out-of-scope, API vs UI.)
+4. Fill [test-execution-plan-template.md](../../../references/test-execution-plan-template.md) in chat (environment, auth, in-scope table, pass criteria, risks). Include the **AC/EC → scenario coverage matrix** so the confirm gate shows every AC/EC is covered.
 
 **Design reference (Figma) — view when a ticket links one:** for expected-UI context, prefer the **Figma Dev Mode MCP** (`get_screenshot` / `get_metadata` / `get_design_context`) — needs the Figma desktop app with **Dev Mode MCP Server enabled** (Figma menu → Preferences) and the file open; `node-id` in a Figma URL uses `-`, the MCP `nodeId` uses `:` (`?node-id=1234-5678` → `1234:5678`). If that server is off, **fall back to the browser-automation MCP**: open the file URL (a logged-in browser session persists auth), let the canvas render, then screenshot the node. Dismiss the **"Want to view this file in Dev Mode?"** modal with **"Not now"** — NEVER "Request access" (it sends a seat request). A View+Comment account is enough to read and screenshot the design.
 
@@ -147,6 +165,13 @@ Drive every scenario through its **real surface** — a UI scenario through the 
 button / submits the form), following the case's steps completely. The API is for test-data /
 precondition setup only, **never** to perform the action under test; an API scenario is driven at the
 API. See [test-through-real-steps.md](../../../references/test-through-real-steps.md).
+
+**Cover every enumerated AC/EC id (coverage gate layers 3–5).** Exercise each `AC*/EC*` id on its
+real surface — never infer one from a sibling, never assume it covered because the happy path passed.
+An id you cannot reach is an **explicit BLOCKED row** with the reason, never left off the table. Record
+each id's result as its **own row** (layer 4 — row, never a remark); a case is **PASSED only when every
+id it covers met its expected** (layer 5), and an id observed to differ makes that a FAILED/PWMI/BLOCKED
+row for that point — never a PASS with the exception noted below the table.
 
 Internal failures: note for chat summary only — **do not create Jira/GitHub issues in this workflow.**
 
@@ -234,11 +259,15 @@ Always post a clear summary **in the same conversation** before anything else:
 ### F2 — Results table
 
 ```text
-| # | Scenario | Result | Notes / evidence |
-|---|----------|--------|------------------|
-| 1 | ...      | PASSED | —                |
-| 2 | ...      | FAILED | screenshot-02.png |
+| # | Scenario | AC/EC id | Result | Notes / evidence |
+|---|----------|----------|--------|------------------|
+| 1 | ...      | AC1      | PASSED | —                |
+| 2 | ...      | AC2 / EC1| FAILED | screenshot-02.png |
 ```
+
+**Every enumerated AC/EC id has a row here (coverage gate layer 4·6).** The table — not the Notes
+column, not a remark below it — is where each AC/EC result lives. If an AC/EC point matters, it is a
+row with its own verdict; it is **never** parked in Notes/remark/chat while the case reads PASSED.
 
 ### F3 — Defects observed (if any)
 
@@ -299,6 +328,14 @@ Read F2 + F3 as the developer who will act on them. Run the six-question gate in
 [defect-report-completeness.md](../../../references/defect-report-completeness.md) §5. Any "no" → fix the
 write-up. Also confirm: every scope word (`always`, `any entry point`, `only when …`) traces to a
 repro-matrix row, and no observation is under an unresolved contradiction.
+
+**AC/EC coverage reconciliation (gate layers 6–7 — hard, fail-closed).** Reconcile the Phase B
+enumerated `AC*/EC*` list against F2: **`enumerated ids == rows carrying a verdict + evidence (or an
+explicit BLOCKED reason)`**. Every id appears as a row; no id lives only in a remark/Notes/chat; no row
+is verdict-less; no case reads PASSED while an id it covers was untested or observed to differ. Any
+shortfall ⇒ the run is **NOT complete** — go back, add the row / run the id / re-verdict the partial
+case, and do **not** proceed to Phase G, report "100%/complete", or close the session until the count
+is green.
 
 **Cause gate (same pass, no exceptions)** — read every sentence in F1–F3 that states or implies a
 cause:
@@ -458,6 +495,7 @@ A follow-up question is a **defect in the write-up**, not a normal step
 Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific:
 
 - [ ] F1–F4 posted before any external update.
+- [ ] **AC/EC coverage gate (7-layer) PASSED — `enumerated AC*/EC* ids == rows carrying a verdict + evidence (or explicit BLOCKED)`** ([qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *AC/EC & bug-detail coverage*): every Acceptance Criteria / Expected-Condition line was enumerated char-exact in Phase B, mapped 1:1 to a scenario, executed on its real surface, and appears as its **own row** in F2 — none parked only in a remark/Notes/chat, no case PASSED on partial coverage, a differing item is a FAILED/PWMI/BLOCKED row not a footnote. Fail closed: any id unrun/unrowed/verdict-less ⇒ story not complete.
 - [ ] Every scenario has PASSED/FAILED/BLOCKED/NOT TESTED with evidence reference.
 - [ ] **Story evidence-completeness gate (5-step) PASSED — the work is not done until it is green.** Per [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *Story-testing evidence-completeness gate*: every non-BLOCKED case carries a **whole-flow MP4 + one screenshot per Expected-Result item** (a retest-bug re-verify carries the MP4 per case + a screenshot only on text-verification cases, attached to Jira not Drive); every MP4 clears the **7-layer quality+correctness gate** in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) (max quality · whole flow, no skip · reaches the stated target, no early cut · ER on screen · legible · integrity+match · link-verified); every file resolves, plays/non-blank, and matches the exact case; verdict↔bug↔remark are consistent (minor-issue ⇒ a ≤Medium bug flagged, FAILED ⇒ High+, no stale BLOCKED note on a PASSED row). Fail closed: one red case = story not complete.
 - [ ] Every FAILED/BLOCKED defect has its repro matrix (one row per entry point, untried paths `not tested`), expected-line-verbatim vs actual, **root cause**, and — where the deviation is from the written expectation — resolution options with a named owner.
@@ -506,6 +544,10 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | Rule | Because |
 |------|---------|
 | MUST NOT open Jira/GitHub bugs in this workflow | Use create-bug-workflow |
+| MUST enumerate **every** AC/EC line char-exact in Phase B, map each id 1:1 to a scenario, and reconcile `enumerated ids == rowed-and-verdicted rows` before Phase F ends (7-layer coverage gate in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md)) | The run's scope is the ticket's AC/EC contract; an unenumerated or unmapped AC is silently untested |
+| MUST record **every** AC/EC result as its own row in F2 — NEVER park an untested/failing AC/EC point in a remark, Notes cell, note under the table, or chat while the case reads PASSED | A card was passed on partial AC/EC coverage with the gap footnoted in a remark; coverage is proven by rows, not prose beside them |
+| MUST NOT mark a case PASSED on partial coverage — an AC/EC id unrun or observed to differ makes that a FAILED/PWMI/BLOCKED row (severity per the matrix), and an unreachable id is an explicit BLOCKED row, never dropped | "Works except one point" hidden as a caveat reads as a clean pass to everyone downstream |
+| MUST NOT report "100%/complete", proceed to Phase G, or close the session while any AC/EC id lacks a rowed verdict (coverage gate fail-closed) | Partial AC/EC coverage is a stop condition; a green summary over an incomplete table looks finished but is not |
 | MUST NOT run Playwright before Phase C confirm | Wrong scope/credentials |
 | MUST drive each scenario through its real surface (UI scenario → Playwright through the UI, every step); API only for test-data/precondition prep; an API scenario is driven at the API | [test-through-real-steps.md](../../../references/test-through-real-steps.md) — an API shortcut for a UI action tests the wrong layer and can pass while the screen is broken |
 | MUST attach complete evidence to every case before the story is "done" — a **whole-flow MP4 + one screenshot per Expected-Result item** for each non-BLOCKED story case (retest-bug re-verify = MP4 per case + screenshot on text-verification cases, attached to Jira) — and pass the 5-step gate in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) | A story reported "100% passed" while cases have no MP4 (or a minor-issue verdict with no bug) looks finished but is unverified; the pass-rate counts minor-issue as passed and hides the gap |
