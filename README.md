@@ -16,7 +16,8 @@ Three ways of working, all pointed at the OLS project:
 
 - **A. Interactive skills** — you run these yourself in Claude Code (see *Helix commands*): design test
   cases (`/tc-fe-prep`, `/tc-api-prep`), run a Playwright test (`/testing-ticket`), re-verify a dev fix
-  (`/retest-bug`), or file bugs (`/create-bug`).
+  (`/retest-bug`), file bugs (`/create-bug`), or prepare/seed OLS test data — media, courses, learning
+  paths, covers, videos, accounts (`/test-data-prep`).
 - **B. Discord-driven testing** — a bot on the QA Mac tests tickets headless and reports back:
   - **On request** — type `/bot-testing OLS-xx` in the QA thread; it auto-routes (Bug → retest, Story →
     test). See *On-request testing*.
@@ -53,6 +54,7 @@ over the Jira REST API — they never touch a visible browser or the user's scre
 | `/retest-bug` | Verify a fix on a Jira bug, capture a whole-flow MP4 (+ screenshot on text-check cases) into the Jira comment, verdict + comment |
 | `/testing-ticket` | Playwright test for a ticket, optionally update results |
 | `/create-bug` | Open bug(s) on Jira |
+| `/test-data-prep` | Prepare/seed/fix OLS test data (media · course · LP · cover · video · account) per `ols-data-prep.md` — full ordered Gate 0 intake (env + account + CF URL → data types → style/qty → details) then every quality gate before use. OLS-local, not synced to helix |
 
 ## OLS links
 
@@ -291,6 +293,21 @@ Separately, a Google Apps Script syncs the tracking sheet's **QA Owner** column 
 anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows up in the sheet on its own.
 
 ## Changelog
+
+### v1.28.5 — new `/test-data-prep` skill with a full ordered Gate 0 intake + strict cover gate (9 Aug 2026)
+
+- **New `/test-data-prep` skill** (OLS-local, not synced to helix) — prepare, seed, or fix OLS test/training
+  data (media · course · learning path · cover · video · PDF · account) strictly by
+  [`ols-data-prep.md`](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ols-data-prep.md), the
+  single source of truth. Nothing is invented; every quality gate is passed before the data is used.
+- **Full ordered Gate 0 intake, asked before anything is created** (via `AskUserQuestion`, one step at a
+  time, confirmed before Step 1): **0.1** environment + account/role + Confluence URL — dev/pre-prod need
+  VPN, **training does not**; **0.2** data type(s) as a checkbox/multi-select + exact target status;
+  **0.3** style/format + quantity + purpose; **0.4** conditional details (reuse policy, owner, cover/video
+  needed, delivery, lot, clash handling, sample approval).
+- **Strict cover gate (7 fail-closed rows)** — title fully inside the frame (no overflow), natural
+  line-breaks with whole compound words (no พรากคำ), and max sharpness — all judged against
+  `ols-data-prep.md` §5.7.2, plus a STOP red-flags list.
 
 ### v1.23.2 — testing + retest workflows now settle-and-strategize first (invoke `engineering:testing-strategy`, no guessing, no loops) (8 Aug 2026)
 
