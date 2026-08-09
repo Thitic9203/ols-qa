@@ -23,3 +23,4 @@ When invoking `testing-ticket-workflow`, also recite:
 > 4. No “update complete” without re-reading the destination and verifying every planned write
 > 5. Do not open bugs here — use Create bug workflow
 > 6. Execute each case through its real steps (UI case → drive the UI, every Test Step); the API is only for test-data/precondition prep, never to perform the action under test
+> 7. Test **every** AC/EC — each becomes its own row in the results table; never pass on partial coverage and footnote the gap in a remark. Not done until `enumerated AC/EC == rowed-and-verdicted rows`
