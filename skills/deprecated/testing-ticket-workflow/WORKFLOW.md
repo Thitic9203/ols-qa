@@ -531,6 +531,7 @@ See [skill-routing.md](../../../references/skill-routing.md) — **Handoffs** af
 | [playwright-discipline.md](references/playwright-discipline.md) | Playwright rules |
 | [root-cause-investigation.md](../../../references/root-cause-investigation.md) | E2 — mandatory cause investigation, evidence-only |
 | [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md) | E3 — challenge every non-PASS: re-verify expected vs related tickets' AC/EC, surface to user |
+| [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) | AC/EC 7-layer coverage gate (every AC/EC is a row, not a remark) · story 5-step evidence gate · MP4 7-layer gate |
 | [result-update-discipline.md](references/result-update-discipline.md) | Sheets, Jira, Confluence update rules |
 | [workspace-guide-template.md](references/workspace-guide-template.md) | Optional non-secret defaults |
 | [worked-example.md](references/worked-example.md) | On-demand: anonymized sample (read only when format reference needed) |
