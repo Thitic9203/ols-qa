@@ -358,8 +358,9 @@ Step 2 enumerated `ER*` list against the verdict table: **`enumerated ids == row
 evidence (or an explicit BLOCKED reason)`**, and `*Expected-result coverage:* {n} / {total}` shows
 `{n} == {total}`. Every expected-result/detail item is its **own row** — none parked only in a remark,
 a note under the table, or chat; no row is status-less; the verdict is **not PASSED** if any item was
-unverified or observed to differ (that item is a FAILED/BLOCKED row). Any shortfall ⇒ the retest is
-**not complete** — add the row / verify the item / re-status the partial case before drafting further.
+unverified or observed to differ — an **observed-to-differ** item is a FAILED row (per matrix), an
+**unverified/unreached** item is a BLOCKED row (a coverage gap, not a product FAILED). Any shortfall ⇒
+the retest is **not complete** — add the row / verify the item / re-status the partial case before drafting further.
 
 **Verbosity ceiling:** a PASSED comment stays inside the template above — no added narrative
 paragraphs, no restating the ticket, no "why this matters" prose. Each field line holds only its
@@ -712,7 +713,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST verdict from the bug's OWN expected results — PASSED only when ALL items are met (character-exact where wording is specified); parent AC is supplement, never substitute | Bug details are the contract; partial match = FAILED (user rule 2026-07-15) |
 | MUST enumerate **every** Expected-Result item + bug-detail bullet char-exact at Step 2, map each `ER*` id 1:1 to a verdict-table row, and reconcile `enumerated ids == rowed-and-statused rows` (`{n}/{total}` coverage, `{n}=={total}`) before Step 6 / 8·0 (7-layer coverage gate in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md)) | The retest scope is the bug's own contract; an unenumerated or unmapped item is silently unverified |
 | MUST record **every** expected-result/detail result as its own verdict-table row — NEVER park an untested/failing item in a remark, a note under the table, or chat while the verdict reads PASSED | Coverage is proven by rows, not prose beside them; a footnoted gap reads as a clean pass downstream |
-| MUST NOT post PASSED on partial coverage — an item unverified or observed to differ is a FAILED/BLOCKED row (severity per the matrix), and an unreachable item is an explicit BLOCKED row, never dropped | "Fixed except one point" hidden as a caveat is misread as a full pass |
+| MUST NOT post PASSED on partial coverage — an item **observed to differ** is a FAILED row (severity per the matrix); an **unverified/unreachable** item is a BLOCKED row (a coverage gap, never a product FAILED); neither is a PASS and neither is dropped | "Fixed except one point" hidden as a caveat is misread as a full pass; and calling a merely-unverified item FAILED contradicts "a coverage gap is not a defect" |
 | MUST NOT transition, notify, or report "done" while any enumerated item lacks a rowed status (coverage gate fail-closed) | Partial coverage is a stop condition; a green verdict over an incomplete table looks finished but is not |
 | MUST judge any Priority/Severity referenced in a retest comment ONLY from the [Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md) — never invent a severity notion | Keeps bug-priority language consistent across QA workflows; no ad hoc severity claims in Jira comments |
 | MUST exercise **every** entry point to a failing surface separately (direct route **and** the in-app path a user takes) and capture each with its own screenshot in the `Evidence` cell; name the entry point(s) actually exercised in the `Fixture` line, and never claim a path you did not run | A path with no captured screenshot is a guess. OLS-108: "happens via both entry points" was published from one run, the dev acted on it, and it had to be retracted in-ticket |

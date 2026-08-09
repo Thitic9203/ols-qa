@@ -36,6 +36,6 @@ Every AC/EC id is its **own row** with its own verdict — never a remark below 
 ## Lessons
 
 - **Every AC/EC is a row, never a remark.** A card once passed on partial coverage with the gap noted below the table — the [AC/EC coverage gate](../../../../references/qa-evidence-gates.md) forbids it: enumerate every AC/EC in Phase B, map 1:1 to rows, reconcile `enumerated == rowed` before "done".
-- A differing/untested AC is a FAILED/PWMI/BLOCKED **row for that point** (severity per the matrix) — not a PASS with a caveat.
+- An AC **observed to differ** is a FAILED/PWMI **row** (severity per the matrix); an AC **not reached** is a BLOCKED row (a coverage gap, not a product FAILED). Either way it is a **row for that point**, never a PASS with a caveat.
 - F3 defects → user must choose **Create bug** separately; this workflow does not file tickets.
 - NEVER mark PASSED without screenshot or network evidence.
