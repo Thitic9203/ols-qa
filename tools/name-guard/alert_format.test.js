@@ -70,5 +70,49 @@ check('markdown in titles is escaped', () => {
   assert.strictEqual(esc('QA_OLS *x*'), 'QA\\_OLS \\*x\\*');
 });
 
+/* A missing cover is not a bad name. An alert that says "พบชื่อไม่เหมาะสม 34 รายการ" about 34
+ * perfectly readable titles sends the reader to rename content that needs no renaming — the
+ * owner called that out on 2026-08-13. Each problem is counted and asked for as itself. */
+const coverOnly = {
+  ok: true, env: 'preprod', sources: { media: { count: 46 } },
+  findings: [
+    { id: 'a', title: 'การสำรวจศักยภาพตนเองเพื่อการเลือกเส้นทางอาชีพ', source: 'media', status: 'PUBLISHED',
+      hits: [{ rule: 'missing-cover', field: 'coverImageUrl' }] },
+    { id: 'b', title: 'ปลดล็อกเส้นทางสู่ 4 อาชีพยอดฮิต', source: 'media', status: 'PUBLISHED',
+      hits: [{ rule: 'missing-cover', field: 'coverImageUrl' }] },
+  ],
+};
+
+check('a missing cover is never reported as a bad name', () => {
+  const msg = build(coverOnly);
+  assert.ok(/ไม่มีปก 2 รายการ/.test(msg), 'headline should count covers: ' + msg.split('\n')[0]);
+  assert.ok(!/พบชื่อไม่เหมาะสม/.test(msg), 'must not claim the names are unfit');
+});
+
+check('a cover-only alert does not ask anyone to rename anything', () => {
+  const msg = build(coverOnly);
+  assert.ok(/อัปโหลดปก/.test(msg), 'should ask for a cover');
+  assert.ok(!/เปลี่ยนเป็นชื่อ/.test(msg), 'must not ask for a rename: ' + msg);
+});
+
+check('names and covers are counted separately when both are wrong', () => {
+  const mixed = { ...coverOnly, findings: coverOnly.findings.concat([
+    { id: 'c', title: 'ทดสอบระบบ QA', source: 'media', status: 'PUBLISHED', hits: [{ rule: 'test-trace', field: 'title' }] },
+  ]) };
+  const head = build(mixed).split('\n')[0];
+  assert.ok(/พบชื่อไม่เหมาะสม 1 รายการ/.test(head), head);
+  assert.ok(/ไม่มีปก 2 รายการ/.test(head), head);
+});
+
+check('an item with BOTH a bad name and no cover is counted once, as a name problem', () => {
+  const both = { ...coverOnly, findings: [
+    { id: 'z', title: 'ทดสอบ', source: 'media', status: 'PUBLISHED',
+      hits: [{ rule: 'test-trace', field: 'title' }, { rule: 'missing-cover', field: 'coverImageUrl' }] },
+  ] };
+  const head = build(both).split('\n')[0];
+  assert.ok(/พบชื่อไม่เหมาะสม 1 รายการ/.test(head), head);
+  assert.ok(!/ไม่มีปก/.test(head), 'must not double-count the same item: ' + head);
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);

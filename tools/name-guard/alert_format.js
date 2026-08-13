@@ -47,9 +47,17 @@ function build(r) {
   const isCross = (f) => f.hits.every((h) => h.rule === 'duplicate-name-cross-creator');
   const crossTitles = [...new Set(uniq.filter(isCross).map((f) => f.title))];
   const rest = uniq.filter((f) => !isCross(f));
-  const hard = rest.filter((f) => f.hits.some((h) => h.rule !== 'duplicate-name'));
-  const dupTitles = [...new Set(rest.filter((f) => !hard.includes(f)).map((f) => f.title))];
-  if (!hard.length && !dupTitles.length) {
+
+  /* A missing cover is not a bad name. Lumping them together produced an alert headed
+   * "พบชื่อไม่เหมาะสม 34 รายการ" for 34 items whose names read perfectly well — the reader is
+   * then asked to rename content that needs no renaming. Each kind of problem is counted and
+   * worded as itself. */
+  const ASSET = new Set(['missing-cover', 'cover-broken']);
+  const nameHits = (f) => f.hits.filter((h) => h.rule !== 'duplicate-name' && !ASSET.has(h.rule));
+  const hard = rest.filter((f) => nameHits(f).length);
+  const noCover = rest.filter((f) => !nameHits(f).length && f.hits.some((h) => ASSET.has(h.rule)));
+  const dupTitles = [...new Set(rest.filter((f) => !hard.includes(f) && !noCover.includes(f)).map((f) => f.title))];
+  if (!hard.length && !dupTitles.length && !noCover.length) {
     return '**Name guard:** [Content Naming][' + esc(r.env) + '] ไม่พบชื่อที่ต้องแก้\n'
       + q('Environment', esc(r.env)) + '\n'
       + q('Status', 'Fixed') + '\n'
@@ -72,8 +80,14 @@ function build(r) {
   };
   const th = (rule) => RULE_TH[rule] || rule;
 
-  const out = ['**Inappropriate content:** [Content Naming][' + esc(r.env) + '] '
-    + (hard.length ? 'พบชื่อไม่เหมาะสม ' + hard.length + ' รายการ' : 'พบชื่อซ้ำ ' + dupTitles.length + ' ชื่อ'),
+  // headline says what is actually wrong, in the order that matters to a reader
+  const headline = [
+    hard.length ? 'พบชื่อไม่เหมาะสม ' + hard.length + ' รายการ' : '',
+    noCover.length ? 'ไม่มีปก ' + noCover.length + ' รายการ' : '',
+    (!hard.length && dupTitles.length) ? 'ชื่อซ้ำ ' + dupTitles.length + ' ชื่อ' : '',
+  ].filter(Boolean).join(' · ');
+
+  const out = ['**Inappropriate content:** [Content Naming][' + esc(r.env) + '] ' + headline,
   q('Environment', esc(r.env)),
   q('Status', 'Needs fix'),
   q('Scope', esc(scope))];
@@ -84,6 +98,12 @@ function build(r) {
       + esc(f.hits.filter((h) => h.rule !== 'duplicate-name').map((h) => th(h.rule)).join(', ')))));
     if (hard.length > 8) out.push(bullet('และอีก ' + (hard.length - 8) + ' รายการ'));
   }
+  if (noCover.length) {
+    out.push('> **Missing cover:**');
+    out.push(...noCover.slice(0, 8).map((f) => bullet('`' + esc(f.title) + '` — ' + esc(f.source)
+      + (f.status ? ' · ' + esc(f.status) : ''))));
+    if (noCover.length > 8) out.push(bullet('และอีก ' + (noCover.length - 8) + ' รายการ'));
+  }
   if (dupTitles.length) {
     out.push('> **Duplicate titles:**');
     out.push(...dupTitles.slice(0, 6).map((t) => bullet('`' + esc(t) + '`')));
@@ -92,9 +112,15 @@ function build(r) {
   if (crossTitles.length) {
     out.push(q('FYI', 'ชื่อพ้องข้ามผู้สร้าง ' + crossTitles.length + ' ชื่อ (เนื้อหาคนละชิ้น ต้องให้เจ้าของปรับเอง)'));
   }
+  // only ask for the work that is actually needed — a readable name must not be sent back for
+  // renaming just because its cover is missing
   out.push('> **Action:**');
-  out.push(bullet('เปลี่ยนเป็นชื่อที่ผู้เรียนเห็นแล้วเข้าใจ หรือเอารายการที่ซ้ำออก'));
-  out.push(bullet('สื่อไลฟ์สดแก้ชื่อไม่ได้ ต้องลบอย่างเดียว'));
+  if (hard.length) {
+    out.push(bullet('เปลี่ยนเป็นชื่อที่ผู้เรียนเห็นแล้วเข้าใจ'));
+    out.push(bullet('สื่อไลฟ์สดแก้ชื่อไม่ได้ ต้องลบอย่างเดียว'));
+  }
+  if (noCover.length) out.push(bullet('อัปโหลดปกให้รายการที่ยังไม่มี — ชื่อไม่ต้องแก้'));
+  if (dupTitles.length) out.push(bullet('เอารายการที่ซ้ำออก หรือตั้งชื่อให้ต่างกัน'));
   return out.join('\n');
 }
 
