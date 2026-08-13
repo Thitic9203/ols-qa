@@ -56,9 +56,32 @@ Then alert:
 node tools/name-guard/notify.js report.json
 ```
 
-Sends a Discord DM when `DISCORD_BOT_TOKEN` + `DISCORD_USER_ID` are set, else posts to
-`DISCORD_WEBHOOK`. Clean runs stay silent unless `--force`. Titles are escaped before sending —
-content names contain `_` and `*`, which Discord would otherwise render as italics.
+Posts to the QA Discord channel (`DISCORD_BOT_TOKEN` + `DISCORD_CHANNEL_ID`), with
+`DISCORD_WEBHOOK` as a fallback if the channel post fails. **No DMs** — the owner asked for the
+team channel. Clean runs stay silent unless `--force`.
+
+### Alert contract
+
+The message shape is fixed and pinned by `alert_format.test.js` — it drifted twice by hand
+before the test existed:
+
+```
+**Inappropriate content:** [Content Naming][<env>] <headline>
+> **Environment:** …
+> **Status:** …
+> **Items:**
+> • `<title>` — <source> · <reason>
+> **Action:**
+> • …
+```
+
+- Bold headline first, then a blockquote of **English field labels**.
+- **Body text is Thai.** English is kept only where translating hurts: API, LIVESTREAM, ticket,
+  GitHub Actions, VPN, LaTeX.
+- Short bullets, never a paragraph.
+- One content item reported once, even when it appears in several sources.
+- A scan that could not run reports `Status: Failed` — never anything that reads as a pass.
+- Titles are escaped: content names contain `_` and `*`, which Discord renders as italics.
 
 ## Schedule
 

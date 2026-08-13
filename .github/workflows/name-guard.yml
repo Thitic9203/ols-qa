@@ -64,9 +64,10 @@ jobs:
 
       - name: Notify Discord
         env:
-          DISCORD_WEBHOOK: ${{ secrets.OLS_NAME_GUARD_WEBHOOK }}
+          # posts to the QA channel; the webhook is only a fallback if the channel post fails
           DISCORD_BOT_TOKEN: ${{ secrets.OLS_DISCORD_BOT_TOKEN }}
-          DISCORD_USER_ID: ${{ secrets.OLS_DISCORD_USER_ID }}
+          DISCORD_CHANNEL_ID: ${{ secrets.OLS_DISCORD_CHANNEL_ID }}
+          DISCORD_WEBHOOK: ${{ secrets.OLS_NAME_GUARD_WEBHOOK }}
           FORCE_NOTIFY: ${{ inputs.force_notify }}
         run: |
           if [ "$FORCE_NOTIFY" = "true" ]; then
