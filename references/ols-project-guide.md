@@ -149,7 +149,7 @@ sheet into these, split by **Type**. Real ids live in `~/.ols-qa-secrets/ §5.1`
 
 | File | Placeholder | Tabs |
 |------|-------------|------|
-| System | `<SYS_SHEET_ID>` | 5 role tabs `TC00N ROLE - thai` (GUASE·LEARNER·CREATOR·CONTENT_ADMIN·SYSTEM_ADMIN) |
+| System | `<SYS_SHEET_ID>` | 5 role tabs `TC00N ROLE - thai` (GUEST·LEARNER·CREATOR·CONTENT_ADMIN·SYSTEM_ADMIN) |
 | Integration | `<INTEG_SHEET_ID>` | same 5 role tabs |
 | Unit | `<UNIT_SHEET_ID>` | 12 function tabs `TC0NN …` + TOR (excludes the `…ตัวอย่าง` example tab) |
 

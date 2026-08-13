@@ -817,3 +817,39 @@ the mistake was pushing through with `use_browser` first and reading the memory 
   admin button reverts). Endpoints + the admin account that has User Management: agent memory
   `ols-user-ban-flow`. The account-level suspended-login modal is checked at login **before** role, so a
   Creator account demonstrates it just as well as a Learner (state the account role in the evidence).
+
+### PM-008 — Role identifier "GUEST" was hand-typed as "GUASE" and silently propagated to five locations (2026-07-26)
+
+**Surface:** any file containing OLS role identifiers — Python dicts/sets (`LEX`, `ROLES`, `ACT`), JSON configs
+(`role_lexicon.json`), off-repo scripts, WIP notes, and downstream docs that are populated from script output.
+
+**What happened.** Claude Opus 4.8 introduced the typo `"GUASE"` instead of `"GUEST"` on 2026-07-26 22:15
+(commit `7cb0d07`, confirmed by `git log --all -S 'GUASE'`). Root cause: the identifier was **typed from
+memory** rather than copy-pasted from the canonical list while writing `role_lexicon.json` off-repo. Because the
+key name was syntactically valid Python/JSON, no tool raised an error. The typo then propagated silently to five
+locations before it was noticed:
+
+1. `~/ols-qa-testing-bot/role_lexicon.json` (origin — off-repo, never committed)
+2. `.claude/session-context.md` (via script output pasted into WIP notes → `7fb371f`)
+3. `references/ols-project-guide.md` (the committed ols-qa copy → fixed in-session)
+4. `natty-doc/probe_v5.py`, `validate.py`, `validate2.py` (gitignored local scripts)
+5. `ols-qa-evidence/docs/ols-mp4-result.md` (private repo doc, 18 occurrences)
+
+**Canonical OLS role identifier list** (the only authoritative source — never invent or type these):
+
+```
+GUEST · LEARNER · CREATOR · CONTENT_ADMIN · SYSTEM_ADMIN
+```
+
+**Prevention (hard rules — apply whenever writing any config, dict, JSON or script that uses role keys):**
+
+- **Copy-paste from the canonical list above — never type these identifiers.** A hand-typed role name is a
+  single-character typo away from a silent logic error.
+- **After writing any config or script that contains role keys, grep-verify all five are present and spelled
+  correctly** before saving: `grep -oE 'GUEST|LEARNER|CREATOR|CONTENT_ADMIN|SYSTEM_ADMIN' <file> | sort -u`
+  Output must show all five; anything else = stop and fix.
+- **Before copying script output into WIP notes, session context, or any doc, spot-check role keys in the
+  output.** Script output inherits the typo silently — a one-second visual scan or `grep GUEST` on the output
+  catches it before it propagates.
+- **If a role-keyed dict or JSON is generated programmatically, assert all five keys exist at write time** — a
+  `KeyError` or assertion failure at generation is cheap; silent downstream mismatch is not.
