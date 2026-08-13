@@ -92,28 +92,40 @@ a new finding), and the alert is skipped when either source of history says it w
 `--force` sends regardless: a person asking for the current state is not a duplicate. Pinned by
 `alert_dedup.test.js`.
 
-### Alert contract
+### Alert contract — six fields, every time
 
-The message shape is fixed and pinned by `alert_format.test.js` — it drifted twice by hand
-before the test existed:
+The accepted message carries the same six fields in the same order on every send — findings, a
+clean run and a failed scan alike. None is skipped when it has nothing to say (it says "ไม่มี"),
+none is added, none is reordered:
 
 ```
 **Inappropriate content:** [Content Naming][<env>] <headline>
 > **Environment:** …
-> **Status:** …
-> **Items:**
-> • `<title>` — <source> · <reason>
-> **Action:**
+> **Media Type:** …
+> **Status:** Needs fix | Fixed | Clean | Failed
+> **Solution:**
 > • …
+> **Prevention:**
+> • …
+> **FYI:** …
 ```
 
-- Bold headline first, then a blockquote of **English field labels**.
-- **Body text is Thai.** English is kept only where translating hurts: API, LIVESTREAM, ticket,
-  GitHub Actions, VPN, LaTeX.
-- Short bullets, never a paragraph.
-- One content item reported once, even when it appears in several sources.
-- A scan that could not run reports `Status: Failed` — never anything that reads as a pass.
-- Titles are escaped: content names contain `_` and `*`, which Discord renders as italics.
+**Seven checks run on the exact outgoing string before anything is sent** (`alert_gate.js`,
+fail-closed — a message that fails is not sent at all, and `notify.js` exits 4):
+
+| layer | catches |
+|---|---|
+| **L1** field set | a dropped field |
+| **L2** field order | fields reordered |
+| **L3** line shape | a wrong header, or a line that is neither a field nor a bullet |
+| **L4** no extras | an invented field (the old `Scope` / `Action` drift) |
+| **L5** markdown safe | literal `**`, unescaped `_` — Discord renders those as formatting |
+| **L6** substance | an empty field, a bullet block with no bullets, over Discord's 2000 chars |
+| **L7** no empty claim | a headline counting findings the message never lists; an unfilled placeholder |
+
+Reading the draft is not a substitute: every format defect that shipped looked right to whoever
+wrote it. Pinned by `alert_gate.test.js` (20 cases) and `alert_format.test.js`.
+
 
 ## Write guard — the training environment is read-only, absolutely
 

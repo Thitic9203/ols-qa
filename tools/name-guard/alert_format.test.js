@@ -54,10 +54,26 @@ check('duplicate titles are listed by name, not just counted', () => {
   assert.ok(build(findings).includes('`ชื่อซ้ำ`'));
 });
 
-check('creator libraries collapse into one scope entry', () => {
-  const scope = build(findings).split('\n').find((l) => l.startsWith('> **Scope:**'));
-  assert.ok(!scope.includes('own:sorat'), 'per-account names should not be in Scope: ' + scope);
-  assert.ok(/creator 2 /.test(scope), 'expected a creator-library total: ' + scope);
+/* The accepted format carries the same six fields in the same order on every send — findings,
+ * clean run or failed scan alike. A reader who has to work out whether a section was omitted or
+ * was simply empty cannot trust the next message either. */
+const CANON = ['Environment', 'Media Type', 'Status', 'Solution', 'Prevention', 'FYI'];
+const fieldsOf = (msg) => msg.split('\n')
+  .map((l) => (/^> \*\*([^*]+):\*\*/.exec(l) || [])[1])
+  .filter(Boolean);
+
+check('every alert carries the six canonical fields, in order', () => {
+  for (const [name, r] of [['findings', findings], ['clean', clean], ['failed scan', broken]]) {
+    assert.deepStrictEqual(fieldsOf(build(r)), CANON, name + ' has the wrong field set/order');
+  }
+});
+
+check('no field is invented and none is dropped when a section is empty', () => {
+  const noCross = { ...findings, findings: findings.findings.filter((f) => !f.hits.some((h) => h.rule === 'duplicate-name-cross-creator')) };
+  const msg = build(noCross);
+  assert.deepStrictEqual(fieldsOf(msg), CANON);
+  const fyi = msg.split('\n').find((l) => l.startsWith('> **FYI:**'));
+  assert.ok(fyi.replace('> **FYI:**', '').trim().length > 0, 'FYI must say something even when there is nothing pending');
 });
 
 check('a failed scan never reads as a pass', () => {

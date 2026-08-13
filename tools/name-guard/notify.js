@@ -15,6 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 const dedup = require('./alert_dedup');
+const gate = require('./alert_gate');
 
 const REPORT = process.argv[2];
 const FORCE = process.argv.includes('--force');
@@ -75,6 +76,18 @@ async function lastChannelAlert(env) {
 (async () => {
   if (report.ok && !report.findings.length && !FORCE) { console.log('clean — no alert sent'); return; }
   const content = build(report);
+
+  /* Seven checks on the exact outgoing string, before anything leaves. Fail-closed: a message
+   * that does not match the accepted format is not sent at all. Reading the draft is not a
+   * substitute — every past format defect looked right to whoever wrote it. */
+  const checked = gate.verify(content);
+  if (!checked.ok) {
+    console.error('FORMAT GATE FAILED — nothing sent. Fix the generator, not the message:');
+    for (const f of checked.failures) console.error('  · ' + f);
+    console.error('--- the message that was blocked ---');
+    console.error(content);
+    process.exit(4);
+  }
 
   const decision = dedup.decide({
     report,
