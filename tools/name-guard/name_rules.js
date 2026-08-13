@@ -1,0 +1,133 @@
+'use strict';
+/* Shared name/description quality rules for OLS customer-facing content.
+ * Source of truth for "ชื่อไม่เหมาะสม" per ols-qa CLAUDE.md (test traces, status-in-parens,
+ * gibberish, ticket refs, profanity). Pure functions — no I/O, reusable by scanner + fixer + cron.
+ */
+
+// 1) QA / test traces
+const TEST_PATTERNS = [
+  /\bqa[\s_\-]*test\b/i,
+  /\bqa[_\-]?ols\b/i,
+  /\[\s*qa[^\]]*\]/i,
+  /\btest(ing|est|case|s)?\b/i,
+  /\btc[_\-]?\d+\b/i,
+  /ทดสอบ/,
+  /ทดลองระบบ/,
+  /สำหรับการตรวจรับ/,
+  /\bdummy\b/i,
+  /\bplaceholder\b/i,
+  /\bsample\b/i,
+  /\bmock\b/i,
+  /\btbc\b/i,
+  /\bdemo\b/i,
+  /\blorem\s+ipsum\b/i,
+  /\bfoo\b|\bbar\b|\bbaz\b/i,
+  /\basdf+\b/i,
+  /\baaa+\b/i,
+];
+
+// 2) ticket / issue references leaking into user-visible names
+const TICKET_PATTERNS = [/\bOLS[\s_\-]?\d{1,4}\b/i, /\b[A-Z]{2,6}-\d{1,5}\b/];
+
+// 3) status / editing / duplicate markers wrapped in parentheses
+const STATUS_PAREN = /[(（]\s*(เผยแพร่|ยกเลิกการเผยแพร่|ยกเลิกเผยแพร่|ร่าง|แบบร่าง|รอแก้ไข|รออนุมัติ|ไม่อนุมัติ|ถูกรายงาน|แก้ไข|แก้แล้ว|สำเนา|ใหม่|ก๊อป|copy|edited?|new|draft|published|unpublished|pending|rejected|flagged|\d+)\s*[)）]/i;
+
+// 4) profanity / clearly-inappropriate (kept short + explicit; extend via extraBadWords)
+const PROFANITY = [
+  /เหี้ย/, /สัส/, /ควย/, /หี\b/, /เย็ด/, /ไอ้สัตว์/, /อีดอก/, /แม่ง/, /ชิบหาย/,
+  /\bfuck/i, /\bshit\b/i, /\bbitch\b/i, /\bdick\b/i, /\bporn\b/i, /\bsex\b/i,
+];
+
+const THAI_RE = /[฀-๿]/;
+
+// 5) gibberish heuristics for latin tokens (e.g. "mx;smclsnvlcsmv;cxc[lc")
+// Real brand/tech words are vowel-poor too (Python, ChatGPT, HTML, SQL) — never flag those.
+const LATIN_ALLOW = new Set([
+  'chatgpt', 'python', 'html', 'css', 'sql', 'nosql', 'javascript', 'typescript', 'json', 'xml',
+  'github', 'gitlab', 'linux', 'windows', 'macos', 'android', 'ios', 'aws', 'gcp', 'api', 'apis',
+  'ai', 'ml', 'llm', 'gpt', 'nlp', 'ocr', 'pdf', 'excel', 'word', 'powerpoint', 'canva', 'figma',
+  'photoshop', 'wordpress', 'kpi', 'okr', 'crm', 'erp', 'hr', 'ux', 'ui', 'qr', 'stem', 'steam',
+  'obec', 'ndlp', 'ols', 'cms', 'lms', 'vpn', 'https', 'http', 'url', 'usb', 'pc', 'cpu', 'gpu',
+]);
+function latinTokenIsGibberish(tok) {
+  const t = tok.trim().replace(/^[\s"'“”‘’(\[]+|[\s"'“”‘’)\].,!?:;]+$/g, '');
+  if (t.length < 5) return false;
+  if (!/^[\x20-\x7E]+$/.test(t)) return false;           // ascii only
+  const letters = t.replace(/[^A-Za-z]/g, '');
+  if (LATIN_ALLOW.has(letters.toLowerCase())) return false;
+  // word-like blob with punctuation/symbols mixed inside → strong signal
+  const symbolCount = (t.match(/[;:\[\]{}|\\<>~`^*+=_@#$%&]/g) || []).length;
+  if (symbolCount >= 2 && /[A-Za-z]/.test(t)) return true;
+  if (letters.length < 5) return false;
+  const vowels = (letters.match(/[aeiouyAEIOUY]/g) || []).length;  // y counts as a vowel
+  if (vowels === 0) return true;                          // no vowel at all
+  if (/[bcdfghjklmnpqrstvwxzBCDFGHJKLMNPQRSTVWXZ]{5,}/.test(letters)) return true; // long consonant run
+  if (/(.)\1{3,}/i.test(letters)) return true;            // aaaa / ddddd
+  return false;
+}
+
+// Thai gibberish: long run of Thai consonants with no vowel/tone marks at all
+function thaiIsGibberish(s) {
+  const thaiOnly = s.replace(/[^฀-๿]/g, '');
+  if (thaiOnly.length < 8) return false;
+  const marks = (thaiOnly.match(/[ะ-๎]/g) || []).length; // vowels + tones
+  return marks === 0;
+}
+
+function checkText(text, opts) {
+  const o = opts || {};
+  const s = String(text == null ? '' : text);
+  const findings = [];
+  if (!s.trim()) { findings.push({ rule: 'empty', why: 'ว่างเปล่า' }); return findings; }
+
+  for (const re of TEST_PATTERNS) if (re.test(s)) { findings.push({ rule: 'test-trace', why: 'มีร่องรอยเทส: ' + (s.match(re) || [''])[0].trim() }); break; }
+  for (const re of TICKET_PATTERNS) if (re.test(s)) { findings.push({ rule: 'ticket-ref', why: 'อ้าง ticket: ' + (s.match(re) || [''])[0] }); break; }
+  if (STATUS_PAREN.test(s)) findings.push({ rule: 'status-paren', why: 'มีวงเล็บสถานะ: ' + (s.match(STATUS_PAREN) || [''])[0] });
+  for (const re of PROFANITY) if (re.test(s)) { findings.push({ rule: 'profanity', why: 'คำไม่สุภาพ' }); break; }
+  for (const re of (o.extraBadWords || [])) if (re.test(s)) { findings.push({ rule: 'custom', why: 'ติด denylist เพิ่มเติม' }); break; }
+
+  if (thaiIsGibberish(s)) findings.push({ rule: 'gibberish', why: 'ไทยไม่มีสระ/วรรณยุกต์เลย = อ่านไม่รู้เรื่อง' });
+  else {
+    for (const tok of s.split(/\s+/)) {
+      if (THAI_RE.test(tok)) continue;
+      if (latinTokenIsGibberish(tok)) { findings.push({ rule: 'gibberish', why: 'คำอ่านไม่รู้เรื่อง: ' + tok.slice(0, 40) }); break; }
+    }
+  }
+  if (o.isTitle && s.trim().length < 4) findings.push({ rule: 'too-short', why: 'ชื่อสั้นเกินไป (<4 ตัว)' });
+  if (o.isTitle && !/[A-Za-z฀-๿]/.test(s)) findings.push({ rule: 'no-words', why: 'ชื่อไม่มีตัวอักษรเลย (ตัวเลข/สัญลักษณ์ล้วน)' });
+  return findings;
+}
+
+/** Duplicate titles inside one source list — a name a customer sees twice is a defect.
+ *  items: [{id,title,...}] → [{rule:'duplicate-name', ...}] appended per offending item.
+ */
+function findDuplicates(items) {
+  const byName = new Map();
+  for (const it of items) {
+    const k = String(it.title == null ? '' : it.title).trim().toLowerCase();
+    if (!k) continue;
+    if (!byName.has(k)) byName.set(k, []);
+    byName.get(k).push(it);
+  }
+  const out = [];
+  for (const [k, group] of byName) {
+    if (group.length < 2) continue;
+    for (const it of group) {
+      out.push({ item: it, hit: { field: 'title', rule: 'duplicate-name', value: it.title,
+        why: 'ชื่อซ้ำกับอีก ' + (group.length - 1) + ' รายการ (' + group.map((g) => String(g.id).slice(0, 8)).join(', ') + ')' } });
+    }
+  }
+  return out;
+}
+
+/** Check one content item. Returns [] when clean. */
+function checkItem(item) {
+  const out = [];
+  for (const f of checkText(item.title, { isTitle: true })) out.push(Object.assign({ field: 'title', value: item.title }, f));
+  if (item.description != null && String(item.description).trim() !== '') {
+    for (const f of checkText(item.description, {})) out.push(Object.assign({ field: 'description', value: String(item.description).slice(0, 120) }, f));
+  }
+  return out;
+}
+
+module.exports = { checkText, checkItem, findDuplicates, TEST_PATTERNS, TICKET_PATTERNS, STATUS_PAREN, PROFANITY, latinTokenIsGibberish, thaiIsGibberish };
