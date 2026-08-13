@@ -368,6 +368,52 @@ The edit path is three calls, and the **method matters** — `request-edit` is a
 `409 learning_path.invalid_status` (it applies to `UNPUBLISHED`). Never leave an LP parked in
 `PENDING_EDIT` — verify each one reads `PUBLISHED` again before calling the work done.
 
+## Daily health check — 12:00 and 18:00, all three environments
+
+Twice a day an unattended run sweeps **every** environment (training-on-prod-db, pre-prod, dev) for
+things that make the product unusable — the site not answering, sign-in failing, the catalogue APIs
+not returning data, or a core page rendering blank / erroring. Tool + config live **off-repo** at
+`~/ols-qa-testing-bot/health/` (real hosts and accounts must never enter this public repo).
+
+| piece | what it is |
+|---|---|
+| `health/ols_daily_health.js` | the checker: VPN → reachability → checks → 5-layer gate → duplicate guard → file |
+| `health/run_daily_health.sh` | launchd entry point, wrapped in the SFD harness (fail-loud, watchdog 90 min) |
+| `com.thitichaya.ols-daily-health` | launchd job, `StartCalendarInterval` 12:00 + 18:00 daily |
+| `sfd/workflows.json` | registered `type: calendar`, so the heartbeat catches a run that never happens |
+
+**Checks per env:** `fe-reachable` · `auth-login` (real account against the env's auth API) ·
+`api-catalogue` (media / courses / learning-paths — reads **both** `data` and `items` envelopes) ·
+`page-render` (Playwright over core routes, flags blank page / error boundary / JS exception).
+
+**VPN is brought up, never used as an excuse to skip.** dev and pre-prod sit behind the tunnel. The
+run probes real reachability first, and only if nothing is connected does it try `scutil --nc start`
+on each service in turn, then waits and retries for up to 40 minutes. It **never** issues a start
+while another tunnel reports Connected — doing so tears down an active FortiClient session (the
+mistake that made both older bots drop that call). If it still cannot get in, the env is reported as
+not-checked **and the owner is notified** — it is never dropped quietly.
+
+**A finding becomes a bug only after the 5-layer gate** (systematic debugging):
+
+| layer | must show |
+|---|---|
+| 1 reproduce | fails on every one of N consecutive samples |
+| 2 isolate | which boundary broke (site → API → auth → render), incl. a control call that proves the API itself is alive |
+| 3 cross-env | the same check run on the other reachable environments — env-specific or platform-wide |
+| 4 rule out our side | control probes prove the tester's own network is fine; if not, nothing is blamed on the product |
+| 5 persistence | still failing across the whole watch window, with first-seen / last-seen / duration recorded |
+
+**Duplicate guard — an open bug blocks a new one, absolutely.** Before filing, the run reads every
+OLS bug that is not Done and matches on its own `healthcheck:<env>:<check>` marker **or** on wording
+plus environment. It reads the **custom fields** (`customfield_12114/12116/12113/12112/12111` and the
+environment field), because OLS bugs keep their content there and leave `description` empty — a guard
+that reads only summary/description finds nothing and files a duplicate. A **Done** bug does not
+block: that is a recurrence and earns a fresh ticket. When an open bug is found, the run adds a
+recurrence comment with the new time window instead of filing.
+
+Filed bugs carry the active sprint (read live from the board) and state the date, time and duration
+of the incident in the actual-result field.
+
 ## Default assignee / reporter
 
 *(not configured — ask user and update this table)*
