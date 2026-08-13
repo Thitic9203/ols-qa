@@ -305,16 +305,30 @@ OLS ไม่มีหน้า login ของตัวเอง — login ผ�
 
 **Headless MP4 + screenshot capture harness:** `~/ols-qa-testing-bot/capture/ols_capture.js` (Playwright + ffmpeg) — the Stage 4.4 MP4 capability. Details: agent memory `reference_ols-mp4-capture`.
 
-## Content name guard (ชื่อที่ผู้ใช้จริงเห็น) — every 30 min
+## Content name guard (ชื่อที่ผู้ใช้จริงเห็น) — pre-prod only, 11:00 + 17:00
 
-Real users are on the system, so any user-visible name carrying a QA/test trace, gibberish, a
-ticket key, a status marker in parentheses, profanity, or a duplicate title is a **live defect**,
-not a QA artefact. Tool + rules: [`tools/name-guard/`](../tools/name-guard/README.md).
+Any user-visible name carrying a QA/test trace, gibberish, a ticket key, a status marker in
+parentheses, profanity, or a duplicate title is a **live defect**, not a QA artefact — as is a
+published item with no cover. Tool + rules: [`tools/name-guard/`](../tools/name-guard/README.md).
 
 | where | runs on | note |
 |---|---|---|
-| public training env | GitHub Actions `.github/workflows/name-guard.yml`, every 30 min | free (no minute cap on public repos), needs no machine of ours awake |
-| pre-prod | local launchd `com.thitichaya.ols-name-guard-preprod`, every 30 min | pre-prod resolves to a **private address, VPN only** → a hosted runner cannot reach it. Registered in SFD so it cannot fail silently; skips (exit 0) when off VPN |
+| pre-prod | local launchd `com.thitichaya.ols-name-guard-preprod`, **11:00 and 17:00 daily** | VPN-only private address, so it must run from a machine of ours. Registered in SFD as a **calendar** job: a closed laptop simply misses the run — that is not a failure and raises nothing. Skips (exit 0) when off VPN |
+| **training** | **nothing** | 🔴 hands-off. Real people work there |
+
+🔴 **training is not scanned, not polled, not alerted on** (owner instruction 2026-08-13). The
+GitHub Actions job that scanned it every 30 minutes was **deleted**; `run_guard.sh` refuses a
+training label with no override flag; `write_guard.test.js` fails if any workflow reappears that
+schedules a name-guard run or names a training environment. Writing to training is separately
+refused seven ways — see [[project_ols-write-guard-training-readonly]].
+
+**One alert per change, not per run.** `alert_dedup.js` fingerprints the finding set
+(`id|rule|field`, catalogue counts excluded) and stays quiet when nothing changed, checking both a
+local state file and the last alert still in the channel. Re-reporting the same pending items
+buries the channel — the owner asked for it once, not every run.
+
+**A missing cover is not a bad name.** Names, covers and duplicate titles are counted and worded
+separately; a cover-only finding never asks anyone to rename anything.
 
 ### 🔴 List endpoints disagree on the array key — `data` vs `items` (2026-08-13)
 
