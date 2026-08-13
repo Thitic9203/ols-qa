@@ -4,7 +4,9 @@ Catches content names that must never reach a real user — QA/test traces, gibb
 references, status markers in parentheses, profanity, and duplicate titles — across every
 customer-facing list (media · courses · learning paths · achievements), on a schedule.
 
-Read-only. It reports; it never edits content.
+The **scan** is read-only — it reports, it never edits. The **fixers** that act on a report are a
+separate, off-repo toolkit, and they may only ever write to pre-prod: see
+[Write guard](#write-guard--the-training-environment-is-read-only-absolutely).
 
 ## Why it exists
 
@@ -93,6 +95,41 @@ before the test existed:
 - One content item reported once, even when it appears in several sources.
 - A scan that could not run reports `Status: Failed` — never anything that reads as a pass.
 - Titles are escaped: content names contain `_` and `*`, which Discord renders as italics.
+
+## Write guard — the training environment is read-only, absolutely
+
+The toolkit no longer only reports; it also fixes (rename, edit, unpublish, delete). Those fixers
+take an environment as an argument, so one wrong `OLS_ENV=` is all it takes to rewrite content in
+the **training** environment — where real people are working. A wrong write there is not a QA
+artefact, it is damage to someone's live work.
+
+**Writes are allowed in pre-prod only.** `write_guard.js` holds the rules; `write_guard.test.js`
+pins them. Seven independent layers, each one enough on its own:
+
+| layer | where | stops |
+|---|---|---|
+| **L1** allowlist | `classifyEnv()` — also applied in `namecheck/envs.js`, so an env cannot be resolved without its verdict | any env not explicitly writable; a missing label or origin fails closed |
+| **L2** label denylist | `classifyEnv()` | `training69`, `training70`, `obectraining…` — token-shaped, survives a rename |
+| **L3** host denylist | `classifyEnv()` | a training host reached under a different label, e.g. a hand-passed `OLS_ORIGIN=` |
+| **L4** script assert | `assertWritable()` at the top of every mutating script | the run, before login — exit 3 |
+| **L5** network abort | `armContext()` on every Playwright context | non-GET requests to a protected host, including writes issued from inside `page.evaluate()` |
+| **L6** runner refusal | `namecheck/run_fix.sh` | the process, before node starts — covers a script that lost its import |
+| **L7** audit + alert | `namecheck/guard_audit.js` | nothing — it makes the refusal heard: ledger `logs/sfd/WRITE_GUARD_BLOCKED.md` + SFD DM |
+
+Reads are untouched: the scanner still runs against training every 30 minutes. Only writes are
+refused. `GUARD_DRILL=1` labels a rehearsal in the ledger and the alert so a drill is never
+mistaken for a real attempt.
+
+The rules live here (public, unit-tested, no hostname in them — `preprod` and `training` are
+enough to tell the two apart). The ledger and the Discord alert live off-repo with the fixers,
+because they touch local paths and secrets. If the rules file cannot be loaded, the off-repo
+binding refuses **every** write rather than guessing.
+
+Run the checks:
+
+```bash
+node tools/name-guard/write_guard.test.js
+```
 
 ## Schedule
 
