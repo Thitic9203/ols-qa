@@ -191,6 +191,14 @@ reappears that schedules a scan or names a training environment, if the scanner 
 the hands-off guard, if that check drifts below the `require('playwright')` line, or if an override
 flag appears in it.
 
+**The channel is guarded too, not only the scanner.** The requirement is about what appears in the
+QA thread: no alert that checked training, ever. So `notify.js` refuses to post a report whose
+`env`, `origin` **or any finding** mentions training — `exit 5`, before delivery is attempted, and
+`--force` does not override it (that flag suppresses duplicate-suppression, it is not a licence to
+cross a boundary). In the normal flow this never fires, because the scanner already refused; it is
+there for the abnormal one — a stale report file on disk, a report built by a fixer, a copy of this
+toolkit whose scanner is older than this rule.
+
 **The same instruction covers the daily health check**, which is a separate job that used to log
 into training twice a day: it now runs on pre-prod only, and drops any env whose key or host looks
 like training even if the config says otherwise. See the OLS project guide.

@@ -207,6 +207,50 @@ t('scan.js refuses a hands-off env before it loads a browser, and exits 2 not 0'
   assert.ok(!/GUARD_FORCE|--force/.test(src), 'scan.js must not carry an override flag');
 });
 
+// ---- the channel itself: no training alert may ever be posted -----------------------
+// The owner's requirement is about the QA thread, not about the scanner: an alert that checked
+// training must not appear there. So the refusal also sits on the thing that posts. These run
+// notify.js for real, with no Discord credentials in the environment — a refusal must happen
+// before delivery is even attempted.
+const { execFileSync } = require('child_process');
+const os = require('os');
+function runNotify(report) {
+  const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'ng-')), 'report.json');
+  fs.writeFileSync(f, JSON.stringify(report));
+  try {
+    execFileSync(process.execPath, [path.join(__dirname, 'notify.js'), f, '--force'],
+      { env: { PATH: process.env.PATH, HOME: process.env.HOME }, stdio: 'pipe' });
+    return { code: 0, err: '' };
+  } catch (e) {
+    return { code: e.status, err: String(e.stderr || '') };
+  }
+}
+const FINDING = { id: 'x', rule: 'qa-trace', field: 'title', title: 'ทดสอบ', status: 'PUBLISHED' };
+
+t('notify refuses a report whose env is training — exit 5, nothing sent', () => {
+  const r = runNotify({ env: 'training69', ok: true, findings: [FINDING], counts: { total: 1 } });
+  assert.strictEqual(r.code, 5, 'expected exit 5, got ' + r.code);
+  assert.ok(/REFUSED/.test(r.err), 'refusal must be loud');
+});
+t('notify refuses a training origin even when the env label reads preprod', () => {
+  const r = runNotify({ env: 'preprod', origin: 'https://obectraining69-ols.example.test', ok: true, findings: [FINDING] });
+  assert.strictEqual(r.code, 5, 'expected exit 5, got ' + r.code);
+});
+t('notify refuses a preprod-labelled report carrying a training finding', () => {
+  const r = runNotify({ env: 'preprod', ok: true, findings: [Object.assign({ env: 'training69' }, FINDING)] });
+  assert.strictEqual(r.code, 5, 'expected exit 5, got ' + r.code);
+});
+t('--force does not override the boundary (it is not duplicate suppression)', () => {
+  const src = fs.readFileSync(path.join(__dirname, 'notify.js'), 'utf8');
+  const refusalAt = src.indexOf('handsOffReason(report)');
+  const forceAt = src.indexOf('report.ok && !report.findings.length && !FORCE');
+  assert.ok(refusalAt > 0 && refusalAt < forceAt, 'the refusal must come before any --force path');
+});
+t('a pre-prod report is not caught by the boundary', () => {
+  const r = runNotify({ env: 'preprod', ok: true, findings: [FINDING], counts: { total: 1 } });
+  assert.notStrictEqual(r.code, 5, 'pre-prod must not be refused as hands-off');
+});
+
 // ---- read/write classification ------------------------------------------------------
 t('read methods are exactly GET/HEAD/OPTIONS', () => {
   ['GET', 'head', 'Options'].forEach((m) => assert.ok(G.isReadMethod(m)));

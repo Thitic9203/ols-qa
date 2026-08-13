@@ -78,7 +78,38 @@ async function lastChannelAlert(env) {
   } catch (_) { return null; }
 }
 
+/* Last gate before the channel: nothing about a hands-off environment is ever posted.
+ *
+ * The scanner already refuses training, so in the normal flow this never fires. It exists for the
+ * abnormal one — an old report file left on disk, a report hand-built by a fixer, a copy of this
+ * toolkit whose scanner is out of date. The owner's requirement is about the CHANNEL, not about
+ * the scanner: no alert that checked training may appear in the QA thread. So the check also sits
+ * on the thing that does the posting. It reads the report's own env AND the findings, because a
+ * report can be labelled `preprod` while carrying rows scanned somewhere else.
+ *
+ * --force does NOT override this. It is not a duplicate-suppression rule, it is a boundary.
+ */
+function handsOffReason(rep) {
+  const HANDS_OFF = /training/i;
+  const r = rep || {};
+  const hostOf = (v) => { try { return new URL(String(v)).hostname; } catch (_) { return String(v || ''); } };
+  if (HANDS_OFF.test(String(r.env || ''))) return 'report.env = "' + r.env + '"';
+  if (r.origin && HANDS_OFF.test(hostOf(r.origin))) return 'report.origin host = "' + hostOf(r.origin) + '"';
+  for (const f of Array.isArray(r.findings) ? r.findings : []) {
+    for (const k of ['env', 'origin', 'source', 'url']) {
+      if (f && f[k] && HANDS_OFF.test(String(f[k]))) return 'finding.' + k + ' = "' + f[k] + '"';
+    }
+  }
+  return null;
+}
+
 (async () => {
+  const handsOff = handsOffReason(report);
+  if (handsOff) {
+    console.error('REFUSED — ไม่ส่งแจ้งเตือนที่มาจาก training environment เข้าช่อง QA เด็ดขาด (' + handsOff + ')');
+    console.error('          ช่องนี้เป็นของ pre-prod. รายงานฉบับนี้ไม่ควรมีอยู่ตั้งแต่แรก — ตรวจว่าใครสร้างมัน');
+    process.exit(5);
+  }
   if (report.ok && !report.findings.length && !FORCE) { console.log('clean — no alert sent'); return; }
   const content = build(report);
 

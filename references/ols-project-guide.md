@@ -317,10 +317,18 @@ published item with no cover. Tool + rules: [`tools/name-guard/`](../tools/name-
 | **training** | **nothing** | 🔴 hands-off. Real people work there |
 
 🔴 **training is not scanned, not polled, not alerted on** (owner instruction 2026-08-13). The
-GitHub Actions job that scanned it every 30 minutes was **deleted**; `run_guard.sh` refuses a
-training label with no override flag; `write_guard.test.js` fails if any workflow reappears that
-schedules a name-guard run or names a training environment. Writing to training is separately
-refused seven ways — see [[project_ols-write-guard-training-readonly]].
+requirement is stated in terms of the **QA thread**: an alert that checked training must never
+appear in it. So the refusal sits on every layer that could put one there, not on the schedule
+alone — the GitHub Actions job that scanned it every 30 minutes was **deleted**; `run_guard.sh`
+refuses a training label; **`scan.js` refuses before it loads a browser** (`exit 2`, never `0`);
+**`notify.js` refuses to post a report whose env, origin or any finding mentions training**
+(`exit 5`, and `--force` does not override it); the daily health check dropped training from its
+config **and** filters it out in code. No layer has an override flag — the previous version had
+one, and an override that exists is an override that eventually gets used.
+`write_guard.test.js` fails if any of that erodes: a workflow that schedules a scan or names a
+training environment, a scanner that stops consulting the hands-off guard or moves the check below
+its browser import, or a notifier that would post a training report. Writing to training is
+separately refused seven ways — see [[project_ols-write-guard-training-readonly]].
 
 **One alert per change, not per run.** `alert_dedup.js` fingerprints the finding set
 (`id|rule|field`, catalogue counts excluded) and stays quiet when nothing changed, checking both a
