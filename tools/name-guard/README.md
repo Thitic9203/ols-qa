@@ -150,22 +150,28 @@ Run the checks:
 node tools/name-guard/write_guard.test.js
 ```
 
-## Schedule
+## Schedule — pre-prod only
 
-| environment | reachable from | runs on | cadence |
-|---|---|---|---|
-| public training environment | the internet | GitHub Actions — `.github/workflows/name-guard.yml` | every 30 min |
-| pre-prod | org VPN only (private address) | local `launchd` job on the QA machine | every 30 min |
+| environment | runs on | cadence |
+|---|---|---|
+| pre-prod (org VPN only) | local `launchd` job on the QA machine | every 30 min |
+| training | **nothing. hands-off.** | never |
 
-A GitHub-hosted runner cannot reach a VPN-only host, so pre-prod cannot be scanned from the cloud;
-that half runs locally through the SFD fail-loud harness and needs the machine to be awake. The
-local runner skips (exit 0) when the host is unreachable — being off the VPN is not a finding, and
-alerting on it would train everyone to ignore the alerts.
+**Training is not scanned.** Real people are working in it, and the owner's instruction is to
+leave it alone — which covers polling and alerting, not just writing. The GitHub Actions job that
+scanned it every 30 minutes was deleted on 2026-08-13 after it kept posting training findings into
+the QA channel; `run_guard.sh` refuses a training label outright, with no override flag, because an
+override that exists is an override that eventually gets used. `write_guard.test.js` fails if any
+workflow reappears that schedules a scan or names a training environment.
 
-Cost: GitHub-hosted standard runners are free with no minute cap on public repositories. This adds
-no spend.
+The pre-prod run goes through the SFD fail-loud harness and needs the machine awake and on the VPN.
+It skips (exit 0) when the host is unreachable — being off the VPN is not a finding, and alerting on
+it would train everyone to ignore the alerts.
 
-## Required repository secrets
+Cost: nothing. No hosted runner minutes are used at all now that the scheduled job is gone.
 
-`OLS_TRAINING_ORIGIN` · `OLS_TRAINING_SSO` · `OLS_TRAINING_EMAIL` · `OLS_TRAINING_PW` and one
-delivery channel: `OLS_DISCORD_BOT_TOKEN` + `OLS_DISCORD_USER_ID`, or `OLS_NAME_GUARD_WEBHOOK`.
+## Required configuration
+
+The pre-prod run reads `~/.ols-qa-secrets/name-guard-preprod.env` (off-repo): `OLS_ORIGIN` ·
+`OLS_SSO` · `OLS_EMAIL` · `OLS_PW` · `OLS_OWN_EMAILS` · `DISCORD_CHANNEL_ID`, with the bot token in
+`~/ols-qa-testing-bot/.discord_bot_token`.

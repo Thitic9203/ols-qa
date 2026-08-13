@@ -148,22 +148,33 @@ t('L5 PUT to preprod is allowed', async () => {
   assert.strictEqual(await l5(PREPROD, 'PUT', PREPROD.origin + '/api/media/1'), 'continue');
 });
 
-// ---- L6 the scheduled cloud job must stay read-only ---------------------------------
-t('L6 the training workflow never runs a mutator and never passes --apply', () => {
-  const wf = path.join(__dirname, '..', '..', '.github', 'workflows', 'name-guard.yml');
-  const src = fs.readFileSync(wf, 'utf8');
-  assert.ok(!/--apply/.test(src), 'the cloud job must never pass --apply');
-  for (const m of ['fix_names', 'fix_media', 'cycle_rename', 'delete_media', 'hide.js', 'unpublish_dups', 'approve_media']) {
-    assert.ok(!src.includes(m), 'the cloud job must not run the mutator ' + m);
+// ---- L6 nothing automated may touch training at all ---------------------------------
+// The owner's instruction is hands-off, not read-only-ish: training carries real people's live
+// work, so it is not scanned, not polled, and not alerted on. The scheduled cloud job that used
+// to do exactly that was deleted; these checks stop it coming back by accident.
+const WF_DIR = path.join(__dirname, '..', '..', '.github', 'workflows');
+const workflows = () => (fs.existsSync(WF_DIR) ? fs.readdirSync(WF_DIR).filter((f) => /\.ya?ml$/.test(f)) : []);
+
+t('L6 no workflow runs the name-guard scanner on a schedule', () => {
+  for (const f of workflows()) {
+    const src = fs.readFileSync(path.join(WF_DIR, f), 'utf8');
+    if (!/tools\/name-guard\//.test(src)) continue;
+    assert.ok(!/^\s*schedule:/m.test(src), f + ' schedules a name-guard run — training must not be polled');
   }
 });
-t('L6 the training workflow only runs the read-only scanner + notifier', () => {
-  const wf = path.join(__dirname, '..', '..', '.github', 'workflows', 'name-guard.yml');
-  const src = fs.readFileSync(wf, 'utf8');
-  const nodeCalls = (src.match(/node\s+tools\/name-guard\/([a-z_]+)\.js/g) || [])
-    .map((s) => s.split('/').pop().replace('.js', ''));
-  for (const c of nodeCalls) {
-    assert.ok(['scan', 'notify'].includes(c), 'unexpected script in the cloud job: ' + c);
+t('L6 no workflow names a training environment', () => {
+  for (const f of workflows()) {
+    const src = fs.readFileSync(path.join(WF_DIR, f), 'utf8');
+    assert.ok(!/training/i.test(src), f + ' references a training environment');
+  }
+});
+t('L6 no workflow runs a mutator or passes --apply', () => {
+  for (const f of workflows()) {
+    const src = fs.readFileSync(path.join(WF_DIR, f), 'utf8');
+    assert.ok(!/--apply/.test(src), f + ' passes --apply');
+    for (const m of ['fix_names', 'fix_media', 'cycle_rename', 'delete_media', 'hide.js', 'unpublish_dups', 'approve_media']) {
+      assert.ok(!src.includes(m), f + ' runs the mutator ' + m);
+    }
   }
 });
 
