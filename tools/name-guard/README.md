@@ -75,8 +75,7 @@ team channel. Clean runs stay silent unless `--force`.
 
 ### One alert per change, not per run
 
-The scan runs every 30 minutes; findings take longer than that to fix. Posting the same list
-every run buries the channel and teaches people to scroll past it — on 2026-08-13 the same 34
+The scan runs twice a day; findings often outlive a run. Posting the same list every time buries the channel and teaches people to scroll past it — on 2026-08-13 the same 34
 items arrived three times before this existed.
 
 `alert_dedup.js` sends only when the findings **change**. The finding set is fingerprinted
@@ -86,8 +85,8 @@ a new finding), and the alert is skipped when either source of history says it w
 - the state file next to the report (`<report>.alert-state.json`, or `NAME_GUARD_STATE`) — this
   is what a local scheduled run remembers between runs;
 - the most recent alert for the same environment still in the channel — this is what a CI run
-  uses, since it starts on a fresh machine with no state at all. The comparison ignores the
-  `Scope` line for the same reason the fingerprint does.
+  uses when it has no local state at all. The comparison ignores lines that drift on their own
+  (catalogue counts), for the same reason the fingerprint does.
 
 `--force` sends regardless: a person asking for the current state is not a duplicate. Pinned by
 `alert_dedup.test.js`.
