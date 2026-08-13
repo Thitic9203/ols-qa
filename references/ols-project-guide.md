@@ -352,6 +352,22 @@ headers once. One `console.log` of the envelope would have replaced an hour of h
 - Guest sees neither `FLAGGED` nor `UNPUBLISHED` media (`GET /api/media/{id}` → `409`), so those
   states are already invisible publicly — the bad names still show on **creator** and **admin** screens.
 
+### Editing a PUBLISHED learning path (cover fix, 2026-08-13)
+
+A published LP is read-only: `PUT /api/learning-paths/{id}` answers `409 learning_path.not_draft`.
+The edit path is three calls, and the **method matters** — `request-edit` is a `PATCH`, not a `POST`
+(a `POST` returns 404 and reads like a missing route):
+
+1. `PATCH /api/learning-paths/{id}/request-edit` → status becomes `PENDING_EDIT`
+2. `PUT /api/learning-paths/{id}` with the full write-model — `title`, `description`,
+   `subLearningGoals:[{id,priority}]`, `gradeLevels`, `courseIds` (ordered by the read model's
+   `courses[].sequence`) — plus `coverImageKey` from `POST /api/uploads {purpose:'thumbnail'}`
+3. `POST /api/learning-paths/{id}/publish` → back to `PUBLISHED`
+
+`POST …/republish` is **not** the restore call here: from `PENDING_EDIT` it answers
+`409 learning_path.invalid_status` (it applies to `UNPUBLISHED`). Never leave an LP parked in
+`PENDING_EDIT` — verify each one reads `PUBLISHED` again before calling the work done.
+
 ## Default assignee / reporter
 
 *(not configured — ask user and update this table)*

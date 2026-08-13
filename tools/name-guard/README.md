@@ -27,6 +27,17 @@ the scan has to keep running.
 | `too-short` | titles under 4 characters |
 | `profanity` | Thai + English profanity list |
 | `duplicate-name` | the same title appearing twice in one list |
+| `missing-cover` | user-facing content with no `coverImageUrl` / `thumbnailUrl` — the card renders a blank tile |
+| `cover-broken` | the cover URL exists but does not load as an image (404, empty body, wrong content-type) |
+
+`missing-cover` exempts `DRAFT`: a cover is only owed once the content can face a user
+(`PUBLISHED`, `PENDING_APPROVAL`, `PENDING_EDIT`, `FLAGGED`, `UNPUBLISHED` — the last two still show
+on creator and admin screens). `cover-broken` is checked by fetching each distinct cover once per
+run inside the browser session; if that verification cannot run, the field check still stands.
+
+Two learning paths sat published with `coverImageUrl = null` in training69 for a day before a human
+spotted the blank tiles — the scan was green throughout because it only read titles and
+descriptions. Both cover rules exist to make that failure mechanical instead of visual.
 
 Known brand/tech words (`Python`, `ChatGPT`, `HTML`, `SQL`, …) are allow-listed so they are never
 mistaken for gibberish — vowel-poor real words were the first false positives this hit.

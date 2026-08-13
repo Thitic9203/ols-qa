@@ -121,6 +121,51 @@ async function pageAll(call, urlBase) {
   return out;
 }
 
+/* A cover URL that 404s renders the same blank tile as no cover at all, so having the field is
+ * not proof. Fetch each distinct cover once per run and confirm it really is an image. Runs in
+ * the page so it reuses the session and the browser's own network stack; failures here never
+ * abort the scan. */
+async function checkCoversLoad(page, items) {
+  const byUrl = new Map();
+  for (const it of items) {
+    const u = rules.coverUrlOf(it);
+    if (u && !byUrl.has(u)) byUrl.set(u, it);
+  }
+  if (!byUrl.size) return [];
+  let verdicts = {};
+  try {
+    verdicts = await page.evaluate(async (urls) => {
+      const out = {};
+      const one = async (u) => {
+        try {
+          const r = await fetch(u, { method: 'GET', cache: 'no-store' });
+          if (!r.ok) return 'http ' + r.status;
+          const ct = r.headers.get('content-type') || '';
+          const b = await r.blob();
+          if (!/^image\//i.test(ct)) return 'ไม่ใช่ไฟล์รูป (' + (ct || 'no content-type') + ')';
+          if (!b.size) return 'ไฟล์ว่าง 0 ไบต์';
+          return 'ok';
+        } catch (e) { return 'โหลดไม่ได้: ' + String(e && e.message || e).slice(0, 60); }
+      };
+      for (let i = 0; i < urls.length; i += 5) {                 // small batches — never a flood
+        const slice = urls.slice(i, i + 5);
+        const res = await Promise.all(slice.map(one));
+        slice.forEach((u, k) => { out[u] = res[k]; });
+      }
+      return out;
+    }, [...byUrl.keys()]);
+  } catch (e) {
+    return [];                                                    // verification unavailable — field check still stands
+  }
+  const bad = [];
+  for (const [u, verdict] of Object.entries(verdicts)) {
+    if (verdict === 'ok') continue;
+    bad.push({ item: byUrl.get(u), hit: { field: 'coverImageUrl', rule: 'cover-broken', value: u.slice(0, 120),
+      why: 'ปกมี URL แต่เปิดไม่ได้ — ' + verdict + ' (การ์ดขึ้นว่างเหมือนไม่มีปก)' } });
+  }
+  return bad;
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
   const report = { env: LABEL, startedAt: new Date().toISOString(), sources: {}, findings: [] };
@@ -151,10 +196,12 @@ async function pageAll(call, urlBase) {
       const items = raw.map((it) => Object.assign({}, it, { title: it.title || it.name }));
       report.sources[src.key] = { count: items.length, error: raw.__err || null };
       for (const it of items) {
-        const hits = rules.checkItem({ title: it.title, description: it.description });
+        const hits = rules.checkItem({ title: it.title, description: it.description })
+          .concat(rules.checkAsset(it));
         if (hits.length) push(src, it, hits);
       }
       for (const d of rules.findDuplicates(items)) push(src, d.item, [d.hit]);
+      for (const bad of await checkCoversLoad(page, items)) push(src, bad.item, [bad.hit]);
     }
     /* Creator-side sweep.
      * Draft / flagged / unpublished content never appears in the public lists, and
@@ -197,9 +244,11 @@ async function pageAll(call, urlBase) {
         report.sources[key] = { count: items.length, error: mine.__err || null };
         const src = { key, label: 'สื่อของ ' + key };
         for (const it of items) {
-          const hits = rules.checkItem({ title: it.title, description: it.description });
+          const hits = rules.checkItem({ title: it.title, description: it.description })
+            .concat(rules.checkAsset(it));
           if (hits.length) push(src, it, hits);
         }
+        for (const bad of await checkCoversLoad(opg, items)) push(src, bad.item, [bad.hit]);
         // Duplicate titles only matter for what a learner can actually see. Inside one
         // creator's own library the same title legitimately exists across workflow states
         // (draft + pending edit + unpublished copies), so restrict the check to PUBLISHED.

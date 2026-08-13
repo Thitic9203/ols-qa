@@ -162,6 +162,42 @@ function findDuplicates(items) {
   return out;
 }
 
+/* Cover / thumbnail completeness.
+ *
+ * A published item with no cover is as visible a defect as a bad name — the card renders a
+ * blank tile to every real user — but it is invisible to a name-only scan. Two learning paths
+ * shipped that way in training69 (2026-08-12) and were only noticed by eye weeks later, so the
+ * check is mechanical from here on.
+ *
+ * The field is `coverImageUrl` on media, courses and learning paths alike; `thumbnailUrl` is
+ * accepted as an alias so a future endpoint rename does not silently turn this into a no-op.
+ * DRAFT items are exempt: a cover is only owed once the content faces a user.
+ */
+const COVER_FIELDS = ['coverImageUrl', 'thumbnailUrl'];
+const USER_FACING_STATUS = new Set(['PUBLISHED', 'PENDING_APPROVAL', 'PENDING_EDIT', 'FLAGGED', 'UNPUBLISHED']);
+
+function coverUrlOf(item) {
+  for (const f of COVER_FIELDS) {
+    const v = item && item[f];
+    if (typeof v === 'string' && v.trim()) return v.trim();
+  }
+  return null;
+}
+
+/** Missing-cover check for one item. Returns [] when the item carries a cover (or is a draft). */
+function checkAsset(item) {
+  const it = item || {};
+  const status = String(it.status || '').toUpperCase();
+  if (status && !USER_FACING_STATUS.has(status)) return [];      // DRAFT etc. — nothing owed yet
+  if (coverUrlOf(it)) return [];
+  return [{
+    field: 'coverImageUrl',
+    rule: 'missing-cover',
+    value: '',
+    why: 'ไม่มีทรัมเนล/ปก — การ์ดขึ้นว่างให้ผู้ใช้เห็น' + (status ? ' (สถานะ ' + status + ')' : ''),
+  }];
+}
+
 /** Check one content item. Returns [] when clean. */
 function checkItem(item) {
   const out = [];
@@ -172,4 +208,4 @@ function checkItem(item) {
   return out;
 }
 
-module.exports = { checkText, checkItem, findDuplicates, TEST_PATTERNS, TICKET_PATTERNS, STATUS_PAREN, PROFANITY, latinTokenIsGibberish, thaiIsGibberish, isRepeatedUnit };
+module.exports = { checkText, checkItem, checkAsset, coverUrlOf, findDuplicates, TEST_PATTERNS, TICKET_PATTERNS, STATUS_PAREN, PROFANITY, COVER_FIELDS, USER_FACING_STATUS, latinTokenIsGibberish, thaiIsGibberish, isRepeatedUnit };

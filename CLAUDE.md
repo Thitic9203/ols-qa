@@ -73,6 +73,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **4** คำไทย overlay | title/badge/kicker จาก program layer · สะกด char-exact · วรรณยุกต์ครบ · คอนทราสต์ผ่าน (card/scrim) · ไม่มี "OLS"/metric ลวง | อ่านออกครบทุกตัว |
 | **5** visual เทียบ lot จริง | เปิด PNG จริง + เทียบสไตล์ปก lot ที่ลูกค้า approve (**ภาพถ่ายคมชัด + frosted card**) — QA ดูเอง ไม่เดา | สไตล์เดียวกัน |
 
+### 🔴 แนวป้องกัน 5 ชั้น (Cover-attached 5-level gate) — "ทุกชิ้นต้องมีปกติดจริง" · ห้ามพลาด
+
+gate ด้านบนคุมว่า **ปกสวยพอมั้ย** · gate นี้คุมว่า **ปกติดกับ content จริงมั้ย** — คนละเรื่องกัน และเคยหลุดมาแล้ว. บังคับใช้ทุกครั้งที่สร้าง/แก้ test data ทุกชนิด (media · course · LP · achievement) **ทั้งล็อต ไม่ใช่สุ่มดู**.
+
+| ชั้น | ตรวจ | ผ่าน = | เจอผิด = |
+|:--:|:--|:--|:--|
+| **1** payload ตอนสร้าง | อัป thumbnail ก่อน (`POST /api/uploads {purpose:'thumbnail'}` → PUT presigned) แล้วส่ง `coverImageKey` ไปกับ create/PUT **ทุกชิ้น** | ไม่มีชิ้นไหนถูก create/publish โดยไม่มี key | หยุด อัปปกก่อน ห้าม publish |
+| **2** readback ต่อชิ้น | `GET /api/<entity>/{id}` ทันทีหลังสร้าง/แก้ | `coverImageUrl` **ไม่ใช่ null/ว่าง** | แก้ใหม่ ห้ามนับว่าเสร็จ |
+| **3** รูปเปิดได้จริง | ยิง GET ที่ `coverImageUrl` | **HTTP 200 + `content-type: image/*` + ขนาด > 0** | URL เสีย = เหมือนไม่มีปก → อัปใหม่ |
+| **4** sweep ทั้ง catalogue | ไล่ list ทุก entity ทุกหน้า (`/api/media` `/api/courses` `/api/learning-paths` `/api/achievements`) แล้วนับ | **null cover = 0 ทุก entity** (ไม่ใช่แค่ล็อตที่เพิ่งทำ) | มีเหลือ = งานยังไม่เสร็จ |
+| **5** ตาเห็นจริง + ตัวเฝ้าอัตโนมัติ | เปิดหน้า FE แบบ **guest (ไม่ล็อกอิน)** ดูการ์ดขึ้นปกจริง + name-guard รอบถัดไปต้องไม่มี `missing-cover`/`cover-broken` | เห็นปกบนเว็บจริง + scan เขียว | รายงาน user พร้อมภาพ |
+
+- **ทั้ง 5 ชั้นถูกบังคับด้วยเครื่องมือแล้ว ไม่ใช่ความจำ** — `tools/name-guard/name_rules.js` มีกฎ `missing-cover` (ชั้น 2/4) และ `scan.js` มี `checkCoversLoad()` (ชั้น 3) รันทุก 30 นาทีทั้ง training env (GH Actions) และ pre-prod (launchd) → ของที่หลุดจะถูกจับเองภายในครึ่งชั่วโมง. **DRAFT ยกเว้น** (ยังไม่ถึงตาผู้ใช้เห็น) · `PUBLISHED/PENDING_*/FLAGGED/UNPUBLISHED` = ต้องมีปกทุกตัว เพราะขึ้นบนจอ creator/admin.
+- **แก้ปกของ LP/course ที่ PUBLISHED แล้ว = ต้องผ่าน flow แก้ไข** — `PATCH /api/learning-paths/{id}/request-edit` → `PUT /api/learning-paths/{id}` (ส่งครบ `title·description·subLearningGoals·gradeLevels·courseIds` + `coverImageKey`) → **`POST …/publish`** เพื่อคืนสถานะ. ยิง PUT ตรงๆ = `409 learning_path.not_draft` · ยิง `republish` ตอน `PENDING_EDIT` = `409 invalid_status` (republish ใช้กับ UNPUBLISHED เท่านั้น). **ห้ามทิ้งค้างที่ `PENDING_EDIT` เด็ดขาด — ต้องยืนยันว่ากลับเป็น `PUBLISHED` ทุกชิ้นก่อนจบงาน.**
+- **บทเรียน (2026-08-12/13, training69):** LP 2 อัน (`เรียนรู้ Excel…` / `โปรแกรม Excel…`) ถูก publish โดย `coverImageUrl = null` ตั้งแต่วันสร้าง — media 49 + course 14 มีปกครบ 100% แต่ **ระบบไม่บังคับปกสำหรับ LP** จึงหลุดเฉพาะจุดนี้ และ name-guard ตอนนั้นอ่านแค่ title/description เลยเขียวมาตลอดจน user เห็นด้วยตาเอง. → ช่องโหว่ปิดด้วยชั้น 1–5 ข้างบน.
+
 ### 🔴 Cover corrections — บทเรียนจาก user (2026-08-08) · ห้ามผิดซ้ำทุกข้อ (บังคับก่อนสร้างปกทุกครั้ง)
 
 user คอมเมนต์แก้ซ้ำหลายรอบใน session สร้างปก training-ols69 → บันทึกเป็นกฎถาวร. ทุกข้อ enforce ในเครื่องมือ off-repo `~/ols-qa-testing-bot/` แล้ว (dt_client.js · thumb_ai.js · thumb_final.js · cover_photo_guard.js). รายละเอียดเต็ม + ค่าจริง → [`ols-data-prep.md`](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ols-data-prep.md) §5.7.2 B2/B3 · memory `reference_ols-cover-goalfallback-doodle` · `reference_ols-cover-title-shrink-to-fit`.
