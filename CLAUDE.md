@@ -853,3 +853,30 @@ GUEST · LEARNER · CREATOR · CONTENT_ADMIN · SYSTEM_ADMIN
   catches it before it propagates.
 - **If a role-keyed dict or JSON is generated programmatically, assert all five keys exist at write time** — a
   `KeyError` or assertion failure at generation is cheap; silent downstream mismatch is not.
+
+**Addendum (2026-08-13) — fixing the identifier in code does NOT fix what was already named from it.**
+
+The 2026-07-26 remediation corrected the five *source* locations above and was treated as closed. It was not:
+by then the bad identifier had already been used to **create real artifacts**, and those kept the typo for
+another 18 days, in front of the customer. Found and fixed today, only because the user spotted it on screen:
+
+| where | what it was |
+|---|---|
+| Drive VDO tab folders | `TC001 GUASE - ผู้ใช้ทั่วไป` under **both** System and Integration |
+| tracking tab `MP4-Sys, Int, Unit` | rows 2 and 7 — column B **and** the label inside the `=HYPERLINK(...)` in column C |
+| `System Test - 03 OLS` · `Integration Test - 03 OLS` | the `TC001` tab title, in the live `(ALL)` copies **and** in the frozen `Lot 1 (Only)` snapshots already delivered |
+
+**Rule that follows: when a wrong identifier has escaped into artifacts, the fix list is not the grep hits.**
+Enumerate every place the identifier was ever *materialised* — folder names, sheet/tab titles, formula label
+text (a `=HYPERLINK(url,"label")` is invisible to a values-only read; ask for `valueRenderOption=FORMULA`),
+file names, and delivered snapshots — then re-verify each one **live** afterwards. `grep` over the repo proves
+nothing about a folder in Drive.
+
+Two traps this run:
+- **Renaming a folder without renaming its config key (or vice versa) breaks the upload scope-lock**, which
+  verifies the live folder name against `out/vdo_folders.json`. For a window today the json said `GUEST` while
+  Drive still said `GUASE`, which would have refused every upload into those two folders. Change both, then
+  read the live name back.
+- **Frozen `(Only)` snapshots are exempt from automation, not from correctness.** They still carried the typo
+  after everything else was fixed. Only a human can order that change; when it is ordered, rename the single
+  tab and diff the full tab list before/after to prove nothing else moved.
