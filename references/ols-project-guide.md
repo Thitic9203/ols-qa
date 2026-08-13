@@ -305,6 +305,35 @@ OLS ไม่มีหน้า login ของตัวเอง — login ผ�
 
 **Headless MP4 + screenshot capture harness:** `~/ols-qa-testing-bot/capture/ols_capture.js` (Playwright + ffmpeg) — the Stage 4.4 MP4 capability. Details: agent memory `reference_ols-mp4-capture`.
 
+## Content name guard (ชื่อที่ผู้ใช้จริงเห็น) — every 30 min
+
+Real users are on the system, so any user-visible name carrying a QA/test trace, gibberish, a
+ticket key, a status marker in parentheses, profanity, or a duplicate title is a **live defect**,
+not a QA artefact. Tool + rules: [`tools/name-guard/`](../tools/name-guard/README.md).
+
+| where | runs on | note |
+|---|---|---|
+| public training env | GitHub Actions `.github/workflows/name-guard.yml`, every 30 min | free (no minute cap on public repos), needs no machine of ours awake |
+| pre-prod | local launchd `com.thitichaya.ols-name-guard-preprod`, every 30 min | pre-prod resolves to a **private address, VPN only** → a hosted runner cannot reach it. Registered in SFD so it cannot fail silently; skips (exit 0) when off VPN |
+
+### Write-model facts learned while fixing names (2026-08-13)
+
+- **No `PATCH` exists** on `/api/achievements/{id}`, `/api/media/{id}`, `/api/courses/{id}`,
+  `/api/learning-paths/{id}` — every one returns `404 Cannot PATCH`. Renaming = **full-object `PUT`**:
+  `GET` the object, drop server-managed fields, change the one field, `PUT` it back, then re-read.
+- **Achievements**: the `GET` read-model is not the write-model — `levels[]` comes back with a nested
+  `badge` object + `receivedCount`, but `PUT` wants `{key, targetValue, badgeId}`. Sending the read
+  shape back fails `400 levels: Required`.
+- 🔴 **LIVESTREAM media cannot be renamed at all.** `PUT /api/media/{id}` validates
+  `type` against `'VIDEO' | 'ARTICLE' | 'EBOOK' | 'DOCUMENT'` — `LIVESTREAM` is not an accepted
+  discriminator, and no livestream-scoped update route exists (`/api/livestreams/{id}` `PUT`/`PATCH`
+  = 404). A live-recording with a bad title can only be **deleted** (`DELETE /api/media/{id}` → 204).
+- 🔴 **A `FLAGGED` media cannot be unpublished**: `409 media.invalid_status_transition — Media status
+  FLAGGED cannot transition via UNPUBLISH`. Hiding a reported item is not available; the paths are
+  admin UNFLAG (back to PUBLISHED first) or delete.
+- Guest sees neither `FLAGGED` nor `UNPUBLISHED` media (`GET /api/media/{id}` → `409`), so those
+  states are already invisible publicly — the bad names still show on **creator** and **admin** screens.
+
 ## Default assignee / reporter
 
 *(not configured — ask user and update this table)*
