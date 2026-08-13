@@ -66,12 +66,29 @@ function latinTokenIsGibberish(tok) {
   return false;
 }
 
-// Thai gibberish: long run of Thai consonants with no vowel/tone marks at all
+// Thai gibberish: long run of Thai consonants with no vowel/tone marks at all.
+// The threshold stays high on purpose — plenty of real Thai words carry no vowel mark
+// (ทดลอง, ผลกระทบ), so a lower bound here would flag valid names.
 function thaiIsGibberish(s) {
   const thaiOnly = s.replace(/[^฀-๿]/g, '');
   if (thaiOnly.length < 8) return false;
   const marks = (thaiOnly.match(/[ะ-๎]/g) || []).length; // vowels + tones
   return marks === 0;
+}
+
+/* Keyboard-mash names are usually a short unit typed twice — "กหฟกหฟ", "dsdsds", "อิอิอิ".
+ * Catching the repeat is precise where a vowel/consonant heuristic is not: real words do not
+ * consist solely of the same 2-4 character unit repeated. Thai reduplication is written with
+ * ๆ, so it does not trip this. */
+function isRepeatedUnit(tok) {
+  const t = String(tok || '').trim();
+  if (t.length < 4 || /ๆ/.test(t)) return false;
+  for (let unit = 1; unit <= Math.floor(t.length / 2); unit++) {
+    if (t.length % unit) continue;
+    const head = t.slice(0, unit);
+    if (t === head.repeat(t.length / unit)) return unit <= 4;   // "abcabc" yes, long phrase no
+  }
+  return false;
 }
 
 function checkText(text, opts) {
@@ -86,6 +103,9 @@ function checkText(text, opts) {
   for (const re of PROFANITY) if (re.test(s)) { findings.push({ rule: 'profanity', why: 'คำไม่สุภาพ' }); break; }
   for (const re of (o.extraBadWords || [])) if (re.test(s)) { findings.push({ rule: 'custom', why: 'ติด denylist เพิ่มเติม' }); break; }
 
+  for (const tok of s.split(/\s+/)) {
+    if (isRepeatedUnit(tok)) { findings.push({ rule: 'gibberish', why: 'คำซ้ำหน่วยเดิม (พิมพ์มั่ว): ' + tok.slice(0, 30) }); break; }
+  }
   if (thaiIsGibberish(s)) findings.push({ rule: 'gibberish', why: 'ไทยไม่มีสระ/วรรณยุกต์เลย = อ่านไม่รู้เรื่อง' });
   else {
     for (const tok of s.split(/\s+/)) {
@@ -130,4 +150,4 @@ function checkItem(item) {
   return out;
 }
 
-module.exports = { checkText, checkItem, findDuplicates, TEST_PATTERNS, TICKET_PATTERNS, STATUS_PAREN, PROFANITY, latinTokenIsGibberish, thaiIsGibberish };
+module.exports = { checkText, checkItem, findDuplicates, TEST_PATTERNS, TICKET_PATTERNS, STATUS_PAREN, PROFANITY, latinTokenIsGibberish, thaiIsGibberish, isRepeatedUnit };
