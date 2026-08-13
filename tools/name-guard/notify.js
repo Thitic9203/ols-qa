@@ -19,6 +19,11 @@ const gate = require('./alert_gate');
 
 const REPORT = process.argv[2];
 const FORCE = process.argv.includes('--force');
+/* Verifying the sender must never cost the channel a message. Without this, checking "does the
+ * gate really block a bad alert?" means posting to the team channel and deleting it afterwards —
+ * which is exactly how a test alert reached the QA thread on 2026-08-13. --dry-run runs every
+ * check and prints what would be sent, and sends nothing. */
+const DRY = process.argv.includes('--dry-run');
 if (!REPORT) { console.error('usage: node notify.js report.json [--force]'); process.exit(2); }
 const report = JSON.parse(fs.readFileSync(REPORT, 'utf8'));
 
@@ -96,6 +101,12 @@ async function lastChannelAlert(env) {
     lastFingerprint: readState().fingerprint,
     lastChannelContent: await lastChannelAlert(report.env),
   });
+  if (DRY) {
+    console.log('DRY RUN — nothing sent. All seven format checks passed.');
+    console.log('--- message that would be sent ---');
+    console.log(content);
+    return;
+  }
   if (!decision.send) {
     // Record it anyway: a channel-only match means the state file was missing or stale, and
     // writing it now keeps the next run from having to ask Discord again.

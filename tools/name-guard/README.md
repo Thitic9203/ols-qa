@@ -125,6 +125,15 @@ fail-closed — a message that fails is not sent at all, and `notify.js` exits 4
 Reading the draft is not a substitute: every format defect that shipped looked right to whoever
 wrote it. Pinned by `alert_gate.test.js` (20 cases) and `alert_format.test.js`.
 
+**A blocked alert is loud, never silent.** `notify.js` exits 4 and sends nothing; `run_guard.sh`
+propagates that exit instead of swallowing it, so the SFD harness DMs the owner. The findings are
+still there and nobody has been told — that has to be visible, and the fix is to correct the
+generator until all seven layers pass, not to loosen a layer.
+
+**Verify with `--dry-run`, never against the live channel.** It runs every check and prints the
+message without sending. Testing the sender by posting and deleting is how a test alert reached
+the QA thread on 2026-08-13.
+
 
 ## Write guard — the training environment is read-only, absolutely
 
