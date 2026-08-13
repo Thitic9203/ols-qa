@@ -10,11 +10,6 @@
  *
  * Exit codes: 0 = clean · 1 = findings · 2 = scan could not run (login/network/etc).
  */
-const { chromium } = require('playwright');
-const fs = require('fs');
-const path = require('path');
-const rules = require('./name_rules');
-
 const ORIGIN = process.env.OLS_ORIGIN;
 const SSO = process.env.OLS_SSO;
 const EMAIL = process.env.OLS_EMAIL;
@@ -23,6 +18,30 @@ const LABEL = process.env.OLS_ENV_LABEL || 'ols';
 for (const [k, v] of [['OLS_ORIGIN', ORIGIN], ['OLS_SSO', SSO], ['OLS_EMAIL', EMAIL], ['OLS_PW', PW]]) {
   if (!v) { console.error('missing env ' + k); process.exit(2); }
 }
+
+/* Hands-off environments are refused HERE, before a browser is even loaded.
+ *
+ * run_guard.sh already refuses a training label, but that only covers the scheduled path. A
+ * scan started by hand — or by an agent that sourced the wrong env file — used to sail straight
+ * through, log in as a real person, and end in an alert about other people's live work. That is
+ * exactly what happened once. The refusal belongs in the tool, not only in its wrapper.
+ *
+ * Exit 2, not 0: this scan did not run. A 0 here would be indistinguishable from "scanned and
+ * found nothing", which is the one wrong conclusion nobody could see. There is no override flag
+ * on purpose — an override that exists is an override that eventually gets used.
+ */
+const guard = require('./write_guard');
+const handsOff = guard.isProtectedEnv({ label: LABEL, origin: ORIGIN });
+if (handsOff.protected) {
+  console.error('REFUSED — ไม่สแกน environment นี้: ' + handsOff.reasons.join(' · '));
+  console.error('          ตัวสแกนนี้ดูแลเฉพาะ pre-prod. ไม่ได้รัน = ไม่ใช่ผลว่า "สะอาด".');
+  process.exit(2);
+}
+
+const { chromium } = require('playwright');
+const fs = require('fs');
+const path = require('path');
+const rules = require('./name_rules');
 const argv = process.argv.slice(2);
 const JSON_OUT = (() => { const i = argv.indexOf('--json'); return i >= 0 ? argv[i + 1] : null; })();
 const QUIET = argv.includes('--quiet');

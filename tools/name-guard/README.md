@@ -155,9 +155,12 @@ pins them. Seven independent layers, each one enough on its own:
 | **L6** runner refusal | `namecheck/run_fix.sh` | the process, before node starts — covers a script that lost its import |
 | **L7** audit + alert | `namecheck/guard_audit.js` | nothing — it makes the refusal heard: ledger `logs/sfd/WRITE_GUARD_BLOCKED.md` + SFD DM |
 
-Reads are untouched: the scanner still runs against training every 30 minutes. Only writes are
-refused. `GUARD_DRILL=1` labels a rehearsal in the ledger and the alert so a drill is never
-mistaken for a real attempt.
+Reads are **not** untouched any more. Refusing writes was never the whole instruction: a read logs
+in as a real person and ends in an alert about their live work, which is what actually reached the
+QA channel. Since 2026-08-13 `scan.js` calls `isProtectedEnv()` **before it loads a browser** and
+exits `2` — deliberately not `0`, because a refusal that exits clean is indistinguishable from
+"scanned, found nothing". `GUARD_DRILL=1` labels a rehearsal in the ledger and the alert so a drill
+is never mistaken for a real attempt.
 
 The rules live here (public, unit-tested, no hostname in them — `preprod` and `training` are
 enough to tell the two apart). The ledger and the Discord alert live off-repo with the fixers,
@@ -174,15 +177,23 @@ node tools/name-guard/write_guard.test.js
 
 | environment | runs on | cadence |
 |---|---|---|
-| pre-prod (org VPN only) | local `launchd` job on the QA machine | every 30 min |
-| training | **nothing. hands-off.** | never |
+| pre-prod (org VPN only) | local `launchd` job on the QA machine | twice daily, 11:00 and 17:00 |
+| training | **nothing. hands-off.** | never — refused by the runner *and* by `scan.js` itself |
 
 **Training is not scanned.** Real people are working in it, and the owner's instruction is to
 leave it alone — which covers polling and alerting, not just writing. The GitHub Actions job that
 scanned it every 30 minutes was deleted on 2026-08-13 after it kept posting training findings into
 the QA channel; `run_guard.sh` refuses a training label outright, with no override flag, because an
-override that exists is an override that eventually gets used. `write_guard.test.js` fails if any
-workflow reappears that schedules a scan or names a training environment.
+override that exists is an override that eventually gets used. The wrapper alone was not enough,
+though — a scan started by hand, or by an agent that sourced the wrong env file, walked straight
+past it, so `scan.js` now refuses on its own too. `write_guard.test.js` fails if any workflow
+reappears that schedules a scan or names a training environment, if the scanner stops consulting
+the hands-off guard, if that check drifts below the `require('playwright')` line, or if an override
+flag appears in it.
+
+**The same instruction covers the daily health check**, which is a separate job that used to log
+into training twice a day: it now runs on pre-prod only, and drops any env whose key or host looks
+like training even if the config says otherwise. See the OLS project guide.
 
 The pre-prod run goes through the SFD fail-loud harness and needs the machine awake and on the VPN.
 It skips (exit 0) when the host is unreachable — being off the VPN is not a finding, and alerting on

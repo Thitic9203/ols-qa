@@ -382,12 +382,22 @@ The edit path is three calls, and the **method matters** — `request-edit` is a
 `409 learning_path.invalid_status` (it applies to `UNPUBLISHED`). Never leave an LP parked in
 `PENDING_EDIT` — verify each one reads `PUBLISHED` again before calling the work done.
 
-## Daily health check — 12:00 and 18:00, all three environments
+## Daily health check — pre-prod only, 12:00 and 18:00
 
-Twice a day an unattended run sweeps **every** environment (training-on-prod-db, pre-prod, dev) for
-things that make the product unusable — the site not answering, sign-in failing, the catalogue APIs
-not returning data, or a core page rendering blank / erroring. Tool + config live **off-repo** at
-`~/ols-qa-testing-bot/health/` (real hosts and accounts must never enter this public repo).
+Twice a day an unattended run checks **pre-prod** for things that make the product unusable — the
+site not answering, sign-in failing, the catalogue APIs not returning data, or a core page
+rendering blank / erroring. Tool + config live **off-repo** at `~/ols-qa-testing-bot/health/`
+(real hosts and accounts must never enter this public repo).
+
+🔴 **Training is not checked — and dev was dropped with it (owner instruction 2026-08-13).** This
+run used to sweep all three environments; on training that meant a real login and a real probe
+against real people's live work twice a day, which is the same thing the name-guard scan was
+stopped from doing. Training is now refused **three** ways, none of which depends on remembering:
+its entry was deleted from `health_config.json`; `ols_daily_health.js` filters out any env whose
+key **or host** matches `/training/i` and prints what it dropped; and `tools/name-guard/scan.js`
+refuses a hands-off environment before it even loads a browser (`exit 2`, never `0` — a refusal
+must not read as "scanned, clean"). `namecheck/envs.js` no longer carries a training profile and
+**throws** if one is asked for. There is no override flag anywhere on purpose.
 
 | piece | what it is |
 |---|---|
@@ -400,7 +410,7 @@ not returning data, or a core page rendering blank / erroring. Tool + config liv
 `api-catalogue` (media / courses / learning-paths — reads **both** `data` and `items` envelopes) ·
 `page-render` (Playwright over core routes, flags blank page / error boundary / JS exception).
 
-**VPN is brought up, never used as an excuse to skip.** dev and pre-prod sit behind the tunnel. The
+**VPN is brought up, never used as an excuse to skip.** pre-prod sits behind the tunnel. The
 run probes real reachability first, and only if nothing is connected does it try `scutil --nc start`
 on each service in turn, then waits and retries for up to 40 minutes. It **never** issues a start
 while another tunnel reports Connected — doing so tears down an active FortiClient session (the
@@ -413,7 +423,7 @@ not-checked **and the owner is notified** — it is never dropped quietly.
 |---|---|
 | 1 reproduce | fails on every one of N consecutive samples |
 | 2 isolate | which boundary broke (site → API → auth → render), incl. a control call that proves the API itself is alive |
-| 3 cross-env | the same check run on the other reachable environments — env-specific or platform-wide |
+| 3 cross-env | the same check run on any other environment still in the config — with pre-prod alone in it, this layer records "no comparison available" rather than inventing one (training is never used as the comparison) |
 | 4 rule out our side | control probes prove the tester's own network is fine; if not, nothing is blamed on the product |
 | 5 persistence | still failing across the whole watch window, with first-seen / last-seen / duration recorded |
 

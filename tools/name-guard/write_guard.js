@@ -185,6 +185,28 @@ async function armContext(ctx, env, opts) {
   return { armed: true, protectedEnv };
 }
 
+/**
+ * Is this environment hands-off entirely — not merely unwritable, but not to be touched at all?
+ *
+ * Writes were never the whole risk. A read still logs in as somebody, still consumes a real
+ * session, and still ends with an alert about other people's live work. The owner's instruction
+ * is broader than the write guard: training is not scanned, not probed, not alerted on. This is
+ * the one predicate every read-only tool asks before it starts, so "hands-off" has a single
+ * definition instead of one per script.
+ *
+ * @param {{key?:string,label?:string,origin?:string}} env
+ * @returns {{protected:boolean, label:string, host:string, reasons:string[]}}
+ */
+function isProtectedEnv(env) {
+  const e = env || {};
+  const label = String(e.label || e.key || '').trim();
+  const host = hostOf(String(e.origin || '').trim());
+  const reasons = [];
+  if (PROTECTED_LABEL.test(label)) reasons.push('env "' + label + '" คือ training — ห้ามแตะ (สแกน/โพรบ/แจ้งเตือน) เพราะมีผู้ใช้งานจริง');
+  if (PROTECTED_HOST.test(host)) reasons.push('origin host "' + host + '" คือ training — ห้ามแตะ แม้ label จะเขียนว่าอย่างอื่น');
+  return { protected: reasons.length > 0, label, host, reasons };
+}
+
 module.exports = {
   WRITABLE_ENVS,
   PROTECTED_LABEL,
@@ -192,6 +214,7 @@ module.exports = {
   READ_METHODS,
   WriteGuardError,
   classifyEnv,
+  isProtectedEnv,
   assertWritable,
   armContext,
   isReadMethod,

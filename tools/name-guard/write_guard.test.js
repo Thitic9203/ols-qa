@@ -178,6 +178,35 @@ t('L6 no workflow runs a mutator or passes --apply', () => {
   }
 });
 
+// ---- hands-off: reads are refused too, not only writes ------------------------------
+// The write guard alone was not enough. A read logs in as a real person and ends in an alert
+// about their live work — so the scanner refuses the environment outright. These pin that.
+t('hands-off flags a training label', () => {
+  const v = G.isProtectedEnv(TRAINING);
+  assert.strictEqual(v.protected, true);
+  assert.ok(v.reasons.length > 0);
+});
+t('hands-off catches a training host hidden behind an innocent label', () => {
+  assert.strictEqual(G.isProtectedEnv({ key: 'preprod', origin: 'https://obectraining69-ols.example.test' }).protected, true);
+});
+t('hands-off catches a renamed training label (training70, obectraining…)', () => {
+  ['training70', 'obectraining69', 'TRAINING'].forEach((k) => {
+    assert.strictEqual(G.isProtectedEnv({ key: k, origin: 'https://x.example.test' }).protected, true, k);
+  });
+});
+t('hands-off leaves pre-prod alone', () => {
+  assert.strictEqual(G.isProtectedEnv(PREPROD).protected, false);
+});
+t('scan.js refuses a hands-off env before it loads a browser, and exits 2 not 0', () => {
+  const src = fs.readFileSync(path.join(__dirname, 'scan.js'), 'utf8');
+  const guardAt = src.indexOf('isProtectedEnv');
+  const playwrightAt = src.indexOf("require('playwright')");
+  assert.ok(guardAt > 0, 'scan.js does not consult the hands-off guard');
+  assert.ok(guardAt < playwrightAt, 'the refusal must come before playwright loads');
+  assert.ok(/handsOff\.protected[\s\S]{0,400}process\.exit\(2\)/.test(src), 'a refused scan must exit 2 — exit 0 reads as "scanned, clean"');
+  assert.ok(!/GUARD_FORCE|--force/.test(src), 'scan.js must not carry an override flag');
+});
+
 // ---- read/write classification ------------------------------------------------------
 t('read methods are exactly GET/HEAD/OPTIONS', () => {
   ['GET', 'head', 'Options'].forEach((m) => assert.ok(G.isReadMethod(m)));
