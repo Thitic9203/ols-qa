@@ -316,6 +316,24 @@ not a QA artefact. Tool + rules: [`tools/name-guard/`](../tools/name-guard/READM
 | public training env | GitHub Actions `.github/workflows/name-guard.yml`, every 30 min | free (no minute cap on public repos), needs no machine of ours awake |
 | pre-prod | local launchd `com.thitichaya.ols-name-guard-preprod`, every 30 min | pre-prod resolves to a **private address, VPN only** → a hosted runner cannot reach it. Registered in SFD so it cannot fail silently; skips (exit 0) when off VPN |
 
+### 🔴 List endpoints disagree on the array key — `data` vs `items` (2026-08-13)
+
+| endpoint | envelope |
+|---|---|
+| `/api/media` · `/api/achievements` | `{ "data": [...], "total", "page", "limit" }` |
+| `/api/courses` · `/api/learning-paths` | `{ "items": [...], "total", "page", "limit" }` |
+
+Read with `j.data \|\| j.items \|\| (Array.isArray(j) ? j : [])` — always. A reader that only
+looks at `data` gets an **empty course/LP list next to a healthy `total`** (`200 n=0 total=67`),
+which is indistinguishable from a backend outage. That exact illusion was diagnosed as an
+"intermittent empty catalogue / index rebuild" for a while before anyone printed the raw body;
+the API was never at fault. Pinned by `tools/name-guard/list_envelope.test.js`.
+
+`page` is 1-based (`page=0` → 400) and `limit` maxes at 50 (`limit=100` → 400).
+
+**Rule that follows:** before theorising about a remote system, print the raw response body and
+headers once. One `console.log` of the envelope would have replaced an hour of hypotheses.
+
 ### Write-model facts learned while fixing names (2026-08-13)
 
 - **No `PATCH` exists** on `/api/achievements/{id}`, `/api/media/{id}`, `/api/courses/{id}`,
