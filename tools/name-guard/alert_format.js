@@ -44,8 +44,19 @@ function build(r) {
   // One content item can surface twice (public list + its creator's library) — report it once.
   const seenId = new Set();
   const uniq = r.findings.filter((f) => (seenId.has(f.id) ? false : seenId.add(f.id)));
-  const hard = uniq.filter((f) => f.hits.some((h) => h.rule !== 'duplicate-name'));
-  const dupTitles = [...new Set(uniq.filter((f) => !hard.includes(f)).map((f) => f.title))];
+  const isCross = (f) => f.hits.every((h) => h.rule === 'duplicate-name-cross-creator');
+  const crossTitles = [...new Set(uniq.filter(isCross).map((f) => f.title))];
+  const rest = uniq.filter((f) => !isCross(f));
+  const hard = rest.filter((f) => f.hits.some((h) => h.rule !== 'duplicate-name'));
+  const dupTitles = [...new Set(rest.filter((f) => !hard.includes(f)).map((f) => f.title))];
+  if (!hard.length && !dupTitles.length) {
+    return '**Name guard:** [Content Naming][' + esc(r.env) + '] ไม่พบชื่อที่ต้องแก้\n'
+      + q('Environment', esc(r.env)) + '\n'
+      + q('Status', 'Fixed') + '\n'
+      + q('Scope', esc(scope)) + '\n'
+      + q('FYI', 'ชื่อพ้องข้ามผู้สร้าง ' + crossTitles.length + ' ชื่อ — เนื้อหาคนละชิ้น แก้แทนเจ้าของไม่ได้: '
+        + crossTitles.slice(0, 4).map((x) => '`' + esc(x) + '`').join(' · '));
+  }
   const bullet = (s) => '> • ' + s;
 
   const RULE_TH = {
@@ -77,6 +88,9 @@ function build(r) {
     out.push('> **Duplicate titles:**');
     out.push(...dupTitles.slice(0, 6).map((t) => bullet('`' + esc(t) + '`')));
     if (dupTitles.length > 6) out.push(bullet('และอีก ' + (dupTitles.length - 6) + ' ชื่อ'));
+  }
+  if (crossTitles.length) {
+    out.push(q('FYI', 'ชื่อพ้องข้ามผู้สร้าง ' + crossTitles.length + ' ชื่อ (เนื้อหาคนละชิ้น ต้องให้เจ้าของปรับเอง)'));
   }
   out.push('> **Action:**');
   out.push(bullet('เปลี่ยนเป็นชื่อที่ผู้เรียนเห็นแล้วเข้าใจ หรือเอารายการที่ซ้ำออก'));

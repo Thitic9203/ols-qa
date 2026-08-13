@@ -118,8 +118,17 @@ function checkText(text, opts) {
   return findings;
 }
 
-/** Duplicate titles inside one source list — a name a customer sees twice is a defect.
- *  items: [{id,title,...}] → [{rule:'duplicate-name', ...}] appended per offending item.
+/** Duplicate titles inside one source list.
+ *
+ *  Two cases, deliberately separated — they need different actions:
+ *   - same owner  → `duplicate-name`: the same creator published the title twice. Ours to fix
+ *     (rename or unpublish the extra).
+ *   - different owners → `duplicate-name-cross-creator`: two creators independently chose the
+ *     same title for different content. We cannot edit another creator's media (the API answers
+ *     403 media.not_owner even to a SYSTEM_ADMIN), and their content is legitimate — so this is
+ *     reported for the owners' attention, not counted as something we failed to fix.
+ *
+ *  items: [{id,title,userId?,ownerId?,channelName?}] → [{item, hit}] per offending item.
  */
 function findDuplicates(items) {
   const byName = new Map();
@@ -129,12 +138,25 @@ function findDuplicates(items) {
     if (!byName.has(k)) byName.set(k, []);
     byName.get(k).push(it);
   }
+  const ownerOf = (it) => String(it.userId || it.ownerId || '');
   const out = [];
-  for (const [k, group] of byName) {
+  for (const [, group] of byName) {
     if (group.length < 2) continue;
+    const owners = new Set(group.map(ownerOf));
+    const cross = owners.size > 1;
+    const channels = [...new Set(group.map((g) => g.channelName).filter(Boolean))];
     for (const it of group) {
-      out.push({ item: it, hit: { field: 'title', rule: 'duplicate-name', value: it.title,
-        why: 'ชื่อซ้ำกับอีก ' + (group.length - 1) + ' รายการ (' + group.map((g) => String(g.id).slice(0, 8)).join(', ') + ')' } });
+      out.push({
+        item: it,
+        hit: {
+          field: 'title',
+          rule: cross ? 'duplicate-name-cross-creator' : 'duplicate-name',
+          value: it.title,
+          why: cross
+            ? 'ชื่อพ้องกับผู้สร้างรายอื่น' + (channels.length ? ' (' + channels.join(' / ') + ')' : '') + ' — เนื้อหาคนละชิ้น แก้แทนเจ้าของไม่ได้ ต้องแจ้งให้เจ้าของปรับชื่อ'
+            : 'ชื่อซ้ำกับอีก ' + (group.length - 1) + ' รายการของเจ้าของเดียวกัน (' + group.map((g) => String(g.id).slice(0, 8)).join(', ') + ')',
+        },
+      });
     }
   }
   return out;

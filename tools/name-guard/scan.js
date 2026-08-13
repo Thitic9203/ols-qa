@@ -41,6 +41,17 @@ const SOURCES = PUBLIC_SOURCES.concat(argv.includes('--own') ? OWN_SOURCES : [])
 
 async function ssoLogin(ctx) {
   const page = await ctx.newPage();
+  /* Capture what the auth backend actually answered. Without this a backend outage is
+     reported as "not authenticated after SSO login", which reads like our bug — the real
+     message ("Oracle server refused connection") is what makes the alert actionable. */
+  const authReplies = [];
+  page.on('response', async (res) => {
+    if (!/\/auth\/(login-with-email|session)/.test(res.url())) return;
+    let body = ''; try { body = await res.text(); } catch (_) {}
+    let msg = body.replace(/\s+/g, ' ').slice(0, 160);
+    try { const j = JSON.parse(body); if (j && j.message) msg = j.message; } catch (_) {}
+    authReplies.push(res.status() + ' ' + res.url().split('/').slice(-1)[0] + ': ' + msg);
+  });
   await page.goto(SSO, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await sleep(2500);
   const r = await page.evaluate(async ({ email, pw }) => {
@@ -62,7 +73,10 @@ async function ssoLogin(ctx) {
   }, { email: EMAIL, pw: PW });
   if (r.err) throw new Error('SSO login failed: ' + r.err);
   await sleep(6000);
+  // the SPA retries the login, so the same failure arrives more than once — report it once
+  const failed = [...new Set(authReplies.filter((x) => !/^2\d\d /.test(x)))];
   await page.close();
+  return failed;
 }
 
 function apiCall(page, expectOrigin) {
@@ -112,7 +126,7 @@ async function pageAll(call, urlBase) {
   const report = { env: LABEL, startedAt: new Date().toISOString(), sources: {}, findings: [] };
   try {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, ignoreHTTPSErrors: true });
-    await ssoLogin(ctx);
+    const authErrors = await ssoLogin(ctx);
     const page = await ctx.newPage();
     await page.goto(ORIGIN + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
     await sleep(2500);
@@ -121,7 +135,10 @@ async function pageAll(call, urlBase) {
     const call = apiCall(page, ORIGIN);
     const s = (await call('GET', '/api/auth/get-session')).json;
     report.session = s && s.user ? { role: s.user.role } : null;   // never log the account itself
-    if (!report.session) throw new Error('not authenticated after SSO login');
+    if (!report.session) {
+      throw new Error('not authenticated after SSO login'
+        + (authErrors && authErrors.length ? ' — auth backend replied: ' + authErrors.join(' | ') : ''));
+    }
 
     const push = (src, it, hits) => {
       const found = report.findings.find((f) => f.id === it.id && f.source === src.key);
@@ -195,6 +212,8 @@ async function pageAll(call, urlBase) {
     report.finishedAt = new Date().toISOString();
     // A source we could not read in full means the scan did not cover the catalogue. Report
     // that as "could not run", never as a pass.
+    // cross-creator name clashes are reported, not counted as work we owe
+    report.actionable = report.findings.filter((f) => f.hits.some((h) => h.rule !== 'duplicate-name-cross-creator')).length;
     const broken = Object.entries(report.sources).filter(([, v]) => v.error);
     if (broken.length) {
       report.ok = false;
@@ -216,11 +235,11 @@ async function pageAll(call, urlBase) {
     console.log('ENV', report.env, '| session', JSON.stringify(report.session));
     console.log('SOURCES', JSON.stringify(report.sources));
     if (!report.ok) console.log('SCAN_ERROR', report.error);
-    console.log('FINDINGS', report.findings.length);
+    console.log('FINDINGS', report.findings.length, '| actionable', report.actionable);
     for (const f of report.findings) {
       console.log('- [' + f.source + '/' + (f.status || '-') + '] ' + f.id + '  "' + f.title + '"');
       for (const h of f.hits) console.log('    · ' + h.field + ' · ' + h.rule + ' · ' + h.why);
     }
   }
-  process.exit(report.ok ? (report.findings.length ? 1 : 0) : 2);
+  process.exit(report.ok ? (report.actionable ? 1 : 0) : 2);
 })();
