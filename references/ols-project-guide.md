@@ -142,6 +142,39 @@ Customer-facing regression sheet — HI-QA runs delivery-gate regression from it
 | **Trimmed to 125 (2026-07-24)** | Pre-delivery cut 307 → **125** cases, No. renumbered 1–125. Only rows still `READY TO TEST` were deleted; every row already carrying a verdict (PASSED/FAILED/SKIPPED, 32 rows + their evidence links) was untouched. Selection = happy path + core lifecycle + main validation per feature; status-permutation duplicates reduced to one representative each. Coverage was re-reviewed afterwards and 7 cases swapped back in to close zero-coverage concerns (consent-not-accepted, permission-negative on another creator's content, status-filter tabs, duplicate vote, admin reported-list, LP publish with an unavailable course). **Before appending anything (e.g. `regression_sync.py`), re-check the trim intent** — a blind append re-inflates the suite past 125. Full pre-trim backup + the list of removed cases live off-repo at `~/ols-qa-testing-bot/out/uat-trim-2026-07-24/`. |
 | Sync (Lot1) | 🛑 **RETIRED — do NOT run `regression_sync.py` against the Lot1 tab.** The `OLS: TC List (Lot1)` tab is now **human-curated** (125 cases, customer-readable names, no `OLS-<n> TC_<n>:` prefix). `regression_sync.py` dedups by that prefix → it now matches **0** existing rows and would blind-append all ~400 candidates, re-inflating past the trimmed 125 (only the coercion guard on a `-` cell currently stops it). Point-fix applied 2026-08-05: `TGT_TAB` corrected to the renamed tab + `canon()` `<LEGACY_SSO_NAME>`→NDLP wired in, but the dedup/curation mismatch is a product decision — revive only after re-curating. Live regression sync = **Lot2** (`lot2_regression_auto.py`, hourly, runs clean). Auto-schedule disabled 2026-07-23. Details: [regression-tc-sync.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/regression-tc-sync.md) |
 
+## Bug-status sync — `Bug report by HI` tab (hourly, added 2026-08-16)
+
+The customer's cross-system bug log lives in a **separate tab of the same customer UAT file**:
+`Bug report by HI` (gid `1824188502`, 13 columns) — one row per bug across ELMS · CBMS · EvMS ·
+**OLS**. An hourly job mirrors each OLS bug's Jira reality into it so HI-QA reads a current board
+without asking. Tool is off-repo: `~/ols-qa-testing-bot/bugsheet_status_sync.py`
+(job `com.thitichaya.ols-bugsheet-sync`, registered in SFD as `periodic`/3600s).
+
+| Field | Value |
+|-------|-------|
+| Columns | `A No.` · `B System` · `C Bug on NH board` · `D Bug on SKL board` · `E Topic` · `F Priority` · `G Reporter` · `H Image/VDO` · **`I Bug status`** · `J Priority for Dev` · `K SKL-Dev PICK` · `L SKL-QA Comment` · `M Remark` |
+| Write scope | **col I only, on `System = OLS` rows only.** Jira key is read from `D` (must match `^OLS-\d+$`). Every other column and every ELMS/CBMS/EvMS row is out of scope — enforced, not merely intended. |
+| Decision table | assignee = `<SKL_PO_ACCOUNT_ID>` → `Awaiting SKL-PO Confirmation` · anyone else **or unassigned** with Jira status `READY TO TEST`/`TESTING`/`Done` → `READY TO TEST` · anyone else/unassigned, any other status → `FIXING BY SKL-DEV` |
+| Matched by | **accountId, never display name** (PM-005 — a name goes stale, an accountId does not). Real id → `~/.ols-qa-secrets/` § Bug-status sheet sync. |
+| Never overwritten | `PASSED` · `CANCELLED` · `IMPROVEMENT` — human verdicts. The bot only replaces in-flight states (`OPEN`, `RECHECK BY SKL-QA`, `FIXING BY SKL-DEV`, `READY TO TEST`, `Awaiting SKL-PO Confirmation`, blank). |
+| Skipped + reported | OLS rows whose `D` is blank cannot be matched to Jira; they are listed in the run log every time, never guessed at. |
+
+### 🔴 Seven-layer write gate (each layer alone stops a bad write; all fail closed)
+
+| ชั้น | ตรวจ | ผ่าน = |
+|:--:|:--|:--|
+| **1** file + tab | `spreadsheetId` ตรงค่าคงที่ · tab title **และ** gid ยืนยันสดทั้งคู่ · deny-list gid Lot1/Lot2 + 6 ไฟล์ frozen | ชี้ถูกไฟล์ถูกแท็บเท่านั้น |
+| **2** header | row 1 ต้องตรง pinned header 13 ช่อง **เป๊ะ** · index ของ `Bug status` resolve จาก header ทุกรอบ ห้าม hardcode | คอลัมน์เลื่อน = abort ไม่ใช่เขียนผิดช่อง |
+| **3** row eligibility | `B == "OLS"` **และ** `D` แมตช์ `^OLS-\d+$` **และ** Jira ตอบคีย์นั้นกลับมาจริง | ครบ 3 ถึงแตะ · แถวระบบอื่นไม่เข้าแม้แต่ใน log |
+| **4** payload shape | ทุก range ต้อง `'Bug report by HI'!I<row>` เซลล์เดียว · row ∈ เซ็ตชั้น 3 · เกิน `--max-changes` (25) = abort | range กว้าง/ทั้งแถว เขียนไม่ได้ทางกลไก |
+| **5** value | ค่า ∈ 3 สตริงที่อนุญาต · ข้าม verdict ของคน · ค่าตรงอยู่แล้ว = ไม่เขียน | ค่ามั่วเขียนไม่ได้ · งานคนไม่ถูกลบ |
+| **6** whole-tab diff | snapshot `A1:M` ก่อน+หลัง (เก็บลงดิสก์ กู้คืนได้) · เซ็ตเซลล์ที่ต่างต้อง **เท่ากับที่ตั้งใจเป๊ะ** | เกินมา 1 ช่อง = หยุด + alert |
+| **7** read-back | อ่านกลับทีละเซลล์เทียบค่าที่ตั้งใจ · mismatch/exception = exit≠0 → SFD DM · **dry-run เป็น default** ต้อง `--write` | เฟลเงียบไม่ได้ |
+
+Tests: `~/ols-qa-testing-bot/tests/test_bugsheet_status_sync.py` — 36 cases pinning the decision
+table and all seven layers. Run them green before touching the script; a layer that stops refusing
+is a test failure, which is the point.
+
 ## Test-type deliverable sheets — `sync-tc-result` (System / Integration / Unit)
 
 Customer-facing deliverables (one spreadsheet per test type, **`- 03 OLS`** variant — CBMS/EvMS/ELMS
