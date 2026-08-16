@@ -171,7 +171,7 @@ without asking. Tool is off-repo: `~/ols-qa-testing-bot/bugsheet_status_sync.py`
 | **6** whole-tab diff | snapshot `A1:M` ก่อน+หลัง (เก็บลงดิสก์ กู้คืนได้) · เซ็ตเซลล์ที่ต่างต้อง **เท่ากับที่ตั้งใจเป๊ะ** | เกินมา 1 ช่อง = หยุด + alert |
 | **7** read-back | อ่านกลับทีละเซลล์เทียบค่าที่ตั้งใจ · mismatch/exception = exit≠0 → SFD DM · **dry-run เป็น default** ต้อง `--write` | เฟลเงียบไม่ได้ |
 
-Tests: `~/ols-qa-testing-bot/tests/test_bugsheet_status_sync.py` — 36 cases pinning the decision
+Tests: `~/ols-qa-testing-bot/tests/test_bugsheet_status_sync.py` — 35 cases pinning the decision
 table and all seven layers. Run them green before touching the script; a layer that stops refusing
 is a test failure, which is the point.
 
