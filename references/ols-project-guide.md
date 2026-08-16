@@ -166,14 +166,18 @@ without asking. Tool is off-repo: `~/ols-qa-testing-bot/bugsheet_status_sync.py`
 | **1** file + tab | `spreadsheetId` ตรงค่าคงที่ · tab title **และ** gid ยืนยันสดทั้งคู่ · deny-list gid Lot1/Lot2 + 6 ไฟล์ frozen | ชี้ถูกไฟล์ถูกแท็บเท่านั้น |
 | **2** header | row 1 ต้องตรง pinned header 13 ช่อง **เป๊ะ** · index ของ `Bug status` resolve จาก header ทุกรอบ ห้าม hardcode | คอลัมน์เลื่อน = abort ไม่ใช่เขียนผิดช่อง |
 | **3** row eligibility | `B == "OLS"` **และ** `D` แมตช์ `^OLS-\d+$` **และ** Jira ตอบคีย์นั้นกลับมาจริง | ครบ 3 ถึงแตะ · แถวระบบอื่นไม่เข้าแม้แต่ใน log |
-| **4** payload shape | ทุก range ต้อง `'Bug report by HI'!I<row>` เซลล์เดียว · row ∈ เซ็ตชั้น 3 · เกิน `--max-changes` (25) = abort | range กว้าง/ทั้งแถว เขียนไม่ได้ทางกลไก |
+| **4** payload shape | ทุก range ต้อง `'Bug report by HI'!I<row>` เซลล์เดียว · row ∈ เซ็ตชั้น 3 · เกินเพดาน = abort — **เพดานปริยาย = จำนวนแถว eligible ของรอบนั้น ไม่ใช่เลขตายตัว** (เลขตายตัวจะกลายเป็นตัวล็อกงานตอนบั๊กโตขึ้น) · `--max-changes N` ทับได้ | range กว้าง/ทั้งแถว เขียนไม่ได้ทางกลไก · งานโตแล้วไม่ตาย |
 | **5** value | ค่า ∈ 3 สตริงที่อนุญาต · ข้าม verdict ของคน · ค่าตรงอยู่แล้ว = ไม่เขียน | ค่ามั่วเขียนไม่ได้ · งานคนไม่ถูกลบ |
-| **6** whole-tab diff | snapshot `A1:M` ก่อน+หลัง (เก็บลงดิสก์ กู้คืนได้) · เซ็ตเซลล์ที่ต่างต้อง **เท่ากับที่ตั้งใจเป๊ะ** | เกินมา 1 ช่อง = หยุด + alert |
+| **6** whole-tab diff | อ่าน baseline **ใหม่ทันทีก่อนเขียน** (ไม่ใช้ของต้นรอบ — ระหว่างนั้นมี Jira call คั่น) + อ่านซ้ำหลังเขียน · snapshot ทั้งคู่ตั้งชื่อด้วย run stamp เก็บ 20 รอบล่าสุด · **ในคอลัมน์ที่เราเขียนได้** เซ็ตที่เปลี่ยนต้องเท่ากับที่ตั้งใจเป๊ะ (เกิน = fatal, หาย = fatal) · คอลัมน์อื่นชั้น 4 เขียนไม่ได้อยู่แล้ว → รายงานว่า "คนอื่นแก้ระหว่างรอบ" ไม่ใช่ fail | เกิน/หาย 1 ช่อง = หยุด + alert · คนพิมพ์ col L/M พร้อมกันไม่ทำให้ alarm ผิด |
 | **7** read-back | อ่านกลับทีละเซลล์เทียบค่าที่ตั้งใจ · mismatch/exception = exit≠0 → SFD DM · **dry-run เป็น default** ต้อง `--write` | เฟลเงียบไม่ได้ |
 
-Tests: `~/ols-qa-testing-bot/tests/test_bugsheet_status_sync.py` — 35 cases pinning the decision
-table and all seven layers. Run them green before touching the script; a layer that stops refusing
-is a test failure, which is the point.
+**ช่วง `A1:M` เอามาจาก `rowCount` สดของแท็บทุกรอบ ห้าม hardcode** — เพดานตายตัวจะซ่อนแถวที่เกินไปเงียบๆ (ไม่โผล่ทั้งใน eligible และ skipped และ diff ก็เทียบ grid ที่ตัดเท่ากันสองอัน = ไม่มีสัญญาณเลย).
+
+**plist ต้องชี้ `StandardErrorPath` ไปไฟล์เดียวกับ `StandardOutPath`** — `run_workflow.sh` ส่ง log ไฟล์เดียวให้ `fail_notify.py` ไปตัด tail; ถ้าแยก stream ไว้ โนติจะบอกแค่ `rc=3` โดยไม่มีเหตุผล เพราะทั้ง gate refusal และ traceback ออกทาง stderr หมด (ยืนยันจริงด้วย probe plist: สอง stream ลงไฟล์เดียวกันได้).
+
+Tests: `~/ols-qa-testing-bot/tests/test_bugsheet_status_sync.py` — 47 cases pinning the decision
+table and all seven layers, including the plist's stream routing. Run them green before touching
+the script; a layer that stops refusing is a test failure, which is the point.
 
 ## Test-type deliverable sheets — `sync-tc-result` (System / Integration / Unit)
 
