@@ -27,6 +27,26 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/([\\`*_~|>])/g, '\\$1');
 }
 
+/* Flatten a value that may arrive with newlines into something a one-line bullet can hold.
+ *
+ * The alert is validated line by line (alert_gate.js), so a multi-line value does not merely
+ * look untidy — its extra lines are read as stray lines and the whole alert is refused. A
+ * Playwright failure is exactly that shape:
+ *
+ *   page.goto: Timeout 60000ms exceeded.
+ *   Call log:
+ *     - navigating to "https://…", waiting until "domcontentloaded"
+ *
+ * On 2026-08-15 that cost the QA channel both of the day's failure alerts: the gate rejected
+ * them and nothing was posted. (The SFD DM backstop still fired, so it was not silent — but
+ * the channel alert is the deliverable, and it never arrived.) Collapse rather than reject:
+ * the reason belongs in the message, on one line.
+ */
+function oneLine(s, max = 300) {
+  const flat = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+  return flat.length > max ? flat.slice(0, max - 1) + '…' : flat;
+}
+
 // Thai names for what the reader sees on screen, in a stable order.
 const TYPE_TH = {
   LIVESTREAM: 'สื่อไลฟ์สด',
@@ -90,7 +110,7 @@ function build(r) {
       q('Media Type', 'ยังไม่ทราบ — สแกนไม่สำเร็จ'),
       q('Status', 'Failed'),
       blockLabel('Solution'),
-      bullet('เข้าไปตรวจว่าทำไมสแกนไม่ผ่าน แล้วรันใหม่: ' + esc(r.error || 'ไม่ทราบสาเหตุ')),
+      bullet('เข้าไปตรวจว่าทำไมสแกนไม่ผ่าน แล้วรันใหม่: ' + esc(oneLine(r.error) || 'ไม่ทราบสาเหตุ')),
       bullet('รอบนี้ยังไม่รู้ว่ามีชื่อไม่เหมาะสมหรือไม่ — สแกนไม่ครบไม่นับว่าผ่าน'),
       blockLabel('Prevention'),
       ...preventionBullets().map(bullet),

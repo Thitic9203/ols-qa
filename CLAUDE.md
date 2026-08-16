@@ -336,7 +336,7 @@ references/                    ← shared rule fragments, linked by skills (not 
 | `tools/name-guard/write_guard.js` | **writes are allowed in pre-prod only** — seven independent layers, each enough on its own |
 | `tools/name-guard/alert_format.js` · `notify.js` | the QA-channel alert: fixed message shape, Discord markdown escaped, no DMs |
 | `tools/name-guard/alert_dedup.js` | posts when the **findings change**, not when the scan runs — the scan fires every 30 min and findings outlive that |
-| `tools/name-guard/*.test.js` | 5 suites pinning the above. Plain `node`, no framework |
+| `tools/name-guard/*.test.js` | 7 suites pinning the above. Plain `node`, no framework |
 | `.github/workflows/name-guard.yml` | the training-env run, every 30 min (free on a public repo) |
 | `scripts/check-no-secrets.sh` | the secret guard the git hooks call — see the secret rule above |
 

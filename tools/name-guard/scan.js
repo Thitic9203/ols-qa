@@ -98,6 +98,43 @@ async function ssoLogin(ctx) {
   return failed;
 }
 
+/* Land on the app after logging in, retrying once.
+ *
+ * Once the SSO cookies exist, ORIGIN + '/' 307-redirects to a role-dependent, server-rendered
+ * page (for an ADMIN_CONTENT account, the pending-review queue). That page is usually a few
+ * seconds and occasionally slower than the 60s timeout: both scheduled pre-prod runs on
+ * 2026-08-15 died with `page.goto: Timeout 60000ms exceeded` while the unauthenticated curl
+ * probe in run_guard.sh — which never follows that redirect — reported the site perfectly
+ * reachable. The stall is intermittent: a failed navigation and a 5-second one were observed
+ * minutes apart on the same account.
+ *
+ * Two things NOT to do here, both measured rather than assumed:
+ *   · Do not point this at an API path to skip the render. The session is only established by
+ *     loading a real app page; an /api/auth/get-session boot returns a null session. Verified
+ *     A/B against pre-prod on 2026-08-16 — the API-only variant scanned nothing.
+ *   · Do not raise the timeout. That hides a page that can stall for minutes behind a scanner
+ *     with no business loading it.
+ *
+ * So: retry once. If both attempts time out the scan still fails loudly, which is the honest
+ * outcome — pre-prod really was unusable for two solid minutes.
+ */
+async function gotoApp(page) {
+  let last = null;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      await page.goto(ORIGIN + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+      if (attempt > 1) console.error('nav ok on attempt ' + attempt);
+      return;
+    } catch (e) {
+      last = e;
+      console.error('nav attempt ' + attempt + ' failed: '
+        + String((e && e.message) || e).split('\n')[0]);
+      await sleep(3000);
+    }
+  }
+  throw last;
+}
+
 function apiCall(page, expectOrigin) {
   return async (method, urlPath) => page.evaluate(async ({ method, urlPath, expectOrigin }) => {
     if (location.origin !== expectOrigin) return { __originViolation: location.origin };
@@ -192,7 +229,7 @@ async function checkCoversLoad(page, items) {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, ignoreHTTPSErrors: true });
     const authErrors = await ssoLogin(ctx);
     const page = await ctx.newPage();
-    await page.goto(ORIGIN + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+    await gotoApp(page);
     await sleep(2500);
     const liveOrigin = await page.evaluate(() => location.origin);
     if (liveOrigin !== ORIGIN) throw new Error('origin mismatch after login');
@@ -253,7 +290,7 @@ async function checkCoversLoad(page, items) {
         await sleep(6000); await op.close();
 
         const opg = await octx.newPage();
-        await opg.goto(ORIGIN + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await gotoApp(opg);
         await sleep(2500);
         const ocall = apiCall(opg, ORIGIN);
         const who = (await ocall('GET', '/api/auth/get-session')).json;
