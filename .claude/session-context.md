@@ -1,3 +1,21 @@
+# WIP — MP4 tab live-Drive sync every 5 min, **expires 2026-08-16 13:00** ⏳
+
+Job `com.thitichaya.ols-vdo-sheet-sync` runs `vdo_sheet_sync.py --apply` every 5 min: counts every
+VDO folder **live in Drive** and rewrites `MP4-Sys, Int, Unit` cols D–G + the TOTAL row. Armed
+2026-08-16 09:38, verified rc=0 twice (~15 s/run) and read back from the sheet.
+
+**It removes itself at 13:00** — deregisters from `sfd/workflows.json`, retires its plist to
+`*.expired-<stamp>`, boots out. So after that time: **no plist, no registry entry, and that is
+correct** — do not "fix" it back. Only `run_vdo_sheet_sync.sh` + `logs/vdo_sync_until.epoch` stay
+behind, ready to re-arm for the next capture batch.
+
+Mechanics, teardown order, and how to revive it: `references/ols-project-guide.md`
+§ "Every-5-minute live-Drive sync into the MP4 tab".
+
+Baseline at arm time: TOTAL **824 / 890** files, 66 remaining.
+
+---
+
 # WIP — `/sync-tc-result` (all 3 LIVE · hourly job hardened against 400 + hang · 2026-07-30)
 
 **แผน (private):** https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/2026-07-26-sync-tc-result.md
