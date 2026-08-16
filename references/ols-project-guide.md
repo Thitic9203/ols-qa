@@ -12,7 +12,7 @@ AI reads this file before asking any OLS-related questions.
 | Project ID | `10791` |
 | Board ID | `818` |
 | Board URL | https://<ORG>.atlassian.net/jira/software/projects/OLS/boards/818/backlog |
-| QA test-ready filter | https://<ORG>.atlassian.net/issues?filter=21323 — candidate tickets for AI testing; pick those with **Status = READY TO TEST** and **TC Status = QA Reviewed** |
+| QA test-ready query | Run this JQL in Jira issue search — candidate tickets for AI testing; pick those with **Status = READY TO TEST** and **TC Status = QA Reviewed**.<br>`parent in (OLS-3,OLS-4,OLS-5,OLS-6,OLS-7,OLS-17,OLS-9,OLS-8,OLS-12,OLS-11,OLS-1,OLS-2,OLS-10,OLS-13,OLS-14,OLS-15) AND issuetype in (Story, Bug, Task) AND (sprint in openSprints() OR sprint in futureSprints()) AND status in ("READY TO TEST","TESTING") ORDER BY created DESC`<br>*(the 16 epics are the Lot 1+2 set — widen the `parent in (…)` list for work outside those epics. This replaces saved filter `21323`, deleted 2026-08-16 in the filter cleanup; the query text is that filter's JQL verbatim.)* |
 
 ### Workflow statuses
 
