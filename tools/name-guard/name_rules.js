@@ -10,6 +10,11 @@ const TEST_PATTERNS = [
   /\bqa[_\-]?ols\b/i,
   /\[\s*qa[^\]]*\]/i,
   /\btest(ing|est|case|s)?\b/i,
+  // The automated suite marks its own fixtures `[E2E] …`. Its Thai names happened to carry
+  // "ทดสอบ" as well, so this went unnoticed until 2026-08-17, when 18 `[E2E]` courses were found
+  // sitting PUBLISHED on shared pre-prod (DELETE answers 409 for anything ever published, so the
+  // suite's cleanup had been failing silently). An English-only `[E2E] course` matched nothing here.
+  /\be2e\b/i,
   /\btc[_\-]?\d+\b/i,
   /ทดสอบ/,
   /ทดลองระบบ/,
