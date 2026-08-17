@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 'use strict';
-/* Pins the write guard: the training environment must be unwritable through every route.
+/* Pins the write guard: NO environment is writable, through any route.
  *
- * This is layer 6 of the guard itself — the checks below are what stops a later edit from
- * quietly widening the allowlist, dropping a denylist, or letting the scheduled cloud job
- * start passing --apply. A green run here is the evidence that training is still read-only.
+ * Since 2026-08-17 that includes pre-prod — the customer is testing on it, so the toolkit is
+ * read-only everywhere. Training remains denied by name and by host on top of that.
+ *
+ * This is a layer of the guard itself — the checks below are what stops a later edit from
+ * quietly re-arming the kill-switch, widening the allowlist, dropping a denylist, or letting
+ * the scheduled cloud job start passing --apply. A green run here is the evidence that no
+ * environment can be written to, and that the read-only scan still can run.
  *
  *   node tools/name-guard/write_guard.test.js
  */
@@ -31,9 +35,30 @@ function t(name, fn) {
 const PREPROD = { key: 'preprod', origin: 'https://preprod-ols.example.test' };
 const TRAINING = { key: 'training69', origin: 'https://obectraining69-ols.example.test' };
 
+// ---- L0 kill-switch: writes are off everywhere, permanently ------------------------
+// The customer is testing on pre-prod. Two independent expressions of "off" are pinned here,
+// so reverting either one alone still leaves writes refused and this file red.
+t('L0 the kill-switch is on', () => {
+  assert.strictEqual(G.WRITES_DISABLED, true,
+    'writes are disabled permanently — do not re-arm without the owner saying so');
+});
+t('L0 pre-prod is NOT writable any more', () => {
+  const v = G.classifyEnv(PREPROD);
+  assert.strictEqual(v.writable, false, 'the customer is testing on pre-prod — writes must be refused');
+  assert.ok(v.layers.includes('L0'));
+});
+t('L0 denies even if the allowlist is widened again', () => {
+  // simulate someone putting an env back on the allowlist: L0 must still refuse it
+  assert.ok(G.WRITES_DISABLED, 'precondition');
+  for (const key of ['preprod', 'staging', 'whatever']) {
+    assert.strictEqual(G.classifyEnv({ key, origin: 'https://' + key + '-ols.example.test' }).writable, false, key);
+  }
+});
+
 // ---- L1 allowlist: deny by default -------------------------------------------------
-t('L1 preprod is the one writable env', () => {
-  assert.strictEqual(G.classifyEnv(PREPROD).writable, true);
+t('L1 the allowlist is empty — nothing to match even if L0 is removed', () => {
+  assert.deepStrictEqual(G.WRITABLE_ENVS, [],
+    'the allowlist is empty on purpose; adding an env here re-opens writes');
 });
 t('L1 an env nobody vouched for is denied', () => {
   const v = G.classifyEnv({ key: 'staging', origin: 'https://staging-ols.example.test' });
@@ -79,9 +104,8 @@ t('L3 removing the label check alone would not open training', () => {
 });
 
 // ---- L4 assertWritable throws and reports ------------------------------------------
-t('L4 assertWritable passes for preprod', () => {
-  const v = G.assertWritable(PREPROD, { script: 'fix_names.js' });
-  assert.strictEqual(v.writable, true);
+t('L4 assertWritable throws for preprod too — no env passes', () => {
+  assert.throws(() => G.assertWritable(PREPROD, { script: 'fix_names.js' }), /BLOCKED/);
 });
 t('L4 assertWritable throws for training', () => {
   assert.throws(() => G.assertWritable(TRAINING, { script: 'fix_names.js' }), /BLOCKED/);
@@ -105,10 +129,11 @@ t('L7 a blocked attempt calls the auditor', () => {
 t('L7 an auditor that throws still does not unblock the write', () => {
   assert.throws(() => G.assertWritable(TRAINING, { audit: () => { throw new Error('discord down'); } }), /BLOCKED/);
 });
-t('L7 an allowed write is not audited as a refusal', () => {
+t('L7 a blocked pre-prod write is audited, not silently dropped', () => {
   const seen = [];
-  G.assertWritable(PREPROD, { audit: (d) => seen.push(d) });
-  assert.strictEqual(seen.length, 0);
+  try { G.assertWritable(PREPROD, { script: 'fix_names.js', audit: (d) => seen.push(d) }); } catch (_) {}
+  assert.strictEqual(seen.length, 1, 'someone trying to write pre-prod must land in the ledger');
+  assert.ok(seen[0].layers.includes('L0'));
 });
 
 // ---- L5 network interceptor ---------------------------------------------------------
@@ -144,8 +169,16 @@ t('L5 POST to a training host during a "preprod" run is aborted', async () => {
   assert.ok(String(await l5({ key: 'preprod', origin: PREPROD.origin }, 'POST', TRAINING.origin + '/api/uploads'))
     .startsWith('abort'));
 });
-t('L5 PUT to preprod is allowed', async () => {
-  assert.strictEqual(await l5(PREPROD, 'PUT', PREPROD.origin + '/api/media/1'), 'continue');
+t('L5 PUT to preprod is aborted — the network layer refuses it too', async () => {
+  assert.ok(String(await l5(PREPROD, 'PUT', PREPROD.origin + '/api/media/1')).startsWith('abort'));
+});
+t('L5 POST/PATCH/DELETE to preprod are all aborted', async () => {
+  for (const m of ['POST', 'PATCH', 'DELETE']) {
+    assert.ok(String(await l5(PREPROD, m, PREPROD.origin + '/api/media/1')).startsWith('abort'), m);
+  }
+});
+t('L5 GET to preprod is still allowed — the read-only scan must keep working', async () => {
+  assert.strictEqual(await l5(PREPROD, 'GET', PREPROD.origin + '/api/media'), 'continue');
 });
 
 // ---- L6 nothing automated may touch training at all ---------------------------------
@@ -258,6 +291,6 @@ t('read methods are exactly GET/HEAD/OPTIONS', () => {
 });
 
 Promise.all(pending).then(() => {
-  console.log(failed ? '\n' + failed + ' FAILED' : '\nall write-guard checks passed — training stays read-only');
+  console.log(failed ? '\n' + failed + ' FAILED' : '\nall write-guard checks passed — no env is writable; the read-only scan still runs');
   process.exit(failed ? 1 : 0);
 });

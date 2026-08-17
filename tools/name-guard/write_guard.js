@@ -8,12 +8,15 @@
  * rewrite content in the training environment, where REAL PEOPLE are working right now.
  * A wrong write there is not a QA artefact, it is damage to someone's live work.
  *
- * THE RULE: writes are allowed ONLY in the pre-prod environment. Everything else is
- * read-only, and the training environment is additionally denied by name and by host,
- * so removing any one check still leaves it protected.
+ * THE RULE (since 2026-08-17): writes are allowed NOWHERE. Pre-prod used to be the one
+ * writable environment; the customer is testing on it now, so it is hands-off too and the
+ * toolkit is read-only everywhere. The training environment remains additionally denied by
+ * name and by host, so removing any one check still leaves it protected.
  *
- * SEVEN INDEPENDENT LAYERS (each one alone is enough to stop a write):
+ * EIGHT INDEPENDENT LAYERS (each one alone is enough to stop a write):
+ *   L0 kill-switch     — WRITES_DISABLED denies every env regardless of the allowlist
  *   L1 allowlist       — only an env on WRITABLE_ENVS may ever be written to; unknown = deny
+ *                        (the list is EMPTY, so this denies everything on its own)
  *   L2 label denylist  — a label that looks like the training env is denied outright
  *   L3 host denylist   — the ORIGIN is checked too, so relabelling or OLS_ORIGIN= cannot slip past
  *   L4 script assert   — every mutating script calls assertWritable() before it logs in
@@ -31,9 +34,32 @@
  * `preprod` and `training` are enough to tell the two apart, and neither is a secret.
  */
 
+/* ─── WRITES ARE OFF, EVERYWHERE, PERMANENTLY (2026-08-17) ─────────────────────────────
+ * The customer is testing on pre-prod. The owner's instruction is hands-off: nothing in this
+ * toolkit may change pre-prod data any more. Pre-prod was the last writable environment, so
+ * this toolkit is now read-only in every environment it can reach.
+ *
+ * This is deliberately expressed TWICE, because one line is one accident away from being
+ * reverted by someone who does not know why it is there:
+ *   L0  WRITES_DISABLED — a kill-switch that does not care what the allowlist says
+ *   L1  WRITABLE_ENVS   — empty, so there is nothing to match even if L0 is removed
+ * Re-enabling writes therefore takes two deliberate edits AND the owner's say-so. Flipping
+ * either one alone leaves the other refusing, and write_guard.test.js fails if either drifts.
+ *
+ * The read-only scan is NOT affected: isProtectedEnv() still returns false for pre-prod, so
+ * the scheduled scan + Discord alert keep reporting bad names. Reporting was never the risk.
+ * ─────────────────────────────────────────────────────────────────────────────────────── */
+
+/** L0 — global kill-switch, independent of the allowlist below. While true, no environment
+ *  is writable for any reason and no flag anywhere can override it. */
+const WRITES_DISABLED = true;
+const WRITES_DISABLED_REASON =
+  'ปิดการเขียนถาวร (2026-08-17): ลูกค้ากำลังเทสอยู่บน pre-prod — ห้ามแก้ดาต้า';
+
 /** The ONLY environments that may ever be written to. Deny-by-default: adding an env here
- *  is a deliberate act, and nothing else in the toolkit can widen it. */
-const WRITABLE_ENVS = ['preprod'];
+ *  is a deliberate act, and nothing else in the toolkit can widen it. Empty on purpose —
+ *  see the block above before you put anything back. */
+const WRITABLE_ENVS = [];
 
 /** Independent denylist. Even if someone adds a training env to the allowlist above by
  *  mistake, these still refuse it. Token-shaped so a renamed label (training70, obectraining…)
@@ -76,11 +102,16 @@ function classifyEnv(env) {
   const reasons = [];
   const layers = [];
 
+  // L0 — the kill-switch. Nothing below can grant a write while this is on.
+  if (WRITES_DISABLED) { reasons.push(WRITES_DISABLED_REASON); layers.push('L0'); }
+
   // L1 — allowlist. No label, no origin, or an env nobody vouched for: deny.
   if (!label) { reasons.push('ไม่รู้ว่า env ไหน (ไม่มี label) — เขียนไม่ได้'); layers.push('L1'); }
   if (!origin || !host) { reasons.push('ไม่รู้ origin ของ env — เขียนไม่ได้'); layers.push('L1'); }
   if (label && !WRITABLE_ENVS.includes(label)) {
-    reasons.push('env "' + label + '" ไม่อยู่ใน allowlist (เขียนได้เฉพาะ: ' + WRITABLE_ENVS.join(', ') + ')');
+    reasons.push(WRITABLE_ENVS.length
+      ? 'env "' + label + '" ไม่อยู่ใน allowlist (เขียนได้เฉพาะ: ' + WRITABLE_ENVS.join(', ') + ')'
+      : 'env "' + label + '" — allowlist ว่าง: ไม่มี env ไหนเขียนได้เลย');
     layers.push('L1');
   }
 
@@ -162,7 +193,9 @@ async function armContext(ctx, env, opts) {
     const host = hostOf(req.url());
     const hostProtected = PROTECTED_HOST.test(host);
     // Block when the request itself targets a protected host, or when this whole run was
-    // classified as read-only. Requests to unrelated third parties are left alone.
+    // classified as read-only. Since 2026-08-17 no env is writable, so every armed run is
+    // read-only and every non-GET with a resolvable host is aborted here — third parties
+    // included. In practice this rarely fires: L4 refuses the script before a context exists.
     if (!hostProtected && !protectedEnv) return route.continue();
     if (!hostProtected && protectedEnv && !host) return route.continue();
 
@@ -208,6 +241,8 @@ function isProtectedEnv(env) {
 }
 
 module.exports = {
+  WRITES_DISABLED,
+  WRITES_DISABLED_REASON,
   WRITABLE_ENVS,
   PROTECTED_LABEL,
   PROTECTED_HOST,

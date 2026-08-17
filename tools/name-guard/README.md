@@ -5,8 +5,9 @@ references, status markers in parentheses, profanity, and duplicate titles — a
 customer-facing list (media · courses · learning paths · achievements), on a schedule.
 
 The **scan** is read-only — it reports, it never edits. The **fixers** that act on a report are a
-separate, off-repo toolkit, and they may only ever write to pre-prod: see
-[Write guard](#write-guard--the-training-environment-is-read-only-absolutely).
+separate, off-repo toolkit, and they are **switched off permanently as of 2026-08-17** — the
+customer is testing on pre-prod, which was the last environment they were allowed to write to. See
+[Write guard](#write-guard--writes-are-off-everywhere).
 
 ## Why it exists
 
@@ -135,19 +136,38 @@ message without sending. Testing the sender by posting and deleting is how a tes
 the QA thread on 2026-08-13.
 
 
-## Write guard — the training environment is read-only, absolutely
+## Write guard — writes are OFF everywhere
 
 The toolkit no longer only reports; it also fixes (rename, edit, unpublish, delete). Those fixers
 take an environment as an argument, so one wrong `OLS_ENV=` is all it takes to rewrite content in
-the **training** environment — where real people are working. A wrong write there is not a QA
-artefact, it is damage to someone's live work.
+an environment where real people are working. A wrong write there is not a QA artefact, it is
+damage to someone's live work.
 
-**Writes are allowed in pre-prod only.** `write_guard.js` holds the rules; `write_guard.test.js`
-pins them. Seven independent layers, each one enough on its own:
+**Writes are refused in every environment, permanently, since 2026-08-17.** The customer is
+testing on pre-prod — the one environment that used to be writable — so the owner's instruction is
+hands-off: nothing in this toolkit changes pre-prod data any more.
+
+The refusal is expressed **twice on purpose**, because a single line is one accident away from
+being reverted by somebody who does not know why it is there:
+
+- **L0** `WRITES_DISABLED = true` — a kill-switch that ignores the allowlist entirely;
+- **L1** `WRITABLE_ENVS = []` — nothing left to match even if L0 is removed.
+
+Re-enabling writes takes two deliberate edits **and** the owner's say-so; flipping either one
+alone leaves the other refusing, and `write_guard.test.js` goes red if either drifts.
+
+**What still runs:** the read-only scan and its Discord alert. `isProtectedEnv()` deliberately
+still returns `false` for pre-prod, so bad names are still reported — reporting was never the
+risk, writing was. `scan.js` does not arm the L5 interceptor, so turning writes off cannot break
+the scan's own SSO login.
+
+`write_guard.js` holds the rules; `write_guard.test.js` pins them. Eight independent layers, each
+one enough on its own:
 
 | layer | where | stops |
 |---|---|---|
-| **L1** allowlist | `classifyEnv()` — also applied in `namecheck/envs.js`, so an env cannot be resolved without its verdict | any env not explicitly writable; a missing label or origin fails closed |
+| **L0** kill-switch | `classifyEnv()` | every write in every env, whatever the allowlist says |
+| **L1** allowlist | `classifyEnv()` — also applied in `namecheck/envs.js`, so an env cannot be resolved without its verdict | any env not explicitly writable; empty list = everything; a missing label or origin fails closed |
 | **L2** label denylist | `classifyEnv()` | `training69`, `training70`, `obectraining…` — token-shaped, survives a rename |
 | **L3** host denylist | `classifyEnv()` | a training host reached under a different label, e.g. a hand-passed `OLS_ORIGIN=` |
 | **L4** script assert | `assertWritable()` at the top of every mutating script | the run, before login — exit 3 |
@@ -173,12 +193,16 @@ Run the checks:
 node tools/name-guard/write_guard.test.js
 ```
 
-## Schedule — pre-prod only
+## Schedule — pre-prod only, and scan-only
 
-| environment | runs on | cadence |
-|---|---|---|
-| pre-prod (org VPN only) | local `launchd` job on the QA machine | twice daily, 11:00 and 17:00 |
-| training | **nothing. hands-off.** | never — refused by the runner *and* by `scan.js` itself |
+| environment | runs on | cadence | what it does |
+|---|---|---|---|
+| pre-prod (org VPN only) | local `launchd` job on the QA machine | twice daily, 11:00 and 17:00 | `run_guard.sh` → **scan + alert only.** It never invoked a fixer, and since 2026-08-17 no fixer can write anywhere anyway |
+| training | **nothing. hands-off.** | never | refused by the runner *and* by `scan.js` itself |
+
+No scheduled job has ever changed pre-prod data: the fixers are run by hand through
+`namecheck/run_fix.sh`, which now refuses every environment. Stopping the scheduled job as well is
+a `launchctl` action on the QA machine, not a change in this repo — see the note below the table.
 
 **Training is not scanned.** Real people are working in it, and the owner's instruction is to
 leave it alone — which covers polling and alerting, not just writing. The GitHub Actions job that
