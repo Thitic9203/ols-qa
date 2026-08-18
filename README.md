@@ -16,8 +16,9 @@ Three ways of working, all pointed at the OLS project:
 
 - **A. Interactive skills** — you run these yourself in Claude Code (see *Helix commands*): design test
   cases (`/tc-fe-prep`, `/tc-api-prep`), run a Playwright test (`/testing-ticket`), re-verify a dev fix
-  (`/retest-bug`), file bugs (`/create-bug`), or prepare/seed OLS test data — media, courses, learning
-  paths, covers, videos, accounts (`/test-data-prep`).
+  on a **bug or a task** (`/retest-bug`), file bugs (`/create-bug`), or prepare/seed OLS test data — media,
+  courses, learning paths, covers, videos, accounts (`/test-data-prep`). Both test workflows compare every
+  screen against its **Figma** node and stop to ask when a screen has no design reference.
 - **B. Discord-driven testing** — a bot on the QA Mac tests tickets headless and reports back:
   - **On request** — type `/bot-testing OLS-xx` in the QA thread; it auto-routes (Bug → retest, Story →
     test). See *On-request testing*.
@@ -293,6 +294,50 @@ Separately, a Google Apps Script syncs the tracking sheet's **QA Owner** column 
 anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows up in the sheet on its own.
 
 ## Changelog
+
+### v1.34.0 — `/testing-ticket` + `/retest-bug` rebuilt around the customer-escape review: Figma comparison on every UI case, a case list in every retest comment, task retest (18 Aug 2026)
+
+Driven by the root-cause review of **25 defects the customer found after our own run reported the surface
+green**. Each gate below maps to a mechanism in that review, not to general good practice.
+
+- **New [references/figma-design-comparison.md](references/figma-design-comparison.md) — a UI case is not
+  verified until its screen has been compared with the design.** Five points per screen: elements present ·
+  text **char-exact** · order/position · the states the node defines (empty · loading · error · over-limit ·
+  disabled) · no overflow/overlap. The **node link actually opened** is recorded on the case row — "compared
+  against Figma" with no node is not evidence. **No design reference ⇒ report it back to the person or
+  channel that assigned the run** (asking for the node, a written visual contract, or an explicit "function
+  only"), keep testing everything that does not depend on it, and hold the visual points at **BLOCKED** —
+  never an assumed label, never a PASSED. Unattended runs send the same request to the triggering channel
+  instead of halting. Also covers the two directions the review found: a screen **this ticket intentionally
+  changed** is *design out of date* (name the design owner, ask for the node update in the same ticket), not
+  a defect — and an **AC revised mid-test to match the build** must say so in the verdict line
+  (`PASSED against AC as revised {date}, differs from design in …`) and go to the known-limitation list.
+- **New [references/customer-escape-prevention.md](references/customer-escape-prevention.md) — the depth
+  gates, each tied to its escape count.** Cover the **whole surface** a ticket touched, not only its own AC
+  lines (a card passed while the bug sat on the detail page reusing it) · expected results must test *right*,
+  not *present* — four dimensions, and `complete` / `correct` / `ครบถ้วน` / `ถูกต้อง` are banned as standalone
+  expectations · **`caveat` / `not verifiable` / `assumed` / `ยืนยันไม่ได้` in an actual result forbids a
+  passing status** (we once shipped exactly that, and it was the customer's bug) · every in-scope width run
+  as its own row with overflow/overlap **measured** (`rect.right > innerWidth`, `scrollWidth > innerWidth`,
+  >3 px intersection), out-of-scope widths stated out of scope · fixtures big enough to fail · results bound
+  to a **build id** with a delta re-run for anything landing after · **evidence on passed rows too**
+  (12 of 122 had it) · unspecified behaviour is a question, never a verdict or a bug · session preflight that
+  sees the user in the session response before any result is believed.
+- **`/retest-bug` now retests a Task/Story as well as a Bug.** A Bug is judged against its Expected Result
+  field; a Task against its **Acceptance Criteria** (read where the AC actually lives — usually the
+  description) with the same enumerate → row → reconcile discipline. A task stating no verifiable AC is
+  BLOCKED with a question to the owner, never a PASSED.
+- **Every retest comment now carries a case list.** New **Step 2c** builds it before testing (contract ids +
+  the surface's existing cases + states + in-scope widths, each with an id, design node and fixture), and the
+  comment posts it as a `Test cases run` table — `Case · Title · Covers · Design node · Status` — reconciled
+  against the `ER*`/`AC*` ids and the `Case coverage: {n}/{total}` line. It is the artifact that outlives the
+  ticket: a result that never became a case row never gets re-run, which is how three of the escapes happened.
+- **New gates wired into both workflows:** retest **Step 2d** (design reference gate) and **Step 4i** (design
+  comparison + depth sweep, run on PASSED cases too); testing-ticket **Phase B4/B5** (design gate + depth
+  scope), **Phase C** confirm block now shows `Design ref` / `Build` / `Widths`, **Phase D** session preflight,
+  and new **E0** (design comparison + measured layout checks per scenario). Phase F2 gains `Width` and
+  `Design node` columns; the F4 reader gate and the retest Step 8·0 gate both fail closed on a missing node
+  link, an unmeasured width, a passed row without evidence, or a "cannot verify" row carrying a pass.
 
 ### v1.28.6 — `/create-bug` now re-checks the board before filing (a defect already settled in another ticket is not a bug) (9 Aug 2026)
 

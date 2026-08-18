@@ -1,6 +1,6 @@
 # Bug Priority & Severity Matrix
 
-The authoritative source for judging a bug's **Priority** in every OLS QA verdict. **Always follow
+The authoritative source for judging a bug's **Priority** in every QA verdict. **Always follow
 this matrix — never invent a severity or priority notion, never guess ("ยึดหลักนี้เสมอ ไม่มโนเอง").**
 When a defect's priority is unclear, cite the matching row/column below; if nothing here answers it,
 say so and ask rather than assume.

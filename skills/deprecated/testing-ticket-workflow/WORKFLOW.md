@@ -1,7 +1,7 @@
 ---
 name: testing-ticket-workflow
 description: |
-  Test one Jira ticket with Playwright after intake and confirmation — summarize results in chat, then optionally update an external results destination.
+  Test one Jira ticket with Playwright after intake and confirmation — compare every screen against the design (Figma), summarize results in chat, then optionally update an external results destination.
   Use for Testing ticket from Helix, /testing-ticket, or when the user wants automated UI/API checks for a single ticket.
   Do NOT use for opening bug tickets (create-bug-workflow), retest-after-fix on a bug (retest-bug-workflow), or drafting manual TC tables (tc-fe-prep / tc-api-prep). Does not run full-app regression.
 ---
@@ -62,6 +62,25 @@ layers 3–5 (execute each on its real surface, row-never-a-remark, partial cove
 **Phase F** before Phase G. Fail-closed: any AC/EC id missing a row, unrun, verdict-less, or living
 only in a remark ⇒ the run is **not complete**.
 
+**Compare against the design (Figma) on every UI scenario — no design, no verdict.** Every screen this
+run judges is compared side by side with its design node: elements present · text char-exact ·
+order/position · the states the node defines · no overflow or overlap. The node link actually opened
+is recorded per scenario. **If a screen has no design reference, do not invent the expected** — report
+it back to the person or channel that assigned this run, ask for the node (or an explicit "verify
+function only"), and hold those visual points at **BLOCKED** while the rest of the run continues. Full
+gate, including spec-drift and revised-AC handling:
+[figma-design-comparison.md](../../../references/figma-design-comparison.md). Run it in **Phase B**
+(does a reference exist) and at **E0** (the comparison itself).
+
+**Test deeply — the gates a shipped-defect review put in writing.** Follow
+[customer-escape-prevention.md](../../../references/customer-escape-prevention.md) throughout: cover
+the **whole surface** the ticket touched, not only its own AC lines (§1); write expected results that
+test *right*, not *present* (§2); never record PASSED over a `caveat / not verifiable / ยืนยันไม่ได้`
+actual result (§3); run every in-scope screen width and judge overflow/overlap by **measurement** (§4);
+use fixtures big enough to fail (§5); bind results to a **build id** and re-run a surface changed after
+the run (§6); attach evidence to **passed** rows too (§7); unspecified behaviour is a question, never a
+verdict (§8); preflight the session before believing any result (§9).
+
 **Long sessions:** optional todos per [long-workflow-todos.md](../../../references/long-workflow-todos.md).
 
 ## Refusal-first (precondition gate)
@@ -118,9 +137,29 @@ Use [parallel-prep.md](../../../references/parallel-prep.md) when Jira fetch and
    scenario** — record the coverage matrix (`AC/EC id → scenario #`). A compound AC ("does A **and** B")
    splits into one scenario per clause; an id with no scenario is a coverage gap → add it, never drop it.
    (in-scope, out-of-scope, API vs UI.)
-4. Fill [test-execution-plan-template.md](../../../references/test-execution-plan-template.md) in chat (environment, auth, in-scope table, pass criteria, risks). Include the **AC/EC → scenario coverage matrix** so the confirm gate shows every AC/EC is covered.
-
-**Design reference (Figma) — view when a ticket links one:** for expected-UI context, prefer the **Figma Dev Mode MCP** (`get_screenshot` / `get_metadata` / `get_design_context`) — needs the Figma desktop app with **Dev Mode MCP Server enabled** (Figma menu → Preferences) and the file open; `node-id` in a Figma URL uses `-`, the MCP `nodeId` uses `:` (`?node-id=1234-5678` → `1234:5678`). If that server is off, **fall back to the browser-automation MCP**: open the file URL (a logged-in browser session persists auth), let the canvas render, then screenshot the node. Dismiss the **"Want to view this file in Dev Mode?"** modal with **"Not now"** — NEVER "Request access" (it sends a seat request). A View+Comment account is enough to read and screenshot the design.
+4. **Design reference gate (mandatory — every UI scenario).** Follow
+   [figma-design-comparison.md](../../../references/figma-design-comparison.md) §1–§2 and §4. Collect
+   the Figma node for **every screen in scope** (from the ticket, its parent, or the project guide) and
+   record the links in the plan. Opening it: prefer the **Figma Dev Mode MCP** (`get_screenshot` /
+   `get_metadata` / `get_design_context`) — needs the Figma desktop app with **Dev Mode MCP Server
+   enabled** (Figma menu → Preferences) and the file open; `node-id` in a Figma URL uses `-`, the MCP
+   `nodeId` uses `:` (`?node-id=1234-5678` → `1234:5678`). If that server is off, **fall back to the
+   browser-automation MCP**: open the file URL (a logged-in browser session persists auth), let the
+   canvas render, screenshot the node. Dismiss the **"Want to view this file in Dev Mode?"** modal with
+   **"Not now"** — NEVER "Request access". A View+Comment account is enough.
+   **A screen with no design node → report it back to the person or channel that assigned this run**
+   (ticket · screen · where you looked · what you need: the node link, a written visual contract, or an
+   explicit "function only"). Keep testing everything that does not depend on the design; the visual
+   points stay **BLOCKED** with a remark naming who was asked. Never assume a label, order, or layout.
+   Unattended/bot mode: same request to the triggering channel with the project's @mention, visual
+   points BLOCKED + remark, run continues.
+5. **Scope the depth in the plan** ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md)):
+   name the **surface(s)** in scope and pull in the surface's existing cases — not only this ticket's AC
+   lines (§1) · list the **screen widths in scope** and state which are explicitly out of scope (§4) ·
+   list the **states** each screen must be seen in (empty · loading · error · over-limit · disabled) ·
+   name the **fixture** each scenario needs and confirm it is big enough to fail — long titles, lists
+   past their visible slots, populated accounts (§5) · record the **build/commit id** under test (§6).
+6. Fill [test-execution-plan-template.md](../../../references/test-execution-plan-template.md) in chat (environment, auth, in-scope table, pass criteria, risks). Include the **AC/EC → scenario coverage matrix** so the confirm gate shows every AC/EC is covered, plus the design node per screen, the widths in scope, and the build id.
 
 ---
 
@@ -134,6 +173,9 @@ Login:       {user} / password provided (not shown)
 VPN:         {required|not required} — {note}
 Confluence:  {url or none}
 Swagger:     {url or none}
+Design ref:  {figma node link(s) per screen — or "none for {screen}: asked {who}"}
+Build:       {build / commit id under test}
+Widths:      {in scope} — out of scope: {widths not delivered this round}
 
 Test plan ({N} scenarios):
   1. ...
@@ -155,6 +197,13 @@ conclusion — it needs the E2 investigation and an artifact like any other caus
 
 Follow [playwright-preflight.md](../../../references/playwright-preflight.md) end-to-end. MUST NOT start Phase E until **Ready to run: YES**.
 
+**Session preflight is part of Ready-to-run** ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §9):
+read the app's own session endpoint and **see the user in the response** before the first scenario — a
+page that merely loads proves nothing, and an expired session runs the whole set and reports "no
+defects found". Log the environment, the build id, and the authenticated user id before the first
+result line. Any of these missing = stop and report; results recorded after a failed preflight are not
+results.
+
 ---
 
 ## Phase E — Execute tests (Playwright)
@@ -174,6 +223,33 @@ id it covers met its expected** (layer 5), and an id observed to differ makes th
 row for that point — never a PASS with the exception noted below the table.
 
 Internal failures: note for chat summary only — **do not create Jira/GitHub issues in this workflow.**
+
+### E0 — Design comparison + depth checks (every scenario, PASSED ones included)
+
+Run this **as each scenario executes**, not while writing Phase F.
+
+1. **Compare the screen against its design node** on all five points — elements present · text
+   char-exact · order/position · the states the node defines · no overflow and no overlap
+   ([figma-design-comparison.md](../../../references/figma-design-comparison.md) §3). Record the node
+   link on the scenario's row.
+2. **Measure the layout checks, do not eyeball them** — overflow is `rect.right > window.innerWidth` or
+   `document.documentElement.scrollWidth > window.innerWidth`; overlap is two text rectangles
+   intersecting by more than ~3 px. Run them at **every in-scope width**, and on both sides of any
+   breakpoint the spec names.
+3. **Check values against their source**, not just their presence — each displayed value against the
+   API field / record / count it comes from.
+4. **Exercise the states in scope** (empty · loading · error · over-limit · disabled), not only the
+   happy state.
+5. **Report anything wrong you see, even where no AC asked for it** — as its own row where it belongs
+   to the contract, otherwise as a noted observation with evidence
+   ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §2).
+6. **A difference is not yet a defect** → E3. A screen this ticket intentionally changed is **design
+   out of date** (report it, name the design owner, ask for the node update in this ticket), and an AC
+   revised mid-test to match the build is an **accepted limitation** the verdict line must spell out
+   (§5–§6 of the same reference).
+7. **No design node for this screen** → it was already reported back to the assigner in Phase B; keep
+   its visual points **BLOCKED** with that remark. Never upgrade them to PASSED because the function
+   worked.
 
 ### E1 — For every FAILED scenario, capture the repro shape *during the run*
 
@@ -259,11 +335,18 @@ Always post a clear summary **in the same conversation** before anything else:
 ### F2 — Results table
 
 ```text
-| # | Scenario | AC/EC id | Result | Notes / evidence |
-|---|----------|----------|--------|------------------|
-| 1 | ...      | AC1      | PASSED | —                |
-| 2 | ...      | AC2 / EC1| FAILED | screenshot-02.png |
+| # | Scenario | AC/EC id | Width | Design node | Result | Evidence |
+|---|----------|----------|-------|-------------|--------|----------|
+| 1 | ...      | AC1      | 1280  | node-link   | PASSED | shot-01.png |
+| 2 | ...      | AC2 / EC1| 375   | node-link   | FAILED | shot-02.png |
 ```
+
+**Every row carries evidence — passed rows included** (`count(passed rows) == count(evidence
+references)`), and every UI row carries its **design node** or the Phase B BLOCKED-with-reason. A
+run whose passed rows have no evidence cannot be re-examined later, which is how layout defects
+survived a green round and reached the customer
+([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §7). `Width` is
+the screen width the row was run at; a scenario in scope at two widths is two rows.
 
 **Every enumerated AC/EC id has a row here (coverage gate layer 4·6).** The table — not the Notes
 column, not a remark below it — is where each AC/EC result lives. If an AC/EC point matters, it is a
@@ -336,6 +419,23 @@ is verdict-less; no case reads PASSED while an id it covers was untested or obse
 shortfall ⇒ the run is **NOT complete** — go back, add the row / run the id / re-verdict the partial
 case, and do **not** proceed to Phase G, report "100%/complete", or close the session until the count
 is green.
+
+**Design + depth reconciliation (same pass, fail-closed).**
+
+- [ ] Every UI row carries a **design node link**, or the Phase B BLOCKED-with-reason naming who was
+      asked for it. No UI row is PASSED on an assumed expected.
+- [ ] Every in-scope width has results for every in-scope page, and the overflow/overlap checks were
+      **measured** (numbers in the notes), not judged by eye. Out-of-scope widths are stated as such.
+- [ ] `count(rows with a passing verdict) == count(evidence references)`.
+- [ ] No row carries a passing verdict while its notes contain `caveat` / `not verifiable` /
+      `assumed` / `ยืนยันไม่ได้` / `ตรวจไม่ได้` — those are BLOCKED, or PWMI with a bug raised.
+- [ ] Anything wrong that was seen during the run is written down, including what no AC asked for.
+- [ ] The surface's existing cases were covered, not only this ticket's AC lines; the build id under
+      test is recorded.
+
+Any box unchecked ⇒ the run is **not complete** — fix it before Phase G
+([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) ·
+[figma-design-comparison.md](../../../references/figma-design-comparison.md)).
 
 **Cause gate (same pass, no exceptions)** — read every sentence in F1–F3 that states or implies a
 cause:
@@ -497,6 +597,8 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] F1–F4 posted before any external update.
 - [ ] **AC/EC coverage gate (7-layer) PASSED — `enumerated AC*/EC* ids == rows carrying a verdict + evidence (or explicit BLOCKED)`** ([qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *AC/EC & bug-detail coverage*): every Acceptance Criteria / Expected-Condition line was enumerated char-exact in Phase B, mapped 1:1 to a scenario, executed on its real surface, and appears as its **own row** in F2 — none parked only in a remark/Notes/chat, no case PASSED on partial coverage; a differing item is a FAILED/PWMI row (per matrix), an unreached item a BLOCKED row (a coverage gap, not a product FAILED) — neither a footnote. Fail closed: any id unrun/unrowed/verdict-less ⇒ story not complete.
 - [ ] Every scenario has PASSED/FAILED/BLOCKED/NOT TESTED with evidence reference.
+- [ ] **Design (Figma) comparison ran for every UI scenario** ([figma-design-comparison.md](../../../references/figma-design-comparison.md)): node link on every UI row, five points compared (present · char-exact text · order/position · states · no overflow/overlap measured); a screen with **no** design reference was reported back to the assigning person/channel in Phase B and its visual points left **BLOCKED**, never PASSED; a screen this ticket intentionally changed was reported as **design out of date** (owner named) rather than listed as a defect; a mid-test AC revision is spelled out as an accepted limitation.
+- [ ] **Depth gates green** ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md)): the whole surface covered (its existing cases, not only this ticket's AC) · values checked against their source · every in-scope width run with overflow/overlap **measured**, out-of-scope widths stated · states exercised (empty/loading/error/over-limit/disabled) · fixture big enough to overflow or scroll · build id recorded · evidence on **passed** rows too · no `caveat/not verifiable/assumed` row carrying a passing verdict · anything wrong that was seen is reported even where no AC asked for it.
 - [ ] **Story evidence-completeness gate (5-step) PASSED — the work is not done until it is green.** Per [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *Story-testing evidence-completeness gate*: every non-BLOCKED case carries a **whole-flow MP4 + one screenshot per Expected-Result item** (a retest-bug re-verify carries the MP4 per case + a screenshot only on text-verification cases, attached to Jira not Drive); every MP4 clears the **7-layer quality+correctness gate** in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) (max quality · whole flow, no skip · reaches the stated target, no early cut · ER on screen · legible · integrity+match · link-verified); every file resolves, plays/non-blank, and matches the exact case; verdict↔bug↔remark are consistent (minor-issue ⇒ a ≤Medium bug flagged, FAILED ⇒ High+, no stale BLOCKED note on a PASSED row). Fail closed: one red case = story not complete.
 - [ ] Every FAILED/BLOCKED defect has its repro matrix (one row per entry point, untried paths `not tested`), expected-line-verbatim vs actual, **root cause**, and — where the deviation is from the written expectation — resolution options with a named owner.
 - [ ] **E2 root-cause investigation ran for every FAILED and BLOCKED scenario** (during the run, not in Phase F): debugging skill invoked and named, 8-boundary sweep complete with `not checked` written where it applies, hypotheses ruled out recorded, cause labelled `Confirmed` / `Suspected` (+ the confirming check) / `Unknown — not investigated` (+ what is needed).
@@ -531,6 +633,8 @@ See [skill-routing.md](../../../references/skill-routing.md) — **Handoffs** af
 | [playwright-discipline.md](references/playwright-discipline.md) | Playwright rules |
 | [root-cause-investigation.md](../../../references/root-cause-investigation.md) | E2 — mandatory cause investigation, evidence-only |
 | [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md) | E3 — challenge every non-PASS: re-verify expected vs related tickets' AC/EC, surface to user |
+| [figma-design-comparison.md](../../../references/figma-design-comparison.md) | Phase B · E0 — compare every screen against its design node; no design ⇒ report back to the assigner, visual points BLOCKED |
+| [customer-escape-prevention.md](../../../references/customer-escape-prevention.md) | Depth gates from the shipped-defect review — surface sweep, ER quality, widths measured, fixtures, build id, evidence on passed rows |
 | [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) | AC/EC 7-layer coverage gate (every AC/EC is a row, not a remark) · story 5-step evidence gate · MP4 7-layer gate |
 | [result-update-discipline.md](references/result-update-discipline.md) | Sheets, Jira, Confluence update rules |
 | [workspace-guide-template.md](references/workspace-guide-template.md) | Optional non-secret defaults |
@@ -570,3 +674,18 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST NOT rewrite a ticket's acceptance/expected text to match observed behavior | The spec owner decides; QA reports the conflict and names them |
 | MUST pass the F4 reader gate before Phase G | The gate exists so answers land in the write-up, not in a round-trip that ends in an edited record |
 | MUST re-verify before answering any question that arrives after publishing, then fold the answer into the published record in place (Phase H) | Answering from memory publishes wrong claims |
+| MUST compare every UI scenario against its **design node** on all five points (present · char-exact text · order/position · states · no overflow/overlap measured) and record the node link on the row | An all-present, mis-ordered screen passes a "shows A, B, C" expected; the set that shipped 25 customer-found defects contained the word `figma` zero times |
+| MUST report a screen with **no design reference** back to the person/channel that assigned the run, keep its visual points **BLOCKED**, and continue the rest of the run — never assume a label, order, or layout, never PASSED | An assumed expected is not a spec; it produces both phantom defects and false passes (PM-006) |
+| MUST report a screen this ticket intentionally changed as **design out of date** (name the design owner, ask for the node update in this ticket) instead of listing it as a defect | A relocated menu was reported missing when it existed in a submenu — a full round lost |
+| MUST spell out a mid-test AC revision in the verdict (`PASSED against AC as revised {date}, differs from design in {…}`) and hand the difference to the known-limitation list | A silent PASSED on a revised AC shipped the review's only High-severity escape |
+| MUST cover the whole **surface** the ticket touched — its existing cases, states, and in-scope widths — not only the ticket's own AC lines | A component passed on one screen while the defect sat on another screen reusing it |
+| MUST write display-surface expected results with all four dimensions (present · values correct vs source · order/position vs design node · no overflow/overlap measured) and MUST NOT accept `complete` / `correct` / `properly` / `ครบถ้วน` / `ถูกต้อง` alone as an expected | "Shows A, B, C" passes a wrecked screen — that screen produced five customer bugs |
+| MUST NOT record a passing verdict on a scenario whose notes contain `caveat` / `not verifiable` / `assumed` / `ยืนยันไม่ได้` / `ตรวจไม่ได้` — it is BLOCKED, or PWMI with a bug | We shipped a PASSED whose own text said it could not be verified, and that was exactly the customer's bug |
+| MUST state an expected's **verification method** (endpoint + permission) when the UI does not display the value; no method ⇒ the scenario is BLOCKED from the start | Discovering it mid-run is how the caveat-then-PASSED happened |
+| MUST run every in-scope width as its own row and judge overflow (`rect.right > innerWidth`, `scrollWidth > innerWidth`) and overlap (>3 px) by **measurement**; out-of-scope widths are stated out of scope | 7 of 25 escapes were on widths nobody ran; measuring caught them the moment it was run |
+| MUST confirm the standing realistic fixture exists before the run (long titles, lists past their visible slots, populated accounts, pre-first-use account) | One course with one media item can never overflow, wrap, or scroll |
+| MUST bind results to a build/commit id and re-run any surface changed after the run before results are handed over | 122/122 passed against a build the customer never saw |
+| MUST attach an evidence reference to **passed** rows too — `count(passed) == count(evidence)` before Phase G | 12 of 122 passed rows had evidence; nobody could re-examine the layouts that later produced bugs |
+| MUST report anything wrong observed during a run even when no AC asked for it | "Badges render correctly" was written while the badge-overflow defect was on screen |
+| MUST preflight the authenticated session (see the user in the session response) and confirm a toggle's starting state before pressing it | A dead session reported "no defects" for a whole set; a two-way button measured the opposite direction |
+| MUST open the trace (changelog / comments / logs) before claiming an action never happened | An empty tracking field was read as "never tested" and became a wrong number-one root cause |

@@ -1,14 +1,20 @@
 ---
 name: retest-bug-workflow
 description: |
-  Retest a Jira bug after a dev fix — read ticket, test API or UI, compare Swagger, draft evidence, post comment (with approval), transition and assign back to dev.
-  Use when the user says retest bug, verify fix, check if an issue is fixed, /retest-bug, or Retest bug from Helix.
+  Retest a Jira bug or task after a dev fix — read ticket, build the retest case list, compare every screen against the design (Figma), test API or UI, compare Swagger, draft evidence, post the comment with its case list (with approval), transition and assign back to dev.
+  Use when the user says retest bug, retest task, verify fix, check if an issue is fixed, /retest-bug, or Retest bug from Helix.
   Do NOT use for writing new FE/API test case tables (tc-fe-prep / tc-api-prep), full ticket Playwright runs (testing-ticket-workflow), or opening new bugs (create-bug-workflow).
 ---
 
 # Retest bug workflow
 
-End-to-end retest from a Jira bug ticket: fetch ticket → test → compare Swagger → draft comment → post (after approval) → transition → assign back to dev.
+End-to-end retest from a Jira **bug or task** ticket: fetch ticket → build the retest case list → design (Figma) reference gate → test → compare Swagger → draft comment (case list + verdict table) → post (after approval) → transition → assign back to dev.
+
+**Bug or Task — same workflow, different contract.** A **Bug** is retested against its own Expected
+Result field. A **Task / Story** whose fix is being re-verified has no such field: its contract is the
+ticket's Acceptance Criteria plus the existing cases of the surface it touched (Step 2c). Both produce
+the same artifact — a **case list in the posted comment**, one row per case, so the next reader sees
+exactly what was covered without reading the chat.
 
 **Project-agnostic:** Load URLs, credentials, and transitions from `references/*-retest-guide.md` in the user's workspace.
 
@@ -63,11 +69,30 @@ direct API call to perform the tested action. The API is allowed **only** to pre
 data / precondition (Step 4c). For an **API-layer** bug the API call in Step 4d *is* the real step,
 not a shortcut. Full rule: [test-through-real-steps.md](../../../references/test-through-real-steps.md).
 
+**Compare against the design (Figma) on every UI retest — no design, no verdict.** Every screen this
+retest judges is compared side by side with its design node: elements present · text char-exact ·
+order/position · states · no overflow or overlap. The node link actually opened is recorded in the
+comment (`Design ref:` line) and in each UI case row. **If the screen has no design reference, do not
+invent the expected** — report it back to the person or channel that assigned this retest, ask for the
+node (or an explicit "verify function only"), and hold those visual points at **BLOCKED** while the
+rest of the retest continues. Full gate, including spec-drift and revised-AC handling:
+[figma-design-comparison.md](../../../references/figma-design-comparison.md). Run it at **Step 2d**
+(does a reference exist) and **Step 4i** (the comparison itself).
+
+**Retest deeply — the gates a shipped-defect review put in writing.** Follow
+[customer-escape-prevention.md](../../../references/customer-escape-prevention.md) throughout: cover
+the **whole surface** the fix touched, not only the ticket's own lines (§1); write expected results
+that test *right*, not *present* (§2); never record PASSED over a `caveat / not verifiable / ยืนยันไม่ได้`
+actual result (§3); run every in-scope screen width and judge overflow/overlap by **measurement** (§4);
+use fixtures big enough to fail (§5); note the **build id** the fix landed in (§6); attach evidence to
+**passed** rows too (§7); unspecified behaviour is a question, never a verdict (§8); preflight the
+session before believing any result (§9).
+
 Use plain chat for URLs/credentials; AskUserQuestion only for choices (e.g. approve comment).
 
 ## Refusal-first (precondition gate)
 
-MUST refuse to start Step 2 until the user provides a **Jira bug key or browse URL** — because retest scope is one issue.
+MUST refuse to start Step 2 until the user provides a **Jira issue key or browse URL** — a **Bug**, or a **Task / Story** whose fix is being re-verified. Retest scope is one issue.
 
 MUST refuse to run tests without **reachable environment config** (workspace `*-retest-guide.md` or answers from [project-config-template.md](references/project-config-template.md)) — because URLs and credentials must not be hardcoded in the skill.
 
@@ -79,7 +104,7 @@ On first response after constraints, follow [workspace-guide-discovery.md](../..
 
 If no key or URL was provided:
 
-> Which Jira bug should I retest? Share the issue key or browse URL.
+> Which Jira ticket should I retest (bug or task)? Share the issue key or browse URL.
 
 **Wait for an answer.** Extract `{ISSUE_KEY}` and `{JIRA_DOMAIN}` from the link.
 
@@ -124,6 +149,23 @@ Capture: environment, test steps, expected/actual results, API endpoint, bug typ
 - Parent-story AC / Figma are **supplements** for context or when the bug is title-only — they never override or dilute the bug's own expected results. If the bug's expected result and the parent AC conflict, test against the bug's text and flag the conflict to the user.
 - **Enumerate the full contract now (coverage gate layers 1–2).** Extract **every** Expected-Result item **and** each bullet of the bug's detail/steps char-exact, give each a stable id (`ER1…`), and map each id 1:1 to a row you will fill in the Step 6 verdict table — so the ALL-items check is a **visible row per id**, not implied. A compound expected ("shows A **and** B") splits into one row per clause; an item with no row is a coverage gap → add it, never drop it. Nothing verified-or-reported may live outside this list, and nothing in it may be silently omitted.
 
+**Task / Story retest — the contract is the AC, and the case list is built rather than inherited.** A
+Task has no Expected Result field, so read the ticket **type** first and branch:
+
+| Ticket type | Primary contract | Supplements |
+|---|---|---|
+| **Bug** | its own Expected Result field, char-exact | parent AC, design node |
+| **Task / Story** | its **Acceptance Criteria** (usually in the description — read it there, not from a summary field), char-exact, plus the ticket's stated change | design node, the surface's existing cases, linked bugs |
+
+For a Task, enumerate the AC lines as `AC1…` exactly the way a Bug's `ER1…` items are enumerated
+above — same 1:1 mapping to rows, same fail-closed reconciliation. If the Task states no AC and no
+verifiable change, it is **BLOCKED with a question to the ticket owner**, never a PASSED (a ticket with
+nothing to verify has not been verified — [customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §8).
+
+**Capture the design reference now.** Collect the Figma node link(s) the ticket, its parent, or the
+project guide names, and the **build/commit id** the fix landed in. Both go into the Step 6 comment
+header (`Design ref:` / `Build:`). Missing design reference → Step 2d.
+
 **If Priority/Severity context is needed** (citing the original bug's Priority, or scoping a newly
 observed, distinct defect found during retest) — judge it only by the
 [Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md), never invent a
@@ -156,6 +198,49 @@ Follow [retest-fix-intake.md](../../../references/retest-fix-intake.md). Post th
 
 ---
 
+## Step 2c — Build the retest case list (mandatory — bug and task alike)
+
+The comment posted at Step 6 must carry a **case list**: the cases this retest actually ran, one row
+each. Build it here, before testing, so the run has a defined scope instead of a stopping point.
+
+1. **Start from the contract** — every enumerated `ER*` (bug) / `AC*` (task) id from Step 2. Each id is
+   covered by at least one case; a compound id splits into one case per clause.
+2. **Add the surface's existing cases.** Identify the surface the fix touched (route · page ·
+   component) and pull in the cases the project already has for it. A fix is verified across the
+   **whole surface**, not only the line that was reported — a component tested on one screen while the
+   defect sat on another screen reusing it is exactly how a defect reached a customer
+   ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §1). When the
+   project keeps no case catalogue for that surface, derive the cases from the screen itself and say so.
+3. **Add the states and widths the design defines** — empty · loading · error · over-limit · disabled,
+   and each in-scope screen width (§4 of the same reference). Out-of-scope widths are written
+   out-of-scope in the plan, never silently skipped.
+4. **Give every case a stable id** (`TC_01`, `TC_02`, …) plus: title · which `ER*`/`AC*` it covers ·
+   its design node link (UI cases) · the fixture it needs. A case whose fixture does not exist yet is
+   created (Step 4c) or recorded BLOCKED with the missing fixture named — never dropped.
+5. **Show the case list to the user with the Step 2b plan block.** It is the scope they are approving.
+
+The same list, with each case's outcome, becomes the `Test cases run` table in the Step 6 comment.
+
+---
+
+## Step 2d — Design reference gate (mandatory before any UI verdict)
+
+Follow [figma-design-comparison.md](../../../references/figma-design-comparison.md) §1–§2 and §4.
+
+- **A design node exists and covers the screen** → record the link, carry it into every UI case row,
+  and compare at Step 4i.
+- **No design node** (none linked, the link does not cover this screen, or the file is unreachable) →
+  **report it back to the person or channel that assigned this retest** — state the ticket, the screen,
+  where you looked, and ask for one of: the node link · a written visual contract · an explicit
+  "function only, skip visual". Continue every non-visual part of the retest meanwhile; hold the visual
+  points at **BLOCKED** with the remark naming who was asked. Never assume a label, an order, or a
+  layout, and never let a missing design turn into a PASSED.
+- **Unattended / bot mode:** send the same request to the triggering channel with the project's
+  @mention, mark the visual points BLOCKED + remark, and carry on — never halt the whole retest, never
+  guess.
+
+---
+
 ## Step 3 — Bug type and comment format (decide once)
 
 | Bug type | Screenshots | Comment format | API |
@@ -177,6 +262,11 @@ Set flag `COMMENT_FORMAT=v2` or `v3` here. **Do not change later** — rewriting
 ---
 
 ## Step 4 — Login and test
+
+**Order of the sub-steps.** 4a–4e set up and execute; **4i runs while each case is executed** (design
+comparison + measured layout checks, on PASSED cases too) — it is written last only because 4f–4h are
+the non-PASSED gates that follow a case that did not pass. Do not defer 4i to the end of the run: a
+screen not compared while it was open cannot be compared later.
 
 ### 4a. Environment
 
@@ -279,6 +369,29 @@ the draft exists.** A non-PASS is a hypothesis until it survives this:
 **Unattended / bot mode:** resolve the gate instead of asking — expected wrong/unclear → BLOCKED +
 remark (no bug, no halt); test-side cause → fix and re-run; confirmed defect → draft the comment as normal.
 
+### 4i. Design comparison + depth sweep (mandatory for every UI case, PASSED ones included)
+
+Run this **as each case is executed**, not while drafting.
+
+1. **Compare the captured screen against its design node** on all five points —
+   elements present · text char-exact · order/position · the states the node defines · no overflow and
+   no overlap ([figma-design-comparison.md](../../../references/figma-design-comparison.md) §3). Record
+   the node link on the case row.
+2. **Measure, do not eyeball, the layout checks** — overflow is `rect.right > window.innerWidth` or
+   `document.documentElement.scrollWidth > window.innerWidth`; overlap is two text rectangles
+   intersecting by more than ~3 px. Do this at **every in-scope width**, both sides of any breakpoint
+   the spec names.
+3. **Verify values, not just presence** — each displayed value is checked against its source (API
+   field, record, count), not merely observed to exist.
+4. **Report anything wrong you see, even when no expected asked for it** — as its own row where it
+   belongs to the contract, otherwise as a noted observation with evidence. Seeing a defect and not
+   writing it because "the expected didn't ask" is a recorded escape cause
+   ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §2).
+5. **A difference is not yet a defect.** App-vs-design differences go through Step 4h; a screen this
+   very ticket intentionally changed is **design out of date** (report it, name the design owner, ask
+   for the node update in this ticket) rather than a bug, and an AC revised mid-test to match the build
+   is an **accepted limitation** that the verdict line must spell out (§5–§6 of the same reference).
+
 ---
 
 ## Step 5 — Evidence
@@ -328,19 +441,41 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 *Env:* {ENV} ({url})
 *API:* {METHOD} {path}   (if API bug)
 *Swagger:* {link}
+*Design ref:* {figma node link}   (UI retest — or "none — asked {who} {YYYY-MM-DD}")
 *Date:* {YYYY-MM-DD}
+*Build:* {build / commit id the fix landed in}
 *Fixture:* {what was used, and whether it was restored}
 
 ----
 
 *Test Step (from ticket):* …
-*Expected Result (from ticket, verbatim):* …
+*Expected Result (from ticket, verbatim):* …          (Bug)
+*Acceptance Criteria (from ticket, verbatim):* …      (Task / Story)
+
+*Test cases run:* {n}
+
+||*Case*||*Title*||*Covers*||*Design node*||*Status*||
+|TC_01|{what this case verifies}|ER1|{node link or —}|✅/❌/⛔|
 
 ||*No.*||*Expected Result*||*Actual Result*||*Evidence*||*Status*||
 |1|{item quoted from the ticket}|{observed}|!tc1.png!|✅/❌|
 
 *Expected-result coverage:* {n} / {total} items met
+*Case coverage:* {n} / {total} cases run — {passed} passed / {failed} failed / {blocked} blocked
 ```
+
+The **`Test cases run` table is mandatory on every retest — bug and task alike.** It is the Step 2c
+case list with outcomes: one row per case (`Case` · `Title` · `Covers` = the `ER*`/`AC*` ids · `Design
+node` · `Status`), covering the ticket's own contract **and** the surface cases pulled in at Step 2c.
+It is what tells the next reader what was actually exercised, and it is the artifact that outlives the
+ticket — a result that never became a case row does not get re-run
+([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §1). A **Task /
+Story** retest carries this table and the per-`AC*` verdict table below it; it never ships as prose.
+For an API-only retest the `Design node` column is dropped.
+
+**Put the design node in the cell as a bare URL — never as `[label|url]`.** In v2 wiki the `|` inside a
+link is also the cell delimiter, so a labelled link splits the row (same failure class as `!img|width=N!`,
+PM-004). A row whose design node is missing carries the Step 2d reason instead (`no design — asked {who}`).
 
 The **`Evidence` column** (between `Actual Result` and `Status`) holds the case's screenshot **in the
 cell** — `!file.png!`, pre-resized, **no `|width=…`** (the pipe breaks the row). One image per row,
@@ -361,6 +496,13 @@ a note under the table, or chat; no row is status-less; the verdict is **not PAS
 unverified or observed to differ — an **observed-to-differ** item is a FAILED row (per matrix), an
 **unverified/unreached** item is a BLOCKED row (a coverage gap, not a product FAILED). Any shortfall ⇒
 the retest is **not complete** — add the row / verify the item / re-status the partial case before drafting further.
+
+**Case-list reconciliation (same pass).** Every case in the Step 2c list appears in the `Test cases
+run` table with a status; every `ER*`/`AC*` id appears in at least one case's `Covers` cell; every UI
+case carries a design node link **or** the BLOCKED-with-reason recorded at Step 2d. A case that was
+planned and not run is a **BLOCKED row with the reason**, never a quietly shortened list. Every row
+with a passing status carries an evidence reference — passed rows included
+([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §7).
 
 **Verbosity ceiling:** a PASSED comment stays inside the template above — no added narrative
 paragraphs, no restating the ticket, no "why this matters" prose. Each field line holds only its
@@ -502,6 +644,9 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌** (not ambiguous text).
 - [ ] **AC/EC & bug-detail coverage gate (7-layer) PASSED — `enumerated Step 2 ER* ids == rows carrying a status + evidence (or explicit BLOCKED)`** ([qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *AC/EC & bug-detail coverage*): every Expected-Result item + bug-detail bullet was enumerated char-exact at Step 2, mapped 1:1 to a verdict-table row, verified on its real surface, and appears as its **own row** — none parked only in a remark/note/chat, no PASSED over partial coverage, a differing item is a FAILED/BLOCKED row not a footnote. Fail closed: any item unverified/unrowed/status-less ⇒ retest not complete.
+- [ ] **Case list in the posted comment (bug and task alike)** — the Step 2c list appears as the `Test cases run` table with per-case status, `Covers` ids, and design node per UI case; `Case coverage: {n}/{total}` reconciles; the surface's existing cases were pulled in, not just the ticket's own lines ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §1).
+- [ ] **Design (Figma) comparison ran for every UI case** ([figma-design-comparison.md](../../../references/figma-design-comparison.md)): node link recorded per case, five points compared (present · char-exact text · order/position · states · no overflow/overlap measured); a screen with **no** design reference was reported back to the assigning person/channel and its visual points left **BLOCKED**, never PASSED; a screen this ticket intentionally changed was reported as **design out of date** (owner named) rather than filed as a defect; a mid-test AC revision is spelled out in the verdict line as an accepted limitation.
+- [ ] **Depth gates green** ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md)): values checked against their source (not just present) · every in-scope width run with overflow/overlap **measured** · fixture large enough to overflow/scroll · build id recorded · no `caveat/not verifiable/assumed` row carrying a passing status · anything wrong that was seen is reported even where no expected asked for it.
 - [ ] `Verdict: PASSED` or `Verdict: FAILED` with issue link.
 - [ ] **Non-PASSED verdict:** Step 6a's two blocks present — **root cause** (Confirmed/Suspected/Unknown + backing artifacts) and **resolution options** (two options, each a named **role** owner, ending `Decided by: <role>`) — plus the one-line statement of whether the originally reported symptom is gone. (No separate repro-matrix / why-failed block — that content lives in the `Fixture` line and the verdict-table row + its `Evidence` MP4 / screenshot.)
 - [ ] **Step 4g root-cause investigation ran for every non-PASSED item** (including BLOCKED): the cause cites captured artifacts (status code, response field/message, console error, bundle probe, fixture read-back) and is labelled `Confirmed` / `Suspected` (+ the confirming check) / `Unknown — not investigated` (+ what is needed).
@@ -525,6 +670,10 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 **Hard gate — do NOT run 8a until the posted comment is complete per the Step 6 / Step 7c format:**
 
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌**; env + results table present (bold headers, `No.` column).
+- [ ] **Case list present and reconciled:** the `Test cases run` table carries every Step 2c case with a status, every `ER*`/`AC*` id appears in some case's `Covers` cell, and `Case coverage: {n}/{total}` matches the rows. A planned-but-unrun case is a BLOCKED row with its reason — never a shortened list.
+- [ ] **Design reference accounted for on every UI case:** a node link in the row, or the Step 2d BLOCKED-with-reason naming who was asked. A UI case with neither is not verified — do **not** transition ([figma-design-comparison.md](../../../references/figma-design-comparison.md)).
+- [ ] **No passing row whose actual result contains `caveat` / `not verifiable` / `assumed` / `ยืนยันไม่ได้` / `ตรวจไม่ได้`** — such a row is BLOCKED or PWMI, never PASSED ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §3).
+- [ ] **Every passing row carries an evidence reference** — `count(passing rows) == count(evidence links)`.
 - [ ] **AC/EC coverage reconciled (7-layer gate layer 6·7):** `enumerated Step 2 ER* ids == rows carrying a status + evidence (or explicit BLOCKED)`, and `Expected-result coverage: {n}/{total}` has `{n}=={total}`. Every expected-result/detail item is its **own row** — none only in a remark/note/chat; no PASSED verdict over an unverified or differing item. Any shortfall ⇒ do **not** transition; go back and close it.
 - [ ] **FE / UI bug:** a whole-flow **MP4 for every executed case**, uploaded as an attachment **and linked in that row's `Evidence` cell** (`[▶ …mp4|^…mp4]`), the link confirmed to resolve/play from the Jira UI (Step 7d); **plus** an inline screenshot (`!file.png!`, pre-resized, no `|width`) on every **text-verification** row, confirmed rendering as a picture. **A text-only comment for an FE bug FAILS this gate** — the exact-text/values table is not a substitute for the required MP4 (and text stills).
 - [ ] **Every MP4 passes all 7 layers of the [MP4 quality + correctness gate](../../../references/qa-evidence-gates.md)** — max quality, whole flow with no skip, reaches the stated target (never cut early), ER visible on screen, legible/text-backed, file integrity + case match, attached-and-link-verified. Fail-closed: any layer red = re-capture, do NOT transition.
@@ -664,6 +813,8 @@ A follow-up question is a **defect in the comment**, not a normal step. Handle i
 
 | Situation | See |
 |-----------|-----|
+| Design comparison / no Figma for a screen | [figma-design-comparison.md](../../../references/figma-design-comparison.md) |
+| Depth gates from the shipped-defect review | [customer-escape-prevention.md](../../../references/customer-escape-prevention.md) |
 | Still failing | `references/debug-discipline.md` |
 | Encoding / v2 issues | `references/gotchas.md` |
 | Session handoff | `references/handoff-template.md` |
@@ -735,6 +886,17 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST correct a wrong published statement **visibly in both places** — in-place comment edit naming the corrected claim **and** a follow-up in the thread where the wrong answer was given | People already replied to the wrong version; a silent edit makes the thread unreadable |
 | MUST run the Step 9 pre-notify review gate (5 checks on dry-run output) before EVERY send, including resends | Catches wrong recipient/link/counts before they go live (user rule 2026-07-15) |
 | MUST embed each FE screenshot in its verdict-table `Evidence` cell as `!file.png!` — pre-resized (~600–640 px), **no `\|width=…`** (the pipe splits the table row) — never leave as filename-only text | Screenshots must render as pictures inside the cell; a `\|width` param breaks the row, and filename text is unreadable evidence (OLS-289, 2026-07-27) |
+| MUST retest a **Task / Story** against its Acceptance Criteria (read where the AC actually lives, usually the description) with the same enumerate→row→reconcile discipline a Bug's Expected Result gets; a ticket stating no verifiable AC is BLOCKED + a question to the owner, never PASSED | A task retest with no written contract is an unverified pass; "nothing to check" is not a check |
+| MUST post a **case list** in the retest comment (`Test cases run` table: Case · Title · Covers · Design node · Status) for **both** bug and task retests, reconciled against the Step 2c list and the `ER*`/`AC*` ids | A result that never becomes a case row is never re-run; three customer escapes came through results that lived only as comment prose |
+| MUST scope the retest to the **whole surface** the fix touched (its existing cases + the states and in-scope widths the design defines), not only the reported line | A component was retested on one screen while the defect sat on another screen reusing it — the customer found it |
+| MUST compare every UI case against its **design node** on all five points and record the node link on the case row | An all-present, mis-ordered screen passes a "shows A, B, C" expected; `figma` appeared zero times in the set that shipped the escapes |
+| MUST report a missing design reference back to the person/channel that assigned the retest and hold those visual points **BLOCKED** — never assume a label, order, or layout, never PASSED | An assumed expected is not a spec; it produces both phantom bugs and false passes (PM-006) |
+| MUST report a screen this ticket intentionally changed as **design out of date** (name the design owner, ask for the node update in this ticket) instead of filing it as a defect | A relocated menu was reported missing when it existed in a submenu — a full round lost |
+| MUST spell out a mid-test AC revision in the verdict line (`PASSED against AC as revised {date}, differs from design in {…}`) and hand the difference to the known-limitation list | A silent PASSED on a revised AC shipped the review's only High-severity escape |
+| MUST NOT record a passing status on a row whose actual result contains `caveat` / `not verifiable` / `assumed` / `ยืนยันไม่ได้` / `ตรวจไม่ได้` — it is BLOCKED, or PWMI with a bug raised | We shipped a PASSED whose own text said it could not be verified, and that was exactly the customer's bug |
+| MUST measure overflow (`rect.right > innerWidth`, `scrollWidth > innerWidth`) and overlap (>3 px intersection) at every in-scope width rather than judging by eye | Seven escapes were on widths nobody ran; the measurements caught them the moment they were run |
+| MUST verify each displayed value against its source and report anything wrong that is seen, even when no expected asked for it | "Elements render correctly" was written while the defect was on screen and unremarked |
+| MUST retest on a fixture able to fail (long titles, lists past their visible slots, populated accounts) and record the **build id** the fix landed in | One course with one media item can never overflow, wrap, or scroll; and a pass against a build nobody ships is not a pass |
 | MUST NOT use `await` in superpowers-chrome eval — use setTimeout + window.__var | `await` returns undefined; callback pattern required |
 | MUST use `mousedown` event (not `click`) for MUI Select/combobox elements | MUI Select ignores regular click events |
 | MUST match OLS buttons by textContent, not generic CSS class | Generic selectors hit wrong button (e.g. "สร้างสื่อ" instead of target) |
