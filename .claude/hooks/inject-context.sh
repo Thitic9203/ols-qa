@@ -27,8 +27,18 @@ echo ""
 echo "Helix commands: /helix  /tc-fe-prep  /tc-api-prep  /retest-bug  /testing-ticket  /create-bug"
 echo ""
 
+# Machine-written state first: it is regenerated on every turn by the Stop hook, so it is the only
+# part of this injection that cannot be stale. The hand-written note below it can be days old — on
+# 2026-08-20 it was four days old and described an expired job while eleven agents' work went
+# unmentioned, which is the reason this section exists.
+if [ -f .claude/session-state.md ]; then
+  echo "=== Session state (auto-generated, current) ==="
+  cat .claude/session-state.md
+  echo ""
+fi
+
 # Show WIP context if exists
 if [ -f .claude/session-context.md ]; then
-  echo "=== WIP Context ==="
+  echo "=== WIP Context (hand-written — check its date before trusting it) ==="
   cat .claude/session-context.md
 fi

@@ -20,9 +20,26 @@
 set -uo pipefail
 ROOT="${SCAN_ROOT:-$(git rev-parse --show-toplevel 2>/dev/null || echo .)}"
 [ "$#" -gt 0 ] || { echo "[guard] usage: $0 <file>..." >&2; exit 2; }
-command -v python3 >/dev/null 2>&1 || { echo "[guard] python3 missing — cannot scan" >&2; exit 2; }
+# Resolve a REAL interpreter instead of trusting PATH order.
+#
+# 2026-08-20: every commit in this repo blocked. `bash -x` showed the guard reaching
+# `python3 - <file>` and never returning — on any file, including a two-line one. The cause was not
+# this script: a plugin ("modern-python") prepends `hooks/shims` to PATH, and its `python3` shim
+# hangs instead of exec'ing. With the shims stripped the same scan returns rc=0 immediately.
+#
+# A guard that cannot run is worse than no guard, because a blocked commit invites `--no-verify` —
+# the one bypass that has ever put a secret on GitHub. So the interpreter is chosen deterministically:
+# the first candidate that is not a shim and can actually execute a trivial program within a couple of
+# seconds. A shim that starts behaving is picked up automatically; one that hangs is skipped.
+PYBIN=""
+for cand in /opt/homebrew/bin/python3 /usr/bin/python3 /usr/local/bin/python3 "$(command -v python3 2>/dev/null)"; do
+  case "$cand" in ""|*hooks/shims*) continue ;; esac
+  [ -x "$cand" ] || continue
+  if "$cand" -c "pass" >/dev/null 2>&1; then PYBIN="$cand"; break; fi
+done
+[ -n "$PYBIN" ] || { echo "[guard] no usable python3 — cannot scan" >&2; exit 2; }
 
-SCAN_ROOT="$ROOT" python3 - "$@" <<'PY'
+SCAN_ROOT="$ROOT" "$PYBIN" - "$@" <<'PY'
 import hashlib, os, re, sys
 
 ROOT = os.environ.get("SCAN_ROOT", ".")

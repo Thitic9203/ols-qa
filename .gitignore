@@ -68,3 +68,6 @@ __pycache__/
 
 # Local-only QA working docs — contain real test-account emails/passwords. NEVER commit (repo is public).
 /natty-doc/
+
+# Machine-written session handoff note — regenerated every turn, never committed
+.claude/session-state.md
