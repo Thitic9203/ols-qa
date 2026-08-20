@@ -42,6 +42,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 const rules = require('./name_rules');
+const { establishOwnerSession } = require('./owner_session');
 const argv = process.argv.slice(2);
 const JSON_OUT = (() => { const i = argv.indexOf('--json'); return i >= 0 ? argv[i + 1] : null; })();
 const QUIET = argv.includes('--quiet');
@@ -270,31 +271,70 @@ async function checkCoversLoad(page, items) {
     for (const email of ownEmails) {
       const key = 'own:' + email.split('@')[0];
       const octx = await browser.newContext({ viewport: { width: 1280, height: 900 }, ignoreHTTPSErrors: true });
+      /* Keep what the auth backend answered for this creator.
+       *
+       * ssoLogin() has done this for the admin account for a while; the creator loop did not,
+       * and on 2026-08-20 that cost the only copy of the reason one creator's session never
+       * appeared. A blip with no evidence is a blip nobody can answer. */
+      const oAuthErrors = [];
+      octx.on('response', async (res) => {
+        if (!/\/auth\/(login-with-email|session)/.test(res.url())) return;
+        if (res.status() < 400) return;
+        let body = ''; try { body = await res.text(); } catch (_) {}
+        let msg = body.replace(/\s+/g, ' ').slice(0, 120);
+        try { const j = JSON.parse(body); if (j && j.message) msg = j.message; } catch (_) {}
+        oAuthErrors.push(res.status() + ' ' + res.url().split('/').slice(-1)[0] + ': ' + msg);
+      });
       try {
-        const op = await octx.newPage();
-        await op.goto(SSO, { waitUntil: 'domcontentloaded', timeout: 60000 });
-        await sleep(2500);
-        await op.evaluate(async ({ email, pw }) => {
-          const setNative = (el, v) => {
-            const d = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value');
-            d.set.call(el, v);
-            el.dispatchEvent(new Event('input', { bubbles: true }));
-            el.dispatchEvent(new Event('change', { bubbles: true }));
-          };
-          const e = document.querySelector('#email'), p = document.querySelector('#password');
-          if (!e || !p) return;
-          setNative(e, email); setNative(p, pw);
-          await new Promise((x) => setTimeout(x, 300));
-          const f = e.closest('form'); if (f) f.requestSubmit();
-        }, { email, pw: PW });
-        await sleep(6000); await op.close();
-
-        const opg = await octx.newPage();
-        await gotoApp(opg);
-        await sleep(2500);
+        let opg = null;
+        const sess = await establishOwnerSession({
+          login: async () => {
+            const op = await octx.newPage();
+            await op.goto(SSO, { waitUntil: 'domcontentloaded', timeout: 60000 });
+            await sleep(2500);
+            await op.evaluate(async ({ email, pw }) => {
+              const setNative = (el, v) => {
+                const d = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value');
+                d.set.call(el, v);
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+              };
+              const e = document.querySelector('#email'), p = document.querySelector('#password');
+              if (!e || !p) return;
+              setNative(e, email); setNative(p, pw);
+              await new Promise((x) => setTimeout(x, 300));
+              const f = e.closest('form'); if (f) f.requestSubmit();
+            }, { email, pw: PW });
+            /* Wait for the auth cookies before closing the login page.
+             *
+             * The form submit is a request made BY this page; closing it straight away
+             * cancels the login in flight. The old code got away with it only because it slept
+             * a flat six seconds first — remove the sleep without replacing it and three of
+             * four creators stop logging in (measured against pre-prod while writing this).
+             * So wait for the actual signal instead: the SSO cookies landing on the shared
+             * parent domain, observed at ~0.5s on all four creators. */
+            for (let i = 0; i < 30; i++) {
+              const cs = await octx.cookies();
+              if (cs.some((c) => /^(access_token|session_id|user_proof_token)$/.test(c.name))) break;
+              await sleep(500);
+            }
+            await op.close();
+            // The session only becomes real on a rendered app page (measured 2026-08-16), so
+            // the poll below has to look from one.
+            if (opg) await opg.close().catch(() => {});
+            opg = await octx.newPage();
+            await gotoApp(opg);
+          },
+          session: async () => (opg ? (await apiCall(opg, ORIGIN)('GET', '/api/auth/get-session')).json : null),
+          authErrors: () => oAuthErrors,
+          sleep,
+        });
+        if (!sess.ok) {
+          report.sources[key] = { count: 0, error: sess.error };
+          await octx.close();
+          continue;
+        }
         const ocall = apiCall(opg, ORIGIN);
-        const who = (await ocall('GET', '/api/auth/get-session')).json;
-        if (!who || !who.user) { report.sources[key] = { count: 0, error: 'login failed' }; await octx.close(); continue; }
         const mine = await pageAll(ocall, '/api/media/me');
         const items = mine.map((it) => Object.assign({}, it, { title: it.title || it.name }));
         report.sources[key] = { count: items.length, error: mine.__err || null };

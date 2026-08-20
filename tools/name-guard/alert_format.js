@@ -42,6 +42,21 @@ function esc(s) {
  * the channel alert is the deliverable, and it never arrived.) Collapse rather than reject:
  * the reason belongs in the message, on one line.
  */
+/* Discord refuses anything longer; alert_gate.js enforces the same number on the way out. */
+const MAX_MSG = 2000;
+
+/* A quoted content title, capped.
+ *
+ * Titles are user data and one pre-prod media item is a ~280-character paragraph of Lorem
+ * Ipsum. Quoted verbatim, four of those are the whole message budget — which is how a real
+ * finding set ended up unsendable. Cap the title, keep the ellipsis visible so nobody reads
+ * the shortened form as the actual name, and escape AFTER cutting so a trailing backslash
+ * cannot survive the cut. */
+function title(s, max = 60) {
+  const flat = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+  return esc(flat.length > max ? flat.slice(0, max - 1) + '…' : flat);
+}
+
 function oneLine(s, max = 300) {
   const flat = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
   return flat.length > max ? flat.slice(0, max - 1) + '…' : flat;
@@ -162,35 +177,53 @@ function build(r) {
     dupTitles.length ? 'ชื่อซ้ำ ' + dupTitles.length + ' ชื่อ' : '',
   ].filter(Boolean).join(' · ');
 
-  const solution = [];
-  if (hard.length) {
-    solution.push('เปลี่ยนชื่อ ' + hard.length + ' รายการให้ผู้เรียนอ่านแล้วเข้าใจ: '
-      + hard.slice(0, 4).map((f) => '`' + esc(f.title) + '` (' + esc(nameHits(f).map((h) => RULE_TH[h.rule] || h.rule).join(', ')) + ')').join(' · ')
-      + (hard.length > 4 ? ' และอีก ' + (hard.length - 4) + ' รายการ' : ''));
-    solution.push('สื่อไลฟ์สดแก้ชื่อไม่ได้ เพราะ API แก้สื่อไม่รับประเภท LIVESTREAM จึงต้องลบอย่างเดียว');
-  }
-  if (noCover.length) {
-    solution.push('อัปโหลดปกให้ ' + noCover.length + ' รายการที่ยังไม่มี — ชื่อไม่ต้องแก้ อ่านรู้เรื่องอยู่แล้ว: '
-      + noCover.slice(0, 4).map((f) => '`' + esc(f.title) + '`').join(' · ')
-      + (noCover.length > 4 ? ' และอีก ' + (noCover.length - 4) + ' รายการ' : ''));
-    solution.push('การ์ดที่ไม่มีปกขึ้นเป็นช่องว่างบนหน้าจอผู้เรียน ต้องแก้ก่อนถึงจะถือว่าเผยแพร่เรียบร้อย');
-  }
-  if (dupTitles.length) {
-    solution.push('ชื่อซ้ำของเจ้าของเดียวกัน ' + dupTitles.length + ' ชื่อ — เอารายการที่ซ้ำออกหรือตั้งชื่อให้ต่างกัน: '
-      + dupTitles.slice(0, 4).map((t) => '`' + esc(t) + '`').join(' · ')
-      + (dupTitles.length > 4 ? ' และอีก ' + (dupTitles.length - 4) + ' ชื่อ' : ''));
-  }
+  /* Assemble at a given example budget, so the caller can shrink until it fits.
+   *
+   * `shown` is how many examples each list quotes; whatever is dropped is still counted in the
+   * "และอีก N" tail, so a shorter message never means a smaller problem. */
+  const assemble = (shown) => {
+    const more = (total, unit) => (total > shown ? ' และอีก ' + (total - shown) + ' ' + unit : '');
+    const solution = [];
+    if (hard.length) {
+      solution.push('เปลี่ยนชื่อ ' + hard.length + ' รายการให้ผู้เรียนอ่านแล้วเข้าใจ: '
+        + hard.slice(0, shown).map((f) => '`' + title(f.title) + '` (' + esc(nameHits(f).map((h) => RULE_TH[h.rule] || h.rule).join(', ')) + ')').join(' · ')
+        + more(hard.length, 'รายการ'));
+      solution.push('สื่อไลฟ์สดแก้ชื่อไม่ได้ เพราะ API แก้สื่อไม่รับประเภท LIVESTREAM จึงต้องลบอย่างเดียว');
+    }
+    if (noCover.length) {
+      solution.push('อัปโหลดปกให้ ' + noCover.length + ' รายการที่ยังไม่มี — ชื่อไม่ต้องแก้ อ่านรู้เรื่องอยู่แล้ว: '
+        + noCover.slice(0, shown).map((f) => '`' + title(f.title) + '`').join(' · ')
+        + more(noCover.length, 'รายการ'));
+      solution.push('การ์ดที่ไม่มีปกขึ้นเป็นช่องว่างบนหน้าจอผู้เรียน ต้องแก้ก่อนถึงจะถือว่าเผยแพร่เรียบร้อย');
+    }
+    if (dupTitles.length) {
+      solution.push('ชื่อซ้ำของเจ้าของเดียวกัน ' + dupTitles.length + ' ชื่อ — เอารายการที่ซ้ำออกหรือตั้งชื่อให้ต่างกัน: '
+        + dupTitles.slice(0, shown).map((t) => '`' + title(t) + '`').join(' · ')
+        + more(dupTitles.length, 'ชื่อ'));
+    }
+    return ['**Inappropriate content:** [Content Naming][' + env + '] ' + headline,
+      q('Environment', env),
+      q('Media Type', mediaTypes(rest).join(' · ') || 'สื่อการเรียนรู้'),
+      q('Status', 'Needs fix'),
+      blockLabel('Solution'),
+      ...solution.map(bullet),
+      blockLabel('Prevention'),
+      ...preventionBullets().map(bullet),
+      q('FYI', fyi),
+    ].join('\n');
+  };
 
-  return ['**Inappropriate content:** [Content Naming][' + env + '] ' + headline,
-    q('Environment', env),
-    q('Media Type', mediaTypes(rest).join(' · ') || 'สื่อการเรียนรู้'),
-    q('Status', 'Needs fix'),
-    blockLabel('Solution'),
-    ...solution.map(bullet),
-    blockLabel('Prevention'),
-    ...preventionBullets().map(bullet),
-    q('FYI', fyi),
-  ].join('\n');
+  /* Fit by construction rather than by luck.
+   *
+   * A blocked alert is silence about real findings — that happened on 2026-08-18, and again
+   * (2481 chars) once a creator library that had never been readable came into coverage. The
+   * Prevention block and the counts are fixed cost; the examples are the only elastic part, so
+   * they are what gives. One example is the floor: below that the reader has nothing concrete. */
+  for (let shown = 4; shown > 1; shown--) {
+    const out = assemble(shown);
+    if (out.length <= MAX_MSG) return out;
+  }
+  return assemble(1);
 }
 
 module.exports = { build, esc, mediaTypes, TYPE_TH, RULE_TH };
