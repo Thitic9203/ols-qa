@@ -218,11 +218,11 @@ time this job writes anywhere but col I, and the first time it writes to a syste
 |:--:|:--|:--|
 | **N1** target | host มาจากค่าคงที่ในโมดูล (ส่งเข้ามาไม่ได้) · key ต้องแมตช์ `^NH-\d+$` | คีย์นอกรูปแบบ/โฮสต์อื่น ยิงไม่ได้ทางกลไก |
 | **N2** precondition | OLS = `Done` เป๊ะ · ค่าใน col I ต้องไม่ใช่คำของคน · NH ต้องอยู่ 1 ใน 3 สถานะที่อนุญาต | ครบทุกข้อถึงขยับ · ขาดข้อไหน = ข้าม พร้อมเหตุผลใน log |
-| **N3** fresh read | อ่านสถานะ NH **ใหม่ทันทีก่อน transition** ไม่ใช้ค่าจากตอนสำรวจต้นรอบ | HI-QA หยิบ ticket ไประหว่างรอบ = หยุด ไม่แย่งงาน |
+| **N3** fresh read | อ่านสถานะ NH **ใหม่ทันทีก่อน transition** ไม่ใช้ค่าจากตอนสำรวจต้นรอบ | HI-QA หยิบ ticket ไประหว่างรอบ = หลบให้ (`NHRaced`) — **นับเป็นเรื่องปกติ ไม่ใช่ failure ไม่ยิง DM** และยัง**เขียน col I ตามเดิม** เพราะค่านั้นตัดสินจากสถานะ OLS ไม่ใช่จากบอร์ดลูกค้า · คีย์ผิดรูปแบบยังเป็น refusal จริง |
 | **N4** resolve id | หา transition id **สดจากปลายทาง** (`to.name`) ต้องเจอ 1 อันพอดี · id ต้องเป็นตัวเลข · pair (row, NH key) ต้องมาจากแถว eligible · มีเพดานจำนวน · ห้ามคีย์ซ้ำ | id ตายตัวจะพาไปผิดสถานะเมื่อลูกค้าแก้ workflow |
 | **N5** read-back | อ่าน NH ซ้ำหลัง transition ต้องได้ `READY TO TEST` | ไม่ตรง = exit≠0 → SFD DM |
 
-Tests: 24 new cases inside `tests/test_bugsheet_status_sync.py` (71 total, all green).
+Tests: 26 new cases inside `tests/test_bugsheet_status_sync.py` (73 total, all green).
 
 ### 🔴 Seven-layer write gate (each layer alone stops a bad write; all fail closed)
 
@@ -240,7 +240,7 @@ Tests: 24 new cases inside `tests/test_bugsheet_status_sync.py` (71 total, all g
 
 **plist ต้องชี้ `StandardErrorPath` ไปไฟล์เดียวกับ `StandardOutPath`** — `run_workflow.sh` ส่ง log ไฟล์เดียวให้ `fail_notify.py` ไปตัด tail; ถ้าแยก stream ไว้ โนติจะบอกแค่ `rc=3` โดยไม่มีเหตุผล เพราะทั้ง gate refusal และ traceback ออกทาง stderr หมด (ยืนยันจริงด้วย probe plist: สอง stream ลงไฟล์เดียวกันได้).
 
-Tests: `~/ols-qa-testing-bot/tests/test_bugsheet_status_sync.py` — 71 cases pinning the decision
+Tests: `~/ols-qa-testing-bot/tests/test_bugsheet_status_sync.py` — 73 cases pinning the decision
 table, all seven sheet layers and all five NH layers, including the plist's stream routing. Run
 them green before touching the script; a layer that stops refusing is a test failure, which is
 the point.
