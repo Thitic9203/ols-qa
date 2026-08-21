@@ -182,10 +182,47 @@ without asking. Tool is off-repo: `~/ols-qa-testing-bot/bugsheet_status_sync.py`
 |-------|-------|
 | Columns | `A No.` · `B System` · `C Bug on NH board` · `D Bug on SKL board` · `E Topic` · `F Priority` · `G Reporter` · `H Image/VDO` · **`I Bug status`** · `J Priority for Dev` · `K SKL-Dev PICK` · `L SKL-QA Comment` · `M Remark` |
 | Write scope | **col I only, on `System = OLS` rows only.** Jira key is read from `D` (must match `^OLS-\d+$`). Every other column and every ELMS/CBMS/EvMS row is out of scope — enforced, not merely intended. |
-| Decision table | assignee = `<SKL_PO_ACCOUNT_ID>` → `Awaiting SKL-PO Confirmation` · anyone else **or unassigned** with Jira status `READY TO TEST`/`TESTING`/`Done` → `READY TO TEST` · anyone else/unassigned, any other status → `FIXING BY SKL-DEV` |
+| Decision table | **Jira status `Done` → `READY TO TEST`, checked first and beating every other rule** · else assignee = `<SKL_PO_ACCOUNT_ID>` → `Awaiting SKL-PO Confirmation` · else Jira status `READY TO TEST`/`TESTING` → `READY TO TEST` · else → `FIXING BY SKL-DEV`. *(Done was moved ahead of the PO rule on 2026-08-21 with the hand-back below: a Done bug has shipped, so there is nothing left for the PO to confirm and the customer should be told to retest. Both halves must be decided together — the hand-back keys off the Jira status, so if `Done` ever fell back behind the PO rule the sheet would say "awaiting PO" while the customer's own board said "ready to test".)* |
 | Matched by | **accountId, never display name** (PM-005 — a name goes stale, an accountId does not). Real id → `~/.ols-qa-secrets/` § Bug-status sheet sync. |
 | Never overwritten | 🔴 **Allow-list, not deny-list** (corrected 2026-08-20). The bot replaces only blank plus its own in-flight vocabulary — `OPEN` · `RECHECK BY SKL-QA` · `FIXING BY SKL-DEV` · `READY TO TEST` · `Awaiting SKL-PO Confirmation`. **Every other value is a human's deliberate word and is left alone**, with `unrecognised human value … — left untouched` in the run log. `PASSED` · `CANCELLED` · `IMPROVEMENT` keep their own explicit "protected verdict" message. The code used to do the opposite — overwrite anything that was not one of those three — which silently loses each new word the humans invent: by 2026-08-20 HI-QA were already using `COMMENT FROM HI` and `FAILED AFTER RETEST` here, and only L3 (OLS rows only) kept them from being clobbered. Pinned by `tests/test_bugsheet_replaceable_allowlist.py`. |
 | Skipped + reported | OLS rows whose `D` is blank cannot be matched to Jira; they are listed in the run log every time, never guessed at. |
+
+### 🔴 Hand-back to the NH board — the job now writes to the customer's Jira (added 2026-08-21)
+
+Owner instruction: **เมื่อ ticket OLS ในชีทนี้ถูกปรับเป็น Done บน Jira → ปรับ `NH-xx` ในบรรทัดเดียวกันเป็น
+`READY TO TEST` บน Jira ของลูกค้า แล้วค่อยเขียน col I เป็น `READY TO TEST`.** This is the first
+time this job writes anywhere but col I, and the first time it writes to a system that is not ours.
+
+- **Where.** Col C `Bug on NH board`, project key `NH`, on the customer's own Jira tenant
+  (`<NH_JIRA_HOST>`, credential `~/ols-qa-testing-bot/.hi_token` — resolve both from
+  `~/.ols-qa-secrets/`). Never write the real host into this repo; it is public.
+- **Ordering is the point.** The customer's board moves **first**, the sheet records it after. A
+  col I reading `READY TO TEST` while their board still says `To Do` is the exact failure this
+  ordering rules out. A row whose transition fails is **dropped from the sheet write** and the run
+  **exits 5**, so the gap is a DM instead of a quietly wrong cell.
+- **Only out of 3 statuses**: `To Do` · `In Progress` · `WAITING FOR ROOT CASUE` (their spelling —
+  matching the correct English would mean the guard never fires). `READY TO TEST` is already the
+  destination and is a no-op; **`Testing` and `Done` are never dragged backwards** — that is
+  HI-QA's work in progress or already finished.
+- **A human's word on the row skips the whole row, board included** — same allow-list as col I. A
+  `PASSED`/`CANCELLED`/`COMMENT FROM HI` row does not get its NH twin re-opened for retest.
+- **A sheet cell that already reads `READY TO TEST` does not block the transition.** On the day
+  this shipped, all 3 live moves (NH-457 · NH-465 · NH-466) were exactly that case: col I already
+  correct, the customer's board still on `To Do`. Keying the hand-back off "did the sheet change"
+  would have left all three unmoved.
+- **`--no-nh`** runs the sheet half alone, for the day something on their side is broken.
+
+#### Five-layer NH write gate (the seven sheet layers cannot reach another tenant)
+
+| ชั้น | ตรวจ | ผ่าน = |
+|:--:|:--|:--|
+| **N1** target | host มาจากค่าคงที่ในโมดูล (ส่งเข้ามาไม่ได้) · key ต้องแมตช์ `^NH-\d+$` | คีย์นอกรูปแบบ/โฮสต์อื่น ยิงไม่ได้ทางกลไก |
+| **N2** precondition | OLS = `Done` เป๊ะ · ค่าใน col I ต้องไม่ใช่คำของคน · NH ต้องอยู่ 1 ใน 3 สถานะที่อนุญาต | ครบทุกข้อถึงขยับ · ขาดข้อไหน = ข้าม พร้อมเหตุผลใน log |
+| **N3** fresh read | อ่านสถานะ NH **ใหม่ทันทีก่อน transition** ไม่ใช้ค่าจากตอนสำรวจต้นรอบ | HI-QA หยิบ ticket ไประหว่างรอบ = หยุด ไม่แย่งงาน |
+| **N4** resolve id | หา transition id **สดจากปลายทาง** (`to.name`) ต้องเจอ 1 อันพอดี · id ต้องเป็นตัวเลข · pair (row, NH key) ต้องมาจากแถว eligible · มีเพดานจำนวน · ห้ามคีย์ซ้ำ | id ตายตัวจะพาไปผิดสถานะเมื่อลูกค้าแก้ workflow |
+| **N5** read-back | อ่าน NH ซ้ำหลัง transition ต้องได้ `READY TO TEST` | ไม่ตรง = exit≠0 → SFD DM |
+
+Tests: 24 new cases inside `tests/test_bugsheet_status_sync.py` (71 total, all green).
 
 ### 🔴 Seven-layer write gate (each layer alone stops a bad write; all fail closed)
 
@@ -203,9 +240,10 @@ without asking. Tool is off-repo: `~/ols-qa-testing-bot/bugsheet_status_sync.py`
 
 **plist ต้องชี้ `StandardErrorPath` ไปไฟล์เดียวกับ `StandardOutPath`** — `run_workflow.sh` ส่ง log ไฟล์เดียวให้ `fail_notify.py` ไปตัด tail; ถ้าแยก stream ไว้ โนติจะบอกแค่ `rc=3` โดยไม่มีเหตุผล เพราะทั้ง gate refusal และ traceback ออกทาง stderr หมด (ยืนยันจริงด้วย probe plist: สอง stream ลงไฟล์เดียวกันได้).
 
-Tests: `~/ols-qa-testing-bot/tests/test_bugsheet_status_sync.py` — 47 cases pinning the decision
-table and all seven layers, including the plist's stream routing. Run them green before touching
-the script; a layer that stops refusing is a test failure, which is the point.
+Tests: `~/ols-qa-testing-bot/tests/test_bugsheet_status_sync.py` — 71 cases pinning the decision
+table, all seven sheet layers and all five NH layers, including the plist's stream routing. Run
+them green before touching the script; a layer that stops refusing is a test failure, which is
+the point.
 
 ## Test-type deliverable sheets — `sync-tc-result` (System / Integration / Unit)
 
