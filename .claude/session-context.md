@@ -11,6 +11,11 @@ Environment is **pre-prod only**, VPN required.
 
 ## Where this stands after 2026-08-25
 
+Last full round: **2026-08-25 · 344 case-runs · 248 passed · 83 skipped · 13 failed · flaky 0** ·
+automated **desktop 203 · tablet 23 · mobile 23** of 288 · **C1 81/150 = 54.0%** (0.7% that morning).
+Confluence synced to v10. Every gate green: 10 offline plus `gate:tickets`, `typecheck`, `lint`,
+`format:check`.
+
 Four P0 rows closed and pushed (`dea67c4` · `93fa8fb` · `068b4eb` · `0081419` · `bbcee95`). The
 agentic tooling is now installed and constrained rather than merely planned:
 
@@ -26,19 +31,31 @@ agentic tooling is now installed and constrained rather than merely planned:
 
 ## Outstanding, in priority order
 
-1. **Bind 254 cases to tickets (plan item 10).** C1 is **1/150 = 0.7%** — the worst number in the
-   project, and goal criterion 1 measures exactly it. Needs no VPN: Jira is cloud. Every mapping
-   must be read from the board, never inferred from a module name.
-2. **Prove G2.** From a session whose cwd is `ols-qa-e2e`, call one denied tool, attach the refusal.
-   Cheap, and it is the last thing between here and a usable agent loop.
-3. **Wire layout-twin to its five pilot cases and run them (item 13).** The fixture landed
-   (`bbcee95`) but nothing uses it and no round has exercised it. Largest lever on the tablet and
-   mobile numbers, which have sat at 23 of 288.
-4. **One full round on pre-prod (item 2).** Every figure quoted anywhere is still from 2026-08-20;
-   `35d6a3a` has never been covered by a round. Needs VPN and an env confirmation from the owner.
-5. **The 91 blocked case-runs (item 11).** Badge and Auth are confirmed real blockers; the rest has
-   never been investigated, and 2026-08-18 showed most "the environment lacks data" skips were the
-   test's own fault.
+1. **Write cases for the 54 Done tickets nothing asserts (plan items 9 and 10, second half).** C1 is
+   **81/150 = 54.0%** and this is the only thing that moves it. Grouped by screen in the plan —
+   Feed 8 · Live 6 · Course/LP 6 · NDLP import 5 · Nav/Sidebar 5, plus ten smaller groups.
+   🔴 **Cannot be done from another repo**: the plan's own rule binds authoring to
+   `playwright-test-planner` + `browser_snapshot`, and the MCP server is registered at *local* scope
+   for `ols-qa-e2e`. Start that session there.
+2. **Prove G2** — from a session whose cwd is `ols-qa-e2e`, call one denied tool and attach the
+   refusal. It is the last thing between here and a usable agent loop, and it takes minutes.
+3. **`AXX-002` is one live selector confirmation from running** (the logout control in the avatar
+   menu). Cheapest item on the whole board.
+4. **The 45 skips blamed on missing test data.** Largest skip bucket, and the one 2026-08-18 taught
+   us to distrust — that round found three clusters claiming absent data that was present. Each
+   reason is written to be re-checkable; go query the API rather than believe the annotation.
+5. **Wire layout-twin to its five pilot cases and run them (item 13).** The fixture landed
+   (`bbcee95`); nothing uses it yet. Largest lever on tablet and mobile, stuck at 23 of 288.
+
+## Under investigation right now
+
+- **Three throwaway media could not be deleted** — `DELETE /api/media/{id}` returned 409 three times
+  during the 2026-08-25 round, so they are orphaned on shared pre-prod. The cleanup reports it
+  loudly rather than swallowing it. A debug agent is on it; the fix is the missing transition.
+- **`NAV-005` regressed** — the only case in 344 runs that went from ✅ to failing. It times out on
+  the mode-switch control on the *first* line that touches it, before the test changes anything.
+  Either the shared account is stuck in the wrong mode (see OLS-524), the test is on the wrong page,
+  or the label moved under OLS-404/362/361. A debug agent is on it. Do not soften the assertion.
 
 ## Waiting on a person
 
