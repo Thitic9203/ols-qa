@@ -5,8 +5,8 @@
 > duplicate them here. This file is only for what the artifacts cannot say: what is being worked on
 > and why, and what is waiting on a person.
 
-Plan: `ols-qa-evidence/docs/ols-e2e-automation/ols-e2e-automation-plan.md` (read it before touching
-this work). Results: `ols-e2e-round-report.md` next to it. Code: private `ols-qa-e2e`, on `main`
+Plan: `ols-qa-evidence/docs/ols-playwright-agentic-testing/ols-playwright-agentic-testing-plan.md` (read it before touching
+this work). Results: `ols-playwright-agentic-testing-round-report.md` next to it. Code: private `ols-qa-e2e`, on `main`
 directly, no PR. Environment is **pre-prod only**, VPN required.
 
 ## Outstanding, in priority order
