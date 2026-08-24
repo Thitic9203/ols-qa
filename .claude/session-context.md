@@ -13,11 +13,26 @@ Environment is **pre-prod only**, VPN required.
 
 Last full round: **2026-08-25 · 344 case-runs · 248 passed · 83 skipped · 13 failed · flaky 0** ·
 automated **desktop 203 · tablet 23 · mobile 23** of 288 · **C1 81/150 = 54.0%** (0.7% that morning).
-Confluence synced to v10. Every gate green: 10 offline plus `gate:tickets`, `typecheck`, `lint`,
+Confluence synced to **v11**. Every gate green: 10 offline plus `gate:tickets`, `typecheck`, `lint`,
 `format:check`.
 
-Four P0 rows closed and pushed (`dea67c4` · `93fa8fb` · `068b4eb` · `0081419` · `bbcee95`). The
-agentic tooling is now installed and constrained rather than merely planned:
+Nine plan rows closed and pushed (`dea67c4` · `93fa8fb` · `068b4eb` · `0081419` · `bbcee95` ·
+`3065c01` · `3183a07` · `6d9bf7e` · `dcc5eaa`). Two of those came out of the round auditing itself
+rather than from the plan's queue:
+
+- **`run-staged.sh` now keeps each phase's evidence** (`6d9bf7e`). Playwright clears
+  `test-results/` at the start of every run, and every phase here IS a run — which is why phase 1's
+  NAV-005 screenshot was already destroyed by the time anyone looked. Artifacts now land in
+  `round-artifacts/<phase>/` the moment a phase ends. `test-results/` still holds only the last
+  phase; that is Playwright's behaviour, not ours.
+- **`IN(-00N` → `INT-00N`** (`dcc5eaa`), fixed at the source: `prefixFor()` took the first
+  *character* of each word and the third word of `Integration NDLP (Media)` is `(Media)`. Pinned in
+  `MODULE_PREFIX` and the fallback now takes the first letter-or-digit. 🔴 The trap, if you ever
+  rename a caseId again: **`report:cases` derives the id from the test titles in `round-json/`, not
+  from the catalog** — rename there too, then check orphans are 0 and the automated counts did not
+  move. Off-repo follow-up: the Drive uploader's filename allowlist still expects the old id.
+
+The agentic tooling is installed and constrained rather than merely planned:
 
 - **Read-only is the current mode, on purpose.** `playwright-ms` (`@playwright/mcp@0.0.79`) is
   registered at **local scope for `ols-qa-e2e`** — so `claude mcp list` only shows it when run from
