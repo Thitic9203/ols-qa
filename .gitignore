@@ -71,3 +71,4 @@ __pycache__/
 
 # Machine-written session handoff note — regenerated every turn, never committed
 .claude/session-state.md
+.serena/
