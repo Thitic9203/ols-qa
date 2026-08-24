@@ -182,8 +182,9 @@ without asking. Tool is off-repo: `~/ols-qa-testing-bot/bugsheet_status_sync.py`
 |-------|-------|
 | Columns | `A No.` · `B System` · `C Bug on NH board` · `D Bug on SKL board` · `E Topic` · `F Priority` · `G Reporter` · `H Image/VDO` · **`I Bug status`** · `J Priority for Dev` · `K SKL-Dev PICK` · `L SKL-QA Comment` · `M Remark` |
 | Write scope | **col I only, on `System = OLS` rows only.** Jira key is read from `D` (must match `^OLS-\d+$`). Every other column and every ELMS/CBMS/EvMS row is out of scope — enforced, not merely intended. |
-| Decision table | **Jira status `Done` → `READY TO TEST`, checked first and beating every other rule** · else **Sprint field (`customfield_10008`) empty → `Awaiting SKL-PO Confirmation`** (a bug still on the board with no sprint has not been planned into a dev sprint, so it is waiting on the PO — this check sits right after Done and ahead of the assignee/status rules, so a no-sprint bug routes to the PO regardless of who holds it; added 2026-08-24 per owner) · else assignee = `<SKL_PO_ACCOUNT_ID>` → `Awaiting SKL-PO Confirmation` · else Jira status `READY TO TEST`/`TESTING` → `READY TO TEST` · else → `FIXING BY SKL-DEV`. *(Done was moved ahead of the PO rule on 2026-08-21 with the hand-back below: a Done bug has shipped, so there is nothing left for the PO to confirm and the customer should be told to retest. Both halves must be decided together — the hand-back keys off the Jira status, so if `Done` ever fell back behind the PO rule the sheet would say "awaiting PO" while the customer's own board said "ready to test".)* |
+| Decision table | **Jira status `Done` → `READY TO TEST`, checked first and beating every other rule** · else **Sprint field (`customfield_10008`) empty → `Awaiting SKL-PO Confirmation`** (a bug still on the board with no sprint has not been planned into a dev sprint, so it is waiting on the PO — this check sits right after Done and ahead of the assignee/status rules, so a no-sprint bug routes to the PO regardless of who holds it; added 2026-08-24 per owner) · else assignee = `<SKL_PO_ACCOUNT_ID>` → `Awaiting SKL-PO Confirmation` · else Jira status `READY TO TEST`/`TESTING` → **`RECHECK BY SKL-QA`** · else → `FIXING BY SKL-DEV`. *(Done was moved ahead of the PO rule on 2026-08-21 with the hand-back below: a Done bug has shipped, so there is nothing left for the PO to confirm and the customer should be told to retest. Both halves must be decided together — the hand-back keys off the Jira status, so if `Done` ever fell back behind the PO rule the sheet would say "awaiting PO" while the customer's own board said "ready to test".)* 🔴 *(2026-08-24, owner: **`Done` is now the ONLY route to `READY TO TEST`, anywhere.** `READY TO TEST`/`TESTING` used to land on `READY TO TEST` too, which told the customer to retest a bug SKL-QA still had open — and it is the same word that arms the hand-back below. They now read `RECHECK BY SKL-QA`, which is honest about who holds it and is already in the humans' own vocabulary. 5 rows moved on the day.)* |
 | Matched by | **accountId, never display name** (PM-005 — a name goes stale, an accountId does not). Real id → `~/.ols-qa-secrets/` § Bug-status sheet sync. |
+| Fourth allowed value | `RECHECK BY SKL-QA` joined `Awaiting SKL-PO Confirmation` · `FIXING BY SKL-DEV` · `READY TO TEST` in `ALLOWED_VALUES` on 2026-08-24. It was already in the replaceable set (the humans write it), so nothing about which cells may be touched changed — only what the bot may write. |
 | Never overwritten | 🔴 **Allow-list, not deny-list** (corrected 2026-08-20). The bot replaces only blank plus its own in-flight vocabulary — `OPEN` · `RECHECK BY SKL-QA` · `FIXING BY SKL-DEV` · `READY TO TEST` · `Awaiting SKL-PO Confirmation`. **Every other value is a human's deliberate word and is left alone**, with `unrecognised human value … — left untouched` in the run log. `PASSED` · `CANCELLED` · `IMPROVEMENT` keep their own explicit "protected verdict" message. The code used to do the opposite — overwrite anything that was not one of those three — which silently loses each new word the humans invent: by 2026-08-20 HI-QA were already using `COMMENT FROM HI` and `FAILED AFTER RETEST` here, and only L3 (OLS rows only) kept them from being clobbered. Pinned by `tests/test_bugsheet_replaceable_allowlist.py`. |
 | Skipped + reported | OLS rows whose `D` is blank cannot be matched to Jira; they are listed in the run log every time, never guessed at. |
 
@@ -212,17 +213,34 @@ time this job writes anywhere but col I, and the first time it writes to a syste
   would have left all three unmoved.
 - **`--no-nh`** runs the sheet half alone, for the day something on their side is broken.
 
-#### Five-layer NH write gate (the seven sheet layers cannot reach another tenant)
+#### Six-layer NH write gate (the seven sheet layers cannot reach another tenant)
 
 | ชั้น | ตรวจ | ผ่าน = |
 |:--:|:--|:--|
 | **N1** target | host มาจากค่าคงที่ในโมดูล (ส่งเข้ามาไม่ได้) · key ต้องแมตช์ `^NH-\d+$` | คีย์นอกรูปแบบ/โฮสต์อื่น ยิงไม่ได้ทางกลไก |
 | **N2** precondition | OLS = `Done` เป๊ะ · ค่าใน col I ต้องไม่ใช่คำของคน · NH ต้องอยู่ 1 ใน 3 สถานะที่อนุญาต | ครบทุกข้อถึงขยับ · ขาดข้อไหน = ข้าม พร้อมเหตุผลใน log |
+| **N2b** ไม่ทับคำตัดสินของคน 🔴 | อ่าน changelog **สองฝั่ง**: เวลาที่ NH ถูกย้าย **ออกจาก** `READY TO TEST` ครั้งล่าสุด (ใครก็ได้) เทียบกับเวลาที่ OLS เข้าสถานะ `Done` ครั้งล่าสุด · ออกจาก RTT **ใหม่กว่า** = คนที่ลูกค้าปฏิเสธ hand-back รอบนี้ไปแล้ว → **ไม่ยิงซ้ำ** | บอทย้าย ticket **เข้า** RTT อย่างเดียว ดังนั้น transition **ออก** จาก RTT = คนตัดสินใจเสมอ · fix รอบใหม่ (OLS ออกจาก Done แล้วกลับเข้า Done อีกครั้ง) จะใหม่กว่าการปฏิเสธ → hand-back ได้ตามปกติ ไม่ freeze ถาวร · หา `ols_done_at` ไม่เจอ = **ไม่ยิง** (fail-safe) |
 | **N3** fresh read | อ่านสถานะ NH **ใหม่ทันทีก่อน transition** ไม่ใช้ค่าจากตอนสำรวจต้นรอบ | HI-QA หยิบ ticket ไประหว่างรอบ = หลบให้ (`NHRaced`) — **นับเป็นเรื่องปกติ ไม่ใช่ failure ไม่ยิง DM** และยัง**เขียน col I ตามเดิม** เพราะค่านั้นตัดสินจากสถานะ OLS ไม่ใช่จากบอร์ดลูกค้า · คีย์ผิดรูปแบบยังเป็น refusal จริง |
 | **N4** resolve id + ownership | หา transition id **สดจากปลายทาง** (`to.name`) ต้องเจอ 1 อันพอดี · id ต้องเป็นตัวเลข · pair (row, NH key) ต้องมาจากแถว eligible · **NH key ที่ไปโผล่ในแถว non-OLS ด้วย = ปฏิเสธทั้งชุด** · มีเพดานจำนวน · ห้ามคีย์ซ้ำ | id ตายตัวจะพาไปผิดสถานะเมื่อลูกค้าแก้ workflow · pairing พิสูจน์ได้แค่ฝั่งเรา มองไม่เห็นว่า ticket เดียวกันถูกลิสต์ในแถว ELMS/CBMS/EvMS ด้วย (ตรวจสด 2026-08-21: 188 คีย์ · OLS 77 · ระบบอื่น 111 · **ซ้ำกัน 0**) |
 | **N5** read-back | อ่าน NH ซ้ำหลัง transition ต้องได้ `READY TO TEST` | ไม่ตรง = exit≠0 → SFD DM |
 
-Tests: 28 new cases inside `tests/test_bugsheet_status_sync.py` (79 total, all green).
+Tests: `tests/test_bugsheet_status_sync.py` (87 cases, all green — 8 ใหม่ pin N2b รวมไทม์ไลน์จริงของ NH-464).
+
+##### 🔴 บทเรียน 2026-08-24 — hand-back ยิงซ้ำจนทับงานคนฝั่งลูกค้า (fight loop)
+
+`NH-464` ↔ `OLS-549`: คน SKL กด OLS-549 เป็น `Done` เวลา 13:24 (แล้วถอยกลับ `To Do` ตอน 15:18) ระหว่างนั้น
+HI-QA ย้าย NH-464 ออกจาก `READY TO TEST` กลับ `To Do` เวลา 14:21:48 — **บอทดันกลับเป็น `READY TO TEST` ตอน
+14:22:03 คือ 15 วินาทีหลังคนย้าย** แล้วดันซ้ำอีกครั้งตอน 15:14:59.
+
+- **สาเหตุที่ 1 — hand-back ไม่ใช่ one-shot.** เดิมคำนวณใหม่ทั้งหมดทุกชั่วโมงจากสถานะปัจจุบัน (OLS=Done + NH อยู่ 1 ใน 3
+  สถานะ = ย้าย) จึงได้คำตอบเดิมทุกรอบ การยืนยันคำตอบที่คนแย้งไปแล้วซ้ำๆ ไม่ใช่การ sync แต่เป็นการแย่งกัน → ปิดด้วย **N2b**
+- **สาเหตุที่ 2 — ไม่มี reconciliation ขากลับ.** พอ OLS ถูกถอยออกจาก `Done` (15:18) NH ยังค้าง `READY TO TEST` ต่อ
+  เพราะ job นี้ **ไม่ลากบอร์ดลูกค้าถอยหลัง** โดยตั้งใจ → ตอนนี้พิมพ์บล็อก **`NEEDS A HUMAN`** ใน log ทุกรอบ ระบุคู่ที่
+  NH = `READY TO TEST` แต่ OLS ไม่ใช่ `Done` ให้คนไปเคลียร์ (ไม่ย้ายเอง ไม่เงียบ)
+- **สาเหตุที่ 3 (คนละเรื่อง แต่เจอในรอบเดียวกัน) — run crash หลังเขียนเสร็จ.** `ValueError: too many values to unpack
+  (expected 6, got 7)` ที่ลูป L7 read-back: ตอนเพิ่มกฎ Sprint (2026-08-24) tuple ใน `plan` เพิ่มเป็น 7 ช่อง
+  แต่ลูปยัง unpack 6 → เขียนชีทสำเร็จแล้ว crash ทีหลัง = DM ทุกชั่วโมงโดยที่งานผ่านจริง แก้แล้ว
+- **กันซ้ำ:** ทั้ง 3 ถูก pin ด้วยเทสในไฟล์เดียวกัน (`t_the_real_nh464_timeline` ใช้เวลาจริงจาก changelog ทั้งสองบอร์ด)
 
 ### 🔴 Seven-layer write gate (each layer alone stops a bad write; all fail closed)
 
