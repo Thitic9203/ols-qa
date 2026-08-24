@@ -47,15 +47,32 @@ agentic tooling is now installed and constrained rather than merely planned:
 5. **Wire layout-twin to its five pilot cases and run them (item 13).** The fixture landed
    (`bbcee95`); nothing uses it yet. Largest lever on tablet and mobile, stuck at 23 of 288.
 
-## Under investigation right now
+## Both investigations closed — one fixed, one is the owner's call
 
-- **Three throwaway media could not be deleted** — `DELETE /api/media/{id}` returned 409 three times
-  during the 2026-08-25 round, so they are orphaned on shared pre-prod. The cleanup reports it
-  loudly rather than swallowing it. A debug agent is on it; the fix is the missing transition.
-- **`NAV-005` regressed** — the only case in 344 runs that went from ✅ to failing. It times out on
-  the mode-switch control on the *first* line that touches it, before the test changes anything.
-  Either the shared account is stuck in the wrong mode (see OLS-524), the test is on the wrong page,
-  or the label moved under OLS-404/362/361. A debug agent is on it. Do not soften the assertion.
+- **`NAV-005` was ours, not the product's — fixed and pushed (`3183a07`).** An interstitial had
+  `aria-hidden` over the app root, so `getByRole` resolved zero elements and the read timed out.
+  NAV-001 passed on the same control in the same round; three lines after NAV-005's ✘ the round log
+  shows the `@safe` guard blocking `acknowledge-rewards` on that same shared creator account. The
+  sibling cases already establish this precondition; NAV-005 never did. It now passes in 7.8s.
+  Nothing was weakened — no retry, no longer timeout, no `fixme`.
+- 🔴 **The orphaned media are 45, not 3, and they are in the real approval queue.** Measured:
+  `PENDING_APPROVAL` count is 46 across the three creator accounts (C1 21 · C2 14 · F1 11); 45 are
+  ours, dating back to 2026-08-17. `DELETE` answers 409 because nothing can be deleted out of the
+  review queue, and the page object has no transition that pulls an item back out — only an
+  approver rejecting it. **Not deleted: removing 45 items from a shared environment is your call**,
+  and they are not deletable in this state anyway. The cause fix is in the plan (row 1b):
+  `registerDeleteThrowaway` must reject via `adminContent` before deleting.
+
+## Two things left open on purpose, both needing a person
+
+- **The `@safe` guard blocks `POST /api/me/achievements/acknowledge-rewards`.** That endpoint is
+  housekeeping on the tester's own account, not a content mutation — so an interstitial met by a
+  `@safe` case can never be acknowledged and returns on the next navigation for the rest of the
+  lane. Loosening a read-only guard on shared pre-prod is a risk decision, so it was reported, not
+  taken.
+- **`creatorPage` uses a hardcoded `poolFor('creator')[0]`** while `leasedLearner` leases by worker
+  index. With two workers, concurrent creator cases share one account — the condition that let one
+  case's interstitial land in another case's way.
 
 ## Waiting on a person
 
