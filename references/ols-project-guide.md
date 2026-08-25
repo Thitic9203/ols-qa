@@ -329,13 +329,14 @@ instead of being interleaved by whatever order the customer happened to type the
 | 2 | `FIXING BY SKL-DEV` | the dev — the work is still open |
 | 3 | `RECHECK BY SKL-QA` | QA — the fix is in, only the verification is left |
 | 4 | `FAILED AFTER RETEST` | the fix shipped and did not survive retest |
-| 5 | `OPEN` | nobody has picked it up |
-| 6 | `COMMENT FROM HI` | a question from HI is waiting on an answer |
-| 7 | `IMPROVEMENT` | not a defect at all |
+| 5 | `COMMENT FROM HI` | a question from HI is waiting on an answer |
+| 6 | `IMPROVEMENT` | not a defect at all |
+| 7 | `OPEN` | nobody has picked it up — **the owner placed it last**, 2026-08-25 |
 | — | a status with no rung | below every rung, **grouped on its own text** — a word the customer invents next does not scatter either |
 
-Rungs 4–7 order by how badly the row is stuck, which is a judgement, not something the customer
-stated. It is cheap to change: reorder the list, nothing else.
+`OPEN` last is the owner's call, pinned by `open_sorts_below_every_other_named_status`. Rungs 4–6
+order by how badly the row is stuck, which is a judgement, not something the customer stated. It is
+cheap to change: reorder the list, nothing else.
 
 The ladder is a **tiebreak and nothing more** — it applies only among rows that are otherwise
 indistinguishable (same bucket, same ticket type, same sprint window). It never lifts a row over a
