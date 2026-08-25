@@ -311,6 +311,41 @@ cross-check when it carries a key):
 | `Archievement` | `Achievement` | NH-483 — **ours**: OLS-578's summary carried it, next to a component tag spelling `Achievement` correctly. Jira fixed 2026-08-25 |
 | `เนื่อหา` | `เนื้อหา` | NH-436 — a **quoted button label**, so it stayed out of the table until `<PREPROD_HOST>` was fetched signed-out and the live DOM read `<button …>เริ่มสร้างเนื้อหา</button>`, 0 occurrences of the misspelling. Both the customer's sheet and OLS-498 were wrong; OLS-498 fixed 2026-08-25 |
 
+### Sort — and the `Awaiting SKL-PO Confirmation` tiebreak (reader's request, 2026-08-25)
+
+Top to bottom: **PASSED → READY TO TEST → rows with a committed OLS-board sprint window (soonest
+window first, by sprint START date) → active rows with no window.** CANCELLED has no bucket; those
+rows leave the list entirely.
+
+Inside a bucket: **Task before Bug**, then **`Awaiting SKL-PO Confirmation` before every other
+status**, then the source's own order. The status step is a **tiebreak and nothing more** — among
+rows that are otherwise indistinguishable (same bucket, same ticket type, same sprint window) the
+ones still waiting on a PO decision are the ones somebody has to chase, so they head their group
+instead of being scattered through it by whatever order the customer happened to type them in. It
+never lifts a row over a different type, an earlier window, or a better bucket; the test
+`awaiting_is_only_a_tiebreak_never_a_promotion` pins each of those.
+
+**It legitimately increases how often the mirror rewrites.** A row whose status flips into or out
+of `Awaiting SKL-PO Confirmation` now reorders *within* its bucket where before it did not move at
+all, and 21 of 77 rows currently hold that status against a writer every 5 minutes. That is the
+feature working — not thrashing. Measured across the whole log after the change: **38 written vs
+548 unchanged, longest consecutive-written streak 3**, and that streak is the initial seeding.
+
+🔴 **`~n moved` right after a successful write is normally the customer editing their sheet, not a
+convergence bug.** The counters this tool prints (Jira key counts, waiting-on-PO, untyped,
+spelling) do not move when a status or an OLS key changes, so two consecutive runs can look like
+identical input while the source has in fact changed underneath. Diff the source against a
+`logs/bugsheet_sync_snap/*-after.json` snapshot before suspecting the sort. A real convergence bug
+could not reach `unchanged since … — nothing to write`; this one does, and `plan_row_ops` only ever
+moves rows **backwards** (`work.index(k, i)` searches forward from `i`, so `j ≥ i`), which is the
+reading of Sheets' `destinationIndex` both interpretations agree on.
+
+**Do not "fix" the missing start-date fallback.** `plans_by_nh` falls back to the mirror's cached
+window when Jira is unavailable; `starts_by_nh` deliberately does not, because the cached window is
+a display string with no year and cannot be sorted on. Such a row sorts after the dated ones rather
+than being given an invented date, and the run says `WARN Jira unavailable` and exits 5. Guessing a
+date to make the sort look tidier would be the mirror inventing data.
+
 ### `STATUS_ORDER` is a vocabulary, not a sort
 
 `sort_key` never reads it (ranking is PASSED → READY TO TEST → has a fix window → in-flight); its
