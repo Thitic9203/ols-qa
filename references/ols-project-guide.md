@@ -263,6 +263,65 @@ table, all seven sheet layers and all five NH layers, including the plist's stre
 them green before touching the script; a layer that stops refusing is a test failure, which is
 the point.
 
+## Bug mirror — the `list` tab of our own regression sheet (`bugmirror_sync.py`)
+
+Our slice of the customer's `Bug report by HI` (System = OLS) copied into a sheet of ours,
+`<BUGMIRROR_SHEET_ID>` tab **`list`** — columns dropped, one renamed, one added (the Jira issue
+type), rows re-sorted by where each bug sits in its life. **The customer's file is only ever read.**
+Columns **A:G are the mirror's and are rewritten from source on every run**; **columns I+ belong to
+the reader and are never touched**, which is why rows are reconciled with whole-row moves keyed on
+`Bug on NH board` rather than rewritten in place. Tool is off-repo; ids live in
+`~/.ols-qa-secrets/`.
+
+### 🔴 Spelling is corrected on the way through — never in the sheet, never in the customer's file
+
+A typo in a mirrored `Topic` **cannot be fixed by editing the cell**: A:G is overwritten on the
+next run, so a hand fix lives until the next sync and no longer. And the source is the customer's
+file, which we must never write to. The only place a correction can hold is *in transit*, so
+`bugmirror_sync.py` carries a `SPELLING` table and a `canon()` applied in `project()` — the single
+funnel every mirrored column passes through.
+
+- **Opt-out, not opt-in.** Every column is corrected by default; `NO_SPELL_TITLES`
+  (`System` · `Bug on NH board` · `Ticket on OLS board` · `Ticket type on OLS board` ·
+  `Bug status`) is exempt because those are identifiers the gates and the colour table match on.
+  A prose column added later is covered without anyone remembering to ask.
+- **Never silent.** Every run prints `N cell(s) spelling-corrected on the way through` and names
+  each one. A mirror that quietly rewrites the customer's words would be worse than one that
+  leaves the typo in.
+- 🔴 **What may go in the table: only a spelling that is wrong in every context.** `Topic` quotes
+  UI labels verbatim (`"ดูสื่อทั้งหมด"`, `"นำออกจากรายการบันทึกแล้ว"`); rewriting one would be the
+  mirror inventing a spec. **A quoted label may only be corrected after the real screen has been
+  read** — that is PM-006 applied to text: a word that *might* be a real product string is a
+  question, not an entry.
+- **Fix the ticket too when the slip is ours.** Correcting the mirror does not correct Jira: the
+  mirror reads the customer's sheet, not our summary. Check `GET /rest/api/3/issue/<KEY>?fields=summary`
+  and fix ours separately when it carries the same typo.
+- Safe to change a string's length here: `_cell` keeps only `userEnteredValue` /
+  `userEnteredFormat` / `dataValidation` and drops `textFormatRuns`, so no run is left pointing at
+  the wrong character. The fingerprint is computed from the **payload**, not the source, so a
+  correction lands once and then settles at `unchanged — nothing to write`.
+
+**Entries as of 2026-08-25, each verified rather than assumed** (a row's own OLS summary is the
+cross-check when it carries a key):
+
+| wrong | right | where the truth was read |
+|---|---|---|
+| `อัพโหลด` (+ `อัพเดต`/`อัพเดท`/`อัพเกรด`) | `อัปโหลด` / `อัปเดต` / `อัปเกรด` | NH-462 — **OLS-535's own summary already spells it `อัปโหลด`**; the slip is the customer's transcription |
+| `resposive` | `responsive` | NH-447 — OLS-511's summary spells it correctly |
+| `Archievement` | `Achievement` | NH-483 — **ours**: OLS-578's summary carried it, next to a component tag spelling `Achievement` correctly. Jira fixed 2026-08-25 |
+| `เนื่อหา` | `เนื้อหา` | NH-436 — a **quoted button label**, so it stayed out of the table until `<PREPROD_HOST>` was fetched signed-out and the live DOM read `<button …>เริ่มสร้างเนื้อหา</button>`, 0 occurrences of the misspelling. Both the customer's sheet and OLS-498 were wrong; OLS-498 fixed 2026-08-25 |
+
+### `STATUS_ORDER` is a vocabulary, not a sort
+
+`sort_key` never reads it (ranking is PASSED → READY TO TEST → has a fix window → in-flight); its
+only use is the "unexpected status" note. It must name exactly what `STATUS_STYLE` paints, and the
+test `status_vocabulary_agrees_with_the_palette` pins that. The two drifted once —
+`RECHECK BY SKL-QA` was given a colour when the customer started using it and was never listed
+here, so every healthy run printed an unexpected-status note about an expected status. **A note
+that fires on healthy data is how a real one gets ignored.**
+
+Tests: `~/ols-qa-testing-bot/tests/test_bugmirror_sync.py`. Green before shipping a change.
+
 ## Test-type deliverable sheets — `sync-tc-result` (System / Integration / Unit)
 
 Customer-facing deliverables (one spreadsheet per test type, **`- 03 OLS`** variant — CBMS/EvMS/ELMS
