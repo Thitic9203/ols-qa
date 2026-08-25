@@ -114,7 +114,7 @@ function partitionFindings(findings) {
  * It is unconditional — printed on a clean round too — because its job is to tell the reader
  * that customer fixtures are outside the scan's remit at all times, not to describe one round. */
 const CUSTOMER_REMARK =
-  'ไม่ได้แก้รายการที่ขึ้นต้นด้วย RGS ทุกกรณี เพราะเป็นข้อมูลทดสอบของ HI — ระบบไม่แตะ ไม่เปลี่ยนชื่อ ไม่ลบ ไม่นับเป็นงานค้างของเรา';
+  'ไม่ได้แก้รายการที่มี RGS เพราะเป็นข้อมูลทดสอบของ HI — ไม่แตะ ไม่เปลี่ยนชื่อ ไม่ลบ ไม่นับเป็นงานค้างของเรา';
 
 /** The remark, with this round's count appended when there is one to report. */
 function customerRemark(count) {
