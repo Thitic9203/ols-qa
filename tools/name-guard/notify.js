@@ -15,6 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 const dedup = require('./alert_dedup');
+const customer = require('./customer_content');
 const gate = require('./alert_gate');
 
 const REPORT = process.argv[2];
@@ -103,6 +104,38 @@ function handsOffReason(rep) {
   return null;
 }
 
+/* Last gate before the channel, part two: the fix list may not name the customer's content,
+ * and the standing remark about it may not be missing.
+ *
+ * Two checks, opposite directions, because either failure alone is a real defect:
+ *   · a Solution bullet naming `[RGS]` is this toolkit asking a person (or the next agent, via
+ *     the standing "Needs fix = คิวงาน" rule) to rename HI's fixtures. That is the exact thing
+ *     that happened on 2026-08-25.
+ *   · a message with no remark leaves the reader to assume the skipped rows were simply missed.
+ *     The owner asked for it on every message, forever — so its absence blocks the send.
+ *
+ * Scoped to the Solution block on purpose: Prevention and FYI say the word `RGS` deliberately.
+ * --force does NOT override either. This is a boundary, not duplicate suppression.
+ */
+function customerContentReason(text) {
+  const lines = String(text || '').split('\n');
+  const solution = [];
+  let inSolution = false;
+  for (const ln of lines) {
+    if (/^> \*\*Solution:\*\*/.test(ln)) { inSolution = true; continue; }
+    if (/^> \*\*[A-Za-z ]+:\*\*/.test(ln)) { inSolution = false; continue; }
+    if (inSolution) solution.push(ln);
+  }
+  for (const ln of solution) {
+    const m = customer.customerMarkerOf(ln);
+    if (m) return 'Solution bullet อ้างถึงเนื้อหาของลูกค้า (' + m.token + ') — ' + ln.trim().slice(0, 120);
+  }
+  if (!String(text || '').includes(customer.CUSTOMER_REMARK)) {
+    return 'ข้อความนี้ไม่มี remark เรื่องเนื้อหาของลูกค้า — ต้องมีทุกฉบับเสมอ';
+  }
+  return null;
+}
+
 (async () => {
   const handsOff = handsOffReason(report);
   if (handsOff) {
@@ -112,6 +145,15 @@ function handsOffReason(rep) {
   }
   if (report.ok && !report.findings.length && !FORCE) { console.log('clean — no alert sent'); return; }
   const content = build(report);
+
+  const customerBad = customerContentReason(content);
+  if (customerBad) {
+    console.error('REFUSED — ไม่ส่ง: ' + customerBad);
+    console.error('          เนื้อหาของลูกค้า (RGS = ข้อมูลทดสอบของ HI) ห้ามขึ้นเป็นงานให้แก้ และ remark ต้องมีทุกฉบับ');
+    console.error('--- the message that was blocked ---');
+    console.error(content);
+    process.exit(6);
+  }
 
   /* Seven checks on the exact outgoing string, before anything leaves. Fail-closed: a message
    * that does not match the accepted format is not sent at all. Reading the draft is not a

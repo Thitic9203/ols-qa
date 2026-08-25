@@ -27,6 +27,13 @@
  *   L7 audit + alert   — every refusal is written to a ledger and raised loudly; a block that
  *                        nobody hears about is how the next attempt gets made
  *
+ * Two further layers answer a DIFFERENT question — not "is this environment writable" but
+ * "may this particular item be touched at all". They are numbered C1/C2 so neither list can be
+ * renumbered by accident, and they hold even if every L-layer above is switched off:
+ *   C1 customer assert — assertNotCustomerContent() refuses HI's `[RGS]` fixtures outright
+ *   C2 network abort   — a non-GET whose URL or body names a customer marker is aborted
+ * See customer_content.js for why.
+ *
  * Everything fails CLOSED: a missing label, a missing origin, an unreadable rule, or an
  * unexpected error all mean "not writable".
  *
@@ -69,6 +76,8 @@ const PROTECTED_HOST = /training/i;
 
 /** Requests that cannot change anything. Everything else is a write. */
 const READ_METHODS = ['GET', 'HEAD', 'OPTIONS'];
+
+const customerContent = require('./customer_content');
 
 class WriteGuardError extends Error {
   constructor(message, detail) {
@@ -169,6 +178,38 @@ function assertWritable(env, opts) {
 }
 
 /**
+ * C1 — customer-owned content is refused on its own terms, whatever the environment says.
+ *
+ * assertWritable() above answers "may I write to this environment". This answers a different
+ * question: "may I touch this particular item". They are independent on purpose — if writes are
+ * ever re-enabled for some environment, HI's `[RGS]` fixtures stay refused by this check alone,
+ * and if this check is ever removed the environment guard still refuses. Neither is load-bearing
+ * for the other.
+ *
+ * Fails closed: a subject that cannot be read as text refuses too.
+ *
+ * @param {string|object} subject  the item being changed (or its title)
+ * @param {object} [opts] { script, action, audit }
+ */
+function assertNotCustomerContent(subject, opts) {
+  const o = opts || {};
+  try {
+    return customerContent.assertNotCustomerContent(subject, { script: o.script || 'unknown', action: o.action || 'write' });
+  } catch (err) {
+    const detail = Object.assign({
+      script: o.script || 'unknown',
+      action: o.action || 'write',
+      layers: ['C1'],
+      reasons: [String(err && err.message || err)],
+      at: o.now || new Date().toISOString(),
+    }, (err && err.detail) || {});
+    // Every refusal is an event, not a silence.
+    if (typeof o.audit === 'function') { try { o.audit(detail); } catch (_) {} }
+    throw err;
+  }
+}
+
+/**
  * L5 — network-level backstop for Playwright.
  * Aborts every non-GET request to a protected origin, so a write issued from inside
  * page.evaluate() (which no Node-side check can see) still cannot leave the browser.
@@ -192,6 +233,26 @@ async function armContext(ctx, env, opts) {
 
     const host = hostOf(req.url());
     const hostProtected = PROTECTED_HOST.test(host);
+
+    /* C2 — a write whose URL or body carries a customer marker is aborted here regardless of
+     * environment, so a request issued from inside page.evaluate() (invisible to C1) still
+     * cannot leave the browser. Independent of hostProtected/protectedEnv above. */
+    let payload = '';
+    try { payload = req.url() + ' ' + (req.postData() || ''); } catch (_) { payload = req.url(); }
+    if (customerContent.isCustomerOwned(payload)) {
+      const cdetail = {
+        script: o.script || 'unknown',
+        action: 'network-' + method,
+        url: req.url().slice(0, 200),
+        host,
+        layers: ['C2'],
+        reasons: ['payload อ้างถึงเนื้อหาของลูกค้า (RGS = ข้อมูลทดสอบของ HI) — ตัดที่ชั้น network'],
+        at: new Date().toISOString(),
+      };
+      if (typeof o.audit === 'function') { try { o.audit(cdetail); } catch (_) {} }
+      console.error('CUSTOMER-GUARD C2 BLOCKED ' + method + ' ' + cdetail.url);
+      return route.abort('blockedbyclient');
+    }
     // Block when the request itself targets a protected host, or when this whole run was
     // classified as read-only. Since 2026-08-17 no env is writable, so every armed run is
     // read-only and every non-GET with a resolvable host is aborted here — third parties
@@ -251,6 +312,7 @@ module.exports = {
   classifyEnv,
   isProtectedEnv,
   assertWritable,
+  assertNotCustomerContent,
   armContext,
   isReadMethod,
   hostOf,

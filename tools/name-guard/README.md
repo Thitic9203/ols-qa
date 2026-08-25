@@ -136,6 +136,43 @@ message without sending. Testing the sender by posting and deleting is how a tes
 the QA thread on 2026-08-13.
 
 
+## Customer-owned content — `[RGS]` is never touched, ten layers deep
+
+HI (the customer's QA) keep their own fixtures on the shared pre-prod catalogue, marked `[RGS]`
+in the title. Nothing in this toolkit used to know the difference. On **2026-08-25** the 11:00
+scan reported 68 findings and asked, in the QA channel, for 40 renames — **24 of those rows were
+HI's**, and the standing "Needs fix = คิวงาน" rule points the next agent straight at that list.
+Renaming or deleting another team's fixtures mid-test destroys their run and we cannot put it back.
+
+**The rule (owner, 2026-08-25): ถ้ามี RGS ไม่ต้องยุ่งเด็ดขาด เพราะเป็นของลูกค้า.** Never touch —
+not deprioritise, not ask first — in any flow, forever. And **every alert says so**, on every
+round including a clean one ("เพิ่มเสมอตลอดไป").
+
+The definition lives in one file, [`customer_content.js`](customer_content.js): a token-shaped
+match, so `[RGS]`, `[Beer][RGS]`, `RGS - …` and `[BT] RGS - …` all match while `orgs` does not.
+Adding another customer marker is one entry in `CUSTOMER_MARKERS` and every layer picks it up.
+
+| ชั้น | อยู่ที่ | กันอะไร |
+|:--:|---|---|
+| **1** classifier | `customer_content.js` | นิยามเดียวของคำว่า "ของลูกค้า" — ไม่มี regex กระจายไป 4 ที่แล้วเพี้ยนกันเอง |
+| **2** scanner แยกออก | `scan.js` | ย้ายออกจาก `findings` ไปอยู่ `customerOwned` **ก่อน** นับ `actionable` → โค้ดปลายทางที่ไล่ `findings` เอาไปทำ fix list ไม่ได้ แม้ไม่เคยรู้จักกฎนี้ |
+| **3** alert กรองซ้ำ | `alert_format.js` | builder รันกับรายงานที่ตัวเองไม่ได้สร้างด้วย (ไฟล์เก่า · fixer สร้างเอง · toolkit คนละเวอร์ชัน) — fix list คือสิ่งที่คนลงมือทำ จึงตรวจเองอีกชั้น |
+| **4** remark ถาวร | `alert_format.js` | ทุกฉบับมีบรรทัดบอกว่าไม่แตะ RGS ทั้งใน Prevention และ FYI — รวมรอบที่ clean และรอบที่สแกนล้ม |
+| **5** notify ปฏิเสธ fix list | `notify.js` (exit 6) | ถ้า **Solution** เผลอมี marker = ไม่ส่ง · `--force` ข้ามไม่ได้ (นี่คือเส้นแบ่ง ไม่ใช่กันโนติซ้ำ) |
+| **6** notify ปฏิเสธ remark หาย | `notify.js` (exit 6) | ข้อความที่ไม่มี remark = ไม่ส่ง — คนอ่านจะได้ไม่เข้าใจว่าแถวที่หายไปคือเราลืม |
+| **7** write assert | `write_guard.assertNotCustomerContent()` | ปฏิเสธ **ตัวรายการ** ไม่เกี่ยวกับ env — เปิดสิทธิ์เขียนคืนเมื่อไหร่ ชั้นนี้ยังปฏิเสธอยู่ · fail closed เมื่ออ่านไม่ออก |
+| **8** network abort | `write_guard.armContext()` (C2) | non-GET ที่ URL/body มี marker ถูก abort — ครอบคำสั่งที่ยิงจาก `page.evaluate()` ซึ่งชั้น 7 มองไม่เห็น |
+| **9** runner ปฏิเสธ | `namecheck/run_fix.sh` (exit 4, off-repo) | ตรวจทั้ง argument และ **เนื้อในไฟล์แผนงาน** (mutator รับงานจาก plan JSON ไม่ใช่ command line) · วางไว้ **เหนือ** kill-switch เพื่อให้รอดแม้เปิดสิทธิ์เขียนคืน |
+| **10** tests | `customer_content.test.js` | ผูกทั้ง 9 ชั้นด้วยชื่อจริงจากสแกน 2026-08-25 · หลายเคสอ่าน **source** ไม่ใช่พฤติกรรม เพราะชั้นที่ถูกย้ายไปอยู่ใต้สิ่งที่มันป้องกัน ยังสอบผ่านพฤติกรรมในวันที่ย้าย |
+
+Two directions on purpose: **reporting** answers only on a real marker match (an item we cannot
+read is not silently reclassified as theirs — that would hide our own defects), while **writing**
+fails closed (a marker match *or* an unreadable input both refuse).
+
+A refusal at layer 7, 8 or 9 is audited, never silent — a block nobody hears about is how the
+next attempt gets made.
+
+
 ## Write guard — writes are OFF everywhere
 
 The toolkit no longer only reports; it also fixes (rename, edit, unpublish, delete). Those fixers

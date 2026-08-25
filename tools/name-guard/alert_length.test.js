@@ -30,7 +30,9 @@ const check = (name, fn) => {
   try { fn(); console.log('PASS  ' + name); } catch (e) { failed++; console.log('FAIL  ' + name + ' — ' + e.message); }
 };
 
-const LOREM = 'RGS - สร้างวิดีโอ (เผยแพร่ - แก้ไข) Lorem Ipsum is simply dummy text of the printing '
+// Deliberately carries NO customer marker: `[RGS]` rows are filtered out before the message is
+// built (customer_content.js), so a fixture using one would test the filter, not the length logic.
+const LOREM = 'สร้างวิดีโอ (เผยแพร่ - แก้ไข) Lorem Ipsum is simply dummy text of the printing '
   + 'and typesetting industry. Lorem Ipsum has been the standard dummy text ever since 1966, when '
   + 'designers at Letraset and James Mosley, the librarian at St Bride Printing Library in London, '
   + 'took a 1914 Cicero translation.';
@@ -44,7 +46,7 @@ const big = {
   sources: { media: { count: 53 }, courses: { count: 53 }, 'own:carroll': { count: 60 } },
   findings: [
     { id: 'lorem', source: 'media', type: 'VIDEO', title: LOREM, hits: [{ rule: 'test-trace', why: 'ทดสอบ' }] },
-    ...many(20, (i) => ({ id: 'g' + i, source: 'media', type: 'ARTICLE', title: '[Beer][RGS] - ทดสอบสื่อการเรียนรู้ชุดที่ ' + i, hits: [{ rule: 'gibberish', why: 'x' }] })),
+    ...many(20, (i) => ({ id: 'g' + i, source: 'media', type: 'ARTICLE', title: '[Beer] - ทดสอบสื่อการเรียนรู้ชุดที่ ' + i, hits: [{ rule: 'gibberish', why: 'x' }] })),
     ...many(5, (i) => ({ id: 'c' + i, source: 'courses', type: 'courses', title: 'ทบทวนหลักการเขียนย่อหน้าให้ได้ใจความ ชุด ' + i, hits: [{ rule: 'missing-cover', why: 'x', field: 'coverImageUrl' }] })),
     ...many(5, (i) => ({ id: 'd' + i, source: 'learning-paths', type: 'learning-paths', title: 'ระบบร่างกายมนุษย์: ระบบหายใจและปอด ' + i, hits: [{ rule: 'duplicate-name', why: 'x' }] })),
   ],
@@ -87,9 +89,9 @@ check('dropped examples are accounted for, never just omitted', () => {
 
 check('a small finding set is not truncated for no reason', () => {
   const small = { env: 'preprod', ok: true, sources: { media: { count: 5 } },
-    findings: [{ id: 's', source: 'media', type: 'ARTICLE', title: 'RGS - บทความทดสอบ', hits: [{ rule: 'test-trace', why: 'ทดสอบ' }] }] };
+    findings: [{ id: 's', source: 'media', type: 'ARTICLE', title: 'บทความทดสอบระบบเสียง', hits: [{ rule: 'test-trace', why: 'ทดสอบ' }] }] };
   const m = build(small);
-  assert.ok(m.includes('`RGS - บทความทดสอบ`'), 'short titles must survive verbatim: ' + m);
+  assert.ok(m.includes('`บทความทดสอบระบบเสียง`'), 'short titles must survive verbatim: ' + m);
 });
 
 console.log();

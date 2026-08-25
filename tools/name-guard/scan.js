@@ -42,6 +42,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 const rules = require('./name_rules');
+const customer = require('./customer_content');
 const { establishOwnerSession } = require('./owner_session');
 const argv = process.argv.slice(2);
 const JSON_OUT = (() => { const i = argv.indexOf('--json'); return i >= 0 ? argv[i + 1] : null; })();
@@ -355,6 +356,21 @@ async function checkCoversLoad(page, items) {
     }
 
     report.finishedAt = new Date().toISOString();
+
+    /* L2 — the customer's own fixtures leave `findings` entirely.
+     *
+     * They are not deleted from the report (a reader should still be able to see what was
+     * skipped and why), they are moved to their own list. Downstream code that iterates
+     * `report.findings` — the alert builder, any fixer, any future consumer — therefore cannot
+     * put them on a fix list even if it has never heard of this rule. That is structural,
+     * not a filter someone has to remember to apply. */
+    {
+      const split = customer.partitionFindings(report.findings);
+      report.findings = split.mine;
+      report.customerOwned = split.customer.map((f) => Object.assign({}, f, { customerOwned: true }));
+      report.customerOwnedCount = report.customerOwned.length;
+    }
+
     // A source we could not read in full means the scan did not cover the catalogue. Report
     // that as "could not run", never as a pass.
     // cross-creator name clashes are reported, not counted as work we owe

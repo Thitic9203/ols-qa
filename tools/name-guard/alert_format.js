@@ -22,6 +22,8 @@
  * Enforced by alert_gate.js (7 checks, fail-closed) and pinned by alert_format.test.js.
  */
 
+const customer = require('./customer_content');
+
 /** Discord renders _italic_, *bold*, ~~strike~~, `code`, ||spoiler|| inside plain text. */
 function esc(s) {
   return String(s == null ? '' : s).replace(/([\\`*_~|>])/g, '\\$1');
@@ -106,6 +108,7 @@ function preventionBullets() {
   return [
     'ตรวจชื่ออัตโนมัติบน pre-prod วันละ 2 รอบ เวลา 11:00 และ 17:00 (งานตั้งเวลาบนเครื่อง QA ที่ต่อ VPN) — เครื่องไม่เปิดก็ข้ามรอบนั้นไป ไม่แจ้งเตือนให้รก',
     'training ไม่แตะทุกกรณี — ไม่สแกน ไม่แจ้งเตือน และเขียนข้อมูลไม่ได้ เพราะมีผู้ใช้งานจริงทำงานอยู่',
+    'เนื้อหาของลูกค้าไม่แตะทุกกรณี — รายการที่ขึ้นต้นด้วย RGS เป็นข้อมูลทดสอบของ HI จึงไม่เปลี่ยนชื่อ ไม่ลบ และไม่ขึ้นเป็นงานให้แก้',
     'ตรวจครอบคลุมสื่อ · คอร์สเรียน · เส้นทางการเรียนรู้ · เหรียญรางวัล และคลังของ creator ทุกบัญชี รวมงานที่ยังไม่เผยแพร่ · ดูทั้งชื่อ คำอธิบาย และปกที่หายไป',
     'จับคำที่สื่อถึงการทดสอบ · รหัส ticket · วงเล็บสถานะ · คำอ่านไม่รู้เรื่อง · ชื่อที่เป็นตัวเลขล้วน · คำหยาบ · ชื่อซ้ำของเจ้าของเดียวกัน',
     'เรื่องเดิมที่ยังรอแก้จะไม่แจ้งซ้ำ แจ้งครั้งเดียวจนกว่าผลจะเปลี่ยน และถ้าสแกนไม่สำเร็จจะรายงานว่าล้มเหลว ไม่นับว่าผ่าน',
@@ -129,11 +132,22 @@ function build(r) {
       bullet('รอบนี้ยังไม่รู้ว่ามีชื่อไม่เหมาะสมหรือไม่ — สแกนไม่ครบไม่นับว่าผ่าน'),
       blockLabel('Prevention'),
       ...preventionBullets().map(bullet),
-      q('FYI', 'ไม่มีข้อมูลเพิ่มเติมรอบนี้'),
+      q('FYI', esc(customer.customerRemark(0))),
     ].join('\n');
   }
 
-  const findings = r.findings || [];
+  /* L3 — the customer's content is filtered again, here, on purpose.
+   *
+   * The scanner already moved it out of `findings` (L2). This repeats the check because the
+   * builder also runs on reports it did not produce: an older report file, one hand-built by a
+   * fixer, one from a copy of this toolkit whose scanner predates the rule. A fix list is the
+   * thing a person acts on, so the last step before writing one checks for itself. */
+  const split = customer.partitionFindings(r.findings || []);
+  const findings = split.mine;
+  const skippedCustomer = [...new Set(
+    (Array.isArray(r.customerOwned) ? r.customerOwned : []).concat(split.customer).map((f) => f && f.id),
+  )].filter(Boolean).length;
+
   // One content item can surface twice (public list + its creator's library) — report it once.
   const seenId = new Set();
   const uniq = findings.filter((f) => (seenId.has(f.id) ? false : seenId.add(f.id)));
@@ -150,11 +164,17 @@ function build(r) {
   const dupes = rest.filter((f) => !hard.includes(f) && !noCover.includes(f));
   const dupTitles = [...new Set(dupes.map((f) => f.title))];
 
-  const fyi = crossTitles.length
-    ? 'เหลือชื่อพ้องข้ามผู้สร้าง ' + crossTitles.length + ' ชื่อ ('
-      + crossTitles.slice(0, 3).map((x) => '`' + esc(x) + '`').join(' · ')
-      + ') — เนื้อหาคนละชิ้น ระบบไม่อนุญาตให้แก้สื่อของผู้สร้างรายอื่น ต้องให้เจ้าของช่องปรับชื่อเอง'
-    : 'ไม่มีเรื่องค้างอื่นรอบนี้';
+  /* L4 — the customer-content remark rides on EVERY alert, forever (owner, 2026-08-25).
+   * Unconditional: a clean round says it too, because the point is that those rows are outside
+   * the scan's remit at all times, not that this particular round happened to skip some. */
+  const fyi = [
+    crossTitles.length
+      ? 'เหลือชื่อพ้องข้ามผู้สร้าง ' + crossTitles.length + ' ชื่อ ('
+        + crossTitles.slice(0, 3).map((x) => '`' + esc(x) + '`').join(' · ')
+        + ') — เนื้อหาคนละชิ้น ระบบไม่อนุญาตให้แก้สื่อของผู้สร้างรายอื่น ต้องให้เจ้าของช่องปรับชื่อเอง'
+      : '',
+    esc(customer.customerRemark(skippedCustomer)),
+  ].filter(Boolean).join(' · ');
 
   // ---- nothing to fix ---------------------------------------------------------------
   if (!hard.length && !noCover.length && !dupTitles.length) {
