@@ -136,7 +136,7 @@ message without sending. Testing the sender by posting and deleting is how a tes
 the QA thread on 2026-08-13.
 
 
-## Customer-owned content — `[RGS]` is never touched, ten layers deep
+## Customer-owned content — `[RGS]` is never touched, twelve layers deep
 
 HI (the customer's QA) keep their own fixtures on the shared pre-prod catalogue, marked `[RGS]`
 in the title. Nothing in this toolkit used to know the difference. On **2026-08-25** the 11:00
@@ -164,6 +164,14 @@ Adding another customer marker is one entry in `CUSTOMER_MARKERS` and every laye
 | **8** network abort | `write_guard.armContext()` (C2) | non-GET ที่ URL/body มี marker ถูก abort — ครอบคำสั่งที่ยิงจาก `page.evaluate()` ซึ่งชั้น 7 มองไม่เห็น |
 | **9** runner ปฏิเสธ | `namecheck/run_fix.sh` (exit 4, off-repo) | ตรวจทั้ง argument และ **เนื้อในไฟล์แผนงาน** (mutator รับงานจาก plan JSON ไม่ใช่ command line) · วางไว้ **เหนือ** kill-switch เพื่อให้รอดแม้เปิดสิทธิ์เขียนคืน |
 | **10** tests | `customer_content.test.js` | ผูกทั้ง 9 ชั้นด้วยชื่อจริงจากสแกน 2026-08-25 · หลายเคสอ่าน **source** ไม่ใช่พฤติกรรม เพราะชั้นที่ถูกย้ายไปอยู่ใต้สิ่งที่มันป้องกัน ยังสอบผ่านพฤติกรรมในวันที่ย้าย |
+| **11** command hook | `.claude/hooks/customer-content-guard.sh` (exit 2) | ชั้น 1–10 กัน **toolkit** · ชั้นนี้กัน **คำสั่งที่พิมพ์เอง** ซึ่งเป็นวิธีที่การแก้ content ทีละชิ้นบน pre-prod เกิดขึ้นจริงมาตลอด · นั่งบน Bash tool จึงเห็นทุกคำสั่งไม่ว่าเรียก binary ด้วย path ไหน (`/usr/bin/curl` · python · node) ซึ่ง shell function กับ PATH shim ดักไม่ได้ |
+| **12** shell guard | `~/ols-qa-testing-bot/guard/customer_curl_guard.zsh` (rc 4, off-repo) | เทอร์มินัลของคนนอก session ของ agent · ติดตั้งด้วย `source` 1 บรรทัดใน `.zshrc` ลบบรรทัดนั้นคือถอด · **fail open ถ้าตัวมันเองพัง** โดยตั้งใจ — guard ที่ทำให้ `curl` ใช้ไม่ได้ทั้งเครื่องคือ guard ที่ถูกลบทิ้งภายในวันเดียว |
+
+ชั้น 11 และ 12 ตัดสินด้วย **3 เงื่อนไขพร้อมกัน**: มี marker · เป็นคำสั่งที่**เขียน** · เป้าเป็น env ของ OLS
+(host อ่านจาก `~/.ols-qa-secrets/*.env` ตอนรัน — ไม่มี hostname อยู่ใน repo public นี้ · อ่านไม่ได้จึง fallback
+ไปดูรูป path `/api/media|courses|learning-paths|achievements|livestreams`). ครบ 3 ข้อถึงบล็อก — งานปกติจึงไม่โดน:
+อ่านแถวของลูกค้า · grep · แก้ไฟล์ใน repo · PATCH โนติ Discord ที่ตัวข้อความอ้างถึง `RGS` ผ่านได้หมด
+ผูกด้วย `customer_hook.test.js` ซึ่งทดสอบ **ทั้งสองทางที่พังได้** — ปล่อยของจริงหลุด และบล็อกงานปกติ
 
 Two directions on purpose: **reporting** answers only on a real marker match (an item we cannot
 read is not silently reclassified as theirs — that would hide our own defects), while **writing**
