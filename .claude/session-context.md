@@ -107,3 +107,35 @@ The agentic tooling is installed and constrained rather than merely planned:
 - **Playwright wipes `test-results/` at the start of every run**, including each phase of a staged
   round. Copy failure evidence before running anything else.
 - **Background agents driving a browser stall.** Prefer API reads; keep browser steps short.
+
+## ติดอะไรอยู่ — บันทึกไว้ 2026-08-25 (เจ้าของงานสั่ง: ไม่ต้องเปิดบั๊ก ให้โน้ตไว้)
+
+วัดสดในรอบนี้ทั้งหมด ไม่ได้ยกมาจากรอบก่อน
+
+1. **🔴 เกตนับ ticket จาก "แถว catalog" เท่านั้น — เคสที่มีแต่ spec ไม่ถูกนับเลย.** `ci-assert-ticket-coverage.ts`
+   โหลด `loadCatalog` + `ticketsFor` อย่างเดียว ⇒ `FEED-001…` ใน `trending-feed.spec.ts` ซึ่ง **ไม่มีแถว catalog**
+   (ตัวไฟล์เขียนเองว่า "No catalog rows exist for it; the sheet never had any") ไม่ได้ถูกนับสักเคส
+   ผลคือ `OLS-292 · 310 · 311 · 400` ยังโผล่ในลิสต์ "ไม่มีเคสอ้างถึง" ทั้งที่มีเทสเดินหน้าจอนั้นจริง
+   ⇒ **การปิดช่องว่างกลุ่ม D ต้องเพิ่มแถว catalog เสมอ ไม่ใช่แค่เขียน spec**
+   (ชีต UAT แช่แข็งแล้ว แถวใหม่จึงเป็น local-only · `pull-tc-catalog.mjs` จะรายงานเป็น `vanished` ตอน re-pull
+   ซึ่งอยู่หลัง `--confirm` = เห็นได้ ไม่หายเงียบ)
+
+2. **MCP `playwright-ms` เรียกจาก session นี้ไม่ได้.** `claude mcp list` รันจาก `ols-qa-e2e` เห็น `✔ Connected`
+   แต่ tool `mcp__playwright-ms__*` ไม่มีในเซสชันที่เปิดจาก `ols-qa` · สั่งย้าย working directory แล้ว `pwd`
+   ยังเป็น `ols-qa` = ย้ายไม่สำเร็จภายในเซสชันเดียวกัน
+   ⇒ กฎหลักของแผน (author ผ่าน `playwright-test-planner` + `browser_snapshot`) ทำครบไม่ได้จากเซสชันนี้
+   **ทางแก้: เปิด session ใหม่โดย cwd = `ols-qa-e2e` ตั้งแต่แรก** — recon รอบนี้จึงใช้ scratch spec ของ Playwright ตรงๆ แทน
+
+3. **G2 ยังพิสูจน์ไม่ได้ด้วยเหตุผลเดียวกันกับข้อ 2** — ต้องเรียก tool ที่อยู่ใน deny-list จริงแล้วเก็บคำปฏิเสธ
+   ทำได้เฉพาะเซสชันที่ MCP โหลด (ticket OLS-622)
+
+4. **row 1b (สื่อค้างคิวรออนุมัติ) ยังไม่ได้แก้ และหลักฐานรอบก่อนหายหมด** — ไม่มีทั้ง `round-artifacts/` และ `logs/`
+   ในรีโป ⇒ **ยังไม่รู้ว่า reject 1 เสียงพอถอนของออกจาก `PENDING_APPROVAL` ไหม** (olsClient จดไว้ว่าสายอนุมัติเป็น
+   3 เสียง) · scratch 6 ไฟล์ (`_scratch-taskA-recon*.spec.ts`) ยัง uncommitted และเป็น `@mutates` ที่สร้างบทความใหม่
+   **ห้ามรันซ้ำ** เพราะจะเพิ่มของค้างอีก
+
+5. **รอเจ้าของงานเคาะ 4 เรื่อง ยังไม่มีคำตอบ** — ลบสื่อค้าง 45 ชิ้นไหม · `CNT-004` · `OLS-325` ครอบ 320px ไหม ·
+   แก้ `ssoEmbed` ให้แยกตาม env ไหม
+
+**Jira ของงานนี้:** `OLS-608` `[QA Task] OLS E2E Automate` (สถานะ To Do) · subtask ที่ยังค้าง `OLS-620` (สืบ skip 45)
+· `OLS-621` (รหัสเคสมีวงเล็บ — โค้ดแก้แล้วที่ `dcc5eaa` แต่ ticket ยัง To Do) · `OLS-622` (พิสูจน์ deny-list)
