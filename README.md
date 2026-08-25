@@ -303,7 +303,7 @@ green**. Each gate below maps to a mechanism in that review, not to general good
 - **New [references/figma-design-comparison.md](references/figma-design-comparison.md) — a UI case is not
   verified until its screen has been compared with the design.** Five points per screen: elements present ·
   text **char-exact** · order/position · the states the node defines (empty · loading · error · over-limit ·
-  disabled) · no overflow/overlap. The **node link actually opened** is recorded on the case row — "compared
+  disabled) · no overflow/overlap. The **node link actually opened** is recorded on the report's `Design ref:` line — "compared
   against Figma" with no node is not evidence. **No design reference ⇒ report it back to the person or
   channel that assigned the run** (asking for the node, a written visual contract, or an explicit "function
   only"), keep testing everything that does not depend on it, and hold the visual points at **BLOCKED** —
@@ -328,16 +328,17 @@ green**. Each gate below maps to a mechanism in that review, not to general good
   description) with the same enumerate → row → reconcile discipline. A task stating no verifiable AC is
   BLOCKED with a question to the owner, never a PASSED.
 - **Every retest comment now carries a case list.** New **Step 2c** builds it before testing (contract ids +
-  the surface's existing cases + states + in-scope widths, each with an id, design node and fixture), and the
-  comment posts it as a `Test cases run` table — `Case · Title · Covers · Design node · Status` — reconciled
+  the surface's existing cases + states + in-scope widths, each with an id and fixture), and the
+  comment posts it as a `Test cases run` table — `Case · Title · Covers · Status` — reconciled
   against the `ER*`/`AC*` ids and the `Case coverage: {n}/{total}` line. It is the artifact that outlives the
   ticket: a result that never became a case row never gets re-run, which is how three of the escapes happened.
 - **New gates wired into both workflows:** retest **Step 2d** (design reference gate) and **Step 4i** (design
   comparison + depth sweep, run on PASSED cases too); testing-ticket **Phase B4/B5** (design gate + depth
   scope), **Phase C** confirm block now shows `Design ref` / `Build` / `Widths`, **Phase D** session preflight,
-  and new **E0** (design comparison + measured layout checks per scenario). Phase F2 gains `Width` and
-  `Design node` columns; the F4 reader gate and the retest Step 8·0 gate both fail closed on a missing node
-  link, an unmeasured width, a passed row without evidence, or a "cannot verify" row carrying a pass.
+  and new **E0** (design comparison + measured layout checks per scenario). Phase F2 gains a `Width`
+  column; the design reference stays on the report header's `Design ref:` line rather than in a per-row
+  column. The F4 reader gate and the retest Step 8·0 gate both fail closed on a missing design reference,
+  an unmeasured width, a passed row without evidence, or a "cannot verify" row carrying a pass.
 
 ### v1.28.6 — `/create-bug` now re-checks the board before filing (a defect already settled in another ticket is not a bug) (9 Aug 2026)
 

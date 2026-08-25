@@ -33,4 +33,4 @@ All preconditions and refusal rules are in WORKFLOW.md. MUST NOT start without a
 
 ## QA closing (mandatory before "done")
 
-All close-out gates are in WORKFLOW.md and [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Retest section). MUST NOT claim PASSED/FAILED without evidence in the comment, and MUST NOT post a retest comment — bug or task — without its **case list** (`Test cases run` table: Case · Title · Covers · Design node · Status).
+All close-out gates are in WORKFLOW.md and [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Retest section). MUST NOT claim PASSED/FAILED without evidence in the comment, and MUST NOT post a retest comment — bug or task — without its **case list** (`Test cases run` table: Case · Title · Covers · Status — the design reference goes on the header's `Design ref:` line, never as a per-row column).

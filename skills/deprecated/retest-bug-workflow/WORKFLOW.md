@@ -72,7 +72,7 @@ not a shortcut. Full rule: [test-through-real-steps.md](../../../references/test
 **Compare against the design (Figma) on every UI retest — no design, no verdict.** Every screen this
 retest judges is compared side by side with its design node: elements present · text char-exact ·
 order/position · states · no overflow or overlap. The node link actually opened is recorded in the
-comment (`Design ref:` line) and in each UI case row. **If the screen has no design reference, do not
+comment on the `Design ref:` line — that line is the only place it goes. **If the screen has no design reference, do not
 invent the expected** — report it back to the person or channel that assigned this retest, ask for the
 node (or an explicit "verify function only"), and hold those visual points at **BLOCKED** while the
 rest of the retest continues. Full gate, including spec-drift and revised-AC handling:
@@ -227,7 +227,7 @@ The same list, with each case's outcome, becomes the `Test cases run` table in t
 
 Follow [figma-design-comparison.md](../../../references/figma-design-comparison.md) §1–§2 and §4.
 
-- **A design node exists and covers the screen** → record the link, carry it into every UI case row,
+- **A design node exists and covers the screen** → record the link on the header's `Design ref:` line,
   and compare at Step 4i.
 - **No design node** (none linked, the link does not cover this screen, or the file is unreachable) →
   **report it back to the person or channel that assigned this retest** — state the ticket, the screen,
@@ -376,7 +376,7 @@ Run this **as each case is executed**, not while drafting.
 1. **Compare the captured screen against its design node** on all five points —
    elements present · text char-exact · order/position · the states the node defines · no overflow and
    no overlap ([figma-design-comparison.md](../../../references/figma-design-comparison.md) §3). Record
-   the node link on the case row.
+   the node link on the header's `Design ref:` line.
 2. **Measure, do not eyeball, the layout checks** — overflow is `rect.right > window.innerWidth` or
    `document.documentElement.scrollWidth > window.innerWidth`; overlap is two text rectangles
    intersecting by more than ~3 px. Do this at **every in-scope width**, both sides of any breakpoint
@@ -454,8 +454,8 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 
 *Test cases run:* {n}
 
-||*Case*||*Title*||*Covers*||*Design node*||*Status*||
-|TC_01|{what this case verifies}|ER1|{node link or —}|✅/❌/⛔|
+||*Case*||*Title*||*Covers*||*Status*||
+|TC_01|{what this case verifies}|ER1|✅/❌/⛔|
 
 ||*No.*||*Expected Result*||*Actual Result*||*Evidence*||*Status*||
 |1|{item quoted from the ticket}|{observed}|!tc1.png!|✅/❌|
@@ -465,17 +465,23 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 ```
 
 The **`Test cases run` table is mandatory on every retest — bug and task alike.** It is the Step 2c
-case list with outcomes: one row per case (`Case` · `Title` · `Covers` = the `ER*`/`AC*` ids · `Design
-node` · `Status`), covering the ticket's own contract **and** the surface cases pulled in at Step 2c.
+case list with outcomes: one row per case (`Case` · `Title` · `Covers` = the `ER*`/`AC*` ids ·
+`Status`), covering the ticket's own contract **and** the surface cases pulled in at Step 2c.
 It is what tells the next reader what was actually exercised, and it is the artifact that outlives the
 ticket — a result that never became a case row does not get re-run
 ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §1). A **Task /
 Story** retest carries this table and the per-`AC*` verdict table below it; it never ships as prose.
-For an API-only retest the `Design node` column is dropped.
 
-**Put the design node in the cell as a bare URL — never as `[label|url]`.** In v2 wiki the `|` inside a
-link is also the cell delimiter, so a labelled link splits the row (same failure class as `!img|width=N!`,
-PM-004). A row whose design node is missing carries the Step 2d reason instead (`no design — asked {who}`).
+🔴 **The case table carries NO design-node column — not on any retest, ever.** The design reference is
+one fact about the round, not a per-row fact, so it belongs on the header's `Design ref:` line and
+nowhere else: the node URL when one exists, or the Step 2d reason when none does. A column repeating
+"no node" down every row tells the reader nothing and was removed on user instruction 2026-08-25 after
+it shipped that way. When different cases genuinely use different nodes, name them on the `Design ref:`
+line (`TC_03 → {url} · TC_07 → {url}`) rather than reinstating a column.
+
+**Put any design-node URL on the `Design ref:` line as a bare URL — never as `[label|url]`.** In v2 wiki
+the `|` inside a link is also the cell delimiter, so a labelled link splits a row it lands in (same
+failure class as `!img|width=N!`, PM-004).
 
 The **`Evidence` column** (between `Actual Result` and `Status`) holds the case's screenshot **in the
 cell** — `!file.png!`, pre-resized, **no `|width=…`** (the pipe breaks the row). One image per row,
@@ -671,7 +677,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌**; env + results table present (bold headers, `No.` column).
 - [ ] **Case list present and reconciled:** the `Test cases run` table carries every Step 2c case with a status, every `ER*`/`AC*` id appears in some case's `Covers` cell, and `Case coverage: {n}/{total}` matches the rows. A planned-but-unrun case is a BLOCKED row with its reason — never a shortened list.
-- [ ] **Design reference accounted for on every UI case:** a node link in the row, or the Step 2d BLOCKED-with-reason naming who was asked. A UI case with neither is not verified — do **not** transition ([figma-design-comparison.md](../../../references/figma-design-comparison.md)).
+- [ ] **Design reference accounted for:** the header's `Design ref:` line carries the node link(s) actually opened, or the Step 2d reason naming who was asked. A UI retest with neither is not verified — do **not** transition ([figma-design-comparison.md](../../../references/figma-design-comparison.md)).
 - [ ] **No passing row whose actual result contains `caveat` / `not verifiable` / `assumed` / `ยืนยันไม่ได้` / `ตรวจไม่ได้`** — such a row is BLOCKED or PWMI, never PASSED ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §3).
 - [ ] **Every passing row carries an evidence reference** — `count(passing rows) == count(evidence links)`.
 - [ ] **AC/EC coverage reconciled (7-layer gate layer 6·7):** `enumerated Step 2 ER* ids == rows carrying a status + evidence (or explicit BLOCKED)`, and `Expected-result coverage: {n}/{total}` has `{n}=={total}`. Every expected-result/detail item is its **own row** — none only in a remark/note/chat; no PASSED verdict over an unverified or differing item. Any shortfall ⇒ do **not** transition; go back and close it.
@@ -887,9 +893,9 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST run the Step 9 pre-notify review gate (5 checks on dry-run output) before EVERY send, including resends | Catches wrong recipient/link/counts before they go live (user rule 2026-07-15) |
 | MUST embed each FE screenshot in its verdict-table `Evidence` cell as `!file.png!` — pre-resized (~600–640 px), **no `\|width=…`** (the pipe splits the table row) — never leave as filename-only text | Screenshots must render as pictures inside the cell; a `\|width` param breaks the row, and filename text is unreadable evidence (OLS-289, 2026-07-27) |
 | MUST retest a **Task / Story** against its Acceptance Criteria (read where the AC actually lives, usually the description) with the same enumerate→row→reconcile discipline a Bug's Expected Result gets; a ticket stating no verifiable AC is BLOCKED + a question to the owner, never PASSED | A task retest with no written contract is an unverified pass; "nothing to check" is not a check |
-| MUST post a **case list** in the retest comment (`Test cases run` table: Case · Title · Covers · Design node · Status) for **both** bug and task retests, reconciled against the Step 2c list and the `ER*`/`AC*` ids | A result that never becomes a case row is never re-run; three customer escapes came through results that lived only as comment prose |
+| MUST post a **case list** in the retest comment (`Test cases run` table: Case · Title · Covers · Status — **never a design-node column**; the design reference lives on the header's `Design ref:` line) for **both** bug and task retests, reconciled against the Step 2c list and the `ER*`/`AC*` ids | A result that never becomes a case row is never re-run; three customer escapes came through results that lived only as comment prose |
 | MUST scope the retest to the **whole surface** the fix touched (its existing cases + the states and in-scope widths the design defines), not only the reported line | A component was retested on one screen while the defect sat on another screen reusing it — the customer found it |
-| MUST compare every UI case against its **design node** on all five points and record the node link on the case row | An all-present, mis-ordered screen passes a "shows A, B, C" expected; `figma` appeared zero times in the set that shipped the escapes |
+| MUST compare every UI case against its **design node** on all five points and record the node link on the header's `Design ref:` line — never as a per-row column | An all-present, mis-ordered screen passes a "shows A, B, C" expected; `figma` appeared zero times in the set that shipped the escapes |
 | MUST report a missing design reference back to the person/channel that assigned the retest and hold those visual points **BLOCKED** — never assume a label, order, or layout, never PASSED | An assumed expected is not a spec; it produces both phantom bugs and false passes (PM-006) |
 | MUST report a screen this ticket intentionally changed as **design out of date** (name the design owner, ask for the node update in this ticket) instead of filing it as a defect | A relocated menu was reported missing when it existed in a submenu — a full round lost |
 | MUST spell out a mid-test AC revision in the verdict line (`PASSED against AC as revised {date}, differs from design in {…}`) and hand the difference to the known-limitation list | A silent PASSED on a revised AC shipped the review's only High-severity escape |

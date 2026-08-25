@@ -335,14 +335,17 @@ Always post a clear summary **in the same conversation** before anything else:
 ### F2 — Results table
 
 ```text
-| # | Scenario | AC/EC id | Width | Design node | Result | Evidence |
-|---|----------|----------|-------|-------------|--------|----------|
-| 1 | ...      | AC1      | 1280  | node-link   | PASSED | shot-01.png |
-| 2 | ...      | AC2 / EC1| 375   | node-link   | FAILED | shot-02.png |
+| # | Scenario | AC/EC id | Width | Result | Evidence |
+|---|----------|----------|-------|--------|----------|
+| 1 | ...      | AC1      | 1280  | PASSED | shot-01.png |
+| 2 | ...      | AC2 / EC1| 375   | FAILED | shot-02.png |
 ```
 
 **Every row carries evidence — passed rows included** (`count(passed rows) == count(evidence
-references)`), and every UI row carries its **design node** or the Phase B BLOCKED-with-reason. A
+references)`). 🔴 **No design-node column** — the design reference is one fact about the round, not a
+per-row fact: it goes on the report header's `Design ref:` line (the node URL, or the Phase B
+BLOCKED-with-reason when none exists), never repeated down every row. Removed on user instruction
+2026-08-25. A
 run whose passed rows have no evidence cannot be re-examined later, which is how layout defects
 survived a green round and reached the customer
 ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §7). `Width` is
@@ -597,7 +600,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] F1–F4 posted before any external update.
 - [ ] **AC/EC coverage gate (7-layer) PASSED — `enumerated AC*/EC* ids == rows carrying a verdict + evidence (or explicit BLOCKED)`** ([qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *AC/EC & bug-detail coverage*): every Acceptance Criteria / Expected-Condition line was enumerated char-exact in Phase B, mapped 1:1 to a scenario, executed on its real surface, and appears as its **own row** in F2 — none parked only in a remark/Notes/chat, no case PASSED on partial coverage; a differing item is a FAILED/PWMI row (per matrix), an unreached item a BLOCKED row (a coverage gap, not a product FAILED) — neither a footnote. Fail closed: any id unrun/unrowed/verdict-less ⇒ story not complete.
 - [ ] Every scenario has PASSED/FAILED/BLOCKED/NOT TESTED with evidence reference.
-- [ ] **Design (Figma) comparison ran for every UI scenario** ([figma-design-comparison.md](../../../references/figma-design-comparison.md)): node link on every UI row, five points compared (present · char-exact text · order/position · states · no overflow/overlap measured); a screen with **no** design reference was reported back to the assigning person/channel in Phase B and its visual points left **BLOCKED**, never PASSED; a screen this ticket intentionally changed was reported as **design out of date** (owner named) rather than listed as a defect; a mid-test AC revision is spelled out as an accepted limitation.
+- [ ] **Design (Figma) comparison ran for every UI scenario** ([figma-design-comparison.md](../../../references/figma-design-comparison.md)): design reference recorded on the report header's `Design ref:` line (never a per-row column), five points compared (present · char-exact text · order/position · states · no overflow/overlap measured); a screen with **no** design reference was reported back to the assigning person/channel in Phase B and its visual points left **BLOCKED**, never PASSED; a screen this ticket intentionally changed was reported as **design out of date** (owner named) rather than listed as a defect; a mid-test AC revision is spelled out as an accepted limitation.
 - [ ] **Depth gates green** ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md)): the whole surface covered (its existing cases, not only this ticket's AC) · values checked against their source · every in-scope width run with overflow/overlap **measured**, out-of-scope widths stated · states exercised (empty/loading/error/over-limit/disabled) · fixture big enough to overflow or scroll · build id recorded · evidence on **passed** rows too · no `caveat/not verifiable/assumed` row carrying a passing verdict · anything wrong that was seen is reported even where no AC asked for it.
 - [ ] **Story evidence-completeness gate (5-step) PASSED — the work is not done until it is green.** Per [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *Story-testing evidence-completeness gate*: every non-BLOCKED case carries a **whole-flow MP4 + one screenshot per Expected-Result item** (a retest-bug re-verify carries the MP4 per case + a screenshot only on text-verification cases, attached to Jira not Drive); every MP4 clears the **7-layer quality+correctness gate** in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) (max quality · whole flow, no skip · reaches the stated target, no early cut · ER on screen · legible · integrity+match · link-verified); every file resolves, plays/non-blank, and matches the exact case; verdict↔bug↔remark are consistent (minor-issue ⇒ a ≤Medium bug flagged, FAILED ⇒ High+, no stale BLOCKED note on a PASSED row). Fail closed: one red case = story not complete.
 - [ ] Every FAILED/BLOCKED defect has its repro matrix (one row per entry point, untried paths `not tested`), expected-line-verbatim vs actual, **root cause**, and — where the deviation is from the written expectation — resolution options with a named owner.
@@ -674,7 +677,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST NOT rewrite a ticket's acceptance/expected text to match observed behavior | The spec owner decides; QA reports the conflict and names them |
 | MUST pass the F4 reader gate before Phase G | The gate exists so answers land in the write-up, not in a round-trip that ends in an edited record |
 | MUST re-verify before answering any question that arrives after publishing, then fold the answer into the published record in place (Phase H) | Answering from memory publishes wrong claims |
-| MUST compare every UI scenario against its **design node** on all five points (present · char-exact text · order/position · states · no overflow/overlap measured) and record the node link on the row | An all-present, mis-ordered screen passes a "shows A, B, C" expected; the set that shipped 25 customer-found defects contained the word `figma` zero times |
+| MUST compare every UI scenario against its **design node** on all five points (present · char-exact text · order/position · states · no overflow/overlap measured) and record the node link on the report header's `Design ref:` line, never as a per-row column | An all-present, mis-ordered screen passes a "shows A, B, C" expected; the set that shipped 25 customer-found defects contained the word `figma` zero times |
 | MUST report a screen with **no design reference** back to the person/channel that assigned the run, keep its visual points **BLOCKED**, and continue the rest of the run — never assume a label, order, or layout, never PASSED | An assumed expected is not a spec; it produces both phantom defects and false passes (PM-006) |
 | MUST report a screen this ticket intentionally changed as **design out of date** (name the design owner, ask for the node update in this ticket) instead of listing it as a defect | A relocated menu was reported missing when it existed in a submenu — a full round lost |
 | MUST spell out a mid-test AC revision in the verdict (`PASSED against AC as revised {date}, differs from design in {…}`) and hand the difference to the known-limitation list | A silent PASSED on a revised AC shipped the review's only High-severity escape |
