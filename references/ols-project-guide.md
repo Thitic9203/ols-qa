@@ -318,32 +318,44 @@ window first, by sprint START date) → active rows with no window.** CANCELLED 
 rows leave the list entirely.
 
 Inside a bucket: **Task before Bug**, then the **holder ladder**, then the source's own order. The
-ladder is `HOLDER_ORDER` in the tool — one list, so the rungs cannot drift apart:
+ladder is `HOLDER_ORDER` in the tool — one list, so the rungs cannot drift apart. **Every in-flight
+status has a rung of its own**, which is the point: rows of one status are always contiguous
+instead of being interleaved by whatever order the customer happened to type them in (owner,
+2026-08-25).
 
-| rung | status | who is holding the row |
+| rung | status | why it sits there |
 |:--:|---|---|
 | 1 | `Awaiting SKL-PO Confirmation` | the PO — no fix window decided yet, somebody has to chase it |
 | 2 | `FIXING BY SKL-DEV` | the dev — the work is still open |
 | 3 | `RECHECK BY SKL-QA` | QA — the fix is in, only the verification is left |
-| 4 | anything else | keeps its place below the three, in the source's own order |
+| 4 | `FAILED AFTER RETEST` | the fix shipped and did not survive retest |
+| 5 | `OPEN` | nobody has picked it up |
+| 6 | `COMMENT FROM HI` | a question from HI is waiting on an answer |
+| 7 | `IMPROVEMENT` | not a defect at all |
+| — | a status with no rung | below every rung, **grouped on its own text** — a word the customer invents next does not scatter either |
+
+Rungs 4–7 order by how badly the row is stuck, which is a judgement, not something the customer
+stated. It is cheap to change: reorder the list, nothing else.
 
 The ladder is a **tiebreak and nothing more** — it applies only among rows that are otherwise
-indistinguishable (same bucket, same ticket type, same sprint window), so the reader stops seeing
-in-flight work interleaved by whatever order the customer happened to type it in. It never lifts a
-row over a different type, an earlier window, or a better bucket; the tests
+indistinguishable (same bucket, same ticket type, same sprint window). It never lifts a row over a
+different type, an earlier window, or a better bucket; the tests
 `awaiting_is_only_a_tiebreak_never_a_promotion` and
 `fixing_before_recheck_is_only_a_tiebreak_never_a_promotion` pin each of those, and
 `holder_ladder_is_spelled_as_the_customer_spells_it` pins every rung against the customer's
 dropdown — a near-miss there would stop the rule firing silently instead of failing.
 
-🔴 **Rungs 2 and 3 were split on 2026-08-24→25 at the owner's request; the split also pushed every
-off-ladder status below `RECHECK BY SKL-QA`.** Before, rungs 2–4 were one bucket, so `FAILED AFTER
-RETEST` · `OPEN` · `COMMENT FROM HI` · `IMPROVEMENT` were interleaved with the fixing and recheck
-rows. None of those statuses held a live row on the day (measured: the 77 mirrored rows carried
-only PASSED · READY TO TEST · Awaiting · FIXING · RECHECK), so nothing visibly moved for them —
-but a row landing on one of those statuses now sorts to the bottom of its group. Live effect on
-the day: **19 rows moved**, the 24/08–28/08 window ending Awaiting → FIXING (Task then Bug) →
-RECHECK.
+🔴 **`every_in_flight_status_has_a_rung` is the test that keeps this from decaying.** Every status
+`STATUS_STYLE` paints, minus the ones with a bucket of their own (`PASSED`, `READY TO TEST`) and
+the dropped ones (`CANCELLED`), must appear on the ladder. Without it the scatter returns the next
+time the customer adds a word — which already happened once, with `RECHECK BY SKL-QA`.
+
+**What the two 2026-08-25 changes actually moved.** Splitting `FIXING` from `RECHECK` moved **19
+rows** — the 24/08–28/08 window now reads Awaiting → FIXING (Task then Bug) → RECHECK. Giving
+rungs 4–7 their own places moved **nothing on the day**: the 77 mirrored rows carried only PASSED ·
+READY TO TEST · Awaiting · FIXING · RECHECK, so the run went straight to `unchanged — nothing to
+write` (the fingerprint is computed from the payload, so an identical payload is itself the proof
+that no live row was affected).
 
 **It legitimately increases how often the mirror rewrites.** A row whose status flips between two
 rungs of the ladder now reorders *within* its bucket where before it did not move at all, and 21 of
