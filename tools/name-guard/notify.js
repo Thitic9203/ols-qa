@@ -118,19 +118,30 @@ function handsOffReason(rep) {
  * --force does NOT override either. This is a boundary, not duplicate suppression.
  */
 function customerContentReason(text) {
-  const lines = String(text || '').split('\n');
-  const solution = [];
-  let inSolution = false;
-  for (const ln of lines) {
-    if (/^> \*\*Solution:\*\*/.test(ln)) { inSolution = true; continue; }
-    if (/^> \*\*[A-Za-z ]+:\*\*/.test(ln)) { inSolution = false; continue; }
-    if (inSolution) solution.push(ln);
+  const content = String(text || '');
+
+  /* Allowlist, not block-scoping.
+   *
+   * The first version of this check parsed out the Solution block and looked for the marker
+   * inside it. That reads well and fails silently: rename the `Solution` label — a translation,
+   * a format tweak, a future field — and the parser finds no block, scans nothing, and passes
+   * every message including one whose fix list is entirely the customer's content. A gate that
+   * answers "clean" when it did not understand the input is worse than no gate.
+   *
+   * So the rule is inverted. There are exactly two places an alert is allowed to say `RGS`:
+   * the standing Prevention sentence and the FYI remark, both of which come from
+   * customer_content.js. Remove those two, and ANY remaining mention — anywhere, under any
+   * label, in a field that does not exist yet — refuses the send. */
+  const sanctioned = content
+    .split(customer.CUSTOMER_PREVENTION).join('')
+    .split(customer.CUSTOMER_REMARK).join('');
+  const m = customer.customerMarkerOf(sanctioned);
+  if (m) {
+    const line = sanctioned.split('\n').find((l) => customer.customerMarkerOf(l)) || '';
+    return 'ข้อความอ้างถึงเนื้อหาของลูกค้านอกจุดที่อนุญาต (' + m.token + ') — ' + line.trim().slice(0, 120);
   }
-  for (const ln of solution) {
-    const m = customer.customerMarkerOf(ln);
-    if (m) return 'Solution bullet อ้างถึงเนื้อหาของลูกค้า (' + m.token + ') — ' + ln.trim().slice(0, 120);
-  }
-  if (!String(text || '').includes(customer.CUSTOMER_REMARK)) {
+
+  if (!content.includes(customer.CUSTOMER_REMARK)) {
     return 'ข้อความนี้ไม่มี remark เรื่องเนื้อหาของลูกค้า — ต้องมีทุกฉบับเสมอ';
   }
   return null;

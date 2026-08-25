@@ -41,10 +41,25 @@ function markerRe(token) {
   return new RegExp('(?<![A-Za-z])' + token + '(?![A-Za-z])', 'i');
 }
 
+/* Compare on normalised text, never on the raw bytes.
+ *
+ * A plain regex over the raw string is defeated by things that look identical on screen:
+ * `[ＲＧＳ]` in fullwidth letters, or a zero-width space wedged between the R and the GS.
+ * Neither is exotic — a title pasted out of a spreadsheet or a chat client can carry either
+ * by accident, and a marker that a human reads as `[RGS]` while the guard reads as clean is
+ * the worst of both worlds. NFKC folds the width variants together; the strip removes the
+ * invisible characters. Neither step can invent a marker that was not there: no combination
+ * of them turns `orgs` into the token. */
+const INVISIBLE = /[\u00AD\u200B-\u200F\u2060\u2066-\u2069\uFEFF]/g;
+function normalise(text) {
+  return String(text).normalize('NFKC').replace(INVISIBLE, '');
+}
+
 /** The marker that claims this text, or null. Reporting-side: a real match only. */
 function customerMarkerOf(text) {
   if (typeof text !== 'string') return null;
-  for (const m of CUSTOMER_MARKERS) if (markerRe(m.token).test(text)) return m;
+  const t = normalise(text);
+  for (const m of CUSTOMER_MARKERS) if (markerRe(m.token).test(t)) return m;
   return null;
 }
 
@@ -116,6 +131,12 @@ function partitionFindings(findings) {
 const CUSTOMER_REMARK =
   'ไม่ได้แก้รายการที่มี RGS เพราะเป็นข้อมูลทดสอบของ HI — ไม่แตะ ไม่เปลี่ยนชื่อ ไม่ลบ ไม่นับเป็นงานค้างของเรา';
 
+/* The Prevention bullet that states the standing rule. Lives here, not in the alert builder,
+ * because the notifier has to recognise it as sanctioned text — two copies of one sentence in
+ * two files is how the notifier ends up refusing the very message it is meant to allow. */
+const CUSTOMER_PREVENTION =
+  'เนื้อหาของลูกค้าไม่แตะทุกกรณี — รายการที่มี RGS เป็นข้อมูลทดสอบของ HI ไม่เปลี่ยนชื่อ ไม่ลบ ไม่ขึ้นเป็นงานให้แก้';
+
 /** The remark, with this round's count appended when there is one to report. */
 function customerRemark(count) {
   const n = Number(count);
@@ -126,6 +147,7 @@ function customerRemark(count) {
 
 module.exports = {
   CUSTOMER_MARKERS,
+  CUSTOMER_PREVENTION,
   CUSTOMER_REMARK,
   CustomerContentError,
   assertNotCustomerContent,
@@ -134,5 +156,6 @@ module.exports = {
   isCustomerOwned,
   itemIsCustomerOwned,
   markerRe,
+  normalise,
   partitionFindings,
 };

@@ -72,6 +72,24 @@ check('L1 · the marker is a token, not a substring', () => {
   assert.ok(customer.isCustomerOwned('(RGS)'), 'punctuation-flanked must match');
 });
 
+/* Both of these were live holes on 2026-08-25, found by attacking the guard rather than by
+ * testing it. A title that a human reads as `[RGS]` while the guard reads as clean is the
+ * worst of both worlds, so the comparison is done on normalised text. */
+check('L1 · a zero-width space inside the marker does not hide it', () => {
+  assert.ok(customer.isCustomerOwned('[R\u200bGS] - ทดสอบ live'), 'zero-width space evaded the marker');
+  assert.ok(customer.isCustomerOwned('R\ufeffGS - บทความ'), 'BOM evaded the marker');
+});
+
+check('L1 · fullwidth letters do not hide it either', () => {
+  assert.ok(customer.isCustomerOwned('[ＲＧＳ] - ทดสอบ'), 'fullwidth ＲＧＳ evaded the marker');
+});
+
+check('L1 · normalising never invents a marker that was not there', () => {
+  for (const t of REAL_OURS) {
+    assert.ok(!customer.isCustomerOwned(customer.normalise(t)), 'normalising created a false positive: ' + t);
+  }
+});
+
 check('L1 · a description carries ownership even when the title is clean', () => {
   assert.ok(customer.itemIsCustomerOwned({ title: 'ฟังเพลงคลายเครียด', description: '[RGS] fixture' }));
 });
@@ -184,6 +202,30 @@ check('L5 · notify.js refuses a message whose fix list names the customer', () 
 check('L6 · notify.js refuses a message with no remark', () => {
   const s = src('notify.js');
   assert.ok(/CUSTOMER_REMARK/.test(s), 'notify.js must assert the remark is present');
+});
+
+check('L5 · the gate is an allowlist, so a renamed field cannot make it pass vacuously', () => {
+  const src2 = src('notify.js');
+  const fn = src2.slice(src2.indexOf('function customerContentReason'), src2.indexOf('(async () =>'));
+  const reason = new Function('customer', 'return ' + fn.replace('function customerContentReason', 'function'))(customer);
+
+  // The Solution label is not `Solution` any more — a translation, a format tweak, anything.
+  const drifted = '**x**\n> **แนวทางแก้ไข:**\n> • เปลี่ยนชื่อ `[RGS] - ทดสอบ live`\n> **FYI:** ' + customer.CUSTOMER_REMARK;
+  assert.ok(reason(drifted), 'a fix list under an unrecognised label must still refuse');
+
+  // A real, correct message must still go out — the two sanctioned mentions are allowed.
+  const good = build({ env: 'preprod', ok: true, sources: { media: { count: 2 } },
+    findings: [{ id: 'o', source: 'media', type: 'ARTICLE', title: 'บทความทดสอบระบบเสียง',
+      hits: [{ field: 'title', rule: 'test-trace', why: 'ทดสอบ' }] }] });
+  assert.strictEqual(reason(good), null, 'a correct message must not be blocked: ' + good);
+  assert.ok(reason('**x** no remark here'), 'a message with no remark must refuse');
+});
+
+check('L5 · the sanctioned sentences have ONE definition, shared by both files', () => {
+  assert.ok(/customer\.CUSTOMER_PREVENTION/.test(src('alert_format.js')),
+    'the alert must emit the shared sentence, not its own copy');
+  assert.ok(/CUSTOMER_PREVENTION/.test(src('notify.js')),
+    'the notifier must recognise the same shared sentence');
 });
 
 // ── L7 — the write guard refuses the item itself ────────────────────────────────────────
