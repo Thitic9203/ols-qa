@@ -311,23 +311,43 @@ cross-check when it carries a key):
 | `Archievement` | `Achievement` | NH-483 — **ours**: OLS-578's summary carried it, next to a component tag spelling `Achievement` correctly. Jira fixed 2026-08-25 |
 | `เนื่อหา` | `เนื้อหา` | NH-436 — a **quoted button label**, so it stayed out of the table until `<PREPROD_HOST>` was fetched signed-out and the live DOM read `<button …>เริ่มสร้างเนื้อหา</button>`, 0 occurrences of the misspelling. Both the customer's sheet and OLS-498 were wrong; OLS-498 fixed 2026-08-25 |
 
-### Sort — and the `Awaiting SKL-PO Confirmation` tiebreak (reader's request, 2026-08-25)
+### Sort — and the holder ladder inside a group (reader's request, 2026-08-25)
 
 Top to bottom: **PASSED → READY TO TEST → rows with a committed OLS-board sprint window (soonest
 window first, by sprint START date) → active rows with no window.** CANCELLED has no bucket; those
 rows leave the list entirely.
 
-Inside a bucket: **Task before Bug**, then **`Awaiting SKL-PO Confirmation` before every other
-status**, then the source's own order. The status step is a **tiebreak and nothing more** — among
-rows that are otherwise indistinguishable (same bucket, same ticket type, same sprint window) the
-ones still waiting on a PO decision are the ones somebody has to chase, so they head their group
-instead of being scattered through it by whatever order the customer happened to type them in. It
-never lifts a row over a different type, an earlier window, or a better bucket; the test
-`awaiting_is_only_a_tiebreak_never_a_promotion` pins each of those.
+Inside a bucket: **Task before Bug**, then the **holder ladder**, then the source's own order. The
+ladder is `HOLDER_ORDER` in the tool — one list, so the rungs cannot drift apart:
 
-**It legitimately increases how often the mirror rewrites.** A row whose status flips into or out
-of `Awaiting SKL-PO Confirmation` now reorders *within* its bucket where before it did not move at
-all, and 21 of 77 rows currently hold that status against a writer every 5 minutes. That is the
+| rung | status | who is holding the row |
+|:--:|---|---|
+| 1 | `Awaiting SKL-PO Confirmation` | the PO — no fix window decided yet, somebody has to chase it |
+| 2 | `FIXING BY SKL-DEV` | the dev — the work is still open |
+| 3 | `RECHECK BY SKL-QA` | QA — the fix is in, only the verification is left |
+| 4 | anything else | keeps its place below the three, in the source's own order |
+
+The ladder is a **tiebreak and nothing more** — it applies only among rows that are otherwise
+indistinguishable (same bucket, same ticket type, same sprint window), so the reader stops seeing
+in-flight work interleaved by whatever order the customer happened to type it in. It never lifts a
+row over a different type, an earlier window, or a better bucket; the tests
+`awaiting_is_only_a_tiebreak_never_a_promotion` and
+`fixing_before_recheck_is_only_a_tiebreak_never_a_promotion` pin each of those, and
+`holder_ladder_is_spelled_as_the_customer_spells_it` pins every rung against the customer's
+dropdown — a near-miss there would stop the rule firing silently instead of failing.
+
+🔴 **Rungs 2 and 3 were split on 2026-08-24→25 at the owner's request; the split also pushed every
+off-ladder status below `RECHECK BY SKL-QA`.** Before, rungs 2–4 were one bucket, so `FAILED AFTER
+RETEST` · `OPEN` · `COMMENT FROM HI` · `IMPROVEMENT` were interleaved with the fixing and recheck
+rows. None of those statuses held a live row on the day (measured: the 77 mirrored rows carried
+only PASSED · READY TO TEST · Awaiting · FIXING · RECHECK), so nothing visibly moved for them —
+but a row landing on one of those statuses now sorts to the bottom of its group. Live effect on
+the day: **19 rows moved**, the 24/08–28/08 window ending Awaiting → FIXING (Task then Bug) →
+RECHECK.
+
+**It legitimately increases how often the mirror rewrites.** A row whose status flips between two
+rungs of the ladder now reorders *within* its bucket where before it did not move at all, and 21 of
+77 rows currently hold `Awaiting SKL-PO Confirmation` against a writer every 5 minutes. That is the
 feature working — not thrashing. Measured across the whole log after the change: **38 written vs
 548 unchanged, longest consecutive-written streak 3**, and that streak is the initial seeding.
 
