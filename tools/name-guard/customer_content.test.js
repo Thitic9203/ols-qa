@@ -266,6 +266,21 @@ check('L9 · the mutator wrapper refuses customer content, off-repo', () => {
     'the customer refusal must sit ahead of the write kill-switch, so it survives writes being re-enabled');
 });
 
+check('L9 · the shim every mutator imports carries the per-item gate too', () => {
+  const shim = path.join(require('os').homedir(), 'ols-qa-testing-bot', 'namecheck', 'guard.js');
+  if (!fs.existsSync(shim)) {
+    console.log('      (skipped — the off-repo toolkit is not on this machine)');
+    return;
+  }
+  const s = fs.readFileSync(shim, 'utf8');
+  assert.ok(/assertNotCustomerContent/.test(s),
+    'the ten mutators reach the guard through this one shim — the gate must be available there');
+  // The stub used when the rules file cannot be loaded must refuse too, not quietly pass.
+  const stub = s.slice(s.indexOf('} catch (e) {'), s.indexOf('/** Gate a mutating script'));
+  assert.ok(/assertNotCustomerContent/.test(stub),
+    'a guard that cannot load must refuse, never read as allowed');
+});
+
 // ── L10 — this file is itself the tenth layer; keep it honest ───────────────────────────
 check('L10 · the marker list is non-empty and every entry names an owner', () => {
   assert.ok(customer.CUSTOMER_MARKERS.length > 0, 'an empty list protects nothing');
