@@ -664,7 +664,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] Step 7d fix-verify completed.
 - [ ] **Step 8·0 format-completeness gate passed BEFORE any transition** — FE bug: screenshots embedded inline + render-verified; API bug: full cURL/response per row.
 - [ ] Bug landed in Done → **Step 8d** run: stories it blocked either moved to ready-for-QA or left with their remaining blockers reported.
-- [ ] Step 9 QA notify sent if the project configures a channel (retest verdict + Jira comment link + @mention).
+- [ ] Step 9 QA notify sent if the project configures a channel (retest verdict + Jira comment link + @mention) — **sent regardless of who invoked the retest** (owner, another QA, slash command, bot/trigger) and regardless of whether they asked for one.
 - [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (Retest section).
 
 ---
@@ -763,6 +763,8 @@ Include the 8d outcome: which stories were moved, and which stayed blocked and b
 ## Step 9 — QA result notify (if the project configures a channel)
 
 After the transition, if the project defines a **QA notify channel** (Discord/Slack/chat), post a **retest-result** notification so the reporter / QA owner sees the outcome.
+
+**Who invoked the retest never changes this.** The notify is part of closing a retest, not a favour to the person who asked for one. It is sent the same way whether the workflow was started by the repo owner, by another QA, by a teammate in the channel, by a slash command, or by an unattended bot/trigger — and whether or not that person mentioned a notification. The **only** condition is the one above: the project configures a channel. A retest whose comment is posted and whose ticket is transitioned but whose notify was skipped is **not closed**.
 
 - Load channel, format, recipient, and any helper from the workspace `*-retest-guide.md` / project guide. **Never hardcode webhook URLs, tokens, machine paths, or user IDs in this skill** ([portable-content.md](../../../references/portable-content.md)) — they live in project config or local agent memory.
 - Message = the single **retest verdict** (PASSED ✅ / FAILED ❌), a short bullet of what was checked, a link to the Jira retest comment, and an @mention of the recipient.
@@ -890,6 +892,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST pass the Step 6b dev-question gate before the FIRST post — never "post now, explain in chat" | The gate exists so the answers land in the comment, not in a round-trip that ends in an edited comment (OLS-108) |
 | MUST re-verify (re-run the surface) before answering any question that arrives after posting, then fold the answer into the original comment in place and re-run Step 7d | Answering from memory published a wrong claim once already |
 | MUST correct a wrong published statement **visibly in both places** — in-place comment edit naming the corrected claim **and** a follow-up in the thread where the wrong answer was given | People already replied to the wrong version; a silent edit makes the thread unreadable |
+| MUST send the Step 9 notify on every retest a configured channel covers — whoever invoked the skill (owner, another QA, slash command, unattended bot), asked for it or not | The notify is how the QA owner learns the verdict; tying it to who started the run means retests run by anyone else close silently |
 | MUST run the Step 9 pre-notify review gate (5 checks on dry-run output) before EVERY send, including resends | Catches wrong recipient/link/counts before they go live (user rule 2026-07-15) |
 | MUST embed each FE screenshot in its verdict-table `Evidence` cell as `!file.png!` — pre-resized (~600–640 px), **no `\|width=…`** (the pipe splits the table row) — never leave as filename-only text | Screenshots must render as pictures inside the cell; a `\|width` param breaks the row, and filename text is unreadable evidence (OLS-289, 2026-07-27) |
 | MUST retest a **Task / Story** against its Acceptance Criteria (read where the AC actually lives, usually the description) with the same enumerate→row→reconcile discipline a Bug's Expected Result gets; a ticket stating no verifiable AC is BLOCKED + a question to the owner, never PASSED | A task retest with no written contract is an unverified pass; "nothing to check" is not a check |
