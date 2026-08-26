@@ -967,3 +967,58 @@ Two traps this run:
 - **Frozen `(Only)` snapshots are exempt from automation, not from correctness.** They still carried the typo
   after everything else was fixed. Only a human can order that change; when it is ordered, rename the single
   tab and diff the full tab list before/after to prove nothing else moved.
+
+### PM-009 — An example the user typed in chat was published to a live page as verified fact (2026-08-26)
+
+**Surface:** every number, name, date or scope statement that leaves the chat — Confluence pages,
+Jira tickets, reports handed to other people. And every time a value arrives from the user rather
+than from a source.
+
+**What happened.** The owner asked for a scope note under the *Coverage by platform* table on the
+OLS Playwright Confluence page and sketched the wording:
+
+> "**ประมาณว่า** เคสตอนนี้ครอบคลุม Story, improvement, bug ที่ Done แล้ว **ณ วันที่ 7/Aug/2026 4 PM**
+> ไม่รวม Dev task, QA Task ที่ไม่เกี่ยวกับฟังก์ชันการทำงานในระบบ **ไรงี้**"
+
+`ประมาณว่า` ("roughly / something like") opening it and `ไรงี้` ("or whatever") closing it both mark
+the sentence as **an example of the phrasing wanted**, not as data. The date `7 Aug 2026, 4:00 PM`
+was lifted verbatim, wrapped in `<strong>`, and **published to the live page (v39)** as the cut-off
+governing every figure on it. No source was opened. The owner had to point out it was invented.
+
+**Root cause — treating what the user typed as an authoritative source.**
+
+1. **The value was never checked against anything.** The only thing behind it was "the user wrote
+   it", which is not evidence — least of all for a value that is **derivable from Jira**.
+2. **The hedge was in plain sight and read past.** `ประมาณว่า … ไรงี้` is the same signal as
+   PM-006's *"รบกวนยืนยันคำที่ถูกต้องกับ Figma/PO"*. PM-006's rule is: a hedge means STOP and verify.
+   The only difference here is that the hedge came from the user instead of a ticket — **and the
+   rule has never exempted anyone.**
+3. **A justification was written that made the guess look deliberate.** The generator's comment
+   claimed *"The cut-off is a fixed date on purpose"* about a date with no origin. Dressing an
+   unverified value as a design decision is what makes it survive review.
+4. **It was published.** The damage was not a wrong sentence in a chat but a bold claim on a shared
+   page, defining the scope of every number on it. Anyone who read it before the correction still
+   believes it.
+
+**The real figures, measured afterwards.** The tickets the cases reference were derived from
+`tc-catalog.lot1/lot2.json` + `delivery-scope.json` — **83**, matching `gate:tickets`' own
+`ticketsReferenced` — then queried with `key in (...)` with every returned key echoed back and
+compared: latest Done **including** Task is **OLS-546, 2026-08-24 16:06 +0700**; **excluding** Task
+it is **OLS-37, 2026-08-18 17:22 +0700**.
+
+**Prevention.**
+
+- **A value that will be published must be derived in that session, with the derivation showable.**
+  "The user said so" is not a source; the user directs the work, they are not the measurement.
+- **Words that mark an example make the whole sentence a TEMPLATE, not data**: `ประมาณว่า` ·
+  `ไรงี้` · `เช่น` · `สมมติ` · `แนวๆ` · `e.g.` · `something like`. Take the shape, fill it with
+  measured values.
+- **If it is derivable, derive it** (Jira, API, repo, gate snapshot) — never accept a hand-typed
+  figure for something measurable. If it genuinely cannot be derived, write that it is unconfirmed
+  and ask; never publish a guess.
+- **Before publishing anything, ask: can I point at the output or file behind every number, date and
+  name in it?** One that you cannot = do not publish.
+- Better than a rule: make the value impossible to type. The Confluence generator now reads the
+  counts out of the gate-generated snapshot and emits nothing at all if it cannot parse it.
+
+Full engineering write-up: `ols-qa-e2e` `CLAUDE.md` PM-009.
