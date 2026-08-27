@@ -588,6 +588,29 @@ fetch('/rest/api/3/issue/ISSUE-KEY/attachments', {
 | `Control_Chrome__execute_javascript` | Run JS บน Jira pages (upload, API calls) | ไม่รองรับ async/await, ใช้ `.then()` |
 | `Control_Chrome__get_current_tab` | ดู tab ID ที่ต่างจาก Claude_in_Chrome | tab ID คนละชุดกัน |
 
+## 🔴 กฎ: เขียนหน้า Confluence ที่มีอยู่แล้ว — ใช้ `contentFormat: "adf"` ห้ามใช้ `"html"`
+
+**`updateConfluencePage` แบบ `contentFormat: "html"` ทำฟอร์แมตบางอย่างหายเงียบๆ** — ยืนยันจากการเขียนจริง 2026-08-27:
+
+| สิ่งที่เกิดกับ HTML+ | ผล |
+|---|---|
+| panel ที่ตั้ง breakout ไว้ (`breakoutMode` · `breakoutWidth` ใน storage) | **หายทั้งคู่** — HTML+ ไม่มี attribute นี้สำหรับ panel |
+| ใส่ `data-breakout="wide"` บน `<div data-type="panel-info">` เอง | API ปฏิเสธ `Unsupported attribute 'data-breakout' on <div>` — fail-closed ไม่มีการเขียนเกิดขึ้น |
+| `local-id` ของทุก node | หายหมด แม้ส่ง `data-local-id` ไปครบ — เป็นจุดยึดของ inline comment |
+| `data-layout` ของตาราง | **ฝั่งอ่านไม่คืนมาให้** (`getConfluencePage` html ให้แค่ `data-width`) ไม่ใส่กลับเอง = ตารางเสีย layout |
+
+**ทางที่ถูก: อ่านและเขียนด้วย `contentFormat: "adf"`** — ADF เก็บ breakout เป็น mark (`{"type":"breakout","attrs":{"mode":"wide","width":760}}`) และคง `localId` ครบ · คลาสเดียวกับ @mention ที่รอดเฉพาะ ADF (memory `reference_confluence-mcp-gotchas`)
+
+**ก่อนเขียนหน้าที่มีอยู่แล้วทุกครั้ง:**
+
+1. ดึง storage เก็บเป็น baseline (`body-format=storage`) — **อ่านอย่างเดียว ไม่ใช่การเขียน จึงไม่ขัดกฎห้ามยิง API ตรง**
+2. นับ `<table>` · `<th>` · `<tr>` · `<li>` · `<h2>` · macro ก่อน–หลัง — ต้อง **เพิ่มอย่างเดียว ห้ามลด**
+3. diff ข้อความหน้าที่เผยแพร่แล้ว เทียบกับ body ที่ผ่านรีวิว ต้องได้ **0 บรรทัดต่าง** (จับ typo ตอนพิมพ์ body ยาวๆ ได้จริง)
+4. เช็ค inline/footer comment ก่อน — ถ้ามี แปลว่า `local-id` ห้ามหาย → **ต้อง ADF เท่านั้น**
+5. ตรวจ render ได้โดยไม่ต้องเปิดเบราว์เซอร์ด้วย `body-format=view` (HTML ที่เซิร์ฟเวอร์เรนเดอร์แล้ว) — เห็นว่าตาราง/panel ขึ้นครบและไม่มี macro error · **ไม่เท่ากับการเห็นด้วยตา ต้องบอกตามจริงว่าตรวจถึงระดับไหน**
+
+**ตัวสกัดข้อความจาก storage จะอ่าน parameter ของ macro ติดมาด้วย** (เช่นได้ `wide760` นำหน้าข้อความใน panel) — นั่นคือค่าใน `<ac:parameter>` ไม่ใช่ข้อความบนหน้า อย่านับเป็น diff จริง
+
 ## Post-mortems
 
 Root-cause notes for mistakes that already reached a user-facing surface. Read before touching the
