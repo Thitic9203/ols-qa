@@ -209,10 +209,24 @@ mechanically, not remembered — four independent things, each enough on its own
 | 3 | `classify()` returns `None` for Done | the row is skipped, not re-labelled. Falling through would print `FIXING BY SKL-DEV` on a shipped bug |
 | 4 | no NH code, host, or credential in the module | the customer's Jira is unreachable by accident; a `NEEDS A HUMAN` block reports rows needing attention instead |
 
-**`NEEDS A HUMAN` changed meaning.** It used to name NH tickets sitting at `READY TO TEST` whose
-OLS twin was no longer Done. It now names **sheet rows** whose col I reads `READY TO TEST` while
-the OLS bug is not Done — same situation, read from the side this job can still see. It is a
-report only: the job neither writes that word nor withdraws it.
+**`NEEDS A HUMAN` is now the queue, and it has two categories** — both report-only, decided by
+the pure `needs_a_human(current, jira_status)`:
+
+| category | when | why it must be loud |
+|---|---|---|
+| **awaiting** | bug is `Done` but col I still holds one of the bot's in-flight words (blank · `OPEN` · `FIXING BY SKL-DEV` · `RECHECK BY SKL-QA` · `Awaiting SKL-PO Confirmation`) | the sheet is actively telling the customer dev is still on a bug that shipped, and **nothing automatic will correct it any more**. This is the work the retirement created; buried among ~79 `keep …` lines it is the same as not reported |
+| **stale_rtt** | col I reads `READY TO TEST` but the bug is no longer `Done` | somebody handed it back and it re-opened. Withdrawing their word is exactly what this job stopped doing |
+
+A Done bug already carrying a human verdict (`PASSED` · `CANCELLED` · `COMMENT FROM HI` …) is
+settled and stays **silent** — an advisory that fires on settled rows is noise, and noise is how a
+real advisory gets ignored. `t_reporting_and_writing_never_disagree` pins that the report and the
+writer can never contradict each other: anything flagged is never also written.
+
+🔴 **Live proof the protection was needed, caught the same hour (2026-08-27 ~10:49).** Between two
+runs a person wrote `READY TO TEST` into col I for **OLS-549** (twin `NH-464` — the fight-loop pair
+below) while its Jira status was `TESTING`, not Done. **The old code would have computed
+`RECHECK BY SKL-QA` and overwritten them within the hour.** The new run logged
+`protected verdict 'READY TO TEST'`, wrote nothing, and listed the row under `NEEDS A HUMAN`.
 
 **Live state on the day of the change** (dry-run, read-only): 79 eligible OLS rows — **44 Done**
 (39 `PASSED` · 2 `READY TO TEST` · 1 `CANCELLED` · 1 `COMMENT FROM HI` · 1 `FAILED AFTER RETEST`)
@@ -220,7 +234,7 @@ now skipped, **35 non-Done** all already correct, **0 changes**, `NEEDS A HUMAN`
 of the 44 already held a word the old bot could not overwrite either, so **the sheet outcome that
 day was identical** — the only behaviour that actually stopped was the NH transition.
 
-Tests: `tests/test_bugsheet_status_sync.py` (64 cases) + `tests/test_bugsheet_replaceable_allowlist.py`
+Tests: `tests/test_bugsheet_status_sync.py` (70 cases) + `tests/test_bugsheet_replaceable_allowlist.py`
 (23 cases). The 34 NH tests went with the code; the section **"READY TO TEST is a human's word"**
 replaced them and pins the *absence* — including `t_the_nh_write_machinery_is_gone_not_merely_unused`
 (no such symbol may exist) and `t_no_customer_host_or_credential_anywhere_in_the_source` — that
@@ -261,7 +275,7 @@ HI-QA ย้าย NH-464 ออกจาก `READY TO TEST` กลับ `To Do
 
 **plist ต้องชี้ `StandardErrorPath` ไปไฟล์เดียวกับ `StandardOutPath`** — `run_workflow.sh` ส่ง log ไฟล์เดียวให้ `fail_notify.py` ไปตัด tail; ถ้าแยก stream ไว้ โนติจะบอกแค่ `rc=3` โดยไม่มีเหตุผล เพราะทั้ง gate refusal และ traceback ออกทาง stderr หมด (ยืนยันจริงด้วย probe plist: สอง stream ลงไฟล์เดียวกันได้).
 
-Tests: `~/ols-qa-testing-bot/tests/test_bugsheet_status_sync.py` (64 cases) — the decision table,
+Tests: `~/ols-qa-testing-bot/tests/test_bugsheet_status_sync.py` (70 cases) — the decision table,
 all seven sheet layers, the plist's stream routing, and the section pinning that the RTT/NH
 behaviour is really gone — plus `tests/test_bugsheet_replaceable_allowlist.py` (23 cases). Run
 both green before touching the script; a layer that stops refusing is a test failure, which is
