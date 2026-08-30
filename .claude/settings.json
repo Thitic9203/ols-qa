@@ -22,8 +22,15 @@
       "Bash(basename *)",
       "Bash(dirname *)",
       "Bash(curl *)",
+      "Bash(/usr/bin/curl *)",
       "Bash(python3 *)",
-      "Bash(npx playwright *)"
+      "Bash(uv run *)",
+      "Bash(sed -n *)",
+      "Bash(npx playwright *)",
+      "mcp__ccd_session__read_widget_context",
+      "mcp__Claude_Browser__get_page_text",
+      "mcp__Claude_Browser__find",
+      "mcp__af7c11f4-f132-429c-aef3-6f4f21f09a74__searchJiraIssuesUsingJql"
     ]
   },
   "hooks": {
