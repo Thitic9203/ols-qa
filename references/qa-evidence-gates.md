@@ -46,9 +46,9 @@ completeness; only this gate is.
 
 **The 5 steps — all must pass:**
 
-1. **Enumerate** — for each case, read the final Status, count its Expected-Result items (ER1…ERn), **and list every role the case names** (§ *Capture scope*); derive the required evidence set from the table above. The required set is **cases × roles**, not cases. No case and no named role is skipped from the count.
-2. **Collect** — capture/link every required file: an MP4 for each non-BLOCKED story case **per role** + one screenshot per ER item per role. Never infer an untested ER or an unexercised role — capture it, or it is a BLOCKED row with its reason; it is never complete by assumption.
-3. **Verify each file (not a sample)** — every link resolves (file exists, not trashed); each MP4 plays and is non-blank; each screenshot is non-blank; and every file **matches the exact case** it is filed under. Naming: `<KEY>_TC_<nn>.mp4` / `TC_<nn>-ER_<n>.png`, with the role appended when the case covers more than one (`<KEY>_TC_<nn>_<ROLE>.mp4`, `TC_<nn>_<ROLE>-ER_<n>.png`). Count rendered vs required — any shortfall fails that case.
+1. **Enumerate** — for each case, read the final Status, count its Expected-Result items (ER1…ERn), and list its roles per § *Capture scope*; derive the required evidence set from the table above. No case and no named role is skipped from the count.
+2. **Collect** — capture/link every required file. Never infer an untested ER or an unexercised role — capture it, or it is a BLOCKED row with its reason; it is never complete by assumption.
+3. **Verify each file (not a sample)** — every link resolves (file exists, not trashed); each MP4 plays and is non-blank; each screenshot is non-blank; and every file **matches the exact case** it is filed under. Naming: `<KEY>_TC_<nn>.mp4` / `TC_<nn>-ER_<n>.png` — and when the case covers **more than one role**, every file for it carries the role: `<KEY>_TC_<nn>_<ROLE>.mp4` / `TC_<nn>_<ROLE>-ER_<n>.png`. Whatever the file is actually named is the name the Evidence link must use. Count rendered vs required — any shortfall fails that case.
 4. **Verdict ↔ bug ↔ remark consistency** — a minor-issue verdict ⇒ a Lowest/Low/Medium bug with its Priority stated in the result; a FAILED ⇒ a High/Highest bug; any minor-issue/FAILED case with **no real linked bug** ⇒ the rollup's "needs recheck / create bug" flag = Yes. Priority is judged only by the [Bug Priority & Severity Matrix](bug-priority-matrix.md) — never invented. The Status opener text matches the rubric, and there is **no Status/Remark contradiction** (e.g. a stale "BLOCKED" note left on a PASSED row).
 5. **Gate result (fail closed)** — if any case fails steps 1–4, the story is **NOT done**: capture the missing evidence, fix the verdict/bug flag, clear the stale remark — then re-run the gate. Only when every case passes do you record the per-case proof line and claim the story complete. Never report "100% passed / done" while the gate is red.
 
@@ -65,24 +65,35 @@ files that must exist.
 | **Targets** | the exact element or value each Expected Result decides (menu, dialog, badge, count, label, toast, field value) | the clip **navigates/scrolls to it and holds it in frame long enough to read**, and it is captured as its own still |
 
 **Roles — one set each, no sampling.** If the ticket mentions 5 roles, the deliverable is **5 capture
-sets**, not one clip from whichever account happened to be logged in. A role's set = its own whole-flow
-MP4 + its own screenshot per Expected-Result item, named so a reviewer can tell them apart
-(`<KEY>_TC_<nn>_<ROLE>.mp4`, `TC_<nn>_<ROLE>-ER_<n>.png`). Roles are written with the canonical
-identifiers — `GUEST · LEARNER · CREATOR · CONTENT_ADMIN · SYSTEM_ADMIN` — **copy-pasted, never typed
-from memory** (PM-008). A role that could not be exercised (no account, login fails) is an explicit
-**BLOCKED row naming that role and the reason** — never an unmentioned gap, and never "covered by
-another role".
+sets**, not one clip from whichever account happened to be logged in. Roles are written with the
+canonical identifiers — `GUEST · LEARNER · CREATOR · CONTENT_ADMIN · SYSTEM_ADMIN` — **copy-pasted,
+never typed from memory** (PM-008). A role that could not be exercised (no account, login fails) is an
+explicit **BLOCKED row naming that role and the reason** — never an unmentioned gap, and never
+"covered by another role".
+
+**A collective phrase names every role.** "ทุก role" / "all roles" / "every user type" expands to the
+full canonical five — a phrase that names no single role is not a case with no roles. A *role-agnostic*
+phrase ("any logged-in user") is one set, **with the role actually used written on the row** so the
+reader knows what was exercised.
+
+**What a role's set has to cover — that role's own steps, not the whole case.** A role's set = its
+whole-flow MP4 + a screenshot for each Expected-Result item **that role's steps decide**. An ER item
+that is genuinely role-invariant is captured **once, with the role used stated on the row** — not
+re-shot five times. That keeps 5 roles × 4 ER items from meaning 20 stills when the case really splits
+2 and 2; it is also the only route besides BLOCKED for an ER no single role can reach, so use it
+honestly — "role-invariant" is a claim about the product, and a reviewer may ask which row proves it.
 
 **Steps — the clip follows the written steps, it does not shortcut to the end.** Driving the real
 surface is [test-through-real-steps.md](test-through-real-steps.md); this file adds that the recording
 must *show* it. A step performed off-camera (an API call, another tab, a state set before recording
-started) is **not captured** — re-record with it in frame, or state it as a precondition line and keep
-the recorded steps intact.
+started) is **not captured** — re-record with it in frame. Only *pre-existing state* may stand as a
+precondition instead: a numbered Test Step is **never** demotable to one, and a step that belongs in
+the precondition must already be written that way in the case, not relabelled at capture time to
+excuse a recording that skipped it.
 
-**Targets — go to the thing, then look at it.** "Check the count in the summary panel" means: scroll
-that panel into view, let it settle, and keep it in frame long enough for the number to be read.
-A value that never appears on screen was never verified. Where the video cannot render it legibly
-(small text, a toast that flashes), a still of that exact moment is **required**, not optional.
+**Targets — a value that never appears on screen was never verified.** Where the video cannot render
+it legibly (small text, a toast that flashes), a still of that exact moment is **required**, not
+optional.
 
 ### Capture red flags — STOP, this recording is not evidence yet
 
@@ -100,30 +111,50 @@ Every MP4 (story test **and** retest) MUST clear all 7 layers before the case co
 | # | Layer | Passes only when |
 |:--:|---|---|
 | **1** | **Max quality** | Recorded to the **capture spec below** — viewport ≥ 1920×1080, `deviceScaleFactor` 2, H.264 **CRF 18 preset slow**, `yuv420p` limited-range, `+faststart`, **no downscale that blurs text**. On-screen labels legible at 100%. |
-| **1b** | **Steady picture** | No frozen frame inside a moving stretch, and no visible flicker / pumping / stutter / blink when watched at 100%. **≤ 5% of moving frames may be repeats** of their predecessor (excluding deliberate still-holds). |
-| **1c** | **Provenance** | The clip came from the capture pipeline below at the rate it claims — a run manifest exists, names the pipeline `cdp-screencast->x264`, and matches the delivered file (name · resolution · fps). **ตรวจไม่ได้ = ไม่ผ่าน**: no manifest = layer red, not a waiver. |
+| **1b** | **Steady picture** | No frozen frame inside a moving stretch, and no visible flicker / pumping / stutter / blink when watched at 100%. **≤ 5% of moving frames may be repeats** of their predecessor, excluding the still-holds the manifest **declares** — and those may cover **at most 25% of the clip**: past that the exclusion has eaten the rule, and the honest verdict is *a clip this static cannot judder, but nothing was proven either*. Measured by the verifier named below, never from memory. |
+| **1c** | **Provenance** | The clip came from the capture pipeline below at the rate it claims — a run manifest exists, names the pipeline `cdp-screencast->x264`, and matches the delivered file (name · resolution · fps). **What cannot be checked has not passed** (ตรวจไม่ได้ = ไม่ผ่าน): no manifest = layer red, not a waiver. |
 | **2** | **Whole flow, no skip** | Drives **every** Test Step from the start, on the **real surface** (UI → clicks, not an API shortcut) — no jump-cut, no starting mid-flow, no fast-forward past a step. |
 | **3** | **Reaches the stated target** | If a step says "scroll to menu XX / open dialog YY / find item ZZ / check value VV", the clip **visibly reaches and shows** it — the element is located, scrolled into view, held in frame long enough to read, and acted on. **Never end the recording before arriving**; a step that could not be reached = that case is BLOCKED with the reason, not a short clip claimed as pass. |
 | **4** | **Expected Result on screen** | The exact state that decides each ER item is **visible in the video** (the resulting screen/toast/value is shown), not implied by a click. One provable moment per ER. |
 | **5** | **Legible / text backed** | Wording, labels, counts, values under verification are **readable in the frame**; if the video cannot render them legibly, a still **screenshot supplements** it (this is the text-verification screenshot rule). |
-| **6** | **File integrity + match** | Plays start-to-end, **non-blank, non-truncated**, sane duration, correct naming (`<KEY>_TC_<nn>.mp4`), and is the clip for **that exact case** — not another case's. |
+| **6** | **File integrity + match** | Plays start-to-end, **non-blank, non-truncated**, sane duration, correct naming (the one rule in the 5-step gate — role-suffixed when the case covers more than one role), and is the clip for **that exact case and that role** — not another case's. |
 | **7** | **Attached + link verified** | Uploaded to the destination (story → Drive; **retest → the Jira issue/comment**) and the reference **actually resolves and plays** from there (open the Jira Evidence-cell link / the Drive file and confirm it plays). |
 
 **Fail-closed:** any layer red on any case (sub-layers 1b / 1c included) ⇒ re-capture that case and re-run the 7 layers. A clip that is the right size in the right codec can still flicker — 1b and 1c exist because one that passed every other check was visibly flickering. Do not post the comment, do not transition, do not report the story/retest complete until every case is green on all 7.
 
 ### Capture spec — the pipeline layers 1 / 1b / 1c are measured against
 
-Ported verbatim from the reference recorder (`manual-maker` `skills/screen-record`, v0.35.0), whose
-clips are the quality bar. Every number below was **measured on real clips**, not chosen by taste —
-changing one changes what "same quality as the reference" means.
+Ported from the reference recorder (the `screen-record` skill of the `manual-maker` project, v0.35.0),
+whose clips are the quality bar. Every number below was **measured on real clips**, not chosen by taste
+— changing one changes what "same quality as the reference" means.
+
+**Do not hand-roll any of this: the compliant recorder already exists.** It lives with the rest of the
+QA bot tooling, outside this repo, as `capture/qa_recorder.js` — it measures the viewport and
+`devicePixelRatio` from the page rather than trusting the caller, refuses anything under the floor,
+fails closed under the fps floor, writes the manifest layer 1c is checked against, and runs the
+verifier on the encoded file before it returns. `capture/README.md` beside it carries the usage and the
+migration steps for an older script; `node capture/qa_recorder.test.js` is its self-test.
+
+**The instrument for layers 1 / 1b / 1c / 6 is `capture/verify_video.py`**, in the same place:
+
+```
+python3 capture/verify_video.py <clip>.mp4          # exit 0 = those layers pass
+python3 capture/verify_video.py --no-manifest ...   # inspecting a clip we did not record
+```
+
+`--no-manifest` downgrades the provenance failure to a warning; a **deliverable** checked that way has
+not passed 1c. Layers 2–5 and 7 — whole flow, target reached, ER on screen, legible, delivered and
+linked — the script cannot judge, and it says so rather than implying otherwise. Two refusals it makes
+on purpose: a clip **under 5 s** (too short to show a flow) and one with **too little motion to judge
+stutter** (it will not certify what it cannot measure — record the flow that led to the still screen).
 
 **🔴 Playwright's own `recordVideo` is banned for any deliverable clip.** Two defects are built into
 it and **neither is reachable from its API**:
 
 | defect | mechanism | what the viewer sees |
 |---|---|---|
-| **Bitrate cap** | playwright-core spawns ffmpeg hardcoded `-c:v vp8 -qmin 0 -qmax 50 -crf 8 -deadline realtime -speed 8 -b:v 1M -threads 1` — **1 Mbps for 1920×1080**. Whenever the page moves, rate control slams the quantiser and the whole frame goes soft, then snaps back. Measured: mean edge energy 1733 static vs 1529 moving (−11.8%), worst frame −37%. | the picture **กระพริบ** — sharp/soft/sharp |
-| **Fixed-grid padding** | its `writeFrame` quantises onto a 40 ms grid and fills every delivery gap by **repeating the previous frame**. Measured: 46% of a delivered clip's frames were duplicates. | **judder** |
+| **Bitrate cap** | playwright-core spawns ffmpeg hardcoded `-c:v vp8 -qmin 0 -qmax 50 -crf 8 -deadline realtime -speed 8 -b:v 1M -threads 1` — **1 Mbps for 1920×1080**. Whenever the page moves, rate control slams the quantiser and the whole frame goes soft, then snaps back. Measured: mean edge energy 1733 static vs 1529 moving (−11.8%), worst frame −37%. | the picture **pumps** — sharp/soft/sharp (กระพริบ) |
+| **Fixed-grid padding** | its `writeFrame` quantises onto a 40 ms grid and fills every delivery gap by **repeating the previous frame**. Measured on a delivered clip: **21.2% of its *moving* frames were repeats** — against the ≤ 5% of layer 1b, which is the same measure. (Its *raw* duplicate count was 46%, but that is **not** the gate metric: a clip that legitimately rests on one screen is nearly all duplicates and is perfectly good.) | **judder** |
 
 The machine was never the bottleneck — that was tested, not assumed: driving the screencast directly
 on the same machine, same 1920×1080 viewport, `deviceScaleFactor` 2, on a *heavier* page gave **59.8
@@ -145,6 +176,9 @@ ffmpeg -y -f concat -safe 0 -i frames.txt \
   -pix_fmt yuv420p -color_range tv \
   -movflags +faststart out.mp4
 ```
+
+`-r 25` is the **default** target frame rate, not a constant: lower it when the machine cannot hold
+that rate — and never raise the `minUniqueFps` floor to make a starved capture go green.
 
 The concat demuxer carries each frame's **measured** duration, so `-fps_mode cfr` lays frames on the
 output grid at the times they actually happened. The range conversion is **not decoration**: screencast
@@ -215,11 +249,11 @@ the work. **Fail-closed: any layer red means nothing is delivered yet.**
 |:--:|---|---|---|
 | **1** | **Recount the scope from the source, this round** | Reopen the ticket / case / bug **now** and re-extract the three lists (roles · steps · AC-EC-ER ids) plus the case list itself. The deliverable is measured against **that** list, not against the plan written earlier in the session — a plan can be stale, the ticket cannot. Any item present in the source and absent from the deliverable is a gap, not a judgement call. | *"I read the ticket and counted 9 testable items; your table has 7. Which two are missing and why?"* — you must be able to answer with the same count they get. |
 | **2** | **Role × case matrix is full** | Every (role, case) pair required by layer 1 carries a row with its own verdict. **No empty cell, no cell inheriting another role's result**, no role quietly dropped. A pair that could not be run is a **BLOCKED row naming the role and the blocker** — visible in the deliverable, not in chat. | *"The ticket names 5 roles. Show me the 5 evidence sets. If one is missing, show me the BLOCKED row that says so."* |
-| **3** | **Open every evidence file, not a sample** | For each row: the link resolves, the MP4 plays and is non-blank, it is **that case and that role**, and the ER moment is **visibly in it**. Counting files is not this layer; opening them is. A row whose evidence you did not open this round is not ready to ship. | *"I opened row 4's clip. It ends before the panel is on screen. Where is the ER?"* — a clip that stops short is caught by whoever opens it, so open it first. |
+| **3** | **Open every evidence file, not a sample** | For each row that carries evidence — a BLOCKED row carries a reason instead, and is exempt: the link resolves, the MP4 plays and is non-blank, it is **that case and that role**, and the ER moment is **visibly in it**. Counting files is not this layer; opening them is. **Passing it must leave a trace** — mark each row as checked (`✔ opened <date>` in its evidence cell, or the verifier's output kept with the run) — because a layer whose only record is your memory is the one that gets marked green from memory. | *"I opened row 4's clip. It ends before the panel is on screen. Where is the ER?"* — a clip that stops short is caught by whoever opens it, so open it first. |
 | **4** | **Every claim points at a row** | Each result sentence in the summary/comment names the row or file behind it. Anything you cannot point at is deleted or demoted to an explicit open question — never smoothed into the narrative. Hedging words (`should`, `seems`, `likely`, `น่าจะ`) in a delivered result = layer red. | *"You wrote 'works on all roles'. Point at the rows. All of them."* |
 | **5** | **Verdict ↔ bug ↔ priority ↔ remark all agree** | Verdict wording follows the rubric; a minor-issue verdict carries a linked Lowest/Low/Medium bug with its Priority stated; FAILED carries a High/Highest bug; priority comes only from the [Bug Priority & Severity Matrix](bug-priority-matrix.md); no remark contradicts the status it sits beside. | *"This row says PASSED and its remark says the count was wrong. Which one is true?"* |
-| **6** | **Nothing lives only in prose** | No role, step, AC/EC item or observed deviation exists **only** in a remark / "หมายเหตุ" / note under the table / chat message. Items deliberately excluded appear in a visible **Out-of-scope** block that was agreed at the confirm gate — never silently absent. | *"Your note mentions a second entry point. There is no row for it. Was it tested?"* |
-| **7** | **Adversarial pass, then fail-closed handover** | Run the adversarial pass below and answer **every** question with a pointer. Only then: post / write the sheet / notify / say "done". Any red: close the gap and re-run from layer 1. If an item genuinely cannot be completed, deliver everything else **and state plainly what is missing and why** — an incomplete result reported honestly is deliverable; a complete-looking result with a silent hole is not. | *"What did you not test, and where does the deliverable say so?"* — the honest answer must already be written down, not produced when asked. |
+| **6** | **Nothing lives only in prose** | The anti-footnote rule of the AC/EC gate (layer 4) applied to the finished deliverable: no role, step, AC/EC item or observed deviation exists **only** in a remark / "หมายเหตุ" / note under the table / chat message, and anything deliberately excluded appears in a visible **Out-of-scope** block agreed at the confirm gate. | *"Your note mentions a second entry point. There is no row for it. Was it tested?"* |
+| **7** | **Adversarial pass, then fail-closed handover** | Run the adversarial pass below and answer **every** question with a pointer. Only then: post / write the sheet / notify / say "done". Any red: close the gap and re-run from layer 1. If an item genuinely cannot be completed, deliver everything else **and state plainly what is missing and why** — an incomplete result reported honestly is deliverable; a complete-looking result with a silent hole is not. **Unattended / bot mode:** resolve instead of halting, exactly as the AC/EC gate's layer 7 does — an unrun or unverifiable item becomes a **BLOCKED row** with its reason and the run is reported **incomplete / not-all-passed**; a bot never emits nothing, and never silently marks it PASSED. | *"What did you not test, and where does the deliverable say so?"* — the honest answer must already be written down, not produced when asked. |
 
 ### Adversarial review pass — read your own deliverable as the reviewer hunting for the shortcut
 
@@ -227,16 +261,10 @@ Before layer 7 signs off, re-read the deliverable **as artifacts only** — the 
 comment — with the working memory of what you did set aside; the reviewer does not have it. Answer
 each question by **pointing at something**, not by recalling. **One unanswerable question = layer 7 red.**
 
-1. Count the testable items in the ticket yourself, right now. Does that number equal the rows carrying a verdict? Name the difference.
-2. Count the roles the ticket names. Does that number equal the evidence sets? Which row proves each one?
-3. Pick the row whose evidence you are **least** sure about. Open it. Does it show that case, that role, that ER?
-4. Which clip is the **shortest**? Open it — did the flow reach the target, or did the recording stop early?
-5. Which verified value is the **hardest to read** on screen? Is there a still that makes it legible?
-6. Is any row PASSED whose ER you inferred from a click rather than saw on screen?
-7. Is any fact in the summary unsupported by a row — including anything a reviewer would read as "all", "every", "same as", "no issues"?
-8. Does any status contradict its own remark, its linked bug, or that bug's priority?
-9. What was **not** tested this round? Is it written in the deliverable as BLOCKED / Out-of-scope with a reason, or does it exist only in your head?
-10. If the reviewer replaced you and had only these artifacts — could they reproduce every verdict without asking you a single question?
+1. Pick the row whose evidence you are **least** sure about. Open it. Does it show that case, that role, that ER?
+2. Which clip is the **shortest**? Open it — did the flow reach the target, or did the recording stop early?
+3. Which verified value is the **hardest to read** on screen? Is there a still that makes it legible?
+4. If the reviewer replaced you and had only these artifacts — could they reproduce every verdict without asking you a single question? What did you **not** test, and where does the deliverable say so?
 
 **Report line to the requester** — the handover states, in one line each: cases run / total, roles
 covered / roles named, evidence files opened-and-verified this round, and every BLOCKED item with its
