@@ -4,7 +4,7 @@ Helix QA assistant pre-configured for the **OLS** project at <ORG>.
 
 Helix skills embedded directly — no separate install needed.
 
-**OLS Workspace version: v1.36.14** (1 Sep 2026) — based on helix v1.5.70
+**OLS Workspace version: v1.36.14** (1 Sep 2026) — based on helix v1.5.77
 
 ## Quick start
 
@@ -294,6 +294,48 @@ Separately, a Google Apps Script syncs the tracking sheet's **QA Owner** column 
 anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows up in the sheet on its own.
 
 ## Changelog
+
+### v1.36.11–v1.36.14 — evidence: every role covered, and the clip measured by an instrument instead of by eye (1 Sep 2026)
+
+A round used to be able to report a story green while its evidence was one clip from whichever account
+was logged in, cut off before the value under test was on screen. Four changes close that, and every
+number below was measured on real clips rather than chosen.
+
+- **Capture scope is now the ticket's own contract — roles, steps, targets**
+  ([references/qa-evidence-gates.md](references/qa-evidence-gates.md)). A role the ticket names is a role
+  recorded: 5 roles = **5 capture sets**, canonical ids copy-pasted, and a collective phrase ("ทุก role",
+  "all roles") expands to all five. A role you cannot exercise is a **BLOCKED row naming it** — never
+  "covered by another role". A role's set covers the ER items *that role's steps decide*, so a
+  role-invariant item is captured once with the role stated instead of five times. Every written Test Step
+  must be visible on screen (a numbered step can no longer be relabelled a precondition at capture time),
+  and the clip must **scroll to the value under verification and hold it in frame long enough to read** —
+  stopping the recording before the expected result is on screen leaves that ER uncaptured, whatever the
+  flow looked like.
+- **Playwright's `recordVideo` is banned for deliverables, with the reasons measured.** Its ffmpeg is
+  spawned hardcoded at **1 Mbps VP8** for 1920×1080, so the picture pumps whenever the page moves (mean
+  edge energy 1733 static vs 1529 moving, −11.8%; worst frame −37%), and it pads a fixed 40 ms grid by
+  repeating the previous frame (**21.2% of a delivered clip's moving frames were repeats**, against the
+  ≤ 5% the gate allows). Neither is reachable from its API. Clips now come from a CDP screencast into one
+  x264 encode — ack-first, every frame kept at its real timestamp, CRF 18, limited-range `yuv420p`.
+- **Two instruments replace eye-judgement, and they run before a clip can be handed over.**
+  `verify_video.py` measures resolution/codec/pixel format, steadiness (repeats inside moving stretches,
+  declared still-holds excluded and **capped at 25%**), provenance against the recorder's manifest, and
+  that the file plays end to end. `verify_shot.py` gives the stills their first floor: a full-viewport
+  still is ≥ 1920 px wide, luma must actually vary (the blank frame captured before the page painted used
+  to pass an existence check), with `--crop` for a deliberate zoom. The recorder fails closed on a starved
+  or truncated capture, so a clip that would judder cannot be produced quietly.
+- **A pre-delivery gate now stands between the work and the requester** — scope re-counted from the ticket
+  this round (not from the plan written earlier), role × case matrix full, **every** evidence file opened
+  and measured rather than counted, every claim pointing at a row, and a four-question adversarial pass
+  that names which artifact to open. Unattended runs resolve to BLOCKED rows and report *incomplete*
+  rather than emitting nothing. The handover states cases run/total, roles covered/named, files verified,
+  and every blocker with its reason.
+- **New tooling in the QA bot (off-repo) so the above is mechanical, not remembered:**
+  `evidence_plan.py` reads the ticket — including the custom fields OLS bugs actually keep their content
+  in — and writes the exact filename of every clip and still required; `preflight_roles.js` proves you can
+  *be* each required role before capturing starts (it refuses to pick the environment, and reports the
+  account's **real** roles from the auth response rather than the sheet's label); `evidence_reconcile.py`
+  diffs plan against reality, opens each file, and exits non-zero when anything is missing.
 
 ### v1.34.0 — `/testing-ticket` + `/retest-bug` rebuilt around the customer-escape review: Figma comparison on every UI case, a case list in every retest comment, task retest (18 Aug 2026)
 
