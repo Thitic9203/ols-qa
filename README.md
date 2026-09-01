@@ -4,7 +4,7 @@ Helix QA assistant pre-configured for the **OLS** project at <ORG>.
 
 Helix skills embedded directly — no separate install needed.
 
-**OLS Workspace version: v1.36.14** (1 Sep 2026) — based on helix v1.5.77
+**OLS Workspace version: v1.36.15** (1 Sep 2026) — based on helix v1.5.79
 
 ## Quick start
 
@@ -294,6 +294,27 @@ Separately, a Google Apps Script syncs the tracking sheet's **QA Owner** column 
 anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows up in the sheet on its own.
 
 ## Changelog
+
+### v1.36.15 — re-recording a clip the customer already has is its own job, with its own gate (1 Sep 2026)
+
+Redoing delivered evidence kept being treated as a fresh capture, and it is not: the result cell
+already says PASSED, a frozen sheet links the file **by id**, and the reason for the redo is usually
+that the original never proved its Expected Result. A round spent a whole take discovering that the
+number it was filming physically could not move, then nearly spent the retry on fixtures the first
+take had already consumed.
+
+`references/qa-evidence-gates.md` now carries an **R1–R6 fail-closed gate** for that job: read the
+previous run's own machine-readable result (one had recorded its failed assertion and shipped
+anyway), prove the Expected Result is demonstrable in this environment **before** spending a take,
+search the team's existing remark and bug rows before theorising, budget fixtures whose
+demonstration consumes them, make the recorder assert the outcome from the authoritative source and
+exit non-zero when it is false, and replace the delivered file **by file id** then download it again
+and compare checksums.
+
+It also names the shape R2 keeps catching — counters that dedupe per caller so a shared egress can
+never move them again, writes that answer `204` and change nothing, and per-entity behaviour that
+differs between sibling entity types — and states plainly that an Expected Result which is not
+demonstrable here is a **BLOCKED with the measurement behind it**, never a shorter clip.
 
 ### v1.36.11–v1.36.14 — evidence: every role covered, and the clip measured by an instrument instead of by eye (1 Sep 2026)
 
