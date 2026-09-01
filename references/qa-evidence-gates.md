@@ -71,6 +71,15 @@ never typed from memory** (PM-008). A role that could not be exercised (no accou
 explicit **BLOCKED row naming that role and the reason** — never an unmentioned gap, and never
 "covered by another role".
 
+**Prove you can be each role BEFORE capturing, not halfway through.**
+`capture/preflight_roles.js --plan <KEY>_evidence_plan.json --env <env>` logs in as each role the
+plan requires and reports which ones you can actually exercise. It refuses to pick the environment
+(that is always the user's call, so `--env` is required and has no default) and it does not trust the
+account sheet's label: the auth response carries the account's **real** roles, so an account labelled
+one role that answers as another is called out as a MISMATCH rather than quietly recorded as that
+role's evidence. Every FAIL it prints is already in the shape the BLOCKED row needs — role named,
+reason given.
+
 **A collective phrase names every role.** "ทุก role" / "all roles" / "every user type" expands to the
 full canonical five — a phrase that names no single role is not a case with no roles. A *role-agnostic*
 phrase ("any logged-in user") is one set, **with the role actually used written on the row** so the
