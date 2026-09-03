@@ -419,13 +419,43 @@ the system must still behave correctly once it does.
 |---|---|
 | Sheet · tab | `<QA_TRACKING_SHEET_ID>` → tab **`Responsive`** (gid `966725903`) |
 | Shape | a real Google Sheets **Table** object, `Responsive_Test_Matrix`, `A1:S121` — header row frozen, first 2 columns frozen |
-| Rows | **120** = **60** unique Role × Screen × Route, each × **Tablet** and **Mobile**. One row is one platform — never both in one line — and `Test ID` plus `(Role, Page, Route, Platform)` are both unique, asserted before the write |
+| Rows | **226** = **104** unique Role × Screen × Route, each × **Tablet** and **Mobile**. One row is one platform — never both in one line — and `Test ID` plus `(Role, Screen, Route, Platform)` are both unique, asserted before the write |
+| Every row carries its own proof | the `Remark` cell ends `หลักฐาน: <path>` naming the `page.tsx` or component file in `ols-monorepo` that the screen is. A screen nobody can point a file at does not get a row |
 | Columns | 18: `No. · Test ID · Role · Module · Page / Screen · Route · Jira Ref · Platform · Viewport (px) · Figma Ref · UI Responsive Status · UI Responsive Result · Functional Status · Functional Result · QA Owner · Linked Bug · VDO · Remark` |
 | Dropdowns | `Role` · `Platform` · both status columns · `QA Owner`. The status vocabulary is the **live** one read off tab `OLS-654` of the same file — `NOT STARTED · TESTING · PASSED · PASSED WITH MINOR ISSUE · FAILED · BLOCKED · SKIPPED` — never a second list invented here |
 | `QA Owner` list | the **4 people carrying the Discord role `ols-qa`** who appear in the `🚔 Target - OLS QA` thread — `QA Owner A`–`QA Owner D` (real names live only in `~/.ols-qa-secrets/`). Established by sweeping the thread's full history (501 messages, 8 distinct people) and then reading each one's guild roles, which is what separates QA from the product owner, the dev and the other team's QA who also post there. One participant is in the thread with no `ols-qa` role; the owner's call (2026-09-03) was to leave them out. Spelling follows the `Summary` tab's existing dropdown so the two tabs can be matched |
 | Widths | measured from the longest real value per column (Thai vowel/tone marks counted as zero width) and set so every cell reads on **one line** — `wrapStrategy: CLIP`, ~4,440 px total, first 2 columns frozen |
 | Test ID | `RSP-<GU\|LN\|CR\|AD>-<nn>-<TB\|MB>` |
 | Viewport | `Tablet 768 · 899→900 · 1024` · `Mobile 320 · 375 · 599→600` — the breakpoints written in the `OLS-325` subtask descriptions, not a house default |
+
+### The four gates the generator will not emit a row without
+
+The first pass of this matrix had 60 screens and was **wrong by omission** — it took the Jira
+subtask list as the inventory. The subtasks name pages; they do not name the deep-linkable states
+or the flows, and a responsive defect lives in exactly those. The generator now refuses to finish
+unless all four pass, so the gap cannot come back quietly:
+
+| Gate | Refuses when |
+|:--:|---|
+| **1** evidence | any catalogue entry names a `page.tsx` or component file that is not on disk |
+| **2** route resolves | any route fails to match the app router's own tree (route groups stripped, `@modal` / `(.)` intercepts folded onto their target URL) — currently **44** real route patterns |
+| **3** nothing uncovered | any product `page.tsx` in the repo has no row. **39** product pages, **5** excluded and each with a stated reason |
+| **4** unique | a duplicate `Test ID`, or a duplicate `(Role, Screen, Route, Platform)` |
+
+### What the page-only list was missing — every one of these is a real, reachable state
+
+Found by reading `shared/constants/routes.constant.ts`, which is the app's own route **and
+query-param** contract, then the flow components under `features/**` and `containers/**`:
+
+| Missing | Real count |
+|---|---|
+| `/goals/[slug]` was one row | **6** real slugs — `careers · exams · subjects · scholarships · digital-ai · languages` |
+| `/content` was one row | **11** deep-linkable `?tab=` values, plus the `grades` + `subGoals` filter state |
+| completion pages | a second state each: `?review=1` rewords the button and summary for a revisit (OLS-543) |
+| `/channel/[id]` | `?from=following` is its own entry, and a signed-in **learner** keeps the sidebar there (`SIDEBAR_ROUTE_PREFIXES`) while a guest does not — three roles, not two |
+| sign-in | there is no sign-in page: `?signIn=1` on home opens the NDLP drawer |
+| `/live/[id]` | two states the ticket itself asks for — live, and an ended recording |
+| flows | ~50 modals, sheets and confirm dialogs that never change the URL: the create pickers, the consent and edit-reason and unpublish dialogs, the creator content **filter bottom sheet**, the learning-goal cascade sheet, the live-setup stepper's two steps, the review approve/reject dialogs, admin suspend/activate, the achievement create wizard's two views, the onboarding wizard, the become-creator modal, the newly-earned-badge modal |
 
 ### Where each column's content came from — no field was typed from memory
 
