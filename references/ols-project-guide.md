@@ -418,79 +418,89 @@ the system must still behave correctly once it does.
 | Field | Value |
 |---|---|
 | Sheet · tab | `<QA_TRACKING_SHEET_ID>` → tab **`Responsive`** (gid `966725903`) |
-| Shape | a real Google Sheets **Table** object, `Responsive_Test_Matrix`, `A1:S121` — header row frozen, first 2 columns frozen |
-| Rows | **226** = **104** unique Role × Screen × Route, each × **Tablet** and **Mobile**. One row is one platform — never both in one line — and `Test ID` plus `(Role, Screen, Route, Platform)` are both unique, asserted before the write |
-| Every row carries its own proof | the `Remark` cell ends `หลักฐาน: <path>` naming the `page.tsx` or component file in `ols-monorepo` that the screen is. A screen nobody can point a file at does not get a row |
+| Shape | a real Google Sheets **Table**, `Responsive_Test_Matrix`, `A1:R409` — header row frozen, first 2 columns frozen |
+| Rows | **408** = **204** unique Role × Screen × Route, each × **Tablet** and **Mobile**. One row is one platform — never both in one line — and `Test ID` plus `(Role, Screen, Route, Platform)` are both unique, asserted before the write |
 | Columns | 18: `No. · Test ID · Role · Module · Page / Screen · Route · Jira Ref · Platform · Viewport (px) · Figma Ref · UI Responsive Status · UI Responsive Result · Functional Status · Functional Result · QA Owner · Linked Bug · VDO · Remark` |
-| Dropdowns | `Role` · `Platform` · both status columns · `QA Owner`. The status vocabulary is the **live** one read off tab `OLS-654` of the same file — `NOT STARTED · TESTING · PASSED · PASSED WITH MINOR ISSUE · FAILED · BLOCKED · SKIPPED` — never a second list invented here |
-| `QA Owner` list | the **4 people carrying the Discord role `ols-qa`** who appear in the `🚔 Target - OLS QA` thread — `QA Owner A`–`QA Owner D` (real names live only in `~/.ols-qa-secrets/`). Established by sweeping the thread's full history (501 messages, 8 distinct people) and then reading each one's guild roles, which is what separates QA from the product owner, the dev and the other team's QA who also post there. One participant is in the thread with no `ols-qa` role; the owner's call (2026-09-03) was to leave them out. Spelling follows the `Summary` tab's existing dropdown so the two tabs can be matched |
-| Widths | measured from the longest real value per column (Thai vowel/tone marks counted as zero width) and set so every cell reads on **one line** — `wrapStrategy: CLIP`, ~4,440 px total, first 2 columns frozen |
-| Test ID | `RSP-<GU\|LN\|CR\|AD>-<nn>-<TB\|MB>` |
-| Viewport | `Tablet 768 · 899→900 · 1024` · `Mobile 320 · 375 · 599→600` — the breakpoints written in the `OLS-325` subtask descriptions, not a house default |
+| Roles | **6**, from `shared/constants/role.constant.ts` and the sidebar constants, not invented: Guest · Learner (ผู้เรียน) · Creator (ผู้สร้างสื่อ) · NDLP Creator · Admin Content (ผู้ดูแลเนื้อหา) · System Admin (ผู้ดูแลระบบ). The split earns its keep — `ADMIN_PATH_RESTRICTIONS` gates `/admin/user` to system admins, `visibleTo: isSystemAdmin` hides the achievement group from content admins, and `getCreatorSidebarSections` splices the moderation queue in for NDLP Creators only |
+| Screen names | the app's **own** Thai labels wherever a sidebar defines one (`ความรู้ติดเทรนด์`, `จัดการเส้นทางการเรียน`, `ตั้งค่าช่องของฉัน`, …). A name QA invents is a name dev cannot look up |
+| Dropdowns | `Role` · `Platform` · both status columns · `QA Owner`. Status vocabulary is the **live** one read off tab `OLS-654` of the same file — never a second list invented here |
+| `QA Owner` list | the **4 people carrying the Discord role `ols-qa`** who appear in the `🚔 Target - OLS QA` thread — `QA Owner A`–`QA Owner D` (real names live only in `~/.ols-qa-secrets/`). Established by sweeping the thread's full history (501 messages, 8 distinct people) and then reading each one's guild roles, which is what separates QA from the product owner, the dev and the other team's QA who also post there. One participant is in the thread with no `ols-qa` role; the owner's call (2026-09-03) was to leave them out |
+| Viewport | `Tablet 768 · 899→900 · 1024 · 1199→1200` · `Mobile 320 · 375 · 599→600` — from `apps/web/docs/responsive-manual-check.md`. **1199→1200 is not optional**: `md` (900) is where the *page* layout switches, `lg` (1200) is where the *chrome* does, so a 1024 tablet is still in hamburger-drawer mode |
+| Every row carries its own proof | the `Remark` cell ends `หลักฐาน: <path>` naming the file in `ols-monorepo` that the screen is, and points at the per-page procedure in `apps/web/docs/responsive-manual-check.md`. Remark is the one wrapped column; the other 17 read on a single line |
 
-### The four gates the generator will not emit a row without
+### The eight gates the generator will not emit a row without
 
-The first pass of this matrix had 60 screens and was **wrong by omission** — it took the Jira
-subtask list as the inventory. The subtasks name pages; they do not name the deep-linkable states
-or the flows, and a responsive defect lives in exactly those. The generator now refuses to finish
-unless all four pass, so the gap cannot come back quietly:
+The first pass had 60 screens and was **wrong by omission** — it took the Jira subtask list as the
+inventory. Subtasks name pages. They do not name the deep-linkable states, the flows, the empty and
+error states, or the wizard steps, and a responsive defect lives in exactly those. Each gate below
+exists because a real gap got through the ones before it:
 
 | Gate | Refuses when |
 |:--:|---|
-| **1** evidence | any catalogue entry names a `page.tsx` or component file that is not on disk |
-| **2** route resolves | any route fails to match the app router's own tree (route groups stripped, `@modal` / `(.)` intercepts folded onto their target URL) — currently **44** real route patterns |
-| **3** nothing uncovered | any product `page.tsx` in the repo has no row. **39** product pages, **5** excluded and each with a stated reason |
+| **1** evidence | a catalogue entry names a file that is not on disk — **174** evidence files |
+| **2** route resolves | a route fails to match the app router's own tree (groups stripped, `@modal`/`(.)` intercepts folded onto their target URL) — **44** route patterns |
+| **3** nothing uncovered | any product surface has no row: `page.tsx`, `not-found.tsx`, `error.tsx`, `global-error.tsx` — **48**, with **5** excluded and each reason stated |
 | **4** unique | a duplicate `Test ID`, or a duplicate `(Role, Screen, Route, Platform)` |
+| **5** state class | any `*-modal/-dialog/-sheet/-drawer/-tab/-step/-wizard.tsx` or any file whose name carries `empty·toast·skeleton·placeholder·loading·error` is neither used as evidence nor excluded — **112**, **23** excluded |
+| **6** Jira | an `OLS-325` subtask has no row — **37/38**, the odd one stated below |
+| **7** epics | an epic that owns Stories never appears as a `Module` — **16**, `OLS-698` excluded as the responsive epic itself |
+| **8** global modals | a `ModalId` in `shared/providers/modal-provider.tsx` has no row — all **4** |
 
-### What the page-only list was missing — every one of these is a real, reachable state
+🔴 **Gate 5's regex is the one to watch.** It was written wrong twice — once the replacement never
+applied, once an over-escaped `\\.tsx$` matched nothing — and both times the gate still printed
+**ok** on a stale, narrower file set. A gate that passes while measuring less than it claims is worse
+than no gate. Check the *count* it prints moved, not just that it said ok.
 
-Found by reading `shared/constants/routes.constant.ts`, which is the app's own route **and
-query-param** contract, then the flow components under `features/**` and `containers/**`:
+### What the page-only list was missing
 
 | Missing | Real count |
 |---|---|
-| `/goals/[slug]` was one row | **6** real slugs — `careers · exams · subjects · scholarships · digital-ai · languages` |
-| `/content` was one row | **11** deep-linkable `?tab=` values, plus the `grades` + `subGoals` filter state |
-| completion pages | a second state each: `?review=1` rewords the button and summary for a revisit (OLS-543) |
-| `/channel/[id]` | `?from=following` is its own entry, and a signed-in **learner** keeps the sidebar there (`SIDEBAR_ROUTE_PREFIXES`) while a guest does not — three roles, not two |
-| sign-in | there is no sign-in page: `?signIn=1` on home opens the NDLP drawer |
-| `/live/[id]` | two states the ticket itself asks for — live, and an ended recording |
-| flows | ~50 modals, sheets and confirm dialogs that never change the URL: the create pickers, the consent and edit-reason and unpublish dialogs, the creator content **filter bottom sheet**, the learning-goal cascade sheet, the live-setup stepper's two steps, the review approve/reject dialogs, admin suspend/activate, the achievement create wizard's two views, the onboarding wizard, the become-creator modal, the newly-earned-badge modal |
+| `/goals/[slug]` was one row | **6** real slugs, each with its own sidebar label |
+| `/content` was one row | **11** deep-linkable `?tab=` values + the `grades`/`subGoals` filter state + the filter drawer + the sort sheet + the sub-tab strip |
+| completion pages | `?review=1` rewords the button and summary for a revisit (OLS-543) |
+| `/channel/[id]` | `?from=following` is its own entry, and a signed-in learner keeps the sidebar there while a guest does not |
+| sign-in | there is no sign-in page: `?signIn=1` opens the NDLP drawer |
+| social interaction | **the whole of `OLS-8` had no row** — the details/comments tab bar, the comment list and the comment box on content detail |
+| readers | **6** distinct renderers — video, PDF, e-Pub, document, Office, rich text — whose heights the container README ramps per band |
+| onboarding | a **3-step** wizard (หมวด → เป้าหมาย → ระดับชั้น), not one modal |
+| reports | `/creator/reports` is **3** tabs |
+| error surfaces | **6** `not-found` shells + 2 error boundaries + full-page loading/error + per-section error cards |
+| empty states | **10** page-specific ones, plus 2 toasts |
+| flows | ~60 modals, sheets and confirm dialogs that never change the URL — including the creator filter **bottom sheet**, which is a narrow-viewport surface a page-level list can never contain |
 
-### Where each column's content came from — no field was typed from memory
-
-| Field | Source read live |
-|---|---|
-| Route inventory | `ols-monorepo` @ `3a1b71955` (2026-08-31), every `apps/web/src/app/**/page.tsx` |
-| Role tier per page | the `OLS-325` subtask descriptions in Jira (`guest tier` · `guest + learner` · `creator tier` · `admin console`) |
-| Module | the OLS **epic that owns the Story defining that page** — e.g. `/trending` → `OLS-12` because `[Feed][Learner] Feed page (หน้าเทรน)` lives there |
-| Create vs edit | the repo: create is a **modal on the list page** (`features/*/components/*create*modal/`), edit is **its own route** `/creator/<entity>/[id]` |
-
-🔴 **`list + create/edit` is three screens, not one row.** `/creator/media`, `/creator/course` and
-`/creator/learning-path` each carry a list page, a create modal that does **not** change the URL, and a
-separate edit route. Media splits further: the type-picker step plus five type-specific create forms
-(video · short video · article · document · e-Book), each its own component. Collapsing them loses the
-only screens where a narrow viewport actually hurts.
-
-🔴 **Editing one Table column's dropdown wipes every other column's.** `updateTable` with
-`fields: "columnProperties(columnType,dataValidationRule)"` replaces the **whole** `columnProperties`
-array with whatever is sent — passing just the one column being changed silently cleared the other four
-dropdowns here while leaving all 18 column *names* intact, so the table still looked correct in the API
-response. Always send the full array: read the current `columnProperties`, rebuild every entry, then
-write. Verified by reading the dropdowns back after the write, not by the call returning 200.
-
-### Four routes that OLS-325 names or implies but that do not exist as testable screens
-
-Verified in the repo rather than assumed — putting any of them in a matrix would be inventing coverage.
+### Four routes that OLS-325 names or implies but that are not testable screens
 
 | Route | What it really is |
 |---|---|
-| `/creator/profile` | **no such route.** `OLS-464` names it; the repo has `/creator/channel` + `/creator/settings` instead |
+| `/creator/profile` | **no such route.** `OLS-464` names it; the repo has `/creator/channel` + `/creator/settings`. This is the one subtask gate 6 allows to go unmapped |
 | `/creator` | `redirect(ROUTES.CREATOR.CHANNEL)` — renders nothing |
-| `/admin/master-data/goals` · `/admin/master-data/reasons` | both `notFound()` — not implemented |
-| "Onboarding Page" (`OLS-697`) | a **section on `/trending`** (`containers/trending/components/onboarding-section.tsx`), not a page |
+| `/admin/master-data/goals` · `/reasons` | both `notFound()` — not implemented |
+| "Onboarding Page" (`OLS-697`) | a **section on `/trending`**, not a page |
 
-`/design-system` and `/debug/feed` are excluded as non-product screens.
+`/design-system` and `/debug/feed` are excluded as non-product screens — which is what
+`containers/README.md` calls them too ("Internal tools, out of scope").
+
+### 🔴 `Figma Ref` is filled for 162 of 408 rows, and the rest is blocked — not forgotten
+
+The filled ones carry the artboard path **the monorepo itself records** in
+`containers/README.md § Responsive support` (e.g. `page-features/pages/me/profile/responsive`) —
+a table that also gives every route a retrofit badge (all 🟡: retrofit landed, viewport walk
+outstanding) and the deliberate deviations from the mocks.
+
+Per-screen Figma **frame links** cannot be produced right now, and the reason is not throttling:
+the QA Figma token sits on a **Viewer/Collab seat**, whose Tier-1 allowance (`GET file`,
+`GET file nodes`, `GET image`) is about **20 requests a month** and is exhausted. The response
+headers say so directly — `x-figma-rate-limit-type: low`, `x-figma-plan-tier: pro`, and a
+`Retry-After` that counts down 1:1 with the clock, refilling one request per ~37.8 h. `/v1/me` and
+every Tier-2/3 endpoint answer 200 at the same instant, so the token is valid and this is a quota,
+not an auth problem. Backing off cannot fix it. Two real options, both needing a decision:
+a **Dev/Full seat** (org spend — needs approval per always-on rule 3), or reading the file through
+the Chrome session, which takes over the user's screen.
+
+Related: `ols-qa-e2e` `scripts/figma-check-nodes.mjs` issues **44** Tier-1 calls per run against
+that ~20/month budget, so `npm run figma:check` can never finish and silently spends a month of it.
+Its 429 handler advises "try later", which is the PM-010 lesson again — an alert must state the
+consequence, not the status code.
 
 ## Test-type deliverable sheets — `sync-tc-result` (System / Integration / Unit)
 
