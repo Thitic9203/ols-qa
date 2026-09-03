@@ -14,9 +14,32 @@ const ORIGIN = process.env.OLS_ORIGIN;
 const SSO = process.env.OLS_SSO;
 const EMAIL = process.env.OLS_EMAIL;
 const PW = process.env.OLS_PW;
-const LABEL = process.env.OLS_ENV_LABEL || 'ols';
-for (const [k, v] of [['OLS_ORIGIN', ORIGIN], ['OLS_SSO', SSO], ['OLS_EMAIL', EMAIL], ['OLS_PW', PW]]) {
+const LABEL = process.env.OLS_ENV_LABEL;
+for (const [k, v] of [['OLS_ORIGIN', ORIGIN], ['OLS_SSO', SSO], ['OLS_EMAIL', EMAIL], ['OLS_PW', PW], ['OLS_ENV_LABEL', LABEL]]) {
   if (!v) { console.error('missing env ' + k); process.exit(2); }
+}
+
+/* OLS_ENV_LABEL used to fall back to the string 'ols' when the variable was unset.
+ * That default was the hole, not a convenience: a caller who forgot to pass the label did not
+ * fail — the scan ran anyway, mislabelled 'ols', against whatever OLS_ORIGIN it happened to be
+ * given. isProtectedEnv() below only ever matches the *label or host* against /training/i, so a
+ * forgotten label was never refused on its own — it just made the report say the wrong thing
+ * about which environment ran. There is no default any more: a missing label fails loudly in the
+ * loop above, exactly like the other four required variables.
+ *
+ * A second, narrower guard: LABEL=prod is refused outright when OLS_ORIGIN still looks like a
+ * lower environment. This cannot check against the literal production host — this repo is
+ * public, that host is not committed here, and as of this change it has not even been decided
+ * yet — but it can catch the exact mistake this fix exists to prevent: the label changed to
+ * 'prod' while OLS_ORIGIN is still a copy-pasted pre-prod or training value. Token-shaped, same
+ * style as write_guard's PROTECTED_HOST — not a secret, not a guess at the real prod host. It is
+ * purely additive: it only ever fires when LABEL is exactly 'prod', so it changes nothing about
+ * how every other label (including how training is detected below) behaves.
+ */
+if (LABEL === 'prod' && /preprod|training/i.test(ORIGIN)) {
+  console.error('REFUSED — OLS_ENV_LABEL=prod แต่ OLS_ORIGIN ยังดูเหมือน pre-prod/training: ' + ORIGIN);
+  console.error('          ตรวจ OLS_ORIGIN อีกที ห้ามเดา prod host เอง — resolve จาก secrets store ด้วยคีย์ของ prod โดยเฉพาะ');
+  process.exit(2);
 }
 
 /* Hands-off environments are refused HERE, before a browser is even loaded.

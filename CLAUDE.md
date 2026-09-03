@@ -354,8 +354,12 @@ schedule, and it carries its own tests — there is no package manager and no bu
 **are** test commands, and they must be green before a change to that directory ships:
 
 ```bash
-for t in tools/name-guard/*.test.js; do node "$t" || break; done
+rc=0; for t in tools/name-guard/*.test.js; do node "$t" || rc=1; done; exit $rc
 ```
+
+(`|| break` used to sit here instead of `|| rc=1; ... exit $rc` — `break` itself returns 0, so a
+failing suite still made the whole command exit 0. A gate that is supposed to block a broken
+change must never report success when a suite failed.)
 
 Node ≥ 18 (the code uses global `fetch`). No dependencies, nothing to install.
 
@@ -396,16 +400,17 @@ references/                    ← shared rule fragments, linked by skills (not 
 |------|------------|
 | `tools/name-guard/scan.js` | the scanner — **read-only**, reports and never edits. Exit `0` clean · `1` findings · `2` could not run (a scan that cannot run is not a pass) |
 | `tools/name-guard/name_rules.js` | the rules, single source of truth for the scanner and any fixer |
-| `tools/name-guard/write_guard.js` | **writes are allowed in pre-prod only** — seven independent layers, each enough on its own |
+| `tools/name-guard/write_guard.js` | **writes are allowed nowhere** (since 2026-08-17 — pre-prod was the last writable env, now read-only like the rest) — eight independent layers, each enough on its own |
 | `tools/name-guard/alert_format.js` · `notify.js` | the QA-channel alert: fixed message shape, Discord markdown escaped, no DMs |
 | `tools/name-guard/alert_dedup.js` | posts when the **findings change**, not when the scan runs — the scan fires every 30 min and findings outlive that |
-| `tools/name-guard/*.test.js` | 7 suites pinning the above. Plain `node`, no framework |
+| `tools/name-guard/*.test.js` | 12 suites pinning the above. Plain `node`, no framework |
 | `.github/workflows/name-guard.yml` | the training-env run, every 30 min (free on a public repo) |
 | `scripts/check-no-secrets.sh` | the secret guard the git hooks call — see the secret rule above |
 
-The fixers that act on a report are **off-repo** and may only ever write to pre-prod; the rules
-they are bound by live here so they are public and unit-tested. Full detail — rule table, alert
-contract, the seven write-guard layers, schedule, required secrets — is in
+The fixers that act on a report are **off-repo**, and as of 2026-08-17 are switched off
+permanently — writes are allowed nowhere, not even pre-prod; the rules they are bound by live
+here so they are public and unit-tested. Full detail — rule table, alert contract, the eight
+write-guard layers, schedule, required secrets — is in
 [`tools/name-guard/README.md`](tools/name-guard/README.md). Don't restate it here; it drifts.
 
 ### Hooks
@@ -421,14 +426,15 @@ contract, the seven write-guard layers, schedule, required secrets — is in
   (`<JIRA_DOMAIN>`, `<DEV_HOST>`, `<TEST_ACCOUNT_1>`, `QA Owner A`, …) ค่าจริงไปอยู่ที่
   `~/.ols-qa-secrets/ols-secrets.md` เท่านั้น
 - เพิ่ม reference ใหม่ใน `references/`
-- แก้ `tools/name-guard/*.js` — **ต้องรัน test ทั้ง 5 ไฟล์ให้เขียวก่อน commit เสมอ** (คำสั่งอยู่ใน
+- แก้ `tools/name-guard/*.js` — **ต้องรัน test ทั้ง 12 ไฟล์ให้เขียวก่อน commit เสมอ** (คำสั่งอยู่ใน
   [What this repo is](#what-this-repo-is)) · แก้ rule ใหม่ = เพิ่ม test คู่กันด้วย
 
 ต้องถามก่อน:
 - ลบ/rename skill directory ทั้ง folder
 - แก้ hooks/ config
-- **ผ่อน/ลด/ปิดชั้นใดชั้นหนึ่งของ `write_guard.js`** หรือเพิ่ม env ใดๆ เข้า allowlist — 7 ชั้นนี้กันไม่ให้ fixer
-  เขียนทับงานจริงของคนใน training env, การผ่อนคือการรับความเสี่ยงแทน user (เพิ่ม test/ชั้นใหม่ = ทำได้เลย)
+- **ผ่อน/ลด/ปิดชั้นใดชั้นหนึ่งของ `write_guard.js`** หรือเพิ่ม env ใดๆ เข้า allowlist — 8 ชั้นนี้กันไม่ให้ fixer
+  เขียนทับงานจริงของคนใน training env (และตั้งแต่ 2026-08-17 เขียนไม่ได้ที่ env ไหนเลยแม้แต่ pre-prod),
+  การผ่อนคือการรับความเสี่ยงแทน user (เพิ่ม test/ชั้นใหม่ = ทำได้เลย)
 
 **ห้ามเด็ดขาด (repo นี้ public):** เขียน password / อีเมล test account / hostname จริง / Jira tenant /
 Google Sheet–Drive ID / Figma ID / Discord id / ชื่อจริงพนักงาน / `/Users/<name>` ลงไฟล์ใดๆ ใน repo นี้
