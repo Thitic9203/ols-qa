@@ -408,6 +408,51 @@ that fires on healthy data is how a real one gets ignored.**
 
 Tests: `~/ols-qa-testing-bot/tests/test_bugmirror_sync.py`. Green before shipping a change.
 
+## Responsive test matrix — the `Responsive` tab of the QA tracking sheet
+
+Tracking grid for the **UI Responsive** work (epic `OLS-698`, story `OLS-325`
+`[UI Responsive][Mobile, Tablet][All Page] ทุกหน้าของ Learner / Creator`). Built 2026-09-03.
+Purpose is **two verdicts per screen, not one**: the layout must match the latest Figma, **and**
+the system must still behave correctly once it does.
+
+| Field | Value |
+|---|---|
+| Sheet · tab | `<QA_TRACKING_SHEET_ID>` → tab **`Responsive`** (gid `966725903`) |
+| Shape | a real Google Sheets **Table** object, `Responsive_Test_Matrix`, `A1:S121` — header row frozen, first 2 columns frozen |
+| Rows | **120** = **60** unique Role × Screen × Route, each × **Tablet** and **Mobile**. One row is one platform — never both in one line — and `Test ID` plus `(Role, Page, Route, Platform)` are both unique, asserted before the write |
+| Columns | `No. · Test ID · Role · Module · Page / Screen · Route · Jira Ref · Platform · Viewport (px) · Figma Ref · UI Responsive Status · UI Responsive Result · Functional Status · Functional Result · Test Date · Tester · Linked Bug · VDO · Remark` |
+| Dropdowns | `Role` · `Platform` · both status columns. The status vocabulary is the **live** one read off tab `OLS-654` of the same file — `NOT STARTED · TESTING · PASSED · PASSED WITH MINOR ISSUE · FAILED · BLOCKED · SKIPPED` — never a second list invented here |
+| Test ID | `RSP-<GU\|LN\|CR\|AD>-<nn>-<TB\|MB>` |
+| Viewport | `Tablet 768 · 899→900 · 1024` · `Mobile 320 · 375 · 599→600` — the breakpoints written in the `OLS-325` subtask descriptions, not a house default |
+
+### Where each column's content came from — no field was typed from memory
+
+| Field | Source read live |
+|---|---|
+| Route inventory | `ols-monorepo` @ `3a1b71955` (2026-08-31), every `apps/web/src/app/**/page.tsx` |
+| Role tier per page | the `OLS-325` subtask descriptions in Jira (`guest tier` · `guest + learner` · `creator tier` · `admin console`) |
+| Module | the OLS **epic that owns the Story defining that page** — e.g. `/trending` → `OLS-12` because `[Feed][Learner] Feed page (หน้าเทรน)` lives there |
+| Create vs edit | the repo: create is a **modal on the list page** (`features/*/components/*create*modal/`), edit is **its own route** `/creator/<entity>/[id]` |
+
+🔴 **`list + create/edit` is three screens, not one row.** `/creator/media`, `/creator/course` and
+`/creator/learning-path` each carry a list page, a create modal that does **not** change the URL, and a
+separate edit route. Media splits further: the type-picker step plus five type-specific create forms
+(video · short video · article · document · e-Book), each its own component. Collapsing them loses the
+only screens where a narrow viewport actually hurts.
+
+### Four routes that OLS-325 names or implies but that do not exist as testable screens
+
+Verified in the repo rather than assumed — putting any of them in a matrix would be inventing coverage.
+
+| Route | What it really is |
+|---|---|
+| `/creator/profile` | **no such route.** `OLS-464` names it; the repo has `/creator/channel` + `/creator/settings` instead |
+| `/creator` | `redirect(ROUTES.CREATOR.CHANNEL)` — renders nothing |
+| `/admin/master-data/goals` · `/admin/master-data/reasons` | both `notFound()` — not implemented |
+| "Onboarding Page" (`OLS-697`) | a **section on `/trending`** (`containers/trending/components/onboarding-section.tsx`), not a page |
+
+`/design-system` and `/debug/feed` are excluded as non-product screens.
+
 ## Test-type deliverable sheets — `sync-tc-result` (System / Integration / Unit)
 
 Customer-facing deliverables (one spreadsheet per test type, **`- 03 OLS`** variant — CBMS/EvMS/ELMS
