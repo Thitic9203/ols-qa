@@ -408,6 +408,57 @@ that fires on healthy data is how a real one gets ignored.**
 
 Tests: `~/ols-qa-testing-bot/tests/test_bugmirror_sync.py`. Green before shipping a change.
 
+## HI bug-log watch — the two states nobody was watching (`hi_status_watch.py`, added 2026-09-03)
+
+The customer keeps every bug for every system on one tab of their own file — `Bug report by HI`
+in `<CUSTOMER_UAT_SHEET_ID>`. Two states on it are **our** work and were invisible from our side
+until somebody scrolled the sheet. A read-only watcher now announces each one, once, in the
+Discord thread `🚖 Support HI-QA for regression` (`<HI_QA_THREAD_ID>`), tagging the QA owner who
+chases them.
+
+| trigger (System = OLS only) | what it means | what the note asks for |
+|---|---|---|
+| `OPEN` **and** the "Bug on SKL board" cell holds no OLS key | HI-QA raised a bug and no ticket exists on our board, so it is in nobody's sprint — and the mirror correctly leaves its fix-plan cell blank, because there is nothing to schedule | go check it and open the ticket on the OLS board |
+| `FAILED AFTER RETEST` | a fix shipped and did not survive retest | go check that NH ticket |
+
+**Every fact in the message comes from the board that owns it, not from the sheet.** Summary,
+`Priority` and `Reporter` are read live from the NH issue on `<NH_JIRA_HOST>`, and the key is
+rendered as a link to it; the sheet is typed by hand and any of those three cells can be wrong.
+A row whose NH ticket cannot be read is **not** announced with the sheet's values as a
+substitute — the run refuses and fails loudly, because an alert carrying a wrong priority to the
+person chasing it is worse than an alert that is late.
+
+**The time is read out of the file's own version history, never guessed.** Sheets exposes no
+per-cell edit time and Drive Activity is not granted here, so the watcher exports each revision
+(`revisions.exportLinks`, xlsx, parsed with stdlib `zipfile`) and walks back from the newest only
+while the status still holds — so a status the sheet reached, left and reached again reports the
+**latest** arrival, not the first ever. 🔴 The answer is an **upper bound that coarsens the later
+you ask**: Drive merges recent revisions as an editing session continues — proven 2026-09-03,
+revision `11957` (1.14 PM) existed at 1.20 PM and by 1.37 PM had been merged into `11960`
+(1.36 PM), moving the reported time by 22 minutes. So the value is **cached at first detection
+and never re-read**, and the 30-minute schedule is what keeps it close.
+
+**Gates, all fail-closed.** G1 file + tab identity + gid via `sheet_guard.verify_tab` (a rename
+must not silently redirect it — PM-010) · G2 every column resolved from the header **by name**,
+status through the `Bug status` / `Status` alias pair · G3 a status outside the customer's own
+dropdown is reported, never silently dropped · G4 a message with no mention is refused, so an
+alert can never post unowned · G5 the posted message is read back and its `channel_id` checked
+before the run counts it as sent.
+
+**One alert per episode, not per run.** State keyed on the NH key remembers which status was
+announced; a row keeps quiet until its status changes, and a status that leaves and returns
+alerts again. Findings are combined into one message (split only when Discord's 2,000-character
+cap genuinely forces it). Dry-run is the default — `--send` posts.
+
+**Schedule + SFD.** `com.thitichaya.ols-hi-status-watch`, `StartInterval 1800`, run through
+`sfd/run_workflow.sh` (watchdog 1200 s < the interval, so runs cannot pile up), registered
+`periodic` / `trap_wired: true` / `max_stale_s 21600`, and the plist points `StandardErrorPath`
+at the same file as `StandardOutPath` — a gate refusal leaves by stderr, and split streams make
+the DM fire with no reason attached.
+
+**It writes to no spreadsheet at all** — the customer's file least of all. Its only side effect
+is one Discord message per new finding.
+
 ## Responsive test matrix — the `Responsive` tab of the QA tracking sheet
 
 Tracking grid for the **UI Responsive** work (epic `OLS-698`, story `OLS-325`
