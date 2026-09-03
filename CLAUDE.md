@@ -1103,6 +1103,29 @@ both writers *and* by the L3c gate, because "carries an OLS ticket" has to mean 
 palette, vocabulary and ladder were re-read from the live dropdown rather than extended from
 memory. Eligible rows 97 → 99, typed rows 96/98 → 98/98. Pinned by `tests/test_ols_key.py`.
 
+**A sweep of the other nine sheet jobs, the same day, found four more.** The first fix only
+covered the two jobs that had actually broken; the class was wider.
+
+| where | what it did | consequence |
+|---|---|---|
+| `bugmirror_summary.py` · `bugmirror_rootcause.py` | read the mirror's rows **purely by position** (`row[2]`, `row[4]`, `row[5]`, a bare `zip` against a name list) with no check on the header | a column reordered upstream re-points every field — topic read as type, status read as topic — so the Task/Bug counts and the root-cause classification in a report a person reads would be wrong **with no error at all**. The worst kind here: no signal whatsoever |
+| `summary_remark_auto.py` | `if MAP_TAB not in props: addSheet(...)` | the create-on-miss shape again: renaming that hidden cache tab, even adding a trailing space, makes a **second** tab of that name and orphans the original |
+| `progress_build.py` | mirrored Key and QA Owner out of the tracking sheet's `Summary` tab by **hardcoded columns C and G** | a column inserted there — no rename needed — keeps writing the Jira owner name into literal column G whatever now lives in it. The `Gate` around it did not catch this: its check asserts "the target is column G", which is tautological, never that column G is still *titled* QA Owner |
+| `sheet_guard.verify_tab()` | still did its own exact `title not in props` check | the primitive every `Gate` consumer shares had not been fixed, so the repair reached only the writers edited by hand |
+
+All four now resolve by identity: `mirror_columns()` verifies the header against `DEST_HEADER`
+(the module that *writes* that header owns it, so there is no second list), `summary_cols()`
+resolves Key/QA Owner through the file's own `hdr_col()` and exits loudly rather than guessing,
+the cache tab goes through `resolve_tab()` with creation reachable only from `TabMissing`, and
+`verify_tab()` routes through `resolve_tab()` so every `Gate` consumer inherits it. Tolerating
+the rename in `verify_tab` is safe only because Sheets resolves a sheet-qualified A1 range
+case-insensitively — **verified live** (`'list'`, `'LIST'`, `'LiSt'` all read the tab titled
+`List`); were that not so, tolerating it there would merely move the failure later.
+
+**The sentinel was blind to every one of them.** It watched 5 dependencies — the jobs already
+fixed. It now watches 11, including the tabs each of the above reads and writes. *A detector
+that only checks the work somebody already repaired will always agree with you.*
+
 **The rule to carry forward:** *an alert must state the consequence, not the exit code.* Thirty-three
 alerts said `rc=3`; one saying "the mirror has not updated in 6 days" would have ended it the
 first day. And when several nets all report healthy during an outage, the missing measurement is
