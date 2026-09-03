@@ -1089,6 +1089,19 @@ table above; the rest are the tests that keep them from eroding.
 7. **Registry completeness** — every non-daemon workflow must declare `max_stale_s`, and
    `test_sfd_stale.py` fails if one does not, so a new writer cannot ship without the net.
 
+**Two more of the same class, found by reading the logs the fix produced (same day).**
+
+| what | effect |
+|---|---|
+| Col D held `OLS-524 (Improvement)` and `OLS-627 (Bug)` — a person typed the issue type beside the key. `^OLS-\d+$` rejected both | **2 bugs invisible to the status sync and untypeable by the mirror**, silently, for as long as the cells had read that way. Both happened to be `Done` with a human verdict in col I, so nothing wrong was on the sheet — the loss was latent: re-open either and its status would never update again |
+| The customer's status dropdown had grown to **12** values; the mirror knew **10** | `Awaiting review design` sat on **10 OLS rows** unpainted, and every healthy run printed an "unexpected status" note about an expected one — the noise that trains people to skip the notes. `Awaiting 8mind` was in the dropdown too, so far used only on ELMS rows |
+
+Both fixed the same way: `ols_key.extract()` reads the one key a cell names (**two keys resolve
+to nothing** — which ticket's status belongs in a customer-facing cell is not guessable), used by
+both writers *and* by the L3c gate, because "carries an OLS ticket" has to mean one thing; and the
+palette, vocabulary and ladder were re-read from the live dropdown rather than extended from
+memory. Eligible rows 97 → 99, typed rows 96/98 → 98/98. Pinned by `tests/test_ols_key.py`.
+
 **The rule to carry forward:** *an alert must state the consequence, not the exit code.* Thirty-three
 alerts said `rc=3`; one saying "the mirror has not updated in 6 days" would have ended it the
 first day. And when several nets all report healthy during an outage, the missing measurement is
