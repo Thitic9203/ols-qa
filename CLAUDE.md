@@ -263,7 +263,7 @@ user คอมเมนต์แก้ซ้ำหลายรอบใน sessi
 
 **ทุก workflow/automation ที่ตั้งไว้ (launchd, bot, sync, Apps Script — ทั้ง repo นี้และ repo private ที่เกี่ยวข้อง) ห้ามเฟลเงียบเด็ดขาด.** เฟลเมื่อไหร่ต้อง**แจ้ง user ทันทีที่ Discord ส่วนตัวของ user** (private failure channel) แล้ว**หา root cause จริงโดยละเอียด → แก้ที่ต้นเหตุ → rerun ทันที → เมื่อเขียวแล้วจดจำเป็นกฎกัน recur.** กลไกจริง (off-repo) = `~/ols-qa-testing-bot/sfd/` — memory `project_ols-sfd-silent-failure-defense`.
 
-**แนวป้องกัน 5 ระดับ (Silent-Failure Defense):**
+**แนวป้องกัน 7 ระดับ (Silent-Failure Defense):**
 
 | ระดับ | ป้องกัน | กลไก |
 |:--:|:--|:--|
@@ -271,7 +271,9 @@ user คอมเมนต์แก้ซ้ำหลายรอบใน sessi
 | **2 Wrapper + watchdog** | hang/crash/timeout เงียบ | harness `run_workflow.sh` — watchdog kill (periodic เท่านั้น · daemon ห้าม kill) + start/end status stamp + notify ตอน non-zero |
 | **3 Loud layered notify** | ตัวแจ้งเตือนเองก็เฟลเงียบได้ | `fail_notify.py` → **DM หา user โดยตรง (หลัก)** ผ่าน bot token (`.discord_bot_token` + `.discord_userid`) → private-channel webhook (`.fail_webhook`, ถ้าตั้งไว้) → macOS notification → **ledger เสมอ** (`logs/sfd/FAILURES.md`) · 🔴 **plist ต้องตั้ง `StandardErrorPath` = `StandardOutPath` ไฟล์เดียวกัน** — `run_workflow.sh` ส่ง log ให้ `fail_notify.py` ไฟล์เดียวไปตัด tail แต่ gate refusal / exception / traceback ออกทาง **stderr** หมด → แยก stream = โนติดังแต่ไม่มีเหตุผล (ปิดช่องแล้วด้วย `_check_log_routing()` ใน `workflow_heartbeat.py` + `tests/test_sfd_log_routing.py`) |
 | **3.5 Alert de-dup** 🔴 | **ปัญหาเดิมซ้ำๆ จนคนเลิกอ่านโนติ** | `fail_notify.py` ทำ **episode de-dup**: fingerprint = `label\|kind\|rc\|ท้าย log (ตัดตัวเลขออก)` → ปัญหาเดิมที่ไม่เปลี่ยน **ยิง DM ครั้งเดียว** แล้ว **เตือนซ้ำวันละครั้ง** (`REMIND_S=24h`) · `recovered` เคลียร์ state เสมอ (ปัญหารอบใหม่ยิงใหม่ได้) · ค่าที่ถูกกดยัง **ลง ledger ทุกครั้ง** (`suppressed-duplicate (repeat #n)`) = ไม่มีอะไรหายเงียบ · state ไฟล์เสีย = **ยิง** ไม่ใช่เงียบ · `--no-dedup` ไว้ใช้มือ/เทสเท่านั้น · เหตุ: `run_workflow.sh` ยิง notify **ทุกรอบที่ exit≠0** → ของที่ค้างนานกลายเป็น DM ทุกชั่วโมงตลอดไป (2026-08-20: header ผิดช่องเดียวทำให้ยิงรายชั่วโมง · ก่อนหน้านั้น 300+ DM เหมือนกันเป๊ะใน 10 วันจาก watch 30 นาที) · pin ด้วย `tests/test_fail_notify_dedup.py` (24 เคส) |
+| **2b Outcome staleness** 🔴 | **job ที่รันตรงเวลา ดังทุกรอบ แต่ปลายทางค้างเป็นวันๆ** | `stale_decision()` ใน `workflow_heartbeat.py` วัดสิ่งเดียว: **ไม่สำเร็จมานานเท่าไร** (`last_ok_epoch`) เทียบ `max_stale_s` ที่ทุก job ต้องประกาศใน `workflows.json` · เป็นตัววัดที่**ไม่ขึ้นกับสาเหตุ** จึงจับได้ทั้ง rename · permission · quota · บั๊กที่ยังไม่เคยเจอ · และบอก **ผลกระทบ** ("มิเรอร์ค้าง 6 วัน") แทน exit code · เตือนดังขึ้นตามอายุ 1h→6h→24h→3d→7d ยิง**ทีละ tier ครั้งเดียว** และ **`stale` ยกเว้นจาก dedup เชิงโครงสร้าง** (fingerprint ตัดตัวเลข → "1 วัน" กับ "6 วัน" จะถูกยุบเป็นใบเดียว) · pin ด้วย `tests/test_sfd_stale.py` (17 เคส) |
 | **4 Heartbeat/liveness** | job ที่**ไม่รันเลย** (ไม่มี fail event ให้จับ) | `workflow_heartbeat.py` (launchd ทุก 5 นาที) อ่าน `launchctl list` **LastExitStatus** + PID จากภายนอก → จับทั้ง exit≠0, overdue (ผ่าน status stamp เท่านั้น กัน false ของ `--quiet` job), daemon down · registry `workflows.json` |
+| **4b Shape sentinel** 🔴 | **คนเปลี่ยนชื่อบนชีท แล้วไม่มีใครรู้จนมันทำพัง** | `sheet_shape_watch.py` (launchd 09:20 ทุกวัน ผ่าน harness) อ่านชื่อแท็บ + หัวตารางของทุก dependency **จากค่าคงที่ของ writer เอง** (ไม่ถือ id ของตัวเอง = ไม่มีแหล่งความจริงที่สอง) → diff กับ snapshot → รายงาน rename **แม้ writer จะทนได้แล้ว** เพราะ drift ที่ปล่อยไว้คือที่ที่ rename ครั้งถัดไปจะมาทับ · อ่านเฉพาะความกว้างหัวตารางที่ประกาศ (เซลล์ timestamp ข้างๆ เปลี่ยนทุก 2 นาที = เตือนทุกรอบ = สอนให้คนเมิน) · pin ด้วย `tests/test_shape_watch.py` |
 | **5 Root-cause → rerun → record** | ผิดซ้ำเรื่องเดิม | ได้ notify แล้ว = debug จริง (systematic-debugging **ห้าม workaround/silence**) → fix ต้นเหตุ → **rerun ทันที** ยืนยันเขียว → เขียน post-mortem/memory กัน recur |
 
 **Apply เมื่อ (บังคับ):**
@@ -1025,6 +1027,72 @@ Two traps this run:
 - **Frozen `(Only)` snapshots are exempt from automation, not from correctness.** They still carried the typo
   after everything else was fixed. Only a human can order that change; when it is ordered, rename the single
   tab and diff the full tab list before/after to prove nothing else moved.
+
+### PM-010 — Two sheets sat frozen for six days because a person renamed a tab and a header (2026-09-03)
+
+**Surface:** every scheduled job that addresses a Google Sheet by the *text* of a tab title or a
+header cell — which, before this, was all of them.
+
+**What happened.** The owner noticed the bug mirror was not updating. Two independent jobs had
+been refusing every run:
+
+| job | refusal | since |
+|---|---|---|
+| `bugmirror` | `L1 destination has no tab named 'list' (has ['List', …])` | 2026-08-28 17:37 — **6 days**, 1,301 refusals |
+| `bugsheet-sync` | `L2 header drift` — col I read `Status`, code pinned `Bug status` | 2026-09-02 — 17 refusals |
+
+Someone had renamed a tab `list` → `List` and a header `Bug status` → `Status`. Neither change
+altered which tab or which column anything meant. Both gates were doing their job — the pinned
+strings were wrong, not the gates.
+
+**Root cause — a tab's identity is its gid and a column's is its position; both were addressed by
+a label a person may retype at any moment.** `DST_TAB = "list"` was compared with `!=`, and the
+header was compared element-for-element against a frozen list.
+
+**Why six days passed — every net reported healthy or reported noise.** This is the more
+expensive half:
+
+1. **OVERDUE never fired.** It measures log mtime. The job ran perfectly on schedule, writing the
+   word `REFUSED` into its log every five minutes, so the log was always fresh. *Liveness was
+   green throughout an outage.*
+2. **The failure alert fired 33 times and was rational to ignore.** It said `rc=3`. This host
+   already produces `rc=143` watchdog blips daily, so a third exit code among them carried no
+   signal. **The message never said what it meant** — that a sheet the customer reads had not
+   moved in days.
+3. **Dedup suppressed 1,273 of 1,301 findings** exactly as designed. Correct behaviour for a
+   repeating fault; wrong when the fault is getting *older* rather than repeating.
+4. **Nothing measured the outcome.** Every check asked "did this run go well?". None asked
+   "when did this job last succeed?" — the one question whose answer is independent of cause.
+
+**A worse near-miss found while fixing it.** `backlog_sync.py` resolved its tab by exact title
+too, and on no match went straight to `addSheet`: the same rename there would have created a
+**second** `Backlog` tab beside the renamed original, splitting the data with no error at all.
+Nothing would have looked wrong.
+
+**Prevention — seven layers, each sufficient alone.** Levels 2b and 4b were added to the SFD
+table above; the rest are the tests that keep them from eroding.
+
+1. **Identity over spelling.** `sheet_guard.resolve_tab()` — one case-insensitive match is the
+   tab, zero raises `TabMissing` (only that branch may create one), **two or more always refuse**:
+   with `list` and `List` both present, no rule can say which holds the data. Header columns
+   resolve by position with named aliases (`Bug status` / `Status`), the other twelve still
+   pinned verbatim so a genuine column shift refuses exactly as before.
+2. **Outcome staleness** (SFD 2b) — the cause-independent measure, escalating with age.
+3. **Escalation, never quieter.** `stale` bypasses dedup structurally, not by a flag a caller
+   must remember.
+4. **Shape sentinel** (SFD 4b) — renames are reported the day they happen, tolerated or not.
+5. **Every refusal states the fix** — "any capitalisation", "may also read", "rename or remove
+   the duplicate".
+6. **Tests pin identity, not strings** — `test_resolve_tab.py`, `test_sfd_stale.py`,
+   `test_shape_watch.py`, plus the alias cases in both writers' suites. A gate that reverts to
+   exact-string matching fails.
+7. **Registry completeness** — every non-daemon workflow must declare `max_stale_s`, and
+   `test_sfd_stale.py` fails if one does not, so a new writer cannot ship without the net.
+
+**The rule to carry forward:** *an alert must state the consequence, not the exit code.* Thirty-three
+alerts said `rc=3`; one saying "the mirror has not updated in 6 days" would have ended it the
+first day. And when several nets all report healthy during an outage, the missing measurement is
+usually the outcome — not another liveness check.
 
 ### PM-009 — An example the user typed in chat was published to a live page as verified fact (2026-08-26)
 
