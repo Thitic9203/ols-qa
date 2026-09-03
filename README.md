@@ -4,7 +4,7 @@ Helix QA assistant pre-configured for the **OLS** project at <ORG>.
 
 Helix skills embedded directly — no separate install needed.
 
-**OLS Workspace version: v1.36.18** (3 Sep 2026) — based on helix v1.5.79
+**OLS Workspace version: v1.36.19** (3 Sep 2026) — based on helix v1.5.79
 
 ## Quick start
 
