@@ -124,11 +124,12 @@ console.log('OLS_ENV_LABEL: no default, a missing or mislabelled value is refuse
  * (playwright absent, today) or succeeds (playwright present, later).
  */
 const { execFileSync } = require('child_process');
+const os = require('os');
 
-function runScan(env) {
+function runScan(env, homeDir) {
   try {
     const out = execFileSync(process.execPath, [path.join(__dirname, 'scan.js')], {
-      env: Object.assign({ PATH: process.env.PATH, HOME: process.env.HOME }, env),
+      env: Object.assign({ PATH: process.env.PATH, HOME: homeDir || process.env.HOME }, env),
       stdio: 'pipe',
       timeout: 8000,
     });
@@ -136,6 +137,20 @@ function runScan(env) {
   } catch (e) {
     return { code: e.status, out: String(e.stdout || ''), err: String(e.stderr || '') };
   }
+}
+
+/* A throwaway $HOME with its own .ols-qa-secrets/ols-secrets.md — this is what makes the
+ * prod/host tests below fully self-contained. Review round 1 found that pointing scan.js at the
+ * REAL secrets file (via the real $HOME) made several tests pass only by coincidence, dependent
+ * on whatever the real <PROD_HOST> value happens to be today — exactly the "of course it passes,
+ * I didn't check why" trap. Every prod/host-resolution test from here on builds its own $HOME. */
+function fixtureHome(rows) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'scanjs-home-'));
+  const secretsDir = path.join(dir, '.ols-qa-secrets');
+  fs.mkdirSync(secretsDir, { recursive: true });
+  const body = '# fixture secrets\n\n' + rows.map(([k, v]) => '| `<' + k + '>` | `' + v + '` |').join('\n') + '\n';
+  fs.writeFileSync(path.join(secretsDir, 'ols-secrets.md'), body);
+  return dir;
 }
 
 // Four of the five required vars — OLS_ENV_LABEL is the one under test, and is added or
@@ -149,7 +164,7 @@ const REQUIRED = {
 
 t('the source no longer carries the old default, and OLS_ENV_LABEL joins the required-vars loop', () => {
   assert.ok(!/OLS_ENV_LABEL\s*\|\|\s*'ols'/.test(scanSrc), 'the old `|| \'ols\'` default must be gone');
-  assert.ok(/\['OLS_ENV_LABEL',\s*LABEL\]/.test(scanSrc),
+  assert.ok(/\['OLS_ENV_LABEL',\s*RAW_LABEL\]/.test(scanSrc),
     'OLS_ENV_LABEL must be checked by the same missing-env loop as the other four required vars');
 });
 
@@ -159,26 +174,90 @@ t('every var EXCEPT OLS_ENV_LABEL: refused loudly, never silently labelled "ols"
   assert.ok(/missing env OLS_ENV_LABEL/.test(r.err), 'the refusal must name the missing key: ' + r.err);
 });
 
-t('OLS_ENV_LABEL=prod with an OLS_ORIGIN that still says preprod is refused', () => {
-  const r = runScan(Object.assign({}, REQUIRED,
-    { OLS_ENV_LABEL: 'prod', OLS_ORIGIN: 'https://preprod-ols.example.test' }));
+console.log();
+console.log('P0-12 review round 1, finding 5: an unknown label shape must throw, not just a missing one');
+
+t('OLS_ENV_LABEL=banana clears every guard in the old code — must now be refused', () => {
+  const r = runScan(Object.assign({}, REQUIRED, { OLS_ENV_LABEL: 'banana' }));
   assert.strictEqual(r.code, 2, 'expected exit 2, got ' + r.code + ' (stderr: ' + r.err + ')');
-  assert.ok(/OLS_ENV_LABEL=prod/.test(r.err) && /preprod/i.test(r.err), 'refusal must name both: ' + r.err);
+  assert.ok(/ไม่รู้จัก/.test(r.err) && /banana/.test(r.err), 'the refusal must name the bad label: ' + r.err);
 });
 
-t('OLS_ENV_LABEL=prod with an OLS_ORIGIN that still says training is refused', () => {
-  const r = runScan(Object.assign({}, REQUIRED,
-    { OLS_ENV_LABEL: 'prod', OLS_ORIGIN: 'https://obectraining69-ols.example.test' }));
-  assert.strictEqual(r.code, 2, 'expected exit 2, got ' + r.code + ' (stderr: ' + r.err + ')');
-  assert.ok(/OLS_ENV_LABEL=prod/.test(r.err), 'refusal must fire: ' + r.err);
+t('a genuinely unrecognised label is refused even when it merely LOOKS env-like ("staging")', () => {
+  const r = runScan(Object.assign({}, REQUIRED, { OLS_ENV_LABEL: 'staging' }));
+  assert.strictEqual(r.code, 2, 'expected exit 2, got ' + r.code);
+  assert.ok(/staging/.test(r.err), r.err);
 });
 
-t('OLS_ENV_LABEL=prod with a plausible prod origin clears both new guards', () => {
+t('every one of the four recognised label shapes clears the shape check', () => {
+  for (const label of ['dev', 'prod', 'preprod', 'pre-prod', 'training', 'training69', 'obectraining69']) {
+    const r = runScan(Object.assign({}, REQUIRED, { OLS_ENV_LABEL: label, OLS_ORIGIN: 'https://obectraining69-ols.example.test' }));
+    assert.ok(!/ไม่รู้จัก \(ไม่ตรง/.test(r.err), label + ' should clear the shape check: ' + r.err);
+  }
+});
+
+t("'ols' — the removed default — is deliberately NOT a recognised shape any more", () => {
+  const r = runScan(Object.assign({}, REQUIRED, { OLS_ENV_LABEL: 'ols' }));
+  assert.strictEqual(r.code, 2, 'expected exit 2, got ' + r.code);
+  assert.ok(/ไม่รู้จัก/.test(r.err), 'ols must not be silently treated as a known label: ' + r.err);
+});
+
+console.log();
+console.log('P0-12 review round 1, finding 4: case-insensitive label, allowlist against the real prod host');
+
+t('OLS_ENV_LABEL=PROD (uppercase) is treated identically to "prod" — the old bug let it through unchecked', () => {
+  const home = fixtureHome([['PROD_HOST', 'prod-ols.example.test']]);
+  const wrongOrigin = runScan(Object.assign({}, REQUIRED,
+    { OLS_ENV_LABEL: 'PROD', OLS_ORIGIN: 'https://dev-ols.example.test' }), home);
+  assert.strictEqual(wrongOrigin.code, 2, 'PROD (uppercase) with a non-matching origin must still be refused: ' + wrongOrigin.err);
+  assert.ok(/ไม่ตรงกับ/.test(wrongOrigin.err), wrongOrigin.err);
+});
+
+t('LABEL=prod with an origin matching the fixture PROD_HOST clears the guard', () => {
+  const home = fixtureHome([['PROD_HOST', 'prod-ols.example.test']]);
   const r = runScan(Object.assign({}, REQUIRED,
-    { OLS_ENV_LABEL: 'prod', OLS_ORIGIN: 'https://ols-app.example.test' }));
-  assert.ok(!/REFUSED — OLS_ENV_LABEL=prod/.test(r.err), 'must not be caught by the new prod/preprod guard: ' + r.err);
-  assert.ok(!/missing env/.test(r.err), 'all five required vars were supplied: ' + r.err);
-  assert.ok(!/REFUSED — ไม่สแกน/.test(r.err), 'prod must not be caught by the training-only guard: ' + r.err);
+    { OLS_ENV_LABEL: 'prod', OLS_ORIGIN: 'https://prod-ols.example.test/' }), home);
+  assert.ok(!/REFUSED/.test(r.err), 'a matching origin must not be refused: ' + r.err);
+  assert.ok(!/missing env/.test(r.err), r.err);
+});
+
+t('LABEL=prod with a DEV origin is refused — the old denylist (/preprod|training/i) would have missed this', () => {
+  const home = fixtureHome([['PROD_HOST', 'prod-ols.example.test']]);
+  const r = runScan(Object.assign({}, REQUIRED,
+    { OLS_ENV_LABEL: 'prod', OLS_ORIGIN: 'https://dev-ols.example.test' }), home);
+  assert.strictEqual(r.code, 2, 'expected exit 2, got ' + r.code + ' (stderr: ' + r.err + ')');
+  assert.ok(/ไม่ตรงกับ/.test(r.err), 'must be refused for not matching PROD_HOST, not for matching a denylist token: ' + r.err);
+});
+
+t('LABEL=prod with a preprod-shaped origin is still refused (now via the allowlist, not the old denylist)', () => {
+  const home = fixtureHome([['PROD_HOST', 'prod-ols.example.test']]);
+  const r = runScan(Object.assign({}, REQUIRED,
+    { OLS_ENV_LABEL: 'prod', OLS_ORIGIN: 'https://preprod-ols.example.test' }), home);
+  assert.strictEqual(r.code, 2, 'expected exit 2, got ' + r.code);
+  assert.ok(/ไม่ตรงกับ/.test(r.err), r.err);
+});
+
+t('LABEL=prod with no <PROD_HOST> resolvable at all is refused, not silently skipped', () => {
+  const home = fixtureHome([]); // no PROD_HOST key
+  const r = runScan(Object.assign({}, REQUIRED, { OLS_ENV_LABEL: 'prod' }), home);
+  assert.strictEqual(r.code, 2, 'expected exit 2, got ' + r.code);
+  assert.ok(/resolve.*<PROD_HOST>.*ไม่ได้/.test(r.err), r.err);
+});
+
+console.log();
+console.log('P0-12 review round 1, finding 7: OLS_EMAIL/OLS_PW production-account asymmetry is stated, not silent');
+
+t('a cleared prod run prints an unmissable reminder that OLS_EMAIL/OLS_PW must be a real prod account', () => {
+  const home = fixtureHome([['PROD_HOST', 'prod-ols.example.test']]);
+  const r = runScan(Object.assign({}, REQUIRED,
+    { OLS_ENV_LABEL: 'prod', OLS_ORIGIN: 'https://prod-ols.example.test/' }), home);
+  assert.ok(/Account on Prod/.test(r.err), 'the reminder must point at the real account source: ' + r.err);
+});
+
+t('the file states in its own comments why this is a reminder, not a hard refusal like preflight_roles.js', () => {
+  assert.ok(/deliberately inconsistent with preflight_roles\.js/.test(scanSrc)
+    || /this comment is that inconsistency stated in the file/.test(scanSrc),
+    'the asymmetry with preflight_roles.js\'s hard refusal must be explained inline');
 });
 
 t('training is still refused after this change — the fix did not erode isProtectedEnv()', () => {
@@ -188,7 +267,7 @@ t('training is still refused after this change — the fix did not erode isProte
   assert.ok(/REFUSED — ไม่สแกน/.test(r.err), 'the existing training refusal must still fire: ' + r.err);
 });
 
-t('a normal pre-prod run is unaffected by the new prod-only guard', () => {
+t('a normal pre-prod run is unaffected by the new prod-only guard, and needs no secrets fixture', () => {
   const r = runScan(Object.assign({}, REQUIRED,
     { OLS_ENV_LABEL: 'preprod', OLS_ORIGIN: 'https://preprod-ols.example.test' }));
   assert.ok(!/REFUSED — OLS_ENV_LABEL=prod/.test(r.err), 'the prod-only guard must never fire for label=preprod: ' + r.err);

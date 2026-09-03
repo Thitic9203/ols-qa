@@ -10,14 +10,23 @@
  *
  * Exit codes: 0 = clean · 1 = findings · 2 = scan could not run (login/network/etc).
  */
+const os = require('os');
+const path = require('path');
+const fs = require('fs');
+
 const ORIGIN = process.env.OLS_ORIGIN;
 const SSO = process.env.OLS_SSO;
 const EMAIL = process.env.OLS_EMAIL;
 const PW = process.env.OLS_PW;
-const LABEL = process.env.OLS_ENV_LABEL;
-for (const [k, v] of [['OLS_ORIGIN', ORIGIN], ['OLS_SSO', SSO], ['OLS_EMAIL', EMAIL], ['OLS_PW', PW], ['OLS_ENV_LABEL', LABEL]]) {
+const RAW_LABEL = process.env.OLS_ENV_LABEL;
+for (const [k, v] of [['OLS_ORIGIN', ORIGIN], ['OLS_SSO', SSO], ['OLS_EMAIL', EMAIL], ['OLS_PW', PW], ['OLS_ENV_LABEL', RAW_LABEL]]) {
   if (!v) { console.error('missing env ' + k); process.exit(2); }
 }
+// Every comparison below is case-insensitive on purpose (review round 1: `LABEL === 'prod'` let
+// `OLS_ENV_LABEL=PROD` sail past every guard, since nothing in this file ever compared it against
+// anything). LABEL keeps this normalised form from here on; the original casing is never needed
+// again — the report already carries RAW_LABEL-derived text nowhere, only this.
+const LABEL = RAW_LABEL.toLowerCase();
 
 /* OLS_ENV_LABEL used to fall back to the string 'ols' when the variable was unset.
  * That default was the hole, not a convenience: a caller who forgot to pass the label did not
@@ -27,19 +36,75 @@ for (const [k, v] of [['OLS_ORIGIN', ORIGIN], ['OLS_SSO', SSO], ['OLS_EMAIL', EM
  * about which environment ran. There is no default any more: a missing label fails loudly in the
  * loop above, exactly like the other four required variables.
  *
- * A second, narrower guard: LABEL=prod is refused outright when OLS_ORIGIN still looks like a
- * lower environment. This cannot check against the literal production host — this repo is
- * public, that host is not committed here, and as of this change it has not even been decided
- * yet — but it can catch the exact mistake this fix exists to prevent: the label changed to
- * 'prod' while OLS_ORIGIN is still a copy-pasted pre-prod or training value. Token-shaped, same
- * style as write_guard's PROTECTED_HOST — not a secret, not a guess at the real prod host. It is
- * purely additive: it only ever fires when LABEL is exactly 'prod', so it changes nothing about
- * how every other label (including how training is detected below) behaves.
+ * An unknown label must also throw — P0-12's own clause, added here after review round 1 found
+ * `OLS_ENV_LABEL=banana` cleared every guard and reached the browser. "Known" is deliberately
+ * token-shaped, not an exact enum: run_guard.sh passes whatever suffix a `~/.ols-qa-secrets/
+ * name-guard-<label>.env` file exists for (today, verified, that is exactly ONE file —
+ * name-guard-preprod.env — so 'preprod'/'pre-prod' is the only label actually used in
+ * production), and write_guard.js already recognises training-shaped labels with arbitrary
+ * suffixes (training69, obectraining69, …) via a bare substring match. 'ols' — the removed
+ * default — is deliberately NOT included: it was never an intentionally chosen label (no
+ * name-guard-ols.env exists), and keeping it "known" would preserve exactly the hole this
+ * whole fix removes.
  */
-if (LABEL === 'prod' && /preprod|training/i.test(ORIGIN)) {
-  console.error('REFUSED — OLS_ENV_LABEL=prod แต่ OLS_ORIGIN ยังดูเหมือน pre-prod/training: ' + ORIGIN);
-  console.error('          ตรวจ OLS_ORIGIN อีกที ห้ามเดา prod host เอง — resolve จาก secrets store ด้วยคีย์ของ prod โดยเฉพาะ');
+function isKnownLabelShape(label) {
+  return /training/i.test(label)        // any training variant, arbitrary suffix
+    || /^dev$/i.test(label)
+    || /^prod$/i.test(label)
+    || /^pre-?prod\d*$/i.test(label);   // preprod, pre-prod, preprod2, ...
+}
+if (!isKnownLabelShape(LABEL)) {
+  console.error('REFUSED — OLS_ENV_LABEL "' + RAW_LABEL + '" ไม่รู้จัก (ไม่ตรง dev/prod/preprod/training pattern ใดเลย)');
+  console.error('          ถ้านี่คือ env ใหม่จริง ให้เพิ่ม pattern ให้ isKnownLabelShape() รู้จักก่อน อย่าปล่อยผ่านเงียบๆ');
   process.exit(2);
+}
+
+/* Resolve <PROD_HOST> from the local, off-repo secrets store — this repo is public, so the VALUE
+ * is never written here, only the key NAME (same pattern as capture/env_hosts.js). Used only for
+ * the prod/origin cross-check directly below; every other host in this file still comes straight
+ * from the environment, unchanged.
+ */
+function prodHostFromSecrets() {
+  const secretsFile = path.join(os.homedir(), '.ols-qa-secrets', 'ols-secrets.md');
+  let md;
+  try { md = fs.readFileSync(secretsFile, 'utf8'); }
+  catch (e) { return null; }
+  const m = md.match(/\|\s*`<PROD_HOST>`\s*\|\s*`([^`]+)`/);
+  return m ? m[1].trim() : null;
+}
+
+/* LABEL=prod used to be refused only when OLS_ORIGIN matched a two-token DENYLIST
+ * (/preprod|training/i) — which means a dev origin, or any origin that simply doesn't happen to
+ * contain those two words, sailed straight through unrefused. Review round 1 caught this and
+ * asked for the logic inverted: an ALLOWLIST against the real resolved production host, not a
+ * blocklist of two known-lower ones. Fails closed both ways — no <PROD_HOST> resolvable, or a
+ * mismatch, both refuse; nothing here guesses at what the real prod host looks like.
+ */
+if (/^prod$/i.test(LABEL)) {
+  const prodHost = prodHostFromSecrets();
+  if (!prodHost) {
+    console.error('REFUSED — OLS_ENV_LABEL=prod แต่ resolve <PROD_HOST> จาก ~/.ols-qa-secrets/ols-secrets.md ไม่ได้');
+    process.exit(2);
+  }
+  let originHost = '';
+  try { originHost = new URL(ORIGIN).hostname; } catch (e) { /* falls through to the mismatch check below */ }
+  if (originHost.toLowerCase() !== prodHost.toLowerCase()) {
+    console.error('REFUSED — OLS_ENV_LABEL=prod แต่ OLS_ORIGIN host ("' + originHost + '") ไม่ตรงกับ <PROD_HOST> จริง ("' + prodHost + '")');
+    console.error('          ตรวจ OLS_ORIGIN อีกที ห้ามเดา prod host เอง — ต้องตรงกับ secrets store เป๊ะ');
+    process.exit(2);
+  }
+  /* P0-12 also requires OLS_EMAIL/OLS_PW to be genuine production accounts, never a stale
+   * pre-prod one left over in the environment. Unlike the host check just above, this cannot be
+   * verified mechanically from here: preflight_roles.js can refuse on this because it owns
+   * capture/accounts.json (an explicit per-row `env` field to check against); this scanner takes
+   * OLS_EMAIL/OLS_PW as bare strings with no registry to compare them to, and it must not reach
+   * into a private repo's account file to get one (this file is public and portable on its own).
+   * So the guard here is the loudest thing actually available: an unmissable reminder printed on
+   * every prod run, not a hard refusal — deliberately inconsistent with preflight_roles.js's hard
+   * refusal, and this comment is that inconsistency stated in the file, per review round 1.
+   */
+  console.error('*** OLS_ENV_LABEL=prod — ยืนยันว่า OLS_EMAIL/OLS_PW เป็นบัญชี production จริงจากแท็บ "Account on Prod" ***');
+  console.error('*** ห้ามเป็นบัญชี pre-prod ที่ค้างอยู่ใน secrets — สแกนนี้ตรวจให้ไม่ได้ (ไม่มี account registry ให้เทียบ) ***');
 }
 
 /* Hands-off environments are refused HERE, before a browser is even loaded.
@@ -62,8 +127,6 @@ if (handsOff.protected) {
 }
 
 const { chromium } = require('playwright');
-const fs = require('fs');
-const path = require('path');
 const rules = require('./name_rules');
 const customer = require('./customer_content');
 const { establishOwnerSession } = require('./owner_session');
