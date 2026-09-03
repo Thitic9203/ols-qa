@@ -420,8 +420,10 @@ the system must still behave correctly once it does.
 | Sheet · tab | `<QA_TRACKING_SHEET_ID>` → tab **`Responsive`** (gid `966725903`) |
 | Shape | a real Google Sheets **Table** object, `Responsive_Test_Matrix`, `A1:S121` — header row frozen, first 2 columns frozen |
 | Rows | **120** = **60** unique Role × Screen × Route, each × **Tablet** and **Mobile**. One row is one platform — never both in one line — and `Test ID` plus `(Role, Page, Route, Platform)` are both unique, asserted before the write |
-| Columns | `No. · Test ID · Role · Module · Page / Screen · Route · Jira Ref · Platform · Viewport (px) · Figma Ref · UI Responsive Status · UI Responsive Result · Functional Status · Functional Result · Test Date · Tester · Linked Bug · VDO · Remark` |
-| Dropdowns | `Role` · `Platform` · both status columns. The status vocabulary is the **live** one read off tab `OLS-654` of the same file — `NOT STARTED · TESTING · PASSED · PASSED WITH MINOR ISSUE · FAILED · BLOCKED · SKIPPED` — never a second list invented here |
+| Columns | 18: `No. · Test ID · Role · Module · Page / Screen · Route · Jira Ref · Platform · Viewport (px) · Figma Ref · UI Responsive Status · UI Responsive Result · Functional Status · Functional Result · QA Owner · Linked Bug · VDO · Remark` |
+| Dropdowns | `Role` · `Platform` · both status columns · `QA Owner`. The status vocabulary is the **live** one read off tab `OLS-654` of the same file — `NOT STARTED · TESTING · PASSED · PASSED WITH MINOR ISSUE · FAILED · BLOCKED · SKIPPED` — never a second list invented here |
+| `QA Owner` list | the **4 people carrying the Discord role `ols-qa`** who appear in the `🚔 Target - OLS QA` thread — `QA Owner A`–`QA Owner D` (real names live only in `~/.ols-qa-secrets/`). Established by sweeping the thread's full history (501 messages, 8 distinct people) and then reading each one's guild roles, which is what separates QA from the product owner, the dev and the other team's QA who also post there. One participant is in the thread with no `ols-qa` role; the owner's call (2026-09-03) was to leave them out. Spelling follows the `Summary` tab's existing dropdown so the two tabs can be matched |
+| Widths | measured from the longest real value per column (Thai vowel/tone marks counted as zero width) and set so every cell reads on **one line** — `wrapStrategy: CLIP`, ~4,440 px total, first 2 columns frozen |
 | Test ID | `RSP-<GU\|LN\|CR\|AD>-<nn>-<TB\|MB>` |
 | Viewport | `Tablet 768 · 899→900 · 1024` · `Mobile 320 · 375 · 599→600` — the breakpoints written in the `OLS-325` subtask descriptions, not a house default |
 
@@ -439,6 +441,13 @@ the system must still behave correctly once it does.
 separate edit route. Media splits further: the type-picker step plus five type-specific create forms
 (video · short video · article · document · e-Book), each its own component. Collapsing them loses the
 only screens where a narrow viewport actually hurts.
+
+🔴 **Editing one Table column's dropdown wipes every other column's.** `updateTable` with
+`fields: "columnProperties(columnType,dataValidationRule)"` replaces the **whole** `columnProperties`
+array with whatever is sent — passing just the one column being changed silently cleared the other four
+dropdowns here while leaving all 18 column *names* intact, so the table still looked correct in the API
+response. Always send the full array: read the current `columnProperties`, rebuild every entry, then
+write. Verified by reading the dropdowns back after the write, not by the call returning 200.
 
 ### Four routes that OLS-325 names or implies but that do not exist as testable screens
 
