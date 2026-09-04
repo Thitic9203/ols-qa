@@ -646,6 +646,20 @@ fetch('/rest/api/3/issue/ISSUE-KEY/attachments', {
 | `Control_Chrome__execute_javascript` | Run JS บน Jira pages (upload, API calls) | ไม่รองรับ async/await, ใช้ `.then()` |
 | `Control_Chrome__get_current_tab` | ดู tab ID ที่ต่างจาก Claude_in_Chrome | tab ID คนละชุดกัน |
 
+## 🔴 กฎ: อ่าน page restriction ของ Confluence — `restriction/byOperation` โกหกได้ ห้ามใช้ตัดสิน
+
+**อ่านสิทธิ์หน้า Confluence ต้องใช้ `GET /wiki/rest/api/content/{id}?expand=restrictions.read.restrictions.user,restrictions.read.restrictions.group,restrictions.update.restrictions.user,restrictions.update.restrictions.group` เท่านั้น** — endpoint `GET /wiki/rest/api/content/{id}/restriction/byOperation?expand=restrictions.user,restrictions.group` **คืน `{"_expandable":{"read":"","update":""}}` โดยไม่ขยายค่า** กับหน้าที่มี restriction จริง ตัวอ่านที่ไล่ `results` จะได้ลิสต์ว่างแล้วสรุปว่า "หน้านี้ไม่ถูกล็อก" ทั้งที่ล็อกอยู่
+
+- **ร้ายกว่าปกติเพราะมันไม่ error** — ตอบ HTTP 200 และ**บางหน้าก็ขยายค่าให้จริง** (หน้าที่ไม่มี restriction คืน `size: 0` มาสวยๆ) จึงดูเหมือนทำงานถูก จนกว่าจะเจอหน้าที่มีของ *(เกิดจริง 2026-09-04: สแกน 199 หน้ารายงาน "0 หน้าถูกล็อก" ของจริงคือ **164 หน้า** — ถ้าเชื่อรอบนั้นคือปิดงานทั้งที่ยังไม่ได้แก้อะไรเลย)*
+- `GET …/restriction/byOperation/update?expand=…` (ระบุ operation ตรงๆ) ขยายค่าถูกต้อง ใช้เช็กรายหน้าได้ แต่เสีย 1 call ต่อ operation
+- **ตัวเลขจากรอบสแกนต้องพิสูจน์ด้วยหน้าที่รู้คำตอบอยู่แล้ว 1 หน้าเสมอ** ก่อนเชื่อทั้งชุด — รอบนี้จับได้เพราะเทียบกับกล่อง Share บนจอที่ user ส่งมา ซึ่งบอกว่าล็อกอยู่ สวนทางกับผลสแกน
+
+**ปลดล็อกทั้งต้นไม้:** `DELETE /wiki/rest/api/content/{id}/restriction` ลบทั้ง read และ update ในคำสั่งเดียว (ยืนยันแล้วว่ามีจริงและคืน 200) — **ต้องเช็ก read restriction ก่อนเสมอ** ถ้าหน้าไหนตั้งใจจำกัดการดูไว้ การลบทั้งก้อนจะเปิดการดูไปด้วย
+
+**ไล่หน้าลูกให้ครบ อย่าเชื่อค่า default:** `GET /wiki/api/v2/pages/{id}/descendants` **ตัดความลึกเงียบๆ** — ต้นไม้เดียวกันได้ 33 หน้าโดยไม่ใส่ `depth`, ได้ 198 หน้าเมื่อใส่ `depth=10` และ BFS ผ่าน `/children` ทีละชั้นยืนยัน 198 หน้า ลึกสุด 4 ชั้น · **หน้าแม่อาจเป็น `folder` ไม่ใช่ `page`** (`parentType: "folder"` → ต้องอ่านด้วย `/wiki/api/v2/folders/{id}` ไม่ใช่ `/pages/{id}` ซึ่งจะได้ 404) และ restriction บนโฟลเดอร์/หน้าแม่**ถ่ายทอดลงมา** จึงต้องตรวจ ancestor ทุกชั้นขึ้นไปถึง space homepage ไม่ใช่แค่หน้าที่สนใจ
+
+**สิทธิ์ระดับ space เป็นเพดาน — page restriction กว้างกว่าเพดานไม่ได้** ถ้าจะสรุปว่า "คนในสเปซแก้ได้แล้ว" ต้องอ่าน `GET /wiki/api/v2/spaces/{spaceId}/permissions` **แบบวนทุกหน้าจน `_links.next` หมด** ค่า `limit` สูงสุดคือ 250 และรอบนี้ของจริงมี 282 บรรทัด — อ่านหน้าเดียวแล้วสรุปคือได้ภาพที่ขาดไป 32 บรรทัด ซึ่งพอดีเป็นบรรทัดที่ทำให้เข้าใจผิดว่ามีคนถูกจำกัดเหลือแค่ `read` *(รายงานผิดไปแล้ว 1 รอบด้วยเหตุนี้)*
+
 ## 🔴 กฎ: เขียนหน้า Confluence ที่มีอยู่แล้ว — ใช้ `contentFormat: "adf"` ห้ามใช้ `"html"`
 
 **`updateConfluencePage` แบบ `contentFormat: "html"` ทำฟอร์แมตบางอย่างหายเงียบๆ** — ยืนยันจากการเขียนจริง 2026-08-27:
