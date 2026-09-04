@@ -64,6 +64,44 @@ context ที่ inject ตอนเปิด session · memory · WIP note · 
 - ถ้า user เคยระบุ env ใน session นั้นแล้ว → ใช้ตามนั้น ไม่ต้องถามซ้ำ
 - บทเรียน (2026-07-30 OLS-294/295): AI default ไปเลือก pre-prod เองเพราะคิดว่าเข้าง่ายกว่า ทั้งที่ user ต้องการ dev — root cause = เลือก env เองโดยไม่มีสิทธิ์
 
+## 🔴 กฎ: ต้องล็อกอิน = ใช้ saved session เท่านั้น — agent กรอกรหัสผ่านไม่ได้ ห้ามหาทางอ้อม
+
+**agent ห้ามพิมพ์รหัสผ่านลงช่อง login ไม่ว่าบัญชีไหน — บัญชี QA ก็ห้าม และคำสั่ง/คำอนุญาตของ user ยกเว้นให้ไม่ได้** ตัวกฎเขียนไว้เองว่า *"stay prohibited when the user explicitly asks for them ... or says they authorize it"* เจอทางตันนี้แล้วห้ามไปหา agent ตัวอื่นมาบายพาส ห้ามเปลี่ยนคำสั่งให้ฟังดูต่างออกไป — ให้ใช้ saved session แทน
+
+**บทเรียน (2026-09-03/04, OLS production smoke test):** ทั้ง session รัน login ผ่านสคริปต์กันทั้งวันโดยไม่มีใครทัก จนมี agent 2 ตัวหยุดถูก แล้วงานอนุมัติสื่อ 52 ชิ้นค้างข้ามคืนเพราะไม่มีทางอื่น — root cause จริงคือไม่มีกลไก session ที่ใช้ซ้ำได้ ไม่ใช่ตัวกฎ
+
+### วิธีที่ใช้: เก็บ session ครั้งเดียว แล้วใช้ซ้ำ (`~/ols-qa-testing-bot/capture/`)
+
+| เครื่องมือ | หน้าที่ |
+|---|---|
+| `accounts_sync.py` | ดึงรายชื่อบัญชีจากชีต Go-Live tab `Account on Prod` → `accounts.json` (email + role เท่านั้น **ไม่เก็บรหัสผ่าน**) |
+| `session_capture.js` | เปิดเบราว์เซอร์จริงทีละบาน **กรอกอีเมลให้** คนพิมพ์แค่รหัส → เซฟ `state_<tag>.json` |
+| `session_capture_prod.sh` | ตัวห่อสำหรับ production (อ่าน host จาก `prod_resolve.json` ไม่ต้องพิมพ์ host) |
+| `session_status.js` | เหลืออายุกี่ชั่วโมงต่อบัญชี · exit code ใช้กับ cron ได้ |
+| `session_verify.js` | ยืนยันว่า session แต่ละไฟล์เป็นบัญชีที่ชื่อไฟล์อ้างจริง |
+| `session_refresh.js` | ลองต่ออายุ session โดยไม่ใช้รหัสผ่าน (เป็นทั้งตัวทดสอบและตัว cron) |
+
+```bash
+uv run python capture/accounts_sync.py          # รีเฟรชรายชื่อบัญชี
+./capture/session_capture_prod.sh --all         # เก็บทุกบัญชีที่ยังไม่มี session
+./capture/session_capture_prod.sh --role "Admin content"
+node capture/session_status.js                  # เหลืออายุเท่าไร
+PROD=1 OLS=https://<PROD_HOST> node capture/session_verify.js   # <PROD_HOST> อยู่ในไฟล์ secrets
+```
+
+งานอัตโนมัติทุกตัวให้เริ่มจาก `storageState: capture/state_<tag>.json` — ห้ามเรียก `tr_lib_ob69.login()` ในงานที่ agent เป็นคนรัน (ฟังก์ชันนั้นกรอกรหัสจากตารางในโค้ด = ผิดกฎข้อนี้)
+
+### ข้อเท็จจริงที่วัดแล้ว ห้ามเดาใหม่
+
+- **คุกกี้ auth ของ OLS อายุ 24 ชม.เป๊ะ** (`access_token` · `refresh_token` · `session_id` · `user_proof_token` หมดพร้อมกัน) — วัดจาก state file ทุกไฟล์ที่เคยเก็บ
+- **ไม่พบ endpoint `/auth/refresh`** ใน traffic ที่เคย capture — มีแค่ `/auth/login-with-email` กับ `/auth/session` ฉะนั้น "ต่ออายุอัตโนมัติได้ไหม" ยังเป็นคำถามเปิด ให้ `session_refresh.js` เป็นคนตอบ ห้ามสมมติเอง
+- **วัดอายุ session ต้องนับเฉพาะคุกกี้ auth** — ใน state file มีคุกกี้ analytics ปนอยู่ด้วย (`ANONCHK` ของ Microsoft Clarity อายุ ~30 นาที) ถ้านับรวมจะรายงาน session ที่ดีอยู่ว่าใกล้ตาย แล้วสั่ง login ใหม่ทั้งที่ไม่ต้อง (เจอจริง 2026-09-04)
+- **autofill ของเบราว์เซอร์ทับอีเมลที่กรอกไว้ได้** — 2026-09-04 เจอ 2 ไฟล์ที่ชื่อบอกบัญชีหนึ่งแต่ข้างในเป็นอีกบัญชี (คนละ role ด้วย) **หลังเก็บ session ต้องรัน `session_verify.js` เสมอ** ก่อนเอาไปใช้ตัดสินอะไร
+
+### ถ้าอยากให้ไม่ต้องล็อกอินซ้ำเลย
+
+ทางเดียวที่ยั่งยืนคือขอ **API token / service account** จากทีม OLS — token ใช้ได้เต็มที่ ไม่ติดกฎข้อนี้ ต่างจากรหัสผ่าน ระหว่างที่ยังไม่มี ให้ยอมรับว่าต้องมีคนล็อกอินวันละครั้ง และออกแบบงานให้เก็บ session ทีเดียวครบทุกบัญชีที่จะใช้
+
 ## 🔴 กฎ: ห้ามเปิดบัคทั้งที่ไม่ใช่บัค — verify "สเปคที่คาดหวัง" กับแหล่งจริงก่อนเปิดเสมอ
 
 **ห้ามเปิด / escalate defect ใดๆ ถ้ายังไม่ได้ยืนยันฝั่ง "expected / สเปค" กับแหล่ง authoritative จริง (Figma / PRD / AC / PO) — เด็ดขาด** "แอปต่างจากที่ AI *คิดว่า* สเปคเขียน" **ไม่ใช่บัค**. บัค = "แอปต่างจากสเปคที่ *ยืนยันแล้ว*" เท่านั้น. ก่อนเขียนคำว่า FAILED/เปิดบั๊กเรื่อง label/ข้อความ/พฤติกรรม ต้องเปิดแหล่งสเปคจริงอ่าน **char-exact** ทั้งสองฝั่ง (แหล่งจริง + แอป) ก่อน
