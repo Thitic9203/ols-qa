@@ -94,7 +94,9 @@ PROD=1 OLS=https://<PROD_HOST> node capture/session_verify.js   # <PROD_HOST> �
 ### ข้อเท็จจริงที่วัดแล้ว ห้ามเดาใหม่
 
 - **คุกกี้ auth ของ OLS อายุ 24 ชม.เป๊ะ** (`access_token` · `refresh_token` · `session_id` · `user_proof_token` หมดพร้อมกัน) — วัดจาก state file ทุกไฟล์ที่เคยเก็บ
-- **ไม่พบ endpoint `/auth/refresh`** ใน traffic ที่เคย capture — มีแค่ `/auth/login-with-email` กับ `/auth/session` ฉะนั้น "ต่ออายุอัตโนมัติได้ไหม" ยังเป็นคำถามเปิด ให้ `session_refresh.js` เป็นคนตอบ ห้ามสมมติเอง
+- **endpoint ต่ออายุคือ `POST <AUTH_API>/auth/refresh-token`** (ไม่ใช่ `/auth/refresh` — หาไม่เจอเพราะค้นผิดชื่อ) ที่มา: `ols-monorepo` → `apps/api/src/modules/users/infrastructure/service/ndlp-user-http.service.ts` ฟังก์ชัน `refresh()` ยิงไปที่ `NDLP_BASE_URL` (school-core API) พร้อม header `X-API-KEY` + คุกกี้ผู้ใช้
+- **🔴 ยิง `/auth/refresh-token` โดยไม่มี `X-API-KEY` = 401 และเซิร์ฟเวอร์สั่งลบคุกกี้ auth ทั้ง 6 ตัวกลับมา** (`Set-Cookie: …; Expires=Thu, 01 Jan 1970`) ทดสอบจริง 2026-09-04 — context ที่ยิงจะไม่มีคุกกี้เหลือทันที **ห้ามเอาไปรันวนกับหลายบัญชี** (ข่าวดี: ทดสอบแล้ว session ฝั่งเซิร์ฟเวอร์ไม่ถูกยกเลิก ไฟล์ state เดิมยังใช้ได้ต่อ แต่ก็ไม่ควรเสี่ยงซ้ำ)
+- **สรุป: ต่ออายุ session อัตโนมัติต้องมี `NDLP_API_KEY` เท่านั้น** ถ้าอยากเลิก login รายวันจริงๆ ให้ขอคีย์นี้จากทีม OLS (คีย์ ≠ รหัสผ่าน ใช้ได้ไม่ติดกฎ) ระหว่างที่ยังไม่มี ให้วางแผนใช้ session ให้จบใน 24 ชม. แล้วเก็บใหม่รอบเดียว
 - **วัดอายุ session ต้องนับเฉพาะคุกกี้ auth** — ใน state file มีคุกกี้ analytics ปนอยู่ด้วย (`ANONCHK` ของ Microsoft Clarity อายุ ~30 นาที) ถ้านับรวมจะรายงาน session ที่ดีอยู่ว่าใกล้ตาย แล้วสั่ง login ใหม่ทั้งที่ไม่ต้อง (เจอจริง 2026-09-04)
 - **autofill ของเบราว์เซอร์ทับอีเมลที่กรอกไว้ได้** — 2026-09-04 เจอ 2 ไฟล์ที่ชื่อบอกบัญชีหนึ่งแต่ข้างในเป็นอีกบัญชี (คนละ role ด้วย) **หลังเก็บ session ต้องรัน `session_verify.js` เสมอ** ก่อนเอาไปใช้ตัดสินอะไร
 
