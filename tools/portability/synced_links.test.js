@@ -43,14 +43,22 @@ function walk(dir, out = []) {
   return out;
 }
 
-/** Reference files that declare themselves workspace-only. */
+/**
+ * A file declares itself workspace-only with an `ols-only` comment. The marker sits
+ * below the YAML frontmatter where a file has one — putting it above would displace
+ * the frontmatter and the skill would stop being discoverable — so the whole file is
+ * scanned, not just its first lines.
+ */
+function isWorkspaceOnly(absPath) {
+  return fs.readFileSync(absPath, 'utf8').includes('<!-- ols-only');
+}
+
+/** Reference files that stay in this workspace. */
 function workspaceOnlyReferences() {
   const dir = path.join(ROOT, 'references');
   const names = new Set();
   for (const f of fs.readdirSync(dir)) {
-    if (!f.endsWith('.md')) continue;
-    const head = fs.readFileSync(path.join(dir, f), 'utf8').slice(0, 400);
-    if (head.includes('<!-- ols-only')) names.add(f);
+    if (f.endsWith('.md') && isWorkspaceOnly(path.join(dir, f))) names.add(f);
   }
   return names;
 }
@@ -61,6 +69,19 @@ function check(name, fn) {
 }
 
 const marked = workspaceOnlyReferences();
+
+check('a marker never displaces YAML frontmatter (that would unregister the skill)', () => {
+  const marked = [];
+  ['skills', 'commands'].forEach((d) => walk(path.join(ROOT, d)).forEach((f) => {
+    const text = fs.readFileSync(f, 'utf8');
+    if (!text.includes('<!-- ols-only')) return;
+    marked.push(path.relative(ROOT, f));
+    if (text.trimStart().startsWith('<!-- ols-only')) {
+      assert.ok(!text.includes('\nname:'), path.relative(ROOT, f) + ': marker sits above the frontmatter');
+    }
+  }));
+  assert.ok(marked.length >= 1, 'no marked skill/command found — the check would pass vacuously');
+});
 
 check('the workspace-only references are marked (an unmarked one is invisible to this test)', () => {
   assert.ok(marked.has('ols-project-guide.md'), 'ols-project-guide.md carries no ols-only marker');
@@ -75,6 +96,7 @@ check('no synced skill or command markdown-links to a workspace-only reference',
   for (const f of files) {
     const rel = path.relative(ROOT, f);
     const text = fs.readFileSync(f, 'utf8');
+    if (isWorkspaceOnly(f)) return;   // an OLS-only skill may link to an OLS-only reference
     text.split('\n').forEach((line, i) => {
       let m;
       linkRe.lastIndex = 0;

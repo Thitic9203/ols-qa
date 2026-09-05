@@ -6,6 +6,8 @@ description: |
   Do NOT use for deleting content permanently, for renaming or fixing item metadata (name-guard fixers), or for retesting a bug fix (retest-bug-workflow).
 ---
 
+<!-- ols-only: this file is not synced to the generic plugin, so it may link to other
+     workspace-only references. -->
 # Content takedown workflow
 
 Remove a batch of already-published items from public view, reversibly, with proof.
@@ -38,7 +40,7 @@ MUST NOT start without **all** of:
 1. **An explicit instruction from the user to hide this specific set.** "This content looks bad" is
    an observation, not an instruction. Quote back what you are about to hide and how many.
 2. **A confirmed environment**, per the intake gate in
-   the workspace's `references/ols-project-guide.md` — ask once, wait, never pick one
+   [ols-project-guide.md](../../../references/ols-project-guide.md) — ask once, wait, never pick one
    yourself, and never default to the one that is easiest to reach.
 3. **A named account set**, with the role each one resolves to (verified live, not assumed from a
    spreadsheet column).

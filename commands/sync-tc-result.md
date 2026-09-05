@@ -1,3 +1,5 @@
+<!-- ols-only: this file is not synced to the generic plugin, so it may link to other
+     workspace-only references. -->
 # /sync-tc-result
 
 Route every TC result from the OLS QA source sheet into the three test-type deliverable
@@ -30,7 +32,7 @@ python3 ~/ols-qa-testing-bot/unit_apply.py --write         # write Unit rows + m
 - Config and real ids are **off-repo** (`~/ols-qa-testing-bot/sync_tc_config.json`,
   `~/.ols-qa-secrets/ §5.1`). Never commit a real sheet id here — this repo is public.
 - Deliverable-sheet layout, status map and write-model:
-  the workspace's `references/ols-project-guide.md` § Test-type deliverable sheets.
+  [references/ols-project-guide.md](../references/ols-project-guide.md) § Test-type deliverable sheets.
 
 ## Safety
 
