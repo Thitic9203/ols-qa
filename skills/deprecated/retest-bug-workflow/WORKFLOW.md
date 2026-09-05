@@ -436,7 +436,7 @@ capture/evidence_reconcile.py <KEY>_evidence_plan.json --dir out/ [--jira]
 It opens and measures every file rather than counting names, and with `--jira` it fetches each
 attachment from the ticket so "the link resolves" stops being a claim. Contracts (arguments, exit
 codes, manifest names) are pinned in
-[qa-capture-tooling.md](../../../references/qa-capture-tooling.md); a tool that cannot run is a
+the workspace's `references/qa-capture-tooling.md`; a tool that cannot run is a
 **stop**, never a silent pass. A file the reconciler cannot find is a BLOCKED row with its reason,
 never a row quietly dropped.
 

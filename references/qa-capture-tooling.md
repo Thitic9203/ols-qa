@@ -1,3 +1,5 @@
+<!-- ols-only: this file is never synced to the generic plugin. A skill or command that
+     markdown-links to it ships a dangling link. Reference it as a plain path instead. -->
 # QA capture tooling — the contracts the gates depend on
 
 The recorder, the verifiers and the reconcilers live **outside this repo**, with the rest of the QA
