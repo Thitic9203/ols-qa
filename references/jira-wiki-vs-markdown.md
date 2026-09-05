@@ -25,7 +25,7 @@ because markdown is what the author meant. Only a string scan of the outgoing bo
 | `**bold**` | `*<b>bold</b>*` — bold text wrapped in literal asterisks | `*bold*` |
 | `---` | `—` em-dash character, no horizontal rule | `----` |
 | `\| a \| b \|` + `\|---\|---\|` | table renders, divider becomes a visible row of dashes | `\|\|a\|\|b\|\|` header, **no divider row** |
-| `![alt](url)` | literal `![alt](url)` text | `!file.png\|width=450!` |
+| `![alt](url)` | literal `![alt](url)` text | `!file.png!` — **bare**; a `\|width=` parameter puts a pipe inside the cell and splits the table row (rule `img-width-param`, enforced by `tools/retest-guard/`). Resize before upload instead |
 | `` `code` `` | literal backticks | `{{code}}` |
 | `[text](url)` | literal text | `[text\|url]` |
 

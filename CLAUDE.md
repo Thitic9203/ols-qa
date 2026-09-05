@@ -402,7 +402,7 @@ schedule, and it carries its own tests — there is no package manager and no bu
 **are** test commands, and they must be green before a change to that directory ships:
 
 ```bash
-rc=0; for t in tools/name-guard/*.test.js; do node "$t" || rc=1; done; exit $rc
+rc=0; for t in tools/*/*.test.js; do node "$t" || rc=1; done; exit $rc
 ```
 
 (`|| break` used to sit here instead of `|| rc=1; ... exit $rc` — `break` itself returns 0, so a
@@ -452,7 +452,11 @@ references/                    ← shared rule fragments, linked by skills (not 
 | `tools/name-guard/alert_format.js` · `notify.js` | the QA-channel alert: fixed message shape, Discord markdown escaped, no DMs |
 | `tools/name-guard/alert_dedup.js` | posts when the **findings change**, not when the scan runs — the scan fires every 30 min and findings outlive that |
 | `tools/name-guard/*.test.js` | 12 suites pinning the above. Plain `node`, no framework |
-| `.github/workflows/name-guard.yml` | the training-env run, every 30 min (free on a public repo) |
+| `tools/retest-guard/retest_rules.js` | **the retest rules** — the single source of truth for every mechanically decidable rule of a retest comment (markup per endpoint, header lines, table headers, per-row evidence, coverage arithmetic, scope). Markdown links here and does not restate them |
+| `tools/retest-guard/retest_manifest.js` · `retest_render.js` | the run manifest and the renderer — the comment is produced **from data**, so the markup rules cannot be mistyped. `scope: {mode:"CASES", cases:[…]}` makes a retest of named cases honest: the coverage denominator follows the scope and the unverified items are printed |
+| `tools/retest-guard/retest_guard.js` | the gate: validate → render → scan → exit `0` clean · `1` findings · `2` could not run (never a pass) |
+| `tools/portability/portable_content.test.js` | enforces `references/portable-content.md` over `skills/` + `commands/` — project transition ids, app routes, UI quirks and helper flags may not ride into the generic helix plugin |
+| `.github/workflows/tests.yml` | runs every `tools/*/*.test.js` plus the secret guard on push/PR (free on a public repo). Added 2026-09-05 — before that, nothing ran the tests except a person remembering to |
 | `scripts/check-no-secrets.sh` | the secret guard the git hooks call — see the secret rule above |
 
 The fixers that act on a report are **off-repo**, and as of 2026-08-17 are switched off
@@ -474,8 +478,8 @@ write-guard layers, schedule, required secrets — is in
   (`<JIRA_DOMAIN>`, `<DEV_HOST>`, `<TEST_ACCOUNT_1>`, `QA Owner A`, …) ค่าจริงไปอยู่ที่
   `~/.ols-qa-secrets/ols-secrets.md` เท่านั้น
 - เพิ่ม reference ใหม่ใน `references/`
-- แก้ `tools/name-guard/*.js` — **ต้องรัน test ทั้ง 12 ไฟล์ให้เขียวก่อน commit เสมอ** (คำสั่งอยู่ใน
-  [What this repo is](#what-this-repo-is)) · แก้ rule ใหม่ = เพิ่ม test คู่กันด้วย
+- แก้ `tools/**/*.js` — **ต้องรัน test ทุกไฟล์ใต้ `tools/` ให้เขียวก่อน commit เสมอ** (คำสั่งอยู่ใน
+  [What this repo is](#what-this-repo-is)) · แก้ rule ใหม่ = เพิ่ม test คู่กันด้วย · กฎที่เครื่องตัดสินได้ให้อยู่ในโมดูล rules ที่เดียว ห้ามเขียนซ้ำใน md
 
 ต้องถามก่อน:
 - ลบ/rename skill directory ทั้ง folder

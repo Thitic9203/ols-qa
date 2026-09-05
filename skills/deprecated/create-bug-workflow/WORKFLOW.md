@@ -169,7 +169,10 @@ Capture returned issue URL.
 2. Prefer Atlassian MCP `createJiraIssue`.
 3. On MCP failure → JXA + Chrome fallback per posting-discipline (ASCII-only script, dry-run before post).
 
-Attach screenshots to Jira before embedding `!file.png|width=600!` in wiki bodies.
+Attach screenshots to Jira before embedding them in wiki bodies, and embed them **bare** —
+`!file.png!`, resized to ~600–640 px before upload. A width parameter puts a pipe inside a
+table cell and splits the row; the rule and its scanner live in the workspace at
+`tools/retest-guard/retest_rules.js` (rule `img-width-param`).
 
 **Write the body in the locked format's language.** MCP takes markdown; the v2 path takes wiki
 markup (`*bold*`, `----`, `||header||` with no divider row). A markdown body on the v2 path returns

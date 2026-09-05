@@ -1,0 +1,53 @@
+name: tests
+
+# The repo carries real, executable guards, and until now nothing ran their tests
+# except a person remembering to. A gate whose tests only run by hand is a gate
+# that erodes quietly.
+#
+# Free on a public repository — no new spend.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  node-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run every test in tools/
+        run: |
+          rc=0
+          found=0
+          for t in tools/*/*.test.js; do
+            [ -e "$t" ] || continue
+            found=$((found + 1))
+            echo "::group::$t"
+            node "$t" || rc=1
+            echo "::endgroup::"
+          done
+          # A suite that matched nothing must fail: "no tests ran" is not "tests passed".
+          if [ "$found" -eq 0 ]; then
+            echo "no test files matched tools/*/*.test.js"
+            exit 1
+          fi
+          echo "ran $found test file(s)"
+          exit $rc
+
+      - name: Secret guard over every tracked file
+        run: |
+          # The script takes file arguments (verified: it exits 2 on none), so the
+          # tracked list is passed in. A guard that silently scanned nothing would
+          # be worse than no guard.
+          test -f scripts/check-no-secrets.sh
+          git ls-files -z | xargs -0 bash scripts/check-no-secrets.sh

@@ -31,7 +31,7 @@ Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
 **Root cause is mandatory, never inferred.** Every item that is not a clean PASSED gets a full
 investigation per [root-cause-investigation.md](../../../references/root-cause-investigation.md) —
-run at **Step 4g**, before the draft exists. That reference also governs every sentence in this
+run at **Step 4h**, before the draft exists. That reference also governs every sentence in this
 workflow that states or implies a cause, wherever it is written (chat, comment, notify). Start it by
 invoking a real debugging skill — **`superpowers:systematic-debugging`** first, its Phases 1–3 only
 (QA diagnoses; QA does not patch product code). No cause without a captured artifact and a
@@ -45,7 +45,7 @@ comment — re-verify the **expected** side against an authoritative source, **i
 related / linked tickets** (the parent story, linked issues, sibling tickets on the same surface),
 read character-exact. The bug's own Expected Result is the primary contract (Step 2), but a related
 ticket may have **superseded** or **clarified** it, and a transliteration or an unconfirmed-spec hedge
-turns a correct app into a phantom FAILED. Run this at **Step 4h**, then **surface it to the user in
+turns a correct app into a phantom FAILED. Run this at **Step 4i**, then **surface it to the user in
 chat** so they can decide whether to adjust the expected/TC, re-test, or confirm the defect. Full gate:
 [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md).
 
@@ -66,7 +66,7 @@ only in a remark ⇒ the retest is **not complete**.
 **Test through the real steps.** Drive the behaviour under verification through its own surface,
 following the ticket's Test Steps completely — a UI bug through the UI (click, fill, submit), never a
 direct API call to perform the tested action. The API is allowed **only** to prepare the case's test
-data / precondition (Step 4c). For an **API-layer** bug the API call in Step 4d *is* the real step,
+data / precondition (Step 4c). For an **API-layer** bug the API call in Step 4e *is* the real step,
 not a shortcut. Full rule: [test-through-real-steps.md](../../../references/test-through-real-steps.md).
 
 **Compare against the design (Figma) on every UI retest — no design, no verdict.** Every screen this
@@ -77,7 +77,7 @@ invent the expected** — report it back to the person or channel that assigned 
 node (or an explicit "verify function only"), and hold those visual points at **BLOCKED** while the
 rest of the retest continues. Full gate, including spec-drift and revised-AC handling:
 [figma-design-comparison.md](../../../references/figma-design-comparison.md). Run it at **Step 2d**
-(does a reference exist) and **Step 4i** (the comparison itself).
+(does a reference exist) and **Step 4d** (the comparison itself).
 
 **Retest deeply — the gates a shipped-defect review put in writing.** Follow
 [customer-escape-prevention.md](../../../references/customer-escape-prevention.md) throughout: cover
@@ -228,7 +228,7 @@ The same list, with each case's outcome, becomes the `Test cases run` table in t
 Follow [figma-design-comparison.md](../../../references/figma-design-comparison.md) §1–§2 and §4.
 
 - **A design node exists and covers the screen** → record the link on the header's `Design ref:` line,
-  and compare at Step 4i.
+  and compare at Step 4d.
 - **No design node** (none linked, the link does not cover this screen, or the file is unreachable) →
   **report it back to the person or channel that assigned this retest** — state the ticket, the screen,
   where you looked, and ask for one of: the node link · a written visual contract · an explicit
@@ -263,10 +263,10 @@ Set flag `COMMENT_FORMAT=v2` or `v3` here. **Do not change later** — rewriting
 
 ## Step 4 — Login and test
 
-**Order of the sub-steps.** 4a–4e set up and execute; **4i runs while each case is executed** (design
-comparison + measured layout checks, on PASSED cases too) — it is written last only because 4f–4h are
-the non-PASSED gates that follow a case that did not pass. Do not defer 4i to the end of the run: a
-screen not compared while it was open cannot be compared later.
+**The sub-steps are in the order they happen.** 4a–4d set up and observe **while the surface is
+still open** — a screen not compared while it was open cannot be compared later, and a boundary
+not captured during the run cannot be reconstructed afterwards. 4e–4f are the API legs. 4g–4i are
+the gates that follow a case that did not pass. Nothing in 4d is deferred to drafting time.
 
 ### 4a. Environment
 
@@ -289,14 +289,37 @@ Do not modify unrelated production records; record IDs you create.
 
 **This is setup only — the boundary is strict.** Creating data via API is allowed to reach a case's
 **precondition**. The **action under test** is never performed via API: run it through the ticket's
-real Test Steps (UI bug → through the UI). For an API-layer bug, the API call in Step 4d *is* the real
+real Test Steps (UI bug → through the UI). For an API-layer bug, the API call in Step 4e *is* the real
 step. See [test-through-real-steps.md](../../../references/test-through-real-steps.md).
 
-### 4d. API testing
+### 4d. Design comparison + depth sweep (mandatory for every UI case, PASSED ones included)
+
+Run this **as each case is executed**, not while drafting.
+
+1. **Compare the captured screen against its design node** on all five points —
+   elements present · text char-exact · order/position · the states the node defines · no overflow and
+   no overlap ([figma-design-comparison.md](../../../references/figma-design-comparison.md) §3). Record
+   the node link on the header's `Design ref:` line.
+2. **Measure, do not eyeball, the layout checks** — overflow is `rect.right > window.innerWidth` or
+   `document.documentElement.scrollWidth > window.innerWidth`; overlap is two text rectangles
+   intersecting by more than ~3 px. Do this at **every in-scope width**, both sides of any breakpoint
+   the spec names.
+3. **Verify values, not just presence** — each displayed value is checked against its source (API
+   field, record, count), not merely observed to exist.
+4. **Report anything wrong you see, even when no expected asked for it** — as its own row where it
+   belongs to the contract, otherwise as a noted observation with evidence. Seeing a defect and not
+   writing it because "the expected didn't ask" is a recorded escape cause
+   ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §2).
+5. **A difference is not yet a defect.** App-vs-design differences go through Step 4i; a screen this
+   very ticket intentionally changed is **design out of date** (report it, name the design owner, ask
+   for the node update in this ticket) rather than a bug, and an AC revised mid-test to match the build
+   is an **accepted limitation** that the verdict line must spell out (§5–§6 of the same reference).
+
+### 4e. API testing
 
 Use `fetch` with **full URLs**. Patterns: baseline, bug case from ticket, edge cases if relevant.
 
-### 4e. Swagger comparison
+### 4f. Swagger comparison
 
 Load OpenAPI/Swagger from config URL.
 
@@ -309,7 +332,7 @@ Load OpenAPI/Swagger from config URL.
 
 Swagger is source of truth — not stale ticket text alone.
 
-### 4f. Entry-point coverage + settle + contradiction gate (mandatory for every non-PASSED item)
+### 4g. Entry-point coverage + settle + contradiction gate (mandatory for every non-PASSED item)
 
 Follow [defect-report-completeness.md](../../../references/defect-report-completeness.md) §2–§3. Three things happen **during the run**, not while drafting — you cannot reconstruct them later:
 
@@ -317,7 +340,7 @@ Follow [defect-report-completeness.md](../../../references/defect-report-complet
 2. **Settle after every state change.** After a fixture step that changes server state (publish / unpublish / approve / delete / role change), hard-reload each surface before observing it. A view that was already open holds pre-change data; recording it is reporting your own test timing as the product's behavior. A stale window worth reporting is a **separate timing note** with the measured delay — not a verdict row.
 3. **Resolve contradictions before drafting.** If two of your observations of the same surface disagree, name the contradiction, re-run that surface cleanly, and record which observation was the artifact and why. Never resolve it in favour of the verdict you already have. Unresolvable after a clean re-run → that item is **BLOCKED**, not FAILED.
 
-### 4g. Root-cause investigation (mandatory for every non-PASSED item — run it before Step 6)
+### 4h. Root-cause investigation (mandatory for every non-PASSED item — run it before Step 6)
 
 Follow [root-cause-investigation.md](../../../references/root-cause-investigation.md) end to end.
 The whole investigation happens **while the environment is still open** — a boundary you did not
@@ -345,7 +368,7 @@ The investigation block goes **into the comment** at Step 6a — not only into c
 **BLOCKED is not an escape from this step.** A BLOCKED item still records the sweep up to the
 boundary that blocked it, and names the access/person needed to continue.
 
-### 4h. Challenge the non-PASS + surface it to the user (mandatory for every non-PASSED item — before Step 6)
+### 4i. Challenge the non-PASS + surface it to the user (mandatory for every non-PASSED item — before Step 6)
 
 Follow [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md) end to end, **before
 the draft exists.** A non-PASS is a hypothesis until it survives this:
@@ -368,29 +391,6 @@ the draft exists.** A non-PASS is a hypothesis until it survives this:
 
 **Unattended / bot mode:** resolve the gate instead of asking — expected wrong/unclear → BLOCKED +
 remark (no bug, no halt); test-side cause → fix and re-run; confirmed defect → draft the comment as normal.
-
-### 4i. Design comparison + depth sweep (mandatory for every UI case, PASSED ones included)
-
-Run this **as each case is executed**, not while drafting.
-
-1. **Compare the captured screen against its design node** on all five points —
-   elements present · text char-exact · order/position · the states the node defines · no overflow and
-   no overlap ([figma-design-comparison.md](../../../references/figma-design-comparison.md) §3). Record
-   the node link on the header's `Design ref:` line.
-2. **Measure, do not eyeball, the layout checks** — overflow is `rect.right > window.innerWidth` or
-   `document.documentElement.scrollWidth > window.innerWidth`; overlap is two text rectangles
-   intersecting by more than ~3 px. Do this at **every in-scope width**, both sides of any breakpoint
-   the spec names.
-3. **Verify values, not just presence** — each displayed value is checked against its source (API
-   field, record, count), not merely observed to exist.
-4. **Report anything wrong you see, even when no expected asked for it** — as its own row where it
-   belongs to the contract, otherwise as a noted observation with evidence. Seeing a defect and not
-   writing it because "the expected didn't ask" is a recorded escape cause
-   ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §2).
-5. **A difference is not yet a defect.** App-vs-design differences go through Step 4h; a screen this
-   very ticket intentionally changed is **design out of date** (report it, name the design owner, ask
-   for the node update in this ticket) rather than a bug, and an AC revised mid-test to match the build
-   is an **accepted limitation** that the verdict line must spell out (§5–§6 of the same reference).
 
 ---
 
@@ -420,6 +420,25 @@ Run this **as each case is executed**, not while drafting.
 1. Save the MP4 (and any text-verification screenshot, resized to ~600–640 px wide via `sips -Z 640 in.png --out out.png`) to a scratch dir outside the repo.
 2. Upload each file: `POST /rest/api/3/issue/{KEY}/attachments` with `X-Atlassian-Token: no-check` (curl `-u email:token`, or authenticated browser fetch).
 3. In the `Evidence` cell of the verdict table: the MP4 link `[▶ …mp4|^…mp4]`, plus `!filename.png!` on text-verification rows — one case per row.
+
+---
+
+### 5c. Reconcile the plan against what was captured (numbered, mandatory)
+
+Run the workspace's evidence reconciler over this ticket's plan **before drafting**, and treat its
+exit code as the result:
+
+```
+capture/evidence_plan.py <KEY>                                    # the required file list, from the ticket
+capture/evidence_reconcile.py <KEY>_evidence_plan.json --dir out/ [--jira]
+```
+
+It opens and measures every file rather than counting names, and with `--jira` it fetches each
+attachment from the ticket so "the link resolves" stops being a claim. Contracts (arguments, exit
+codes, manifest names) are pinned in
+[qa-capture-tooling.md](../../../references/qa-capture-tooling.md); a tool that cannot run is a
+**stop**, never a silent pass. A file the reconciler cannot find is a BLOCKED row with its reason,
+never a row quietly dropped.
 
 ---
 
@@ -516,6 +535,35 @@ value. FE screenshots go **in the `Evidence` cell** — the `Actual Result` cell
 the image shows, so no separate caption line is needed. If a field doesn't apply (e.g.
 **API**/**Swagger** on an FE bug), omit the line entirely rather than writing "N/A".
 
+### 6·0 — Build the run manifest, render the body, run the guard (mandatory)
+
+The comment is **produced from data**, not typed. Write `run.json` for this round — ticket, type,
+bug type, format, env, design ref, role(s), date, build, fixture, **scope**, the enumerated contract,
+the cases, the per-item results with their evidence — then:
+
+```
+node tools/retest-guard/retest_guard.js --manifest run.json --out body.txt --evidence-dir out/
+```
+
+- **exit 0** — the mechanical rules pass: markup for the locked endpoint, header lines, table headers,
+  per-row evidence, the coverage arithmetic, scope wording, no local paths. Continue to 6a/6b.
+- **exit 1** — findings; each names the rule and the fix. Close them; do not draft around them.
+- **exit 2** — the guard could not run. That is **not** a pass and never becomes one.
+
+**Scope is a field, not a sentence.** `"scope": {"mode":"FULL"}` for a full retest;
+`{"mode":"CASES","cases":["TC_03","TC_07"]}` when the user asked for particular cases. The scoped
+form narrows the coverage denominator to what those cases cover, prints the verdict as
+`PASSED (scoped: TC_03, TC_07)`, and lists every item it did **not** verify in an `Out of scope this
+round:` line — so a partial retest is honest instead of either breaking the coverage gate or quietly
+widening what was asked for.
+
+A hand-written body is still allowed when the manifest cannot be built, but it passes the same gate:
+`node tools/retest-guard/retest_guard.js --body body.txt --format v2 --bug-type FE`.
+
+**What the guard does not decide, and never implies:** whether the clip reached its target, whether
+the cause is real, whether the expected side was verified against the design. Those are 4d, 4h and 4i
+and no exit code stands in for them.
+
 ### 6a. Extra sections REQUIRED when the verdict is FAILED or BLOCKED
 
 A PASSED comment stops at the template above. **A FAILED / BLOCKED comment adds exactly these two
@@ -524,7 +572,7 @@ blocks**, in this order (the failing behaviour itself already lives in the `Actu
 
 | Block | Content | Answers |
 |-------|---------|---------|
-| **Root cause** | the Step 4g investigation, condensed: one-sentence cause + a `Confirmed`/`Suspected`/`Unknown — not investigated` label, and the captured artifacts that back it (status code, response field/message, console error, bundle probe, fixture read-back). | "why does it happen, which layer do I open, and how sure are you?" |
+| **Root cause** | the Step 4h investigation, condensed: one-sentence cause + a `Confirmed`/`Suspected`/`Unknown — not investigated` label, and the captured artifacts that back it (status code, response field/message, console error, bundle probe, fixture read-back). | "why does it happen, which layer do I open, and how sure are you?" |
 | **Resolution options** | the two mutually exclusive outcomes with a named **role** owner each (role only, never a person's name) — spec owner updates the expected result (no code change) **or** dev changes `{exact route/surface}` and leaves `{what already passes}` alone; end with `Decided by: <role>` | "do I change code or do you change the ticket, and who decides?" |
 
 Also state plainly, in one line, whether the **originally reported symptom is gone** — a FAILED verdict on a
@@ -549,7 +597,7 @@ row + its `Evidence` screenshot), and no observation in the draft is under an un
 **Cause gate (same pass, no exceptions):** read every sentence in the draft that states or implies a
 cause and check each one —
 
-- [ ] It cites a **captured artifact** from the Step 4g sweep (status code, response field, console
+- [ ] It cites a **captured artifact** from the Step 4h sweep (status code, response field, console
       error, bundle probe, fixture read-back), not a recollection and not another record's behaviour.
 - [ ] It carries a label — `Confirmed` / `Suspected` / `Unknown — not investigated` — and the label
       matches what was actually run: `Confirmed` only if the falsifying check was run.
@@ -558,12 +606,36 @@ cause and check each one —
 - [ ] It does not restate the symptom as the cause, and every `not checked` boundary is still visible
       in the block rather than quietly dropped.
 
-Any box unchecked → delete the sentence or go back to Step 4g and earn it. Do not soften it into a
+Any box unchecked → delete the sentence or go back to Step 4h and earn it. Do not soften it into a
 hedge.
 
 **Table headers:** every column MUST carry an explicit, all-English header. The verdict table's header row is fixed and MUST read exactly `No.` · `Expected Result` · `Actual Result` · `Evidence` · `Status` — the middle two mirror the ticket's own field names (**Expected Result** / **Actual Result**) so a reader lines the comment up against the ticket without translating, and `Evidence` (between `Actual Result` and `Status`) holds each row's screenshot in-cell. **API bugs drop the `Evidence` column** (`No.` · `Expected Result` · `Actual Result` · `Status`) and carry cURL/response in a section below. Never `Expected result item`, never a bare `Actual`. A bare `#` for the row-number column renders as a **blank** header cell in Jira. **Headers MUST be bold, in the syntax of the target endpoint** — v2 wiki `||*No.*||*Expected Result*||…` (single asterisk, `||` delimiters, **no divider row**); markdown/ADF `| **No.** | **Expected Result** | …` followed by a `|---|` divider. A `**No.**` in a v2 body renders as literal `*No.*`, and a `|---|` divider row in a v2 body renders as a visible row of dashes.
 
 Show the full draft in chat and wait.
+
+---
+
+### 6c. Independent reviewer pass (mandatory before the first post)
+
+6b is the author re-reading their own draft, and
+[qa-evidence-gates.md](../../../references/qa-evidence-gates.md) sets the real bar itself: *a second
+QA — or another agent given the ticket, the deliverable and nothing else*. Make that literal.
+
+1. **Dispatch a reviewer subagent** (Agent/Task tool) with **only**: the ticket, the rendered body,
+   and the evidence files. Not the session, not the reasoning, not what you meant.
+2. **It answers the four adversarial questions** from the pre-delivery gate, each **by pointing at a
+   row or a file** — the least-certain row, the shortest clip, the hardest-to-read value, and what
+   was not tested and where the deliverable says so.
+3. **Binary verdict per round:** `CLEAN` or `HAS-COMMENTS` with a numbered list. Nitpicks are not
+   defects; only gaps against the ticket and the evidence count.
+4. **Report the round to the user** as it finishes, then fix every finding and dispatch a **fresh**
+   round. Loop until a round is clean — no cap, and a round whose result was never reported does not
+   count.
+5. **Verify the reviewer's claims yourself before acting on them** — a subagent's report is not
+   evidence, it is a lead.
+
+**Unattended / bot mode:** run one reviewer round, fold its findings in, and record any it could not
+resolve as BLOCKED rows with reasons — never halt the queue, never post over an unanswered finding.
 
 ---
 
@@ -650,14 +722,17 @@ MUST NOT transition, assign, or report "done" until 7d passes — because stakeh
 Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific:
 
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌** (not ambiguous text).
+- [ ] **`node tools/retest-guard/retest_guard.js` exited 0** for this round — on the manifest before drafting (Step 6·0) and on the posted body before the transition (Step 8·0). Exit 2 (could not run) is not a pass, and the guard's clean result covers the mechanical rules only.
+- [ ] **Step 6c independent reviewer round returned CLEAN**, every round was reported to the user as it finished, and the reviewer's findings were verified rather than taken on trust.
+- [ ] **Scope is stated in the comment** — `Scope: FULL`, or `CASES: <ids>` with the verdict reading `PASSED (scoped: …)` and an `Out of scope this round:` line naming every item this round did not verify.
 - [ ] **AC/EC & bug-detail coverage gate (7-layer) PASSED — `enumerated Step 2 ER* ids == rows carrying a status + evidence (or explicit BLOCKED)`** ([qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *AC/EC & bug-detail coverage*): every Expected-Result item + bug-detail bullet was enumerated char-exact at Step 2, mapped 1:1 to a verdict-table row, verified on its real surface, and appears as its **own row** — none parked only in a remark/note/chat, no PASSED over partial coverage, a differing item is a FAILED/BLOCKED row not a footnote. Fail closed: any item unverified/unrowed/status-less ⇒ retest not complete.
 - [ ] **Case list in the posted comment (bug and task alike)** — the Step 2c list appears as the `Test cases run` table with per-case status, `Covers` ids, and design node per UI case; `Case coverage: {n}/{total}` reconciles; the surface's existing cases were pulled in, not just the ticket's own lines ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §1).
 - [ ] **Design (Figma) comparison ran for every UI case** ([figma-design-comparison.md](../../../references/figma-design-comparison.md)): node link recorded per case, five points compared (present · char-exact text · order/position · states · no overflow/overlap measured); a screen with **no** design reference was reported back to the assigning person/channel and its visual points left **BLOCKED**, never PASSED; a screen this ticket intentionally changed was reported as **design out of date** (owner named) rather than filed as a defect; a mid-test AC revision is spelled out in the verdict line as an accepted limitation.
 - [ ] **Depth gates green** ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md)): values checked against their source (not just present) · every in-scope width run with overflow/overlap **measured** · fixture large enough to overflow/scroll · build id recorded · no `caveat/not verifiable/assumed` row carrying a passing status · anything wrong that was seen is reported even where no expected asked for it.
 - [ ] `Verdict: PASSED` or `Verdict: FAILED` with issue link.
 - [ ] **Non-PASSED verdict:** Step 6a's two blocks present — **root cause** (Confirmed/Suspected/Unknown + backing artifacts) and **resolution options** (two options, each a named **role** owner, ending `Decided by: <role>`) — plus the one-line statement of whether the originally reported symptom is gone. (No separate repro-matrix / why-failed block — that content lives in the `Fixture` line and the verdict-table row + its `Evidence` MP4 / screenshot.)
-- [ ] **Step 4g root-cause investigation ran for every non-PASSED item** (including BLOCKED): the cause cites captured artifacts (status code, response field/message, console error, bundle probe, fixture read-back) and is labelled `Confirmed` / `Suspected` (+ the confirming check) / `Unknown — not investigated` (+ what is needed).
-- [ ] **Step 4h challenge gate ran for every non-PASSED item** ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)): the expected side re-verified char-exact against an authoritative source **including related/linked tickets' AC/EC**; a wrong/superseded expected became an expected/TC adjustment (not a FAILED), an unclear/hedged spec became BLOCKED + a who-to-ask remark (not a bug), and every surviving non-PASS was surfaced to the user in chat (recommendation A/B/C) before the comment was drafted.
+- [ ] **Step 4h root-cause investigation ran for every non-PASSED item** (including BLOCKED): the cause cites captured artifacts (status code, response field/message, console error, bundle probe, fixture read-back) and is labelled `Confirmed` / `Suspected` (+ the confirming check) / `Unknown — not investigated` (+ what is needed).
+- [ ] **Step 4i challenge gate ran for every non-PASSED item** ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)): the expected side re-verified char-exact against an authoritative source **including related/linked tickets' AC/EC**; a wrong/superseded expected became an expected/TC adjustment (not a FAILED), an unclear/hedged spec became BLOCKED + a who-to-ask remark (not a bug), and every surviving non-PASS was surfaced to the user in chat (recommendation A/B/C) before the comment was drafted.
 - [ ] **Step 6b dev-question gate + cause gate passed before the first post**; every scope word traces to a verdict-table row + its `Evidence`; every cause sentence cites an artifact and carries a label; no hedge word used as a cause; no unresolved contradiction between your own observations.
 - [ ] v2/v3 format matches Step 3 lock; FE bugs have the per-case MP4 (and text-verification screenshots) attached before wiki embed, every MP4 green on the 7-layer quality+correctness gate.
 - [ ] API cases: full cURL + response per row (no "same as above").
@@ -676,6 +751,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 
 **Hard gate — do NOT run 8a until the posted comment is complete per the Step 6 / Step 7c format:**
 
+- [ ] **`retest_guard.js` exits 0 for the posted body** (re-run it against what was actually posted, not against the draft). Exit 2 is not a pass.
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌**; env + results table present (bold headers, `No.` column).
 - [ ] **Case list present and reconciled:** the `Test cases run` table carries every Step 2c case with a status, every `ER*`/`AC*` id appears in some case's `Covers` cell, and `Case coverage: {n}/{total}` matches the rows. A planned-but-unrun case is a BLOCKED row with its reason — never a shortened list.
 - [ ] **Design reference accounted for:** the header's `Design ref:` line carries the node link(s) actually opened, or the Step 2d reason naming who was asked. A UI retest with neither is not verified — do **not** transition ([figma-design-comparison.md](../../../references/figma-design-comparison.md)).
@@ -863,12 +939,10 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST create test data when possible | "No data" is not an excuse |
 | MUST perform the action under test through its real surface (UI bug → through the UI, every Test Step); API only for test-data/precondition prep, and for an API-layer bug the API call is the real step | [test-through-real-steps.md](../../../references/test-through-real-steps.md) — an API shortcut for a UI action verifies the wrong layer and can pass while the screen is broken |
 | MUST NOT change COMMENT_FORMAT after Step 3 | v2/v3 rewrite cost |
+| MUST take transition names/ids, notify-helper flags, app URL shapes and UI-automation quirks from the workspace's project guide — never from a value written in this skill | Workflows, tooling and UI differ per project; a value hardcoded here transitions the wrong ticket somewhere else (portable-content.md) |
 | MUST NOT include local file paths in Jira comments (`docs/result/`, absolute home/machine paths, etc.) | Meaningless to Jira readers; user enforced "เน้นๆๆ ห้ามผิดอีก" |
 | MUST scan Jira comment for local paths before posting | Catches leaks: `docs/`, `~/`, absolute paths |
-| MUST use two-step transition for READY TO TEST → Done: `121` then `41` | Single `151` fails; READY TO TEST can't jump directly to Done |
-| MUST transition FAIL verdict to In Progress (`21`), NEVER to BLOCKED | OLS workflow: BLOCKED = external block, In Progress = needs dev fix |
 | MUST `--dry-run` Discord notify before real send | Catches format errors before they go live |
-| MUST set `--pass-count N` + `--summary "Retest of dev fix"` + `--owner-label "QA Owner"` on every Discord retest notify | Defaults produce wrong output (0/0/0 + wrong label); learned from 3-resend incident |
 | MUST fetch the notify recipient from the ticket's QA Owner field (per project guide) per ticket, and verify the @mention person = that field's value — NEVER the Reporter, never a name carried over from another ticket | Label said "QA Owner" but pinged the Reporter → 3 wrong pings, user correction 2026-07-15 |
 | MUST verdict from the bug's OWN expected results — PASSED only when ALL items are met (character-exact where wording is specified); parent AC is supplement, never substitute | Bug details are the contract; partial match = FAILED (user rule 2026-07-15) |
 | MUST enumerate **every** Expected-Result item + bug-detail bullet char-exact at Step 2, map each `ER*` id 1:1 to a verdict-table row, and reconcile `enumerated ids == rowed-and-statused rows` (`{n}/{total}` coverage, `{n}=={total}`) before Step 6 / 8·0 (7-layer coverage gate in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md)) | The retest scope is the bug's own contract; an unenumerated or unmapped item is silently unverified |
@@ -881,8 +955,8 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST hard-reload every surface after a state-changing fixture step before observing or capturing it; report a stale-data window only as a separate timing note with the measured delay | An already-open view holds pre-change data — recording it publishes your test timing as product behavior (OLS-108: card looked clickable ~5s after unpublish) |
 | MUST resolve any disagreement between your own observations with one clean re-run before drafting, and record which was the artifact; unresolvable → BLOCKED, not FAILED | Resolving it in favour of the verdict you already reached is how the wrong repro path shipped |
 | MUST include the Step 6a blocks on every non-PASSED comment — **root cause** and **resolution options** (two options, each a named **role** owner, ending `Decided by: <role>`); NO separate repro-matrix / why-failed block (that content is the `Fixture` line + the verdict-table row and its `Evidence` screenshot) | These answer the dev's next questions without bloating the comment; the failing behaviour + evidence already sit in the table row |
-| MUST run the Step 4g root-cause investigation for EVERY non-PASSED item (FAILED and BLOCKED alike), starting by invoking `superpowers:systematic-debugging` (Phases 1–3) and naming it in the comment | Improvised reasoning is where guessing enters; the process is also faster than guess-and-check |
-| MUST run the Step 4h challenge gate for EVERY non-PASSED item — re-verify the expected side char-exact against an authoritative source **including related/linked tickets' AC/EC**, then surface expected-vs-observed + the AC/EC finding + a recommendation (adjust expected/TC / re-test / confirm defect) to the user in chat before drafting the comment ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)) | A non-PASS against a stale, superseded, or misread expected is a phantom FAILED; the expected side must be earned, and adjusting a spec or re-testing is the user's call (PM-006) |
+| MUST run the Step 4h root-cause investigation for EVERY non-PASSED item (FAILED and BLOCKED alike), starting by invoking `superpowers:systematic-debugging` (Phases 1–3) and naming it in the comment | Improvised reasoning is where guessing enters; the process is also faster than guess-and-check |
+| MUST run the Step 4i challenge gate for EVERY non-PASSED item — re-verify the expected side char-exact against an authoritative source **including related/linked tickets' AC/EC**, then surface expected-vs-observed + the AC/EC finding + a recommendation (adjust expected/TC / re-test / confirm defect) to the user in chat before drafting the comment ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)) | A non-PASS against a stale, superseded, or misread expected is a phantom FAILED; the expected side must be earned, and adjusting a spec or re-testing is the user's call (PM-006) |
 | MUST NOT post a FAILED whose expected turned out wrong, superseded, or unclear — that is an expected/TC adjustment or a BLOCKED question, never a FAILED; unattended bots resolve it as BLOCKED + remark, never a phantom bug and never a halt | Filing the app against an unverified expected is exactly how a phantom bug ships (PM-006, OLS-315) |
 | MUST complete the 8-boundary sweep while the environment is still open, writing `not checked` where a boundary was not reached | A boundary not captured during the run cannot be reconstructed later — reconstruction is fabrication |
 | MUST attach a captured artifact to every cause statement and label it `Confirmed` / `Suspected` / `Unknown — not investigated`, carrying the label wherever the sentence is copied (comment, sheet, notify) | A `Suspected` cause read as `Confirmed` sends a developer to the wrong layer |
@@ -907,8 +981,3 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST measure overflow (`rect.right > innerWidth`, `scrollWidth > innerWidth`) and overlap (>3 px intersection) at every in-scope width rather than judging by eye | Seven escapes were on widths nobody ran; the measurements caught them the moment they were run |
 | MUST verify each displayed value against its source and report anything wrong that is seen, even when no expected asked for it | "Elements render correctly" was written while the defect was on screen and unremarked |
 | MUST retest on a fixture able to fail (long titles, lists past their visible slots, populated accounts) and record the **build id** the fix landed in | One course with one media item can never overflow, wrap, or scroll; and a pass against a build nobody ships is not a pass |
-| MUST NOT use `await` in superpowers-chrome eval — use setTimeout + window.__var | `await` returns undefined; callback pattern required |
-| MUST use `mousedown` event (not `click`) for MUI Select/combobox elements | MUI Select ignores regular click events |
-| MUST match OLS buttons by textContent, not generic CSS class | Generic selectors hit wrong button (e.g. "สร้างสื่อ" instead of target) |
-| MUST NOT modify DOM inside MutationObserver callback | Causes infinite recursion → CDP crash |
-| MUST use singular OLS management URLs (`/creator/learning-path` not `/learning-paths`) | Plural = 404; API uses plural but UI uses singular |

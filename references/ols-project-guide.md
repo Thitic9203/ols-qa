@@ -47,6 +47,26 @@ Transition ids (global, usable from any status): `11` To Do · `21` In Progress 
 `41` Done · `51` DEPLOYING · **`61` READY TO TEST** · `71` TESTING · `81`/`141` BLOCKED ·
 `151` approve by QA (→ Done). From READY TO TEST to Done use `121` then `41`.
 
+### Retest-bug rules that belong to OLS, not to the skill (moved here 2026-09-05)
+
+These eight rules used to sit in the retest skill's MUST/NEVER table, which is synced to the generic
+helix plugin — so a transition id, an app URL shape and a UI-automation quirk from this project were
+being shipped to every other project that installs the skill, against the skill's own Step 8a
+("NEVER hardcode transition names") and `references/portable-content.md`. The skill now carries one
+generic row telling the agent to read them from here. `tools/portability/portable_content.test.js`
+fails if a value like this reappears under `skills/` or `commands/`.
+
+| Rule | Because |
+|------|---------|
+| MUST use the two-step transition for READY TO TEST → Done: `121` then `41` | Single `151` fails; READY TO TEST cannot jump directly to Done |
+| MUST transition a FAILED retest to In Progress (`21`), NEVER to BLOCKED | OLS workflow: BLOCKED = external block, In Progress = needs a dev fix |
+| MUST set `--pass-count N` + `--summary "Retest of dev fix"` + `--owner-label "QA Owner"` on every Discord retest notify | Defaults produce wrong output (0/0/0 + wrong label); learned from a 3-resend incident |
+| MUST NOT use `await` in superpowers-chrome eval — use setTimeout + `window.__var` | `await` returns undefined; the callback pattern is required |
+| MUST use a `mousedown` event (not `click`) for MUI Select / combobox elements | MUI Select ignores regular click events |
+| MUST match OLS buttons by textContent, not by a generic CSS class | Generic selectors hit the wrong button (e.g. "สร้างสื่อ" instead of the target) |
+| MUST NOT modify the DOM inside a MutationObserver callback | Causes infinite recursion → CDP crash |
+| MUST use the singular OLS management URLs (`/creator/learning-path`, not `/learning-paths`) | Plural = 404; the API uses plural but the UI uses singular |
+
 ### Unblocking stories once a bug reaches Done (retest-bug-workflow Step 8d)
 
 **Trigger = the bug is in Done** (Done means fixed). Ready-for-QA status for a story it was blocking =
