@@ -143,7 +143,15 @@ check('the pre-push gate exists and tests the pushed commit, not the working tre
   assert.ok(fs.existsSync(p), 'pre-push หายไป — ครึ่งฟีเจอร์ขึ้น main ได้อีก');
   const src = fs.readFileSync(p, 'utf8');
   assert.ok(src.includes('worktree add'), 'pre-push เลิกตรวจ commit ที่จะ push แล้วไปตรวจ working tree แทน');
-  assert.ok(/tools\/\*\/\*\.test\.js/.test(src), 'pre-push ไม่ได้รันชุดเทสต์ทั้งหมดแล้ว');
+  // เดิมบรรทัดนี้ตรึง "ต้องมี glob เขียนอยู่ในไฟล์" ซึ่งเป็นการตรึง *วิธีเขียน* ไม่ใช่ *คุณสมบัติ*
+  // 2026-09-06 pattern ถูกย้ายไปอยู่ที่เดียวคือ scripts/list-test-suites.sh เพราะตอนที่มันถูก
+  // เขียนสองที่ (ที่นี่กับไฟล์ CI) สองที่นั้นเพี้ยนจากกัน — ฝั่ง CI ปฏิเสธเมื่อไม่เจอชุดเทสต์
+  // ฝั่ง pre-push ไม่ปฏิเสธ จึงพิมพ์ว่าเขียวทับ commit ที่ไม่เคยวัด (รายงาน #0006)
+  // เจตนาของข้อนี้ไม่เปลี่ยน: pre-push ต้องรันชุดเทสต์ทั้งหมด — รับได้ทั้งสองวิธี
+  assert.ok(
+    /tools\/\*\/\*\.test\.js/.test(src) || src.includes('list-test-suites.sh'),
+    'pre-push ไม่ได้รันชุดเทสต์ทั้งหมดแล้ว',
+  );
   assert.ok(!src.includes('|| break'), 'ใช้ || break ซึ่งคืน 0 เสมอ — gate จะรายงานผ่านทั้งที่เทสต์แดง');
 });
 

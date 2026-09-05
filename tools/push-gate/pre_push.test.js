@@ -76,9 +76,67 @@ check('a push that deletes a ref is still a no-op, not a refusal', () => {
 check('the source counts what it matched — "none ran" cannot read as "all passed"', () => {
   const src = fs.readFileSync(HOOK, 'utf8');
   assert.ok(/found=|FOUND=/.test(src), 'nothing counts the matched suites any more');
-  assert.ok(/-eq 0|-lt 1/.test(src), 'the zero case is no longer tested');
-  assert.ok(!/^\s*exit 0\s*$/m.test(src.split('shopt -s nullglob')[0] || ''),
-    'an early unconditional exit 0 appeared before the suite loop');
+  assert.ok(/list-test-suites\.sh/.test(src), 'the hook no longer asks the shared lister');
+});
+
+/* ── one source for where the suites live ──────────────────────────────────────────────
+ *
+ * The pattern used to be written out twice — here and in the CI workflow — and they drifted:
+ * CI refused an empty match, the hook did not. Both now call the same script, and these cases
+ * fail if either grows its own copy again.
+ */
+
+const LISTER = path.join(ROOT, 'scripts', 'list-test-suites.sh');
+const WORKFLOW = path.join(ROOT, '.github', 'workflows', 'tests.yml');
+// Assembled, so this file does not count as a copy of the pattern it forbids.
+const RAW_GLOB = 'tools/' + '*' + '/' + '*' + '.test.js';
+
+function lister(dir) {
+  const r = spawnSync('bash', [LISTER, dir], { cwd: ROOT, encoding: 'utf8' });
+  return { code: r.status, out: (r.stdout || '').trim(), err: (r.stderr || '').trim() };
+}
+
+check('the lister answers with a list and a status, and this tree has suites', () => {
+  const r = lister(ROOT);
+  assert.strictEqual(r.code, 0, r.err);
+  const lines = r.out.split('\n').filter(Boolean);
+  assert.ok(lines.length > 0, 'no suites listed for a tree that has them');
+  for (const l of lines) assert.ok(/^tools\/[^/]+\/[^/]+\.test\.js$/.test(l), `odd path: ${l}`);
+  assert.ok(lines.includes('tools/push-gate/pre_push.test.js'), 'this very file was not listed');
+});
+
+check('a tree with no suites is exit 1, and an unlookable one is exit 2 — never confused', () => {
+  const empty = fs.mkdtempSync(path.join(require('os').tmpdir(), 'no-suites-'));
+  try {
+    const none = lister(empty);
+    assert.strictEqual(none.code, 1, 'an empty tree did not report "none"');
+    assert.strictEqual(none.out, '', 'it printed something for an empty tree');
+
+    const missing = lister(path.join(empty, 'nope'));
+    assert.strictEqual(missing.code, 2, 'a missing directory did not report "could not look"');
+
+    const noArg = spawnSync('bash', [LISTER], { cwd: ROOT, encoding: 'utf8' });
+    assert.strictEqual(noArg.status, 2, 'a missing argument did not report "could not look"');
+  } finally {
+    fs.rmSync(empty, { recursive: true, force: true });
+  }
+});
+
+check('both callers use the lister, and neither keeps a copy of the pattern', () => {
+  for (const [label, file] of [['pre-push', HOOK], ['tests.yml', WORKFLOW]]) {
+    const src = fs.readFileSync(file, 'utf8');
+    assert.ok(src.includes('list-test-suites.sh'), `${label} no longer calls the lister`);
+    const code = src.split('\n').filter((l) => !/^\s*(#|\/\/)/.test(l)).join('\n');
+    assert.ok(!code.includes(RAW_GLOB),
+      `${label} grew its own copy of the suite pattern again — that is the #0006 drift`);
+  }
+});
+
+check('the lister is the only place the pattern is written', () => {
+  const src = fs.readFileSync(LISTER, 'utf8');
+  assert.ok(src.includes(RAW_GLOB), 'the lister no longer holds the pattern');
+  assert.ok(/exit 1/.test(src) && /exit 2/.test(src),
+    'the lister lost the difference between "none" and "could not look"');
 });
 
 check('the hook still declares itself fail-closed, and still blocks with no node', () => {

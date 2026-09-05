@@ -12,7 +12,12 @@
 # fail closed: รันไม่ได้ = ไม่ให้ push · gate ที่รันไม่ได้ ไม่ใช่ gate ที่ผ่าน
 set -uo pipefail
 
-ROOT="$(git rev-parse --show-toplevel)"
+# ROOT is load-bearing now: the suite list is read from a script under it.
+ROOT="$(git rev-parse --show-toplevel)" || ROOT=""
+if [ -z "$ROOT" ] || [ ! -f "$ROOT/scripts/list-test-suites.sh" ]; then
+  echo "[ols-qa pre-push] ❌ หา scripts/list-test-suites.sh ไม่เจอ — ตรวจไม่ได้ = ไม่ให้ push"
+  exit 1
+fi
 ZERO='0000000000000000000000000000000000000000'
 
 if ! command -v node >/dev/null 2>&1; then
@@ -41,31 +46,40 @@ for sha in "${SHAS[@]}"; do
   fi
 
   echo "[ols-qa pre-push] รันชุดเทสต์บน ${sha:0:8} …"
+
+  # รายชื่อชุดเทสต์มาจากที่เดียว — scripts/list-test-suites.sh — ทั้ง hook นี้และไฟล์ CI
+  # เรียกตัวเดียวกัน เพราะตอนที่ pattern ถูกเขียนสองที่ ฝั่ง CI มีตัวนับและปฏิเสธศูนย์
+  # ส่วนฝั่งนี้ไม่มี จึงพิมพ์ว่าเขียวทับ commit ที่ไม่เคยวัด (รายงาน #0006)
+  #
+  # เรียกสคริปต์จากเวิร์กทรีปัจจุบัน ไม่ใช่จากทรีที่กำลังตรวจ — กฎที่ใช้ตัดสินคือกฎของวันนี้
+  # และคอมมิตเก่าอาจยังไม่มีไฟล์นี้อยู่เลย
   rc=0
   found=0
-  shopt -s nullglob
-  for t in "$TMP"/wt/tools/*/*.test.js; do
+  SUITES="$(bash "$ROOT/scripts/list-test-suites.sh" "$TMP/wt")"
+  case $? in
+    0) ;;
+    1) git worktree remove --force "$TMP/wt" >/dev/null 2>&1 || true
+       echo "[ols-qa pre-push] ❌ push ถูกบล็อก — ไม่พบไฟล์เทสต์ใน commit ${sha:0:8} เลยสักไฟล์"
+       echo "  ไม่มีอะไรให้วัด ไม่เท่ากับวัดแล้วผ่าน — gate ที่ไม่ได้วัดจะไม่บอกว่าเขียว"
+       echo "  ถ้าชุดเทสต์ถูกย้ายที่จริง ให้แก้ที่ scripts/list-test-suites.sh ที่เดียว"
+       exit 1 ;;
+    *) git worktree remove --force "$TMP/wt" >/dev/null 2>&1 || true
+       echo "[ols-qa pre-push] ❌ push ถูกบล็อก — หารายชื่อชุดเทสต์ไม่ได้ (scripts/list-test-suites.sh)"
+       echo "  ตรวจไม่ได้ ไม่เท่ากับตรวจแล้วผ่าน"
+       exit 1 ;;
+  esac
+
+  while IFS= read -r t; do
+    [ -n "$t" ] || continue
     found=$((found + 1))
     if ! ( cd "$TMP/wt" && node "$t" >"$TMP/out" 2>&1 ); then
       rc=1
-      echo "  ❌ $(basename "$(dirname "$t")")/$(basename "$t")"
+      echo "  ❌ $t"
       grep -E '^FAIL' "$TMP/out" | head -5 | sed 's/^/     /'
     fi
-  done
-  shopt -u nullglob
+  done <<< "$SUITES"
 
   git worktree remove --force "$TMP/wt" >/dev/null 2>&1 || true
-
-  # "ไม่มีเทสต์ให้รัน" ไม่เท่ากับ "เทสต์ผ่าน" — nullglob ทำให้ลูปไม่ทำงานเลยเมื่อไม่เจอไฟล์
-  # rc จึงยังเป็น 0 แล้ว gate พิมพ์ว่าเขียวทับ commit ที่มันไม่เคยวัดอะไรเลย (พิสูจน์กับ
-  # commit จริงในประวัติ: ผ่าน 0 ชุด exit 0). CI มีด่านนี้อยู่แล้วในไฟล์ tests.yml
-  # ส่วน gate ที่บล็อก push กลับไม่มี ทั้งที่หัวไฟล์ประกาศตัวว่า fail closed
-  if [ "$found" -eq 0 ]; then
-    echo "[ols-qa pre-push] ❌ push ถูกบล็อก — ไม่พบไฟล์เทสต์ใน commit ${sha:0:8} เลยสักไฟล์"
-    echo "  ไม่มีอะไรให้วัด ไม่เท่ากับวัดแล้วผ่าน — gate ที่ไม่ได้วัดจะไม่บอกว่าเขียว"
-    echo "  ถ้าชุดเทสต์ถูกย้ายที่จริง ให้แก้ path ใน hook นี้และใน .github/workflows/tests.yml พร้อมกัน"
-    exit 1
-  fi
 
   if [ "$rc" -ne 0 ]; then
     echo "[ols-qa pre-push] ❌ push ถูกบล็อก — commit ${sha:0:8} เทสต์ไม่ผ่าน"

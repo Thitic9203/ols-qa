@@ -27,20 +27,29 @@ jobs:
 
       - name: Run every test in tools/
         run: |
+          # The suite list comes from scripts/list-test-suites.sh — the same script the
+          # pre-push hook calls. When the pattern was written out in both places they drifted:
+          # this copy refused an empty match, the hook's copy did not, and the push gate
+          # printed a tick over a commit it had never measured (report #0006).
+          #
+          # Exit 1 from the lister means "no suites in this tree" and 2 means "could not look".
+          # Both are failures here; neither is a pass.
+          SUITES="$(bash scripts/list-test-suites.sh .)"
+          case $? in
+            0) ;;
+            1) echo "no test suite found in this tree — 'none ran' is not 'all passed'"; exit 1 ;;
+            *) echo "could not enumerate the test suites"; exit 1 ;;
+          esac
+
           rc=0
           found=0
-          for t in tools/*/*.test.js; do
-            [ -e "$t" ] || continue
+          while IFS= read -r t; do
+            [ -n "$t" ] || continue
             found=$((found + 1))
             echo "::group::$t"
             node "$t" || rc=1
             echo "::endgroup::"
-          done
-          # A suite that matched nothing must fail: "no tests ran" is not "tests passed".
-          if [ "$found" -eq 0 ]; then
-            echo "no test files matched tools/*/*.test.js"
-            exit 1
-          fi
+          done <<< "$SUITES"
           echo "ran $found test file(s)"
           exit $rc
 
