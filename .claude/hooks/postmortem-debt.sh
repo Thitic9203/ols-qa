@@ -24,34 +24,45 @@ fi
 
 LEDGER="$ROOT/docs/post-mortem/PENDING.md"
 
-# A missing ledger is itself worth saying out loud — silence would read as "no debt".
-if [ ! -f "$LEDGER" ]; then
-  echo "=== ⚠️  post-mortem ledger MISSING: docs/post-mortem/PENDING.md ==="
-  echo "    ชั้นป้องกันหายไปหนึ่งชั้น — กู้ไฟล์คืนก่อนทำงานต่อ"
+# A ledger that cannot be read is louder than one with debt in it — silence here would
+# read as "no debt", which is exactly how the pre-commit gate came to allow a commit while
+# a report was owed (report #0003). Existence is not readability: a file with its
+# permissions closed passes `-f` and then yields nothing at all.
+if [ ! -f "$LEDGER" ] || [ ! -r "$LEDGER" ]; then
+  echo "=== ⚠️  อ่านบัญชีหนี้ post-mortem ไม่ได้: docs/post-mortem/PENDING.md ==="
+  echo "    ชั้นป้องกันหายไปหนึ่งชั้น — กู้ไฟล์หรือแก้สิทธิ์ก่อนทำงานต่อ"
+  echo "    ระหว่างนี้ยืนยันไม่ได้ว่ามีหนี้ค้างหรือไม่ และ pre-commit จะบล็อกคอมมิตไว้"
   exit 0
 fi
 
-OPEN_ROWS="$(awk -F'|' '
-  /^[[:space:]]*\|/ {
-    if (NF < 7) next
-    id = $2; occurred = $3; symptom = $4; status = $6
-    gsub(/^[[:space:]]+|[[:space:]]+$/, "", id)
-    gsub(/^[[:space:]]+|[[:space:]]+$/, "", occurred)
-    gsub(/^[[:space:]]+|[[:space:]]+$/, "", symptom)
-    gsub(/^[[:space:]]+|[[:space:]]+$/, "", status)
-    if (status == "OPEN" && id ~ /^PM-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}$/)
-      printf "  - %s (%s)  %s\n", id, occurred, symptom
-  }
-' "$LEDGER" 2>/dev/null)"
+# The rows come from the one module that owns the rules. Only when Node is unavailable
+# does this fall back to the shell reader, which refuses rather than guessing.
+GATE="$ROOT/tools/postmortem-guard/check.js"
+COUNTER="$ROOT/tools/postmortem-guard/ledger_open_count.sh"
 
-if [ -z "$OPEN_ROWS" ]; then
+if command -v node >/dev/null 2>&1 && [ -f "$GATE" ]; then
+  DEBT_OUT="$(node "$GATE" --debt 2>&1)"
+  case "$DEBT_OUT" in
+    *"no open post-mortem debt"*) exit 0 ;;
+  esac
+  printf '%s\n' "$DEBT_OUT" | sed 's/^\[postmortem-guard\] /=== 🔴 /'
+  echo "    แม่แบบ: docs/post-mortem/TEMPLATE.md"
+  echo "    เขียนเสร็จแล้วเปลี่ยนแถวใน docs/post-mortem/PENDING.md เป็น DONE + ใส่ชื่อไฟล์"
+  echo "    ระหว่างที่ยังค้าง pre-commit จะบล็อกคอมมิตที่ไม่ใช่การเขียนรายงาน"
   exit 0
 fi
 
-COUNT="$(printf '%s\n' "$OPEN_ROWS" | grep -c '^  - ')"
+COUNT="$(bash "$COUNTER" "$LEDGER" 2>&1)"
+if [ $? -ne 0 ]; then
+  echo "=== ⚠️  ตรวจบัญชีหนี้ post-mortem ไม่ได้ ==="
+  echo "    $COUNT"
+  echo "    ยืนยันไม่ได้ว่ามีหนี้ค้างหรือไม่ — pre-commit จะบล็อกคอมมิตไว้จนกว่าจะแก้"
+  exit 0
+fi
+[ "$COUNT" = "0" ] && exit 0
 
 echo "=== 🔴 หนี้ post-mortem ค้างอยู่ $COUNT รายการ — ต้องเขียนเอกสารก่อนงานอื่น ==="
-printf '%s\n' "$OPEN_ROWS"
+echo "    รายละเอียด: node tools/postmortem-guard/check.js --debt"
 echo "    แม่แบบ: docs/post-mortem/TEMPLATE.md"
 echo "    เขียนเสร็จแล้วเปลี่ยนแถวใน docs/post-mortem/PENDING.md เป็น DONE + ใส่ชื่อไฟล์"
 echo "    ตรวจด้วย: node tools/postmortem-guard/check.js"

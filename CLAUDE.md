@@ -124,6 +124,19 @@ context ที่ inject ตอนเปิด session · memory · WIP note · 
 **ชั้นป้องกันที่พึ่งข้อสมมติเดียวกัน นับเป็นชั้นเดียว** — เทสกับ CI ที่รันเทสชุดเดียวกัน คือเครื่องคนละเครื่อง
 ไม่ใช่การวัดคนละอย่าง · เทสทุกชุดต้องมีอย่างน้อยหนึ่งข้อที่แตะ **ของจริงบนดิสก์** ไม่ใช่ข้อมูลสมมติล้วน
 
+### ข้อย่อยที่ออกมาจากรายงานฉบับที่ 0003
+
+**ในเชลล์ ค่าที่อ่านไม่ได้ห้ามเดินเข้าการเปรียบเทียบเชิงตัวเลข** — `[ "$X" -gt 0 ]` เมื่อ `$X` เป็นค่าว่าง
+คืนเท็จ **เงียบๆ** แปลว่า "อ่านไม่ได้" กับ "ไม่มี" กลายเป็นคำตอบเดียวกันตั้งแต่ระดับชนิดข้อมูล ปิดด้วยตรรกะรอบๆ ไม่ได้
+· ตัวอ่านต้องคืนได้แค่ 2 แบบคือ **ตัวเลขล้วน** หรือ **คำปฏิเสธพร้อมรหัสจบไม่เป็นศูนย์** และผู้เรียกต้องดูรหัสจบก่อนเสมอ
+
+**การตัดสินอยู่ที่โมดูลเดียว ชั้น shell เป็นผู้เรียกและรายงาน ห้ามถือกฎของตัวเอง** — กฎข้อนี้ repo เขียนไว้แล้ว
+ในหัวข้อ investigation-guard และรอบนี้พิสูจน์ราคาของการทำสวน: สอง runtime ถือกฎชุดเดียวกันแล้วตอบต่างกันภายในวันเดียว
+โดยตัวที่มีอำนาจบล็อกคือตัวที่ตอบผิด · ทางสำรองมีได้ แต่ต้อง **fail-closed ในตัวเอง** ไม่งั้นมันคือรูเดิมที่ถูกเรียกว่าทางสำรอง
+
+**ปิดบั๊กคลาสไหน ต้องไล่หาไฟล์อื่นที่เป็นคลาสเดียวกันในรอบเดียวกัน** — #0002 ปิดเฉพาะไฟล์ที่เกิดเหตุ
+อีกวันเดียวคลาสเดิมโผล่ในไฟล์ข้างๆ · ปิดจุดเดียวไม่ใช่การปิดคลาส
+
 > 🔴 repo นี้ public — รายงานห้ามมีรหัสผ่าน อีเมลบัญชี host จริง tenant Sheet/Drive id หรือ path ที่มีชื่อผู้ใช้
 
 ## 🔴 กฎ: การตรวจสอบปัญหา = `superpowers:systematic-debugging` เท่านั้น — บังคับด้วย hook ไม่ใช่ความจำ
@@ -1508,6 +1521,28 @@ them ever touched the code that chooses which files the rules see. Every suite n
 case that reads what is actually on disk.
 
 Full report: [`docs/post-mortem/20260906-post-mortem-report-0002-guard-reported-clean-over-files-it-never-read.md`](docs/post-mortem/20260906-post-mortem-report-0002-guard-reported-clean-over-files-it-never-read.md)
+
+### Report #0003 — The commit gate read "cannot read the ledger" as "no debt" (2026-09-06)
+
+**Surface:** any shell that feeds a command's output straight into a numeric test, and any
+rule that exists in two runtimes at once. **Repeat of #0002** — different file, same class.
+
+`pre-commit` counted open debt with an inlined `awk` whose output went into
+`[ "$OPEN_COUNT" -gt 0 ]`. On an unreadable ledger `awk` prints nothing and exits 2, so the
+test became `[ "" -gt 0 ]`, evaluated false **without printing anything**, and the commit
+went through with a report owed. The other half: the guard read `NF < 7` and column `$6`,
+but with `-F'|'` a correct 6-column row is `NF=8`, so a row cut to 5 columns is `NF=7`,
+passes, and `$6` then reads a different column — an `OPEN` row counted as nothing. The Node
+layer refused both correctly the whole time.
+
+**The rules to carry forward:** *an unreadable value must never reach a numeric comparison* —
+in shell, empty and zero are indistinguishable there, so a reader may return only a bare
+integer or a refusal with a non-zero exit, and the caller checks the exit first. *The decision
+belongs to one module*; shell asks and relays, and any fallback must be fail-closed on its own
+or it is the original hole wearing a new name. And *closing one file does not close a class* —
+#0002 fixed the checker and the same shape was sitting in the hook next door.
+
+Full report: [`docs/post-mortem/20260906-post-mortem-report-0003-commit-gate-allowed-debt-when-ledger-unreadable.md`](docs/post-mortem/20260906-post-mortem-report-0003-commit-gate-allowed-debt-when-ledger-unreadable.md)
 
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ

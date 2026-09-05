@@ -48,6 +48,28 @@ function main() {
   const { rows, problems: parseProblems } = R.parseLedger(ledgerText);
   const open = R.openRows(rows);
 
+  // `--gate` answers ONE question for the pre-commit hook: is there outstanding debt?
+  //
+  //   0  no open debt        1  debt is open        2  could not determine
+  //
+  // A ledger that does not parse, or whose rows do not validate, returns 2 — not 0. The
+  // caller treats 2 as blocking, because "I could not read the ledger" and "there is no
+  // debt" are different answers and the hook used to conflate them.
+  if (process.argv.includes('--gate')) {
+    const blocking = [...parseProblems, ...R.validateLedger(rows)];
+    if (blocking.length > 0) {
+      console.error(`[postmortem-guard] CANNOT DETERMINE debt — the ledger does not validate:`);
+      for (const p of blocking) console.error(`  - ${p}`);
+      return 2;
+    }
+    if (open.length > 0) {
+      console.error(`[postmortem-guard] ${open.length} open debt row(s):`);
+      for (const r of open) console.error(`  - ${r.id} (${r.occurred})  ${r.symptom}`);
+      return 1;
+    }
+    return 0;
+  }
+
   if (debtOnly) {
     if (open.length === 0) {
       console.log('[postmortem-guard] no open post-mortem debt.');
