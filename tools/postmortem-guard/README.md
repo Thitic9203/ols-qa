@@ -19,7 +19,10 @@ node tools/postmortem-guard/postmortem_rules.test.js
 
 ## What the gate refuses
 
-- a filename that is not `YYYYMMDD-post-mortem-report-N.md`, or a title whose `#N` disagrees with it
+- a filename that is not `<8-digit date>-post-mortem-report-<4-digit running number>-<english-topic-slug>.md`
+  — the number is padded (`0001`, not `1`, so the folder sorts by name), and the slug is
+  **required**, lowercase ASCII, 3–12 words, so the file list says what each report is about
+- a title whose `#0001` disagrees with the filename, including a padding mismatch (`#1` is refused)
 - a report missing any of the 8 metadata lines, the 11 sections, the **5 Whys**, or the
   **กฎที่เพิ่มจากเหตุนี้** line — a report that changes no rule cannot stop a repeat
 - a report still carrying template text, filed as if it were finished

@@ -27,7 +27,7 @@ function check(name, fn) {
 /** A report that passes every rule — each test below breaks exactly one thing in it. */
 function goodReport(n = 1) {
   return [
-    `# Post-Mortem Report #${n} — ตัวอย่างที่ผ่านทุกกฎ`,
+    `# Post-Mortem Report #${R.pad4(n)} — ตัวอย่างที่ผ่านทุกกฎ`,
     '',
     ...R.REQUIRED_META.map((k) => `**${k}:** ค่า`),
     '',
@@ -40,21 +40,45 @@ function goodReport(n = 1) {
   ].join('\n');
 }
 
-const GOOD_NAME = '20260905-post-mortem-report-1.md';
+const GOOD_NAME = '20260905-post-mortem-report-0001-deleted-working-links-on-unverified-claim.md';
 
 // ── filenames ───────────────────────────────────────────────────────────────────
 
-check('the filename shape is skl-merit\'s, and a near-miss is refused', () => {
-  assert.deepStrictEqual(R.parseReportName(GOOD_NAME), { date: '2026-09-05', n: 1 });
+check('the filename carries a 4-digit running number and an English topic slug', () => {
+  assert.deepStrictEqual(R.parseReportName(GOOD_NAME), {
+    date: '2026-09-05',
+    n: 1,
+    padded: '0001',
+    slug: 'deleted-working-links-on-unverified-claim',
+  });
   for (const bad of [
-    'post-mortem-report-1.md',            // no date
-    '2026-09-05-post-mortem-report-1.md', // dashed date
-    '20260905-postmortem-report-1.md',    // missing hyphen
-    '20260905-post-mortem-report-1.markdown',
-    '20260905-post-mortem-report-.md',
+    'post-mortem-report-0001-some-topic-here.md',            // no date
+    '2026-09-05-post-mortem-report-0001-some-topic.md',      // dashed date
+    '20260905-postmortem-report-0001-some-topic.md',         // missing hyphen
+    '20260905-post-mortem-report-0001-some-topic.markdown',  // wrong extension
+    '20260905-post-mortem-report-0001.md',                   // no slug at all
+    '20260905-post-mortem-report-1-some-topic-here.md',      // number not padded
+    '20260905-post-mortem-report-00001-some-topic.md',       // padded to 5
+    '20260905-post-mortem-report-0001-Some-Topic-Here.md',   // not lowercase
+    '20260905-post-mortem-report-0001-ลบลิงก์ที่ใช้ได้.md',        // not ASCII
   ]) {
     assert.strictEqual(R.parseReportName(bad), null, `accepted "${bad}"`);
   }
+});
+
+check('the running number is padded to 4 and keeps counting: 0001, 0002, 0003, 0010', () => {
+  assert.deepStrictEqual([1, 2, 3, 10, 999].map(R.pad4), ['0001', '0002', '0003', '0010', '0999']);
+});
+
+check('a slug that says nothing is refused', () => {
+  const short = '20260905-post-mortem-report-0001-link-bug.md';
+  assert.ok(R.validateReport(short, goodReport(1)).some((p) => p.includes('at least')));
+
+  const tooMany = '20260905-post-mortem-report-0001-' + Array(R.SLUG_MAX_WORDS + 1).fill('word').join('-') + '.md';
+  assert.ok(R.validateReport(tooMany, goodReport(1)).some((p) => p.includes('max ' + R.SLUG_MAX_WORDS)));
+
+  const initial = '20260905-post-mortem-report-0001-a-broken-thing.md';
+  assert.ok(R.validateReport(initial, goodReport(1)).some((p) => p.includes('single-character word')));
 });
 
 // ── report structure ────────────────────────────────────────────────────────────
@@ -89,9 +113,13 @@ check('a report that changes no rule is refused (this is what stops a repeat)', 
   assert.ok(R.validateReport(GOOD_NAME, text).some((p) => p.includes(R.RULE_MARKER)));
 });
 
-check('the title number must match the filename number', () => {
-  const problems = R.validateReport('20260905-post-mortem-report-2.md', goodReport(1));
-  assert.ok(problems.some((p) => p.includes('title says #1') && p.includes('#2')));
+check('the title number must match the filename number, padding included', () => {
+  const wrongNumber = R.validateReport('20260905-post-mortem-report-0002-some-other-topic.md', goodReport(1));
+  assert.ok(wrongNumber.some((p) => p.includes('title says #0001') && p.includes('#0002')));
+
+  // "#1" names the same report as "#0001", and is still refused: one written form only.
+  const unpaddedTitle = goodReport(1).replace('#0001', '#1');
+  assert.ok(R.validateReport(GOOD_NAME, unpaddedTitle).some((p) => p.includes('padded form')));
 });
 
 check('an unfilled template cannot be filed as a finished report', () => {
@@ -204,18 +232,26 @@ check('a report missing from the index is caught, and an index entry with no fil
   const missingFromIndex = R.crossCheck({ reportNames: [GOOD_NAME], rows, indexText: 'ไม่มีอะไร' });
   assert.ok(missingFromIndex.some((p) => p.includes('missing from the index')));
 
-  const ghost = R.crossCheck({ reportNames: [], rows: [], indexText: '20260101-post-mortem-report-9.md' });
+  const ghost = R.crossCheck({
+    reportNames: [], rows: [], indexText: '20260101-post-mortem-report-0009-a-report-that-never-existed.md',
+  });
   assert.ok(ghost.some((p) => p.includes('which does not exist')));
 });
 
-check('numbering must be 1..N — a gap means a report was deleted', () => {
-  const names = ['20260905-post-mortem-report-1.md', '20260906-post-mortem-report-3.md'];
+check('numbering must run 0001..N — a gap means a report was deleted', () => {
+  const names = [
+    '20260905-post-mortem-report-0001-first-real-topic.md',
+    '20260906-post-mortem-report-0003-third-real-topic.md',
+  ];
   const { rows } = R.parseLedger(ledger(
     `| PM-2026-09-05-01 | 2026-09-05 | ก | ที่มา | DONE | ${names[0]} |`,
     `| PM-2026-09-06-01 | 2026-09-06 | ข | ที่มา | DONE | ${names[1]} |`,
   ));
   const problems = R.crossCheck({ reportNames: names, rows, indexText: names.join(' ') });
-  assert.ok(problems.some((p) => p.includes('numbering must be')));
+  assert.ok(
+    problems.some((p) => p.includes('numbering must run') && p.includes('0001, 0003')),
+    'a gap between 0001 and 0003 was tolerated: ' + problems.join(' | '),
+  );
 });
 
 check('two rows cannot claim the same report', () => {

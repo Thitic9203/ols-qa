@@ -74,6 +74,9 @@ context ที่ inject ตอนเปิด session · memory · WIP note · 
    ขั้นนี้มาก่อนการเขียนรายงาน เพราะถ้าเซสชันจบก่อน ความผิดพลาดจะหายไปพร้อมเซสชัน
 3. แก้ที่ต้นเหตุ ยืนยันเขียวด้วยหลักฐานที่กดตามได้ (ห้าม workaround ตามกฎข้อ 7 ของ global)
 4. เขียนรายงานจาก [`TEMPLATE.md`](docs/post-mortem/TEMPLATE.md) ให้ครบทุกหัวข้อ รวม **5 Whys**
+   ชื่อไฟล์ = `<วันที่ 8 หลัก>-post-mortem-report-<เลข 4 หลัก>-<english-topic-slug>.md`
+   เลขรันต่อเนื่อง `0001` `0002` `0003` … **ห้ามข้ามห้ามซ้ำ** · slug อังกฤษพิมพ์เล็ก 3–12 คำ
+   อ่านจากรายชื่อไฟล์แล้วรู้ว่าปัญหาเรื่องอะไร (validator บังคับทั้งสองอย่าง)
    และบรรทัด **กฎที่เพิ่มจากเหตุนี้** · เติมแถวในดัชนีของ `docs/post-mortem/README.md` ·
    เปลี่ยนแถวใน `PENDING.md` เป็น `DONE`
 5. **เติมสรุปสั้นในหัวข้อ [`## Post-mortems`](#post-mortems) ท้ายไฟล์นี้ ชี้ไปที่ไฟล์รายงาน** —
@@ -1396,7 +1399,7 @@ it is **OLS-37, 2026-08-18 17:22 +0700**.
 
 Full engineering write-up: `ols-qa-e2e` `CLAUDE.md` PM-009.
 
-### Report #1 — Three working links deleted on the strength of a comment in our own test (2026-09-05)
+### Report #0001 — Three working links deleted on the strength of a comment in our own test (2026-09-05)
 
 **Surface:** any claim about what the deployed `helix` plugin contains, and any factual assertion
 written into a tool's own comments.
@@ -1413,12 +1416,12 @@ A test that can only see this repo cannot establish anything about `helix` — o
 worktree and count. A fixed exemption list carrying a factual justification is a good hiding place
 for an unchecked assumption; let the tool read a marker in the file instead.
 
-Full report: [`docs/post-mortem/20260905-post-mortem-report-1.md`](docs/post-mortem/20260905-post-mortem-report-1.md)
+Full report: [`docs/post-mortem/20260905-post-mortem-report-0001-deleted-working-links-on-unverified-claim.md`](docs/post-mortem/20260905-post-mortem-report-0001-deleted-working-links-on-unverified-claim.md)
 
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
-> สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน (`Report #N`) เพียงชุดเดียว ไม่ตั้งรหัสซ้อนอีกชุด
-> ต่อท้ายหัวข้อนี้เสมอ **ห้ามสร้างหัวข้อใหม่แยกตามวันที่**
+> สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
+> ไม่ตั้งรหัสซ้อนอีกชุด ต่อท้ายหัวข้อนี้เสมอ **ห้ามสร้างหัวข้อใหม่แยกตามวันที่**
 
 ## 🔴 ข้อยกเว้น: เขียนข้อมูลบน production ได้ — เฉพาะรอบ smoke test 2026-09 เท่านั้น
 

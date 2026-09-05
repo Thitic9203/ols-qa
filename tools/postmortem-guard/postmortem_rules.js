@@ -12,8 +12,25 @@
  * Pure functions only: no filesystem, no network. The caller supplies the text.
  */
 
-/** `20260905-post-mortem-report-1.md` — the shape skl-merit uses, kept identical. */
-const REPORT_FILE_RE = /^(\d{4})(\d{2})(\d{2})-post-mortem-report-(\d+)\.md$/;
+/**
+ * `20260905-post-mortem-report-0001-deleted-working-links-on-unverified-claim.md`
+ *
+ * skl-merit's shape with two changes the owner asked for:
+ *
+ *   - the running number is **zero-padded to 4 digits**, so the folder sorts correctly by
+ *     name for as long as this repo lives, instead of putting 10 between 1 and 2;
+ *   - a **mandatory English slug**, so the file list alone says what each report is about
+ *     without opening anything. Required, not encouraged — a naming convention that is
+ *     merely encouraged decays into `report-7.md` inside a month.
+ *
+ * ASCII only: the filename gets read in a browser, a terminal and a git log.
+ */
+const REPORT_FILE_RE = /^(\d{4})(\d{2})(\d{2})-post-mortem-report-(\d{4})-([a-z0-9]+(?:-[a-z0-9]+)*)\.md$/;
+
+/** A slug of one or two words says nothing. Three is the point where it reads as a topic. */
+const SLUG_MIN_WORDS = 3;
+const SLUG_MAX_WORDS = 12;
+const SLUG_MAX_LENGTH = 80;
 
 /** `PM-2026-09-05-01` — date, then that day's sequence. */
 const LEDGER_ID_RE = /^PM-(\d{4})-(\d{2})-(\d{2})-(\d{2})$/;
@@ -67,15 +84,25 @@ const REPEAT_MARKER = '**ผิดซ้ำจาก:**';
  * Strings that only survive in a template nobody filled in. A half-written report filed
  * as done is worse than an open debt row: the debt row still says work is owed.
  */
-const UNFILLED_SENTINELS = ['YYYY-MM-DD', 'Post-Mortem Report #N', '[ข้อเท็จจริงที่ 1'];
+const UNFILLED_SENTINELS = ['YYYY-MM-DD', 'Post-Mortem Report #NNNN', '[ข้อเท็จจริงที่ 1'];
 
 const EMPTY_CELL = new Set(['', '—', '-', '–', 'n/a', 'N/A']);
 
-/** @returns {{date: string, n: number}|null} */
+/** Turn a running number into the padded form used everywhere: 3 → "0003". */
+function pad4(n) {
+  return String(n).padStart(4, '0');
+}
+
+/** @returns {{date: string, n: number, padded: string, slug: string}|null} */
 function parseReportName(name) {
   const m = REPORT_FILE_RE.exec(name);
   if (!m) return null;
-  return { date: `${m[1]}-${m[2]}-${m[3]}`, n: Number(m[4]) };
+  return {
+    date: `${m[1]}-${m[2]}-${m[3]}`,
+    n: Number(m[4]),
+    padded: m[4],
+    slug: m[5],
+  };
 }
 
 function isIsoDate(s) {
@@ -90,16 +117,36 @@ function validateReport(name, text) {
   const problems = [];
   const parsed = parseReportName(name);
   if (!parsed) {
-    problems.push(`${name}: filename must look like YYYYMMDD-post-mortem-report-N.md`);
+    problems.push(
+      `${name}: filename must look like <วันที่ 8 หลัก>-post-mortem-report-0001-english-topic-slug.md ` +
+      '(running number padded to 4 digits, then a lowercase English slug of the problem)',
+    );
     return problems;
+  }
+
+  // The slug is the whole reason the number is not enough: it has to read as a topic.
+  const words = parsed.slug.split('-');
+  if (words.length < SLUG_MIN_WORDS) {
+    problems.push(`${name}: the topic slug needs at least ${SLUG_MIN_WORDS} words — "${parsed.slug}" does not say what went wrong`);
+  }
+  if (words.length > SLUG_MAX_WORDS) {
+    problems.push(`${name}: the topic slug has ${words.length} words, max ${SLUG_MAX_WORDS} — it is a label, not a summary`);
+  }
+  if (parsed.slug.length > SLUG_MAX_LENGTH) {
+    problems.push(`${name}: the topic slug is ${parsed.slug.length} characters, max ${SLUG_MAX_LENGTH}`);
+  }
+  if (words.some((w) => w.length < 2)) {
+    problems.push(`${name}: the topic slug has a single-character word — spell it out`);
   }
 
   const titleLine = (text.split('\n').find((l) => l.startsWith('# ')) || '').trim();
   const titleMatch = /^# Post-Mortem Report #(\d+) — .+/.exec(titleLine);
   if (!titleMatch) {
-    problems.push(`${name}: first heading must read "# Post-Mortem Report #N — <หัวข้อ>" (got: ${titleLine || '<none>'})`);
-  } else if (Number(titleMatch[1]) !== parsed.n) {
-    problems.push(`${name}: title says #${titleMatch[1]} but the filename says #${parsed.n}`);
+    problems.push(`${name}: first heading must read "# Post-Mortem Report #0001 — <หัวข้อ>" (got: ${titleLine || '<none>'})`);
+  } else if (titleMatch[1] !== parsed.padded) {
+    // Compared as text, not as a number: "#1" and "#0001" are the same report but the
+    // padding has to match everywhere, or the folder stops sorting by name.
+    problems.push(`${name}: title says #${titleMatch[1]} but the filename says #${parsed.padded} — use the padded form in both`);
   }
 
   for (const key of REQUIRED_META) {
@@ -247,11 +294,15 @@ function crossCheck({ reportNames, reportTexts = {}, rows, indexText }) {
     }
   }
 
-  // Numbering: 1..count with no gaps and no duplicates. A gap means a report was deleted.
+  // Numbering runs 0001, 0002, 0003 … with no gaps and no duplicates. A gap means a report
+  // was deleted, which is the one thing this folder must never lose quietly.
   const numbers = reportNames.map((n) => parseReportName(n)).filter(Boolean).map((p) => p.n).sort((a, b) => a - b);
   const expected = numbers.map((_, i) => i + 1);
   if (numbers.join(',') !== expected.join(',')) {
-    problems.push(`report numbering must be 1..${numbers.length} with no gaps or duplicates, got [${numbers.join(', ')}]`);
+    problems.push(
+      `report numbering must run ${pad4(1)}..${pad4(numbers.length)} with no gaps or duplicates, ` +
+      `got [${numbers.map(pad4).join(', ')}]`,
+    );
   }
 
   const existing = new Set(numbers);
@@ -263,7 +314,7 @@ function crossCheck({ reportNames, reportTexts = {}, rows, indexText }) {
 
   // Index entries that name a file nobody wrote.
   if (indexText) {
-    for (const m of indexText.matchAll(/\d{8}-post-mortem-report-\d+\.md/g)) {
+    for (const m of indexText.matchAll(/\d{8}-post-mortem-report-\d{4}-[a-z0-9-]+\.md/g)) {
       if (!onDisk.has(m[0])) problems.push(`README.md indexes "${m[0]}", which does not exist`);
     }
   }
@@ -272,6 +323,10 @@ function crossCheck({ reportNames, reportTexts = {}, rows, indexText }) {
 
 module.exports = {
   REPORT_FILE_RE,
+  SLUG_MIN_WORDS,
+  SLUG_MAX_WORDS,
+  SLUG_MAX_LENGTH,
+  pad4,
   LEDGER_ID_RE,
   STATUSES,
   REQUIRED_META,
