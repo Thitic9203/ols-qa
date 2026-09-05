@@ -38,7 +38,7 @@ const INTENT = [
   { label: 'ค้าง', re: /ค้าง|แฮงก์|hang|stuck/i },
   { label: 'ผลเพี้ยน', re: /เพี้ยน|ผลไม่ตรง|ไม่ตรงที่คาด|ไม่ตรงกับที่คาด|ค่าผิด|ข้อมูลหาย/ },
   { label: 'บั๊ก', re: /บั๊ก|บัค|\bbug\b|\bbugs\b|regression/i },
-  { label: 'เฟล', re: /เฟล|\bfail(ed|ing|ure|s)?\b|\bbroken\b|\bflaky\b/i },
+  { label: 'เฟล', re: /เฟล|\bfail(ed|ing|ure|s)?\b|\bbroken\b|\bflaky\b/i, verdictWord: true },
 
   // ── Thai: find out why ───────────────────────────────────────────────────────
   { label: 'หาสาเหตุ', re: /หาสาเหตุ|ต้นเหตุ|สาเหตุ|root\s*cause/i },
@@ -69,10 +69,39 @@ const HEDGE = [
   { label: 'ศัพท์สวยที่ไม่เพิ่มข้อเท็จจริง', re: /\bcanonical\b|\bmanifest\b|\brobust\b/i },
 ];
 
+/**
+ * The words this workspace records RESULTS in.
+ *
+ * `FAILED` here is a value in a column, not a report that something broke — it sits beside
+ * PASSED and BLOCKED in nearly every result table, sheet and Jira field in this repo. Reading
+ * it as a breakage armed the guard on a request to format a summary table (2026-09-05), which
+ * is precisely the noise that gets a guard switched off.
+ */
+const VERDICT_VOCAB = [
+  /\bpassed\b/i, /\bfailed\b/i, /\bblocked\b/i, /\breviewing\b/i,
+  /\bskipped\b/i, /\bpwmi\b/i, /\bnot\s+started\b/i, /ไม่ผ่าน/, /รอรีวิว/,
+];
+
+/**
+ * Verdict company: two or more DISTINCT status words in the same text.
+ *
+ * The threshold is two, and one is deliberately not enough — "the build failed" is a report
+ * of a failure and must still arm. What marks a table is that the statuses appear together.
+ */
+function verdictContext(text) {
+  const s = String(text || '');
+  return VERDICT_VOCAB.filter((re) => re.test(s)).length >= 2;
+}
+
 /** Does this prompt describe a problem? Returns every signal, so the reason is showable. */
 function detectIntent(prompt) {
   const text = String(prompt || '');
-  const hits = INTENT.filter((p) => p.re.test(text)).map((p) => p.label);
+  const verdicts = verdictContext(text);
+  // Only the verdict-bearing signal is suppressed, and only in verdict company. Every other
+  // signal keeps its own merit: "ทำไม passed 30 failed 5 ถึงไม่ตรง" is still an investigation.
+  const hits = INTENT
+    .filter((p) => p.re.test(text) && !(p.verdictWord && verdicts))
+    .map((p) => p.label);
   return { armed: hits.length > 0, hits };
 }
 
@@ -184,6 +213,6 @@ function decide(state, scan) {
 }
 
 module.exports = {
-  DEBUG_SKILL, INTENT, HEDGE,
+  DEBUG_SKILL, INTENT, HEDGE, VERDICT_VOCAB, verdictContext,
   detectIntent, detectHedges, isSatisfying, assistantText, scanTranscript, decide,
 };

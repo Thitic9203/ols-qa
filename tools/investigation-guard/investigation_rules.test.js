@@ -68,6 +68,44 @@ check('ordinary QA work does NOT arm — "ตรวจสอบ" alone is not a 
   ]) assert.ok(!R.detectIntent(p).armed, `ติดธงทั้งที่ไม่ควรติด: "${p}" (hits: ${R.detectIntent(p).hits})`);
 });
 
+check('verdict vocabulary is data, not a problem report — it must not arm', () => {
+  // The exact prompt that armed the guard wrongly on 2026-09-05. PASSED / FAILED / BLOCKED /
+  // REVIEWING are the values this workspace records results in; they appear in nearly every
+  // result table, sheet and report. Reading them as "something broke" would arm the guard on
+  // ordinary QA reporting, which is how a guard gets switched off.
+  const real = 'ใน md file มีตารางแรกสุดเป็น \n\ntab name | passed | failed| reviewing \n\nบอกว่า แต่ละ tab รีวิว passed หรือ failed เท่าไหร่แล้วเช่น 35 % (30)';
+  assert.strictEqual(R.detectIntent(real).armed, false, `ยังติดธงผิด: ${JSON.stringify(R.detectIntent(real).hits)}`);
+  for (const p of [
+    'tab name | passed | failed | reviewing',
+    'สรุปให้หน่อย passed 30 failed 5 blocked 2',
+    'คอลัมน์ Test Status มีค่า PASSED FAILED BLOCKED SKIPPED',
+    'ช่วยนับ passed กับ failed ต่อแท็บ',
+  ]) assert.strictEqual(R.detectIntent(p).armed, false, `ติดธงผิด: "${p}"`);
+});
+
+check('one failure word on its own still arms — suppression needs verdict COMPANY', () => {
+  // "the build failed" is a report of a failure; "passed / failed / blocked" is a column set.
+  // The difference is company, so the threshold is two distinct status words, never one.
+  for (const p of [
+    'the build failed yesterday',
+    'job นี้ failed ตั้งแต่เมื่อวาน',
+    'the deploy keeps failing',
+    'ทำไม test นี้ fail ตลอด',
+    'มี failure ตอน startup',
+    'เทสต์ตัวนี้ flaky',
+  ]) assert.ok(R.detectIntent(p).armed, `ไม่ติดธงทั้งที่ควรติด: "${p}"`);
+});
+
+check('suppression touches the verdict signal only — every other signal still arms', () => {
+  const p = 'ทำไม passed 30 failed 5 ถึงไม่ตรงกับที่คาด';
+  const r = R.detectIntent(p);
+  assert.ok(r.armed, 'สัญญาณอื่นถูกกลบไปด้วย');
+  assert.ok(!r.hits.includes('เฟล'), 'สัญญาณ verdict ไม่ถูกกด');
+  assert.ok(r.hits.includes('ทำไม'), 'ทำไม ต้องยังจับได้');
+  // A real breakage word alongside a verdict table still arms on its own merit.
+  assert.ok(R.detectIntent('ตาราง passed/failed/blocked ขึ้นมาแล้วหน้าพัง').armed);
+});
+
 check('an empty or missing prompt never arms', () => {
   for (const p of ['', null, undefined]) assert.strictEqual(R.detectIntent(p).armed, false);
 });
