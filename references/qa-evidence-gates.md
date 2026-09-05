@@ -380,3 +380,20 @@ Do not use without fresh evidence in the **same** turn:
 | Retest | Plan posted before execute; v2/v3 format locked; **pre-delivery 7-layer gate green before the comment goes out** |
 | Create bug | Phase C confirm before create; URL verify after |
 | Re-record delivered evidence | **R1–R6 above**: read the old run's own result, prove the ER is demonstrable before the take, budget single-use fixtures, assert in the recorder, replace by file id, read back and compare |
+
+## Evidence must be a real FE screen — a raw-data page is never evidence
+
+Every evidence file, whatever the format, may show **only real front-end screens of the system under
+test**. One frame that is not a system screen fails the item outright: re-capture it, never trim it
+out, then review the whole file again before delivering.
+
+Never acceptable in evidence:
+
+- a browser page showing a raw API response (JSON, a `Pretty-print` toggle, a body starting `{"items":[`)
+- developer tooling — DevTools, Network, Console, a terminal, an API client
+- any application that is not the system under test, the desktop, an editor
+- a blank page, a stuck loading state, or a half-rendered screen — **check the last frame of every clip**
+
+If what the case needs to prove has no screen that shows it, use the screen that surfaces the same
+value (a count rendered on a detail page, a status chip, a toast). If none exists, the case is
+**BLOCKED and goes to the PO** — a raw-data page is not a substitute.
