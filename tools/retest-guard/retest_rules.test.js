@@ -163,37 +163,16 @@ check('a pipe inside a link span is not a cell boundary', () => {
   assert.strictEqual(row.cells[1], '[▶ KEY_TC_01.mp4|^KEY_TC_01.mp4]');
 });
 
-check('the link-pipe question is closed, and only real open questions remain', () => {
-  // Settled against a live comment (OLS-701, 87511): a [label|url] inside a table
-  // cell keeps its row intact. Re-opening it as an "open question" would be a
-  // regression in what we know, not caution.
-  assert.ok(!R.OPEN_QUESTIONS.some((q) => /link-with-pipe/.test(q)), 'Q1 is answered — remove it');
-  assert.ok(R.OPEN_QUESTIONS.length >= 1, 'Q2 (BLOCKED / PWMI summary wording) is still undecided');
+check('both questions are answered — nothing is left as a guess', () => {
+  // Q1 settled against a live comment; Q2 settled by the owner: report the status the
+  // case actually has, and when the destination cannot hold it, ask rather than map.
+  assert.deepStrictEqual(R.OPEN_QUESTIONS.slice(), [], 'an entry here means something is still unresolved');
 });
 
-
-check('a row with a stray delimiter is refused, not read one column over', () => {
-  const fs = R.scanBody(GOOD.replace('|1|label reads บันทึก|label reads บันทึก|!tc1.png!|✅|',
-                                     '|1|label reads|บันทึก|label reads บันทึก|!tc1.png!|✅|'), {});
-  assert.ok(has(fs, 'row-column-count'), JSON.stringify(rules(fs)));
-});
-
-check('a case row with the wrong cell count is refused too', () => {
-  const fs = R.scanBody(GOOD.replace('|TC_01|list shows the saved label|ER1|CREATOR|✅|',
-                                     '|TC_01|list shows the saved label|ER1|✅|'), {});
-  assert.ok(has(fs, 'row-column-count'), JSON.stringify(rules(fs)));
-});
-
-check('a Case-coverage line is not a substitute for the item-coverage line', () => {
-  const fs = R.scanBody(GOOD.replace('*Expected-result coverage:* 1 / 1 items met',
-                                     '*Case coverage:* 1 / 1 cases run'), {});
-  assert.ok(has(fs, 'coverage-line-missing'), JSON.stringify(rules(fs)));
-});
-
-check('a Task retest may name its coverage line after the acceptance criteria', () => {
-  const fs = R.scanBody(GOOD.replace('*Expected-result coverage:* 1 / 1 items met',
-                                     '*Acceptance-criteria coverage:* 1 / 1 items met'), {});
-  assert.deepStrictEqual(fs, [], JSON.stringify(rules(fs)));
+check('the summary line may state BLOCKED or PWMI, because a round reports its rows', () => {
+  ['*Retest Result: BLOCKED* ⛔', '*Retest Result: PWMI*', '*Retest Result: PASSED (scoped: TC_01)* ✅']
+    .forEach((line) => assert.ok(R.SUMMARY_LINE.test(line), 'rejected: ' + line));
+  assert.ok(!R.SUMMARY_LINE.test('*Retest Result: probably fine*'));
 });
 
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');

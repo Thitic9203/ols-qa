@@ -178,32 +178,45 @@ check('a duplicate id is refused everywhere it can appear', () => {
 });
 
 
-check('a fully BLOCKED round warns that FAILED may misreport it, without blocking', () => {
+check('a fully BLOCKED round reports BLOCKED — not a defect that was never observed', () => {
   const m = base();
   m.results.forEach((r) => { r.status = 'BLOCKED'; });
   m.cases.forEach((c) => { c.status = 'BLOCKED'; });
-  m.verdict = 'FAILED';
+  m.verdict = 'BLOCKED';
   m.symptomGone = false;
   m.rootCause = { text: 'the fixture could not be created in this environment', label: 'Unknown — not investigated' };
   m.resolutionOptions = [{ text: 'provide the fixture', owner: 'dev' }, { text: 'descope the round', owner: 'spec owner' }];
   m.decidedBy = 'spec owner';
-  const f = M.validate(m);
-  assert.deepStrictEqual(f.filter((x) => x.severity !== 'warn'), [], 'a blocked round must not be an error');
-  assert.ok(f.some((x) => x.severity === 'warn' && /every in-scope item is BLOCKED/.test(x.message)));
+  assert.strictEqual(M.computedVerdict(m), 'BLOCKED');
+  assert.deepStrictEqual(M.validate(m), []);
 });
 
-check('a PWMI row warns that the locked summary wording is undecided', () => {
+check('a round whose worst row is PWMI reports PWMI, not FAILED', () => {
   const m = base();
   m.results[0].status = 'PWMI';
   m.cases[0].status = 'PWMI';
-  m.verdict = 'FAILED';
+  m.verdict = 'PWMI';
   m.symptomGone = true;
   m.rootCause = { text: 'the label wraps at 320 px', label: 'Confirmed' };
   m.resolutionOptions = [{ text: 'fix the wrap', owner: 'dev' }, { text: 'accept it', owner: 'spec owner' }];
   m.decidedBy = 'spec owner';
-  const f = M.validate(m);
-  assert.deepStrictEqual(f.filter((x) => x.severity !== 'warn'), []);
-  assert.ok(f.some((x) => x.severity === 'warn' && /PWMI/.test(x.message)));
+  assert.strictEqual(M.computedVerdict(m), 'PWMI');
+  assert.deepStrictEqual(M.validate(m), []);
+});
+
+check('one FAILED row outranks a PWMI row', () => {
+  const m = base();
+  m.results[0].status = 'PWMI';
+  m.results[1].status = 'FAILED';
+  assert.strictEqual(M.computedVerdict(m), 'FAILED');
+});
+
+check('a destination that cannot hold the real status produces a question, never a mapping', () => {
+  const q = M.destinationMismatch(['BLOCKED', 'PASSED'], ['PASSED', 'FAILED', 'SKIPPED']);
+  assert.deepStrictEqual(q.missing, ['BLOCKED']);
+  assert.ok(/BLOCKED/.test(q.question) && /PASSED \/ FAILED \/ SKIPPED/.test(q.question),
+    'the question must show both the real status and what the destination offers');
+  assert.strictEqual(M.destinationMismatch(['PASSED'], ['PASSED', 'FAILED']), null);
 });
 
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');

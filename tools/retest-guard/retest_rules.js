@@ -100,8 +100,14 @@ const NON_PASS_BLOCKS = Object.freeze(['Root cause', 'Resolution options']);
 
 /** `*Scope:* FULL` or `*Scope:* CASES: TC_03, TC_07`. */
 const SCOPE_LINE = /^\**Scope:?\**\s*(FULL|CASES:\s*\S.*)$/i;
-/** `*Retest Result: PASSED* ✅`, optionally scoped. */
-const SUMMARY_LINE = /^\**Retest Result:\s*(PASSED|FAILED)(\s*\(scoped:[^)]*\))?\**\s*(✅|❌)?\s*$/i;
+/**
+ * `*Retest Result: PASSED* ✅`, optionally scoped.
+ *
+ * BLOCKED and PWMI are accepted because a round reports what its rows actually
+ * say. Forcing a fully blocked round to read FAILED tells the reader a defect was
+ * found when none was — a coverage gap is not a defect.
+ */
+const SUMMARY_LINE = /^\**Retest Result:\s*(PASSED|FAILED|BLOCKED|PWMI)(\s*\(scoped:[^)]*\))?\**\s*(✅|❌|⛔|⚠️)?\s*$/i;
 /**
  * `*Expected-result coverage:* 7 / 7 items met` — the line the gate reconciles.
  *
@@ -389,13 +395,13 @@ const DRIFT_ALLOWLIST = Object.freeze([
  *     `[▶ file.mp4|^file.mp4]` with all five <td> intact and the MP4 as a working
  *     attachment link. Only the image width parameter breaks a row.
  *
- * Q2. The summary line is locked to PASSED or FAILED, and nothing says which one a
- *     round takes when every in-scope item is BLOCKED (a coverage gap, which the
- *     gates say is not a product defect) or when a row is PWMI. Both currently
- *     render FAILED and `retest_manifest.validate` warns; neither was decided here.
+ * Q2. RESOLVED 2026-09-05 by the owner: report the status each case actually has.
+ *     Where the destination (a results sheet, a form) has no such value, do NOT map
+ *     it to a nearby one — show the destination's own list beside the real status and
+ *     let the owner choose. `destinationMismatch()` in retest_manifest.js builds that
+ *     question.
  */
 const OPEN_QUESTIONS = Object.freeze([
-  'Q2: summary wording for a fully BLOCKED round and for a PWMI row — undecided',
 ]);
 
 module.exports = {

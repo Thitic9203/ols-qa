@@ -73,6 +73,12 @@ function computedVerdict(m) {
   const statuses = ids.map((id) => (byId.has(id) ? byId.get(id).status : null));
   if (statuses.some((s) => s === null)) return 'INCOMPLETE';
   if (statuses.every((s) => PASSING.includes(s))) return 'PASSED';
+  // Report what the rows say. A round with nothing but BLOCKED found no defect — it
+  // reached nothing — and calling that FAILED sends a developer after a bug that was
+  // never observed. A round whose worst row is PWMI is not a failure either.
+  if (statuses.every((s) => s === 'BLOCKED')) return 'BLOCKED';
+  if (statuses.some((s) => s === 'FAILED')) return 'FAILED';
+  if (statuses.some((s) => s === 'PWMI')) return 'PWMI';
   return 'FAILED';
 }
 
@@ -168,22 +174,6 @@ function validate(m) {
     if (!byId.has(id)) out.push(err('results', `in-scope item "${id}" has no result row`, 'run it, or record it BLOCKED with the reason — never drop it'));
   });
 
-  // Two shapes the source material does not settle. The summary line is locked to
-  // PASSED or FAILED, so both currently render FAILED — which may misroute the
-  // ticket. Warn rather than invent a third verdict or silently pick one.
-  const inScope = inScopeIds(m);
-  const statusOf = (id) => (byId.get(id) || {}).status;
-  if (inScope.length && inScope.every((id) => statusOf(id) === 'BLOCKED')) {
-    out.push({ field: 'verdict', severity: 'warn',
-      message: 'every in-scope item is BLOCKED — the summary will read FAILED, but a coverage gap is not a product defect',
-      fix: 'confirm with the ticket owner how a fully blocked round should be reported before posting' });
-  }
-  if (inScope.some((id) => statusOf(id) === 'PWMI')) {
-    out.push({ field: 'verdict', severity: 'warn',
-      message: 'a PWMI row makes the summary read FAILED — the workflow locks the summary to PASSED/FAILED and does not say which a minor-issue round takes',
-      fix: 'state the Priority per the bug matrix and confirm the intended summary wording before posting' });
-  }
-
   const computed = computedVerdict(m);
   if (computed === 'INCOMPLETE') {
     out.push(err('verdict', 'an in-scope item has no result — the retest is not complete', 'close the gap before drafting'));
@@ -205,6 +195,29 @@ function validate(m) {
   return out;
 }
 
+/**
+ * The question to put to the owner when a destination cannot hold the real status.
+ *
+ * A results sheet's dropdown is a fixed vocabulary. When the status a case actually
+ * has is not in it, the wrong move is to pick the nearest word — that silently
+ * rewrites the result. Show both lists and let the owner decide what goes in the cell.
+ *
+ * @param {string[]} caseStatuses  the statuses this round actually produced
+ * @param {string[]} destinationStatuses  what the destination offers (read from it, never assumed)
+ * @returns {{missing: string[], question: string}|null}  null when everything fits
+ */
+function destinationMismatch(caseStatuses, destinationStatuses) {
+  const have = new Set((destinationStatuses || []).map((s) => String(s).trim().toUpperCase()));
+  const missing = [...new Set(caseStatuses || [])].filter((s) => !have.has(String(s).trim().toUpperCase()));
+  if (!missing.length) return null;
+  return {
+    missing,
+    question: `สถานะจริงของเคสคือ ${missing.join(', ')} `
+      + `แต่ในชีทตอนนี้มีสถานะให้เลือกเป็น ${(destinationStatuses || []).join(' / ')} `
+      + 'ซึ่งไม่ตรงกับสถานะจริง จะให้ระบุในชีทเป็นอะไรครับ',
+  };
+}
+
 module.exports = {
   STATUSES,
   PASSING,
@@ -217,4 +230,5 @@ module.exports = {
   computedVerdict,
   verdictLine,
   validate,
+  destinationMismatch,
 };

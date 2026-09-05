@@ -15,6 +15,9 @@
 
 const M = require('./retest_manifest');
 
+/** The summary line states the verdict the rows support, so it needs every mark. */
+const VERDICT_MARK = Object.freeze({ PASSED: '✅', FAILED: '❌', BLOCKED: '⛔', PWMI: '⚠️' });
+
 const STATUS_MARK = Object.freeze({
   PASSED: '✅',
   FAILED: '❌',
@@ -120,7 +123,7 @@ function renderWiki(m) {
   const isApi = m.bugType === 'API';
 
   const L = [];
-  L.push(`*Retest Result: ${M.verdictLine(m)}* ${M.computedVerdict(m) === 'PASSED' ? '✅' : '❌'}`);
+  L.push(`*Retest Result: ${M.verdictLine(m)}* ${VERDICT_MARK[M.computedVerdict(m)] || '❌'}`);
   L.push('');
   headerLines(m, bold).forEach((l) => L.push(wikiText(l)));
   L.push('', '----', '');
@@ -180,7 +183,7 @@ function renderAdf(m) {
   const isApi = m.bugType === 'API';
 
   const L = [];
-  L.push(`**Retest Result: ${M.verdictLine(m)}** ${M.computedVerdict(m) === 'PASSED' ? '✅' : '❌'}`);
+  L.push(`**Retest Result: ${M.verdictLine(m)}** ${VERDICT_MARK[M.computedVerdict(m)] || '❌'}`);
   L.push('');
   headerLines(m, bold).forEach((l) => L.push(l));
   L.push('');
@@ -238,4 +241,4 @@ function render(m) {
   return m.format === 'v3' ? renderAdf(m) : renderWiki(m);
 }
 
-module.exports = { render, renderWiki, renderAdf, cell, hasBareDelimiter, wikiText, evidenceCell, coverageLabel, STATUS_MARK };
+module.exports = { VERDICT_MARK, render, renderWiki, renderAdf, cell, hasBareDelimiter, wikiText, evidenceCell, coverageLabel, STATUS_MARK };
