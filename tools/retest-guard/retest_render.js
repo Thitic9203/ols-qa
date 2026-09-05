@@ -98,7 +98,15 @@ function tallies(cases) {
     passed: cases.filter((c) => c.status === 'PASSED').length,
     failed: cases.filter((c) => c.status === 'FAILED' || c.status === 'PWMI').length,
     blocked: cases.filter((c) => c.status === 'BLOCKED').length,
+    // "cases run" means run: a BLOCKED case was planned and never executed, and
+    // counting it as run is the same footnote-instead-of-row habit the gates exist for.
+    run: cases.filter((c) => c.status !== 'BLOCKED').length,
   };
+}
+
+/** The coverage line names the contract it reconciles against. */
+function coverageLabel(m) {
+  return m.ticketType === 'Task' ? 'Acceptance-criteria coverage:' : 'Expected-result coverage:';
 }
 
 function renderWiki(m) {
@@ -139,8 +147,8 @@ function renderWiki(m) {
       : `|${i + 1}|${expected}|${actual}|${ev}|${STATUS_MARK[r.status]}|`);
   });
   L.push('');
-  L.push(`${bold('Expected-result coverage:')} ${cov.n} / ${cov.total} items met`);
-  L.push(`${bold('Case coverage:')} ${cases.length} / ${cases.length} cases run — ${t.passed} passed / ${t.failed} failed / ${t.blocked} blocked`);
+  L.push(`${bold(coverageLabel(m))} ${cov.n} / ${cov.total} items met`);
+  L.push(`${bold('Case coverage:')} ${t.run} / ${cases.length} cases run — ${t.passed} passed / ${t.failed} failed / ${t.blocked} blocked`);
 
   const out = M.outOfScopeIds(m);
   if (out.length) {
@@ -203,8 +211,8 @@ function renderAdf(m) {
       : `| ${i + 1} | ${expected} | ${actual} | ${cell(evidenceCell(r.evidence, 'v3'), 'evidence')} | ${STATUS_MARK[r.status]} |`);
   });
   L.push('');
-  L.push(`${bold('Expected-result coverage:')} ${cov.n} / ${cov.total} items met`);
-  L.push(`${bold('Case coverage:')} ${cases.length} / ${cases.length} cases run — ${t.passed} passed / ${t.failed} failed / ${t.blocked} blocked`);
+  L.push(`${bold(coverageLabel(m))} ${cov.n} / ${cov.total} items met`);
+  L.push(`${bold('Case coverage:')} ${t.run} / ${cases.length} cases run — ${t.passed} passed / ${t.failed} failed / ${t.blocked} blocked`);
 
   const out = M.outOfScopeIds(m);
   if (out.length) {
@@ -230,4 +238,4 @@ function render(m) {
   return m.format === 'v3' ? renderAdf(m) : renderWiki(m);
 }
 
-module.exports = { render, renderWiki, renderAdf, cell, hasBareDelimiter, wikiText, evidenceCell, STATUS_MARK };
+module.exports = { render, renderWiki, renderAdf, cell, hasBareDelimiter, wikiText, evidenceCell, coverageLabel, STATUS_MARK };

@@ -102,8 +102,14 @@ const NON_PASS_BLOCKS = Object.freeze(['Root cause', 'Resolution options']);
 const SCOPE_LINE = /^\**Scope:?\**\s*(FULL|CASES:\s*\S.*)$/i;
 /** `*Retest Result: PASSED* ✅`, optionally scoped. */
 const SUMMARY_LINE = /^\**Retest Result:\s*(PASSED|FAILED)(\s*\(scoped:[^)]*\))?\**\s*(✅|❌)?\s*$/i;
-/** `*Expected-result coverage:* 7 / 7 items met` */
-const COVERAGE_LINE = /coverage:?\**\s*(\d+)\s*\/\s*(\d+)/i;
+/**
+ * `*Expected-result coverage:* 7 / 7 items met` — the line the gate reconciles.
+ *
+ * It must be the ITEM coverage line specifically: a body carrying only
+ * `*Case coverage:* 1 / 1` used to satisfy a generic /coverage/ match, so a missing
+ * item-coverage line read as a reconciled one.
+ */
+const ITEM_COVERAGE_LINE = /(expected-result|acceptance-criteria|item)[ -]*coverage:?\**\s*(\d+)\s*\/\s*(\d+)/i;
 
 /* ------------------------------------------------------------------ *
  * Parsing helpers — pure, no I/O.
@@ -279,6 +285,12 @@ function scanBody(body, opts = {}) {
     const evidenceCol = verdict.headers.indexOf('Evidence');
     const statusCol = verdict.headers.length - 1;
     verdict.rows.forEach((r) => {
+      if (r.cells.length !== verdict.headers.length) {
+        out.push(finding('row-column-count', r.line,
+          `row has ${r.cells.length} cell(s), the header has ${verdict.headers.length}`,
+          'a stray or missing delimiter shifts every later value into the wrong column'));
+        return;                       // reading its status would read the wrong cell
+      }
       const status = r.cells[statusCol] || '';
       const passing = PASSING_STATUS.test(status) && !NON_PASSING_STATUS.test(status);
       const rowText = r.cells.join(' ').toLowerCase();
@@ -308,6 +320,13 @@ function scanBody(body, opts = {}) {
           'the design reference goes on the header Design ref: line, never a per-row column'));
       }
     });
+    cases.rows.forEach((r) => {
+      if (r.cells.length !== cases.headers.length) {
+        out.push(finding('row-column-count', r.line,
+          `case row has ${r.cells.length} cell(s), the header has ${cases.headers.length}`,
+          'a stray or missing delimiter shifts every later value into the wrong column'));
+      }
+    });
     const missing = CASE_TABLE_HEADERS.filter((h) => !cases.headers.includes(h));
     if (missing.length) {
       out.push(finding('case-table-headers', cases.headerLine,
@@ -316,12 +335,14 @@ function scanBody(body, opts = {}) {
     }
   }
 
-  const cov = text.match(COVERAGE_LINE);
+  const cov = text.match(ITEM_COVERAGE_LINE);
   if (!cov) {
-    out.push(finding('coverage-line-missing', 0, 'no coverage line', 'e.g. *Expected-result coverage:* 7 / 7 items met'));
-  } else if (cov[1] !== cov[2]) {
+    out.push(finding('coverage-line-missing', 0,
+      'no expected-result / acceptance-criteria coverage line',
+      'e.g. *Expected-result coverage:* 7 / 7 items met — a Case coverage line is not a substitute'));
+  } else if (cov[2] !== cov[3]) {
     out.push(finding('coverage-not-reconciled', 0,
-      `coverage reads ${cov[1]}/${cov[2]}`,
+      `coverage reads ${cov[2]}/${cov[3]}`,
       'every enumerated item is a row with a status — close the gap before posting'));
   }
 
@@ -389,7 +410,7 @@ module.exports = {
   NON_PASS_BLOCKS,
   SCOPE_LINE,
   SUMMARY_LINE,
-  COVERAGE_LINE,
+  ITEM_COVERAGE_LINE,
   DRIFT_ALLOWLIST,
   OPEN_QUESTIONS,
   MD_DIVIDER_ROW,

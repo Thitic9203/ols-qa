@@ -455,15 +455,17 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 **Template core — v2 wiki markup** (`/rest/api/2/…`; FE bugs, anything with screenshots):
 
 ```text
-*Retest Result: PASSED* ✅   (or *Retest Result: FAILED* ❌)
+*Retest Result: PASSED* ✅   (or *Retest Result: FAILED* ❌ — scoped rounds read "PASSED (scoped: TC_03)")
 
 *Env:* {ENV} ({url})
 *API:* {METHOD} {path}   (if API bug)
 *Swagger:* {link}
 *Design ref:* {figma node link}   (UI retest — or "none — asked {who} {YYYY-MM-DD}")
+*Role:* {role(s) the cases were run as}
 *Date:* {YYYY-MM-DD}
 *Build:* {build / commit id the fix landed in}
 *Fixture:* {what was used, and whether it was restored}
+*Scope:* FULL   (or "CASES: TC_03, TC_07" when the user asked for particular cases)
 
 ----
 
@@ -473,19 +475,25 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 
 *Test cases run:* {n}
 
-||*Case*||*Title*||*Covers*||*Status*||
-|TC_01|{what this case verifies}|ER1|✅/❌/⛔|
+||*Case*||*Title*||*Covers*||*Role*||*Status*||
+|TC_01|{what this case verifies}|ER1|{role}|✅/❌/⛔|
 
 ||*No.*||*Expected Result*||*Actual Result*||*Evidence*||*Status*||
 |1|{item quoted from the ticket}|{observed}|!tc1.png!|✅/❌|
 
-*Expected-result coverage:* {n} / {total} items met
-*Case coverage:* {n} / {total} cases run — {passed} passed / {failed} failed / {blocked} blocked
+*Expected-result coverage:* {n} / {total} items met      (a Task reads *Acceptance-criteria coverage:*)
+*Case coverage:* {run} / {total} cases run — {passed} passed / {failed} failed / {blocked} blocked
+
+*Out of scope this round:* {ids} — not covered by the scoped cases, not verified   (scoped rounds only)
 ```
+
+**This block is the shape the renderer produces, not something to hand-type.** Build `run.json` and
+render it (Step 6·0); the guard rejects a body that drifts from this shape, including one typed from
+this very block.
 
 The **`Test cases run` table is mandatory on every retest — bug and task alike.** It is the Step 2c
 case list with outcomes: one row per case (`Case` · `Title` · `Covers` = the `ER*`/`AC*` ids ·
-`Status`), covering the ticket's own contract **and** the surface cases pulled in at Step 2c.
+`Role` · `Status`), covering the ticket's own contract **and** the surface cases pulled in at Step 2c.
 It is what tells the next reader what was actually exercised, and it is the artifact that outlives the
 ticket — a result that never became a case row does not get re-run
 ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §1). A **Task /
@@ -971,7 +979,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST run the Step 9 pre-notify review gate (5 checks on dry-run output) before EVERY send, including resends | Catches wrong recipient/link/counts before they go live (user rule 2026-07-15) |
 | MUST embed each FE screenshot in its verdict-table `Evidence` cell as `!file.png!` — pre-resized (~600–640 px), **no `\|width=…`** (the pipe splits the table row) — never leave as filename-only text | Screenshots must render as pictures inside the cell; a `\|width` param breaks the row, and filename text is unreadable evidence (OLS-289, 2026-07-27) |
 | MUST retest a **Task / Story** against its Acceptance Criteria (read where the AC actually lives, usually the description) with the same enumerate→row→reconcile discipline a Bug's Expected Result gets; a ticket stating no verifiable AC is BLOCKED + a question to the owner, never PASSED | A task retest with no written contract is an unverified pass; "nothing to check" is not a check |
-| MUST post a **case list** in the retest comment (`Test cases run` table: Case · Title · Covers · Status — **never a design-node column**; the design reference lives on the header's `Design ref:` line) for **both** bug and task retests, reconciled against the Step 2c list and the `ER*`/`AC*` ids | A result that never becomes a case row is never re-run; three customer escapes came through results that lived only as comment prose |
+| MUST post a **case list** in the retest comment (`Test cases run` table: Case · Title · Covers · Role · Status — **never a design-node column**; the design reference lives on the header's `Design ref:` line) for **both** bug and task retests, reconciled against the Step 2c list and the `ER*`/`AC*` ids | A result that never becomes a case row is never re-run; three customer escapes came through results that lived only as comment prose |
 | MUST scope the retest to the **whole surface** the fix touched (its existing cases + the states and in-scope widths the design defines), not only the reported line | A component was retested on one screen while the defect sat on another screen reusing it — the customer found it |
 | MUST compare every UI case against its **design node** on all five points and record the node link on the header's `Design ref:` line — never as a per-row column | An all-present, mis-ordered screen passes a "shows A, B, C" expected; `figma` appeared zero times in the set that shipped the escapes |
 | MUST report a missing design reference back to the person/channel that assigned the retest and hold those visual points **BLOCKED** — never assume a label, order, or layout, never PASSED | An assumed expected is not a spec; it produces both phantom bugs and false passes (PM-006) |

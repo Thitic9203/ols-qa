@@ -67,6 +67,9 @@ function coverage(m) {
 function computedVerdict(m) {
   const ids = inScopeIds(m);
   const byId = new Map(asArray(m.results).map((r) => [r.id, r]));
+  // A scope that resolves to nothing verified nothing. `[].every(...)` is true, so
+  // without this an unknown case id would render a confident PASSED over 0 / 0.
+  if (ids.length === 0) return 'INCOMPLETE';
   const statuses = ids.map((id) => (byId.has(id) ? byId.get(id).status : null));
   if (statuses.some((s) => s === null)) return 'INCOMPLETE';
   if (statuses.every((s) => PASSING.includes(s))) return 'PASSED';
@@ -108,6 +111,19 @@ function validate(m) {
       'record the node link, or "none — asked <who> <date>" and hold the visual points BLOCKED'));
   }
 
+  // A duplicate id corrupts silently: the second entry overrides the first in every
+  // lookup, the table renders two identical rows, and the coverage arithmetic counts
+  // both — so 2 / 2 reads as complete for one real item.
+  const dupes = (list, label) => {
+    const seen = new Set();
+    const dup = new Set();
+    asArray(list).forEach((x) => { if (seen.has(x.id)) dup.add(x.id); else seen.add(x.id); });
+    dup.forEach((id) => out.push(err(label, `duplicate id "${id}"`, 'ids are unique — merge the entries or renumber')));
+  };
+  dupes(m.contract, 'contract');
+  dupes(m.cases, 'cases');
+  dupes(m.results, 'results');
+
   const contractIds = new Set(asArray(m.contract).map((c) => c.id));
   asArray(m.contract).forEach((c, i) => {
     if (!isNonEmptyString(c.id)) out.push(err(`contract[${i}].id`, 'every contract item needs a stable id', 'ER1… for a Bug, AC1… for a Task'));
@@ -130,6 +146,10 @@ function validate(m) {
       if (!caseIds.has(id)) out.push(err('scope.cases', `scoped case "${id}" is not in cases[]`, 'scope names cases that exist'));
     });
     if (asArray(m.scope.cases).length === 0) out.push(err('scope.cases', 'CASES scope with no case ids', 'name them, or use FULL'));
+    if (inScopeIds(m).length === 0) {
+      out.push(err('scope.cases', 'the scoped cases cover no contract item — this round would verify nothing',
+        'name cases that cover the ids you mean to retest'));
+    }
   }
 
   const ids = inScopeIds(m);

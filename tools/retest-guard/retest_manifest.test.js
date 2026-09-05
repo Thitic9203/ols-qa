@@ -150,5 +150,32 @@ check('a hedge cannot be used as the cause label', () => {
   assert.ok(M.validate(m).some((f) => f.field === 'rootCause.label'));
 });
 
+
+check('a scope whose cases cover nothing verifies nothing — never a PASS', () => {
+  const m = base();
+  m.cases.push({ id: 'TC_09', title: 'placeholder', covers: [], role: 'CONTENT_ADMIN', status: 'BLOCKED' });
+  m.scope = { mode: 'CASES', cases: ['TC_09'] };
+  assert.deepStrictEqual(M.inScopeIds(m), []);
+  assert.strictEqual(M.computedVerdict(m), 'INCOMPLETE');
+  assert.ok(M.validate(m).some((f) => /verify nothing/.test(f.message)), 'no explicit finding for an empty scope');
+});
+
+check('a scope naming an unknown case cannot render a confident PASSED over 0 / 0', () => {
+  const m = base();
+  m.scope = { mode: 'CASES', cases: ['TC_99'] };
+  assert.strictEqual(M.computedVerdict(m), 'INCOMPLETE');
+});
+
+
+check('a duplicate id is refused everywhere it can appear', () => {
+  ['contract', 'cases', 'results'].forEach((key) => {
+    const m = base();
+    m[key] = m[key].concat([JSON.parse(JSON.stringify(m[key][0]))]);   // same id, same status
+    const f = M.validate(m);
+    assert.ok(f.some((x) => x.field === key && /duplicate id/.test(x.message)),
+      key + ': a duplicate id passed validation — ' + JSON.stringify(f.map((y) => y.field)));
+  });
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);

@@ -147,5 +147,29 @@ check('a Task retest is rendered against Acceptance Criteria, not Expected Resul
   assert.ok(!body.includes('*Expected Result (from ticket, verbatim):*'));
 });
 
+
+check('a Task round names its coverage line after the acceptance criteria', () => {
+  const m = feManifest();
+  m.ticketType = 'Task';
+  const body = RENDER.render(m);
+  assert.ok(body.includes('*Acceptance-criteria coverage:*'), 'coverage line still says Expected-result');
+  const found = errorsOnly(R.scanBody(body, { format: R.FORMATS.WIKI, bugType: 'FE' }));
+  assert.deepStrictEqual(found, [], JSON.stringify(found.map((f) => f.rule)));
+});
+
+check('a BLOCKED case is not counted as a case that ran', () => {
+  const m = feManifest();
+  m.cases[1].status = 'BLOCKED';
+  m.results[1].status = 'BLOCKED';
+  m.verdict = 'FAILED';
+  m.symptomGone = true;
+  m.rootCause = { text: 'the badge query needs a fixture we could not create', label: 'Unknown — not investigated' };
+  m.resolutionOptions = [{ text: 'provide the fixture', owner: 'dev' }, { text: 'drop the item', owner: 'spec owner' }];
+  m.decidedBy = 'spec owner';
+  assert.deepStrictEqual(M.validate(m), []);
+  const body = RENDER.render(m);
+  assert.ok(body.includes('1 / 2 cases run'), 'blocked case counted as run: ' + body.split('\n').find((l) => l.includes('Case coverage')));
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);

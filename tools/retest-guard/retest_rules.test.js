@@ -167,5 +167,30 @@ check('the unverified link-pipe question is recorded, not guessed', () => {
   assert.ok(R.OPEN_QUESTIONS.some((q) => /link-with-pipe/.test(q)));
 });
 
+
+check('a row with a stray delimiter is refused, not read one column over', () => {
+  const fs = R.scanBody(GOOD.replace('|1|label reads บันทึก|label reads บันทึก|!tc1.png!|✅|',
+                                     '|1|label reads|บันทึก|label reads บันทึก|!tc1.png!|✅|'), {});
+  assert.ok(has(fs, 'row-column-count'), JSON.stringify(rules(fs)));
+});
+
+check('a case row with the wrong cell count is refused too', () => {
+  const fs = R.scanBody(GOOD.replace('|TC_01|list shows the saved label|ER1|CREATOR|✅|',
+                                     '|TC_01|list shows the saved label|ER1|✅|'), {});
+  assert.ok(has(fs, 'row-column-count'), JSON.stringify(rules(fs)));
+});
+
+check('a Case-coverage line is not a substitute for the item-coverage line', () => {
+  const fs = R.scanBody(GOOD.replace('*Expected-result coverage:* 1 / 1 items met',
+                                     '*Case coverage:* 1 / 1 cases run'), {});
+  assert.ok(has(fs, 'coverage-line-missing'), JSON.stringify(rules(fs)));
+});
+
+check('a Task retest may name its coverage line after the acceptance criteria', () => {
+  const fs = R.scanBody(GOOD.replace('*Expected-result coverage:* 1 / 1 items met',
+                                     '*Acceptance-criteria coverage:* 1 / 1 items met'), {});
+  assert.deepStrictEqual(fs, [], JSON.stringify(rules(fs)));
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);
