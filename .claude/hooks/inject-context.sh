@@ -4,6 +4,11 @@
 # Live links come from the local, untracked secrets store.
 cd "$CLAUDE_PROJECT_DIR" 2>/dev/null || exit 0
 
+# Layer 3 of the post-mortem defence: an unpaid debt from a previous session is the first
+# thing this session hears, before anything else can crowd it out. Prints nothing when
+# there is no debt, and can never fail the hook.
+bash "$CLAUDE_PROJECT_DIR/.claude/hooks/postmortem-debt.sh" 2>/dev/null || true
+
 # Auto-update skills from remote
 BEFORE=$(git rev-parse HEAD 2>/dev/null)
 git pull --ff-only origin main --quiet 2>/dev/null

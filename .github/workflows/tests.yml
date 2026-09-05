@@ -51,3 +51,19 @@ jobs:
           # be worse than no guard.
           test -f scripts/check-no-secrets.sh
           git ls-files -z | xargs -0 bash scripts/check-no-secrets.sh
+
+      - name: Post-mortem guard (layer 10 — the local hooks can only bind this machine)
+        run: |
+          # Validates report structure, the ledger, the index and the numbering. Open debt
+          # is printed as a notice and does NOT fail the build: a report legitimately being
+          # written would otherwise hold main red, and a build that is red for days stops
+          # being read. Blocking on open debt is the pre-commit gate's job.
+          test -f tools/postmortem-guard/check.js
+          node tools/postmortem-guard/check.js
+
+      - name: The debt reminder itself still runs (a silent reminder is no reminder)
+        run: |
+          # Layers 3–6 all shell out to this one script. If it stops being executable or
+          # starts erroring, four layers go quiet at once and nothing else would say so.
+          test -x .claude/hooks/postmortem-debt.sh
+          CLAUDE_PROJECT_DIR="$PWD" bash .claude/hooks/postmortem-debt.sh

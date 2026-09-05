@@ -50,4 +50,58 @@ if [ "$rc" -ne 0 ]; then
   echo "    ~/.ols-qa-secrets/ols-secrets.md"
   exit 1
 fi
+
+# ── Post-mortem debt gate — layer 8 of ten ───────────────────────────────────────
+#
+# While a mistake is on the ledger with no report, new work does not ship past it. The
+# reminder layers (session start, every prompt, every turn end, compaction) can be read
+# past; this one cannot. There is no override flag on purpose — the ways out are both
+# deliberate and both leave a record: write the report, or have the owner mark the row
+# WONTFIX with a reason and a date. Either edits PENDING.md, and a commit that edits
+# PENDING.md is allowed through.
+#
+# Written in awk, not Node: tools/postmortem-guard/check.js is a separate layer, and two
+# layers sharing a runtime fail together.
+LEDGER="$ROOT/docs/post-mortem/PENDING.md"
+if [ ! -f "$LEDGER" ]; then
+  echo "[ols-qa pre-commit] ❌ commit BLOCKED — docs/post-mortem/PENDING.md is missing."
+  echo "  A defence layer was deleted. Restore the ledger before committing."
+  exit 1
+fi
+
+OPEN_COUNT="$(awk -F'|' '
+  /^[[:space:]]*\|/ {
+    if (NF < 7) next
+    id = $2; status = $6
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", id)
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", status)
+    if (status == "OPEN" && id ~ /^PM-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}$/) n++
+  }
+  END { print n + 0 }
+' "$LEDGER" 2>/dev/null)"
+
+TOUCHES_POSTMORTEM=0
+for f in "${STAGED[@]}"; do
+  case "$f" in
+    docs/post-mortem/*) TOUCHES_POSTMORTEM=1 ;;
+  esac
+done
+
+if [ "$OPEN_COUNT" -gt 0 ] && [ "$TOUCHES_POSTMORTEM" -eq 0 ]; then
+  echo "[ols-qa pre-commit] ❌ commit BLOCKED — post-mortem debt ค้างอยู่ $OPEN_COUNT รายการ"
+  bash "$ROOT/.claude/hooks/postmortem-debt.sh" 2>/dev/null || true
+  echo "  เขียนรายงานให้จบก่อน หรือให้เจ้าของงานสั่ง WONTFIX พร้อมเหตุผลและวันที่"
+  echo "  ทั้งสองทางแก้ที่ docs/post-mortem/PENDING.md แล้วคอมมิตนี้จะผ่านเอง"
+  exit 1
+fi
+
+# Validate the folder whenever the commit touches it — a broken report must not land.
+# Unrelated commits are not held hostage to it; CI validates the folder on every push.
+if [ "$TOUCHES_POSTMORTEM" -eq 1 ] && command -v node >/dev/null 2>&1; then
+  if ! node "$ROOT/tools/postmortem-guard/check.js"; then
+    echo "[ols-qa pre-commit] ❌ commit BLOCKED — postmortem-guard พบปัญหาในรายงาน/บัญชีหนี้"
+    exit 1
+  fi
+fi
+
 exit 0

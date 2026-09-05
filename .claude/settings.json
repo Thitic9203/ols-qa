@@ -30,6 +30,7 @@
       "mcp__ccd_session__read_widget_context",
       "mcp__Claude_Browser__get_page_text",
       "mcp__Claude_Browser__find",
+      "mcp__claude-in-chrome__find",
       "mcp__af7c11f4-f132-429c-aef3-6f4f21f09a74__searchJiraIssuesUsingJql"
     ]
   },
@@ -40,6 +41,16 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/inject-context.sh\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/postmortem-debt.sh\""
           }
         ]
       }
@@ -72,6 +83,10 @@
           {
             "type": "command",
             "command": "bash scripts/build-session-state.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/postmortem-debt.sh\""
           }
         ]
       }
