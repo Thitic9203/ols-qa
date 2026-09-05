@@ -38,7 +38,7 @@ MUST NOT start without **all** of:
 1. **An explicit instruction from the user to hide this specific set.** "This content looks bad" is
    an observation, not an instruction. Quote back what you are about to hide and how many.
 2. **A confirmed environment**, per the intake gate in
-   [ols-project-guide.md](../../../references/ols-project-guide.md) — ask once, wait, never pick one
+   the workspace's `references/ols-project-guide.md` — ask once, wait, never pick one
    yourself, and never default to the one that is easiest to reach.
 3. **A named account set**, with the role each one resolves to (verified live, not assumed from a
    spreadsheet column).

@@ -22,7 +22,7 @@ When invoked:
 
 1. Announce once: `Using **content-takedown-workflow** to take the named set out of public view.`
 2. **Confirm the environment and the account set first** — one message, then wait. Never pick an
-   environment yourself; see the intake gate in [ols-project-guide.md](../../references/ols-project-guide.md).
+   environment yourself; see the intake gate in the workspace's `references/ols-project-guide.md`.
 3. **Show the batch before touching it** — titles and count, plus the rule buckets when the batch is
    defined by a quality judgement (run `tools/name-guard/name_rules.js`, not your own taste).
 4. **Work down the mechanism ladder** in WORKFLOW.md Step 3 and stop at the first rung a real call

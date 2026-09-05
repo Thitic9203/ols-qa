@@ -27,9 +27,9 @@ const SYNCED_DIRS = ['skills', 'commands'];
  * change that added this test — the owner decides. Anything NEW fails.
  */
 const PRE_EXISTING = new Set([
-  'skills/content-takedown-workflow/SKILL.md',
-  'skills/deprecated/content-takedown-workflow/WORKFLOW.md',
-  'commands/sync-tc-result.md',
+  // Empty on purpose. The three links that were here (both content-takedown files
+  // and the sync-tc-result command, all pointing at the project guide) were fixed
+  // rather than exempted, so nothing is grandfathered and the next break fails.
 ]);
 
 function walk(dir, out = []) {
@@ -90,14 +90,9 @@ check('no synced skill or command markdown-links to a workspace-only reference',
     'these would deploy as dangling links: ' + offenders.join(', '));
 });
 
-check('the pre-existing list still describes reality (a stale exemption hides a new break)', () => {
-  const stale = [...PRE_EXISTING].filter((rel) => {
-    const p = path.join(ROOT, rel);
-    if (!fs.existsSync(p)) return true;
-    const text = fs.readFileSync(p, 'utf8');
-    return ![...marked].some((name) => new RegExp('\\]\\([^)]*' + name.replace('.', '\\.') + '\\)').test(text));
-  });
-  assert.deepStrictEqual(stale, [], 'exemptions no longer needed (remove them): ' + stale.join(', '));
+check('nothing is grandfathered — the exemption list is empty', () => {
+  assert.strictEqual(PRE_EXISTING.size, 0,
+    'an exemption is a link that still 404s in the deployed plugin: ' + [...PRE_EXISTING].join(', '));
 });
 
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');

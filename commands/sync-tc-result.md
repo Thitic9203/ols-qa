@@ -30,7 +30,7 @@ python3 ~/ols-qa-testing-bot/unit_apply.py --write         # write Unit rows + m
 - Config and real ids are **off-repo** (`~/ols-qa-testing-bot/sync_tc_config.json`,
   `~/.ols-qa-secrets/ §5.1`). Never commit a real sheet id here — this repo is public.
 - Deliverable-sheet layout, status map and write-model:
-  [references/ols-project-guide.md](../references/ols-project-guide.md) § Test-type deliverable sheets.
+  the workspace's `references/ols-project-guide.md` § Test-type deliverable sheets.
 
 ## Safety
 
