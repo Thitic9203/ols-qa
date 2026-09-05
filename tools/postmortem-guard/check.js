@@ -59,15 +59,27 @@ function main() {
     return 0;
   }
 
-  let reportNames;
+  // Every entry is classified; nothing is filtered away. Keeping only the names that
+  // already matched the pattern is what let a misnamed report sit in the folder while the
+  // gate printed "structure clean" over it — the gate has to see what it cannot parse.
+  let entries;
   try {
-    reportNames = fs.readdirSync(DIR).filter((f) => R.REPORT_FILE_RE.test(f)).sort();
+    entries = fs.readdirSync(DIR);
   } catch (e) {
     die(`cannot list ${path.relative(ROOT, DIR)}: ${e.message}`);
   }
+  const { reports: reportNames, strays } = R.classifyFolder(entries);
 
   const reportTexts = {};
   const problems = [...parseProblems, ...R.validateLedger(rows)];
+
+  for (const stray of strays) {
+    problems.push(
+      `${stray}: unrecognised entry in docs/post-mortem/ — a report must be named ` +
+      '<8-digit date>-post-mortem-report-<4-digit number>-<english-topic-slug>.md; ' +
+      `anything else belongs elsewhere, or add it to NON_REPORT_FILES on purpose`,
+    );
+  }
 
   for (const name of reportNames) {
     let text;

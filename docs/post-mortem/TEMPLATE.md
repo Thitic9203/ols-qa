@@ -130,7 +130,7 @@
 **ไฟล์ที่เปลี่ยน:**
 - `path/to/file` — [เปลี่ยนอะไร]
 
-**Commit:** [`hash`](URL) *(repo นี้ public — ห้ามใส่ค่าจริงของ host / บัญชี / id ลิงก์ Drive-Sheet ใช้ placeholder เท่านั้น)*
+**Commit:** `<commit hash>` *(repo นี้ public — ห้ามใส่ค่าจริงของ host / บัญชี / id ลิงก์ Drive หรือ Sheet ใช้ placeholder เท่านั้น)*
 
 **หลักฐาน:**
 ```

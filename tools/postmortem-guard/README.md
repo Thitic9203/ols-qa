@@ -19,6 +19,13 @@ node tools/postmortem-guard/postmortem_rules.test.js
 
 ## What the gate refuses
 
+- **any entry in `docs/post-mortem/` it does not recognise** — not one of `README.md`,
+  `TEMPLATE.md`, `PENDING.md`, and not a validly named report. The first version selected its
+  inputs with `readdirSync(…).filter(…)`, which both chose what to check and silently discarded
+  what it could not parse: a misnamed report sat in the folder while the gate printed
+  `structure clean` and exited 0 over a file it had never opened (report #0002). `classifyFolder()`
+  in the rules module now classifies every entry, so nothing is dropped without being reported
+
 - a filename that is not `<8-digit date>-post-mortem-report-<4-digit running number>-<english-topic-slug>.md`
   — the number is padded (`0001`, not `1`, so the folder sorts by name), and the slug is
   **required**, lowercase ASCII, 3–12 words, so the file list says what each report is about

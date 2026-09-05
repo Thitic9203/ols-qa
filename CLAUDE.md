@@ -104,12 +104,25 @@ context ที่ inject ตอนเปิด session · memory · WIP note · 
 **ไม่มี flag ปิดชั้นไหนทั้งสิ้น** ทางออกมี 2 ทางและทั้งคู่ทิ้งร่องรอยไว้ในประวัติ คือเขียนรายงาน หรือ `WONTFIX` ที่เจ้าของงานสั่ง
 ตารางเต็มพร้อมเหตุผลต่อชั้น: [`docs/post-mortem/README.md`](docs/post-mortem/README.md)
 
-### ข้อย่อยที่ออกมาจากรายงานฉบับที่ 1
+### ข้อย่อยที่ออกมาจากรายงานฉบับที่ 0001
 
 **ข้ออ้างเกี่ยวกับสถานะของระบบที่เครื่องมือตัวนั้นมองไม่เห็น ห้ามเขียนลงในคอมเมนต์ของเครื่องมือ**
 ถ้าจำเป็นต้องเขียน ต้องแนบวันที่ที่เปิดตรวจของจริงไว้บรรทัดเดียวกัน — เพราะคอมเมนต์ที่คอมมิตไปแล้ว
 จะถูกอ่านเป็นหลักฐานในรอบถัดไป และไม่มีอะไรในไฟล์บอกว่ามันเคยถูกตรวจหรือเปล่า
 (เทสที่มองเห็นแต่ฝั่ง `ols-qa` ยืนยันสถานะของ `helix` ไม่ได้เลย — ต้องเปิดเวิร์กทรี `helix` นับไฟล์เอง)
+
+### ข้อย่อยที่ออกมาจากรายงานฉบับที่ 0002
+
+**ตัวตรวจห้ามกรองอินพุตทิ้งเงียบๆ — ของที่มันอ่านไม่ออกคือสิ่งที่ต้องรายงาน ไม่ใช่สิ่งที่ข้ามเป็นอย่างแรก**
+`filter()` ในตัวตรวจคือการประกาศว่าอะไรไม่สำคัญ ทุกครั้งที่เขียนต้องตอบให้ได้ว่า **ของที่ถูกทิ้งไปคืออะไร
+และใครรายงานมัน** ถ้าไม่มีใครรายงาน แปลว่าเกตนั้นเขียวได้โดยไม่ได้วัด
+
+**และรหัสจบไม่ใช่หลักฐานว่าการตรวจที่ตั้งใจได้ทำงานจริง** เวลาทดสอบว่าเกตจับได้ไหม ต้องประกาศไว้ก่อนว่า
+คาดหวัง **ข้อความ** อะไร แล้วเทียบทั้งรหัสจบและข้อความ — รอบที่เจอบั๊กนี้ เกตจบด้วยรหัส 1 ถูกต้องทุกประการ
+แต่ถูกด้วยเหตุผลคนละเรื่อง สิ่งที่ทำให้จับได้คือช่องข้อความที่ว่างเปล่า
+
+**ชั้นป้องกันที่พึ่งข้อสมมติเดียวกัน นับเป็นชั้นเดียว** — เทสกับ CI ที่รันเทสชุดเดียวกัน คือเครื่องคนละเครื่อง
+ไม่ใช่การวัดคนละอย่าง · เทสทุกชุดต้องมีอย่างน้อยหนึ่งข้อที่แตะ **ของจริงบนดิสก์** ไม่ใช่ข้อมูลสมมติล้วน
 
 > 🔴 repo นี้ public — รายงานห้ามมีรหัสผ่าน อีเมลบัญชี host จริง tenant Sheet/Drive id หรือ path ที่มีชื่อผู้ใช้
 
@@ -1473,6 +1486,28 @@ worktree and count. A fixed exemption list carrying a factual justification is a
 for an unchecked assumption; let the tool read a marker in the file instead.
 
 Full report: [`docs/post-mortem/20260905-post-mortem-report-0001-deleted-working-links-on-unverified-claim.md`](docs/post-mortem/20260905-post-mortem-report-0001-deleted-working-links-on-unverified-claim.md)
+
+### Report #0002 — The guard reported clean over files it had never read (2026-09-06)
+
+**Surface:** any checker that lists candidates and keeps only the ones matching a pattern —
+and any conclusion drawn from an exit code alone.
+
+`check.js` selected its inputs with `readdirSync(DIR).filter(f => REPORT_FILE_RE.test(f))`. That one
+line both chose what to check and discarded what it could not parse, so a misnamed report sat in
+`docs/post-mortem/` while the gate printed `structure clean` and exited 0 over a file it had never
+opened. Proven by dropping one in: `1 report(s) … 0 open`, `exit=0`. Fixed with `classifyFolder()`,
+which classifies every entry and turns anything unrecognised into a finding.
+
+**The rules to carry forward:** *a filter inside a checker is a claim that the discarded input does
+not matter* — say what it drops and who reports it, or the gate can go green without measuring.
+*An exit code is not evidence the intended check ran*: this bug survived a twelve-case break-it pass
+because two cases exited 1 for an unrelated reason; the empty message column is what exposed it, so
+state the expected message before running, not just the expected code. And *layers resting on one
+assumption are one layer* — 29 unit tests and CI all fed the rules a hand-made file list, so none of
+them ever touched the code that chooses which files the rules see. Every suite needs at least one
+case that reads what is actually on disk.
+
+Full report: [`docs/post-mortem/20260906-post-mortem-report-0002-guard-reported-clean-over-files-it-never-read.md`](docs/post-mortem/20260906-post-mortem-report-0002-guard-reported-clean-over-files-it-never-read.md)
 
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ

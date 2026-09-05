@@ -32,6 +32,36 @@ const SLUG_MIN_WORDS = 3;
 const SLUG_MAX_WORDS = 12;
 const SLUG_MAX_LENGTH = 80;
 
+/**
+ * The only entries in docs/post-mortem/ that are not reports. Everything else in that
+ * folder must be a report with a valid name — see `classifyFolder`.
+ */
+const NON_REPORT_FILES = ['README.md', 'TEMPLATE.md', 'PENDING.md'];
+
+/**
+ * Sort every entry of the folder into reports / known non-reports / strays.
+ *
+ * This exists because the first version of the gate listed the folder and kept only the
+ * names that already matched REPORT_FILE_RE. A misnamed report was therefore filtered out
+ * before any rule could look at it, and the gate printed "structure clean" over a file it
+ * had never opened — the exact failure this repo keeps re-learning: a check that silently
+ * ignores what it cannot parse reports success for the wrong reason. Anything unrecognised
+ * is now a finding, not a skip.
+ *
+ * @returns {{reports: string[], strays: string[]}}
+ */
+function classifyFolder(entryNames) {
+  const known = new Set(NON_REPORT_FILES);
+  const reports = [];
+  const strays = [];
+  for (const name of entryNames) {
+    if (known.has(name)) continue;
+    if (REPORT_FILE_RE.test(name)) reports.push(name);
+    else strays.push(name);
+  }
+  return { reports: reports.sort(), strays: strays.sort() };
+}
+
 /** `PM-2026-09-05-01` — date, then that day's sequence. */
 const LEDGER_ID_RE = /^PM-(\d{4})-(\d{2})-(\d{2})-(\d{2})$/;
 
@@ -323,6 +353,8 @@ function crossCheck({ reportNames, reportTexts = {}, rows, indexText }) {
 
 module.exports = {
   REPORT_FILE_RE,
+  NON_REPORT_FILES,
+  classifyFolder,
   SLUG_MIN_WORDS,
   SLUG_MAX_WORDS,
   SLUG_MAX_LENGTH,

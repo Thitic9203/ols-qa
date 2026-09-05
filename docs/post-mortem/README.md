@@ -35,6 +35,7 @@
 | # | วันที่ | เรื่อง | ระดับ | ไฟล์ |
 |---|--------|--------|-------|------|
 | 0001 | 2026-09-05 | ลบลิงก์ที่ใช้งานได้ 3 จุด เพราะเชื่อคอมเมนต์ในเทสของตัวเองว่ามันพัง | Low | [20260905-post-mortem-report-0001-deleted-working-links-on-unverified-claim.md](20260905-post-mortem-report-0001-deleted-working-links-on-unverified-claim.md) |
+| 0002 | 2026-09-06 | ตัวตรวจรายงานว่าเรียบร้อย ทับไฟล์ที่มันไม่เคยอ่าน (ตัวกรองทิ้งของที่ชื่อไม่ตรงแบบเงียบๆ) | Low | [20260906-post-mortem-report-0002-guard-reported-clean-over-files-it-never-read.md](20260906-post-mortem-report-0002-guard-reported-clean-over-files-it-never-read.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 

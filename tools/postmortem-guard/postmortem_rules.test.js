@@ -66,6 +66,39 @@ check('the filename carries a 4-digit running number and an English topic slug',
   }
 });
 
+check('nothing in the folder is filtered away — an unrecognised entry is a finding', () => {
+  // The regression this pins: the gate used to keep only names that already matched the
+  // pattern, so a misnamed report was skipped and "structure clean" was printed over a
+  // file nobody had opened. Found on 2026-09-06 by putting one there; see report #0002.
+  const { reports, strays } = R.classifyFolder([
+    'README.md', 'TEMPLATE.md', 'PENDING.md',            // known non-reports
+    GOOD_NAME,                                           // a valid report
+    '20260906-post-mortem-report-2-bad-name.md',         // number not padded
+    '20260906-post-mortem-report-0002.md',               // no slug
+    'my-notes-about-a-mistake.md',                       // not a report name at all
+    'evidence.png',                                      // not markdown either
+  ]);
+  assert.deepStrictEqual(reports, [GOOD_NAME]);
+  assert.deepStrictEqual(strays, [
+    '20260906-post-mortem-report-0002.md',
+    '20260906-post-mortem-report-2-bad-name.md',
+    'evidence.png',
+    'my-notes-about-a-mistake.md',
+  ]);
+});
+
+check('the three known non-report files are never strays, and the list is exactly those three', () => {
+  assert.deepStrictEqual(R.NON_REPORT_FILES.slice().sort(), ['PENDING.md', 'README.md', 'TEMPLATE.md']);
+  const { reports, strays } = R.classifyFolder(R.NON_REPORT_FILES);
+  assert.deepStrictEqual(reports, []);
+  assert.deepStrictEqual(strays, []);
+});
+
+check('the live folder holds no stray entry', () => {
+  const { strays } = R.classifyFolder(fs.readdirSync(DIR));
+  assert.deepStrictEqual(strays, [], 'unrecognised entries in docs/post-mortem/');
+});
+
 check('the running number is padded to 4 and keeps counting: 0001, 0002, 0003, 0010', () => {
   assert.deepStrictEqual([1, 2, 3, 10, 999].map(R.pad4), ['0001', '0002', '0003', '0010', '0999']);
 });
