@@ -62,8 +62,9 @@ them.
 
 ## Open question, recorded rather than guessed
 
-`OPEN_QUESTIONS` in `retest_rules.js`: the retest workflow says a `[label|url]` link inside a v2 table
-cell splits the row, **and** mandates `[▶ file.mp4|^file.mp4]` inside the Evidence cell. Both cannot
-be true. Which one holds has not been verified against a live Jira comment, so the parser and the
-renderer treat a link span as atomic and nothing is raised. Verify by posting one comment carrying
-such a cell and reading it back with `?expand=renderedBody`.
+`OPEN_QUESTIONS` in `retest_rules.js` carries what is genuinely undecided. One entry was closed by
+measurement rather than by opinion: a `[label|url]` link inside a v2 table cell does **not** split its
+row — OLS-701's retest comment renders such a cell with all five `<td>` intact and the MP4 as a working
+attachment link. What remains open is the summary wording for a round where every in-scope item is
+BLOCKED, and for a round carrying a PWMI row: both render FAILED today because the summary line is
+locked to PASSED/FAILED, and nothing in the workflow says which they should take.

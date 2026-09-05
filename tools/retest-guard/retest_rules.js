@@ -384,12 +384,10 @@ const DRIFT_ALLOWLIST = Object.freeze([
 /**
  * Open questions — recorded rather than guessed, per the repo's first rule.
  *
- * Q1. `WORKFLOW.md` states that a `[label|url]` link inside a v2 table cell splits
- *     the row, and in the same file mandates `[▶ file.mp4|^file.mp4]` inside the
- *     Evidence cell. Both cannot be true. Which one holds has NOT been verified
- *     against a live Jira comment, so this file treats a link span as atomic when
- *     splitting cells and raises nothing. Verify by posting one comment that
- *     carries such a cell and reading `?expand=renderedBody`.
+ * Q1. RESOLVED 2026-09-05. A `[label|url]` link inside a v2 table cell does NOT
+ *     split the row: OLS-701 comment 87511 renders its Evidence cell's
+ *     `[▶ file.mp4|^file.mp4]` with all five <td> intact and the MP4 as a working
+ *     attachment link. Only the image width parameter breaks a row.
  *
  * Q2. The summary line is locked to PASSED or FAILED, and nothing says which one a
  *     round takes when every in-scope item is BLOCKED (a coverage gap, which the
@@ -397,7 +395,6 @@ const DRIFT_ALLOWLIST = Object.freeze([
  *     render FAILED and `retest_manifest.validate` warns; neither was decided here.
  */
 const OPEN_QUESTIONS = Object.freeze([
-  'Q1: link-with-pipe inside a v2 table cell — unverified',
   'Q2: summary wording for a fully BLOCKED round and for a PWMI row — undecided',
 ]);
 

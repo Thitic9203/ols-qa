@@ -163,8 +163,12 @@ check('a pipe inside a link span is not a cell boundary', () => {
   assert.strictEqual(row.cells[1], '[▶ KEY_TC_01.mp4|^KEY_TC_01.mp4]');
 });
 
-check('the unverified link-pipe question is recorded, not guessed', () => {
-  assert.ok(R.OPEN_QUESTIONS.some((q) => /link-with-pipe/.test(q)));
+check('the link-pipe question is closed, and only real open questions remain', () => {
+  // Settled against a live comment (OLS-701, 87511): a [label|url] inside a table
+  // cell keeps its row intact. Re-opening it as an "open question" would be a
+  // regression in what we know, not caution.
+  assert.ok(!R.OPEN_QUESTIONS.some((q) => /link-with-pipe/.test(q)), 'Q1 is answered — remove it');
+  assert.ok(R.OPEN_QUESTIONS.length >= 1, 'Q2 (BLOCKED / PWMI summary wording) is still undecided');
 });
 
 

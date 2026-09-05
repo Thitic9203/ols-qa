@@ -507,9 +507,14 @@ nowhere else: the node URL when one exists, or the Step 2d reason when none does
 it shipped that way. When different cases genuinely use different nodes, name them on the `Design ref:`
 line (`TC_03 → {url} · TC_07 → {url}`) rather than reinstating a column.
 
-**Put any design-node URL on the `Design ref:` line as a bare URL — never as `[label|url]`.** In v2 wiki
-the `|` inside a link is also the cell delimiter, so a labelled link splits a row it lands in (same
-failure class as `!img|width=N!`, PM-004).
+**Put any design-node URL on the `Design ref:` line as a bare URL.** That line is not a table row, so
+nothing is at stake there and a bare URL is the shorter, more readable form.
+
+🟢 **A labelled link inside a table cell is safe — measured, not assumed.** This file used to claim the
+`|` in `[label|url]` splits the row it lands in. It does not: OLS-701's retest comment (2026-09-05)
+carries `[▶ file.mp4|^file.mp4]` in an Evidence cell, and its rendered row has all **five** `<td>`
+elements, with the MP4 resolving to a real attachment link. The construct that genuinely breaks a row
+is the image width parameter (`!img|width=N!`, PM-004) — that one is still forbidden.
 
 The **`Evidence` column** (between `Actual Result` and `Status`) holds the case's screenshot **in the
 cell** — `!file.png!`, pre-resized, **no `|width=…`** (the pipe breaks the row). One image per row,
