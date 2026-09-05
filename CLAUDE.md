@@ -137,6 +137,20 @@ context ที่ inject ตอนเปิด session · memory · WIP note · 
 **ปิดบั๊กคลาสไหน ต้องไล่หาไฟล์อื่นที่เป็นคลาสเดียวกันในรอบเดียวกัน** — #0002 ปิดเฉพาะไฟล์ที่เกิดเหตุ
 อีกวันเดียวคลาสเดิมโผล่ในไฟล์ข้างๆ · ปิดจุดเดียวไม่ใช่การปิดคลาส
 
+### ข้อย่อยที่ออกมาจากรายงานฉบับที่ 0005
+
+**การ์ดที่เรียกโปรแกรมภายนอก ต้องอ่านรหัสจบเสมอ และต้องมีสถานะที่สามคือ "ตรวจไม่ได้"**
+ถ้ามีแค่ "พบ" กับ "ไม่พบ" ความล้มเหลวทุกชนิดจะตกไปรวมกับ "ไม่พบ" ซึ่งเป็นฝั่งที่อนุญาต แปลว่า
+**การ์ดปิดตัวเองทุกครั้งที่เครื่องมือของมันพัง** · สถานะ "ตรวจไม่ได้" ต้องนำไปสู่การปฏิเสธเสมอ
+
+**ค่าที่ไม่ว่างแต่ผิด อันตรายกว่าค่าว่าง** — ทางสำรองที่ผูกกับเงื่อนไข `[ -z ... ]` อย่างเดียว
+ถูกข้ามได้ด้วยตัวขวางที่พิมพ์ข้อความแจ้งข้อผิดพลาดออก stdout แล้วโปรแกรมจะเอาข้อความนั้นไปทำงานต่อ
+· ทางสำรองต้องผูกกับ **รหัสจบ** ไม่ใช่ความว่างของค่า
+
+**เทสของการ์ดต้องมีเคสที่รันในสภาพที่เครื่องมือของการ์ดพัง** — เทสที่ครอบทุกฟีเจอร์แต่รันในสภาพแวดล้อมเดียว
+มีจุดบอดทั้งแกน · และ **คอมเมนต์ที่ประกาศคุณสมบัติด้านความปลอดภัยของโค้ดตัวเอง ต้องมีเทสยืนยัน**
+ไม่งั้นมันคือข้ออ้างที่ไม่มีใครตรวจ (บทเรียนเดียวกับ #0001)
+
 > 🔴 repo นี้ public — รายงานห้ามมีรหัสผ่าน อีเมลบัญชี host จริง tenant Sheet/Drive id หรือ path ที่มีชื่อผู้ใช้
 
 ## 🔴 กฎ: การตรวจสอบปัญหา = `superpowers:systematic-debugging` เท่านั้น — บังคับด้วย hook ไม่ใช่ความจำ
@@ -1564,6 +1578,34 @@ Full report: [`docs/post-mortem/20260906-post-mortem-report-0003-commit-gate-all
 ส่วน `pre-commit`/`pre-push` เป็นคนละกลไก ผูกที่ `core.hooksPath` ทุกโปรเซสที่รัน git ในโฟลเดอร์นี้จึงเจอเหมือนกันหมด
 
 Full report: [`docs/post-mortem/20260906-post-mortem-report-0004-claimed-sessions-need-restart-without-measuring.md`](docs/post-mortem/20260906-post-mortem-report-0004-claimed-sessions-need-restart-without-measuring.md)
+
+### Report #0005 — The customer-content guard switched itself off when its helper failed (2026-09-06)
+
+**Surface:** any guard that shells out to another program to decide whether to block. **Repeat
+of #0003** — same class, on the layer protecting the customer's data.
+
+`.claude/hooks/customer-content-guard.sh` calls `python3` twice, and the second result was
+tested only for emptiness: `[ -z "$MARKER" ] && exit 0`. So every way that call can fail read
+as "no marker here" and ALLOWED the command. Measured 2026-09-06 with a write naming the
+marker and aimed at an OLS environment: **allowed in all three failure modes** — python3
+absent, a shim printing to stdout, a shim printing to stderr. This machine has carried such a
+shim before (2026-08-09), so the mode is real, not hypothetical. Nothing was damaged: the call
+shape the guard uses has kept working here throughout, which made the hole latent rather than
+open. Fixed by checking the exit status at both call sites, falling back to an
+interpreter-free match, and — when it still cannot tell — refusing a write aimed at an OLS
+environment instead of guessing.
+
+**The rules to carry forward:** *a guard needs a third state.* With only "found" and "not
+found", every failure lands on the permissive side, so the guard turns itself off exactly when
+its tooling breaks; "cannot check" must route to refusal. *A non-empty wrong value is worse
+than an empty one* — a fallback keyed on `[ -z … ]` is defeated by a shim that prints its
+refusal to stdout, and the program then works from that text. And *a guard's tests must
+include the environment where its helper is broken*: the suite covered every feature case and
+still missed this, because environment is a dimension of the test matrix, not a constant. The
+file's own comment claimed it could only ever over-block — an unverified safety claim about
+our own code, which is #0001 again.
+
+Full report: [`docs/post-mortem/20260906-post-mortem-report-0005-customer-guard-allowed-writes-when-python-failed.md`](docs/post-mortem/20260906-post-mortem-report-0005-customer-guard-allowed-writes-when-python-failed.md)
 
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ

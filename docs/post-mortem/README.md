@@ -38,6 +38,7 @@
 | 0002 | 2026-09-06 | ตัวตรวจรายงานว่าเรียบร้อย ทับไฟล์ที่มันไม่เคยอ่าน (ตัวกรองทิ้งของที่ชื่อไม่ตรงแบบเงียบๆ) | Low | [20260906-post-mortem-report-0002-guard-reported-clean-over-files-it-never-read.md](20260906-post-mortem-report-0002-guard-reported-clean-over-files-it-never-read.md) |
 | 0003 | 2026-09-06 | ด่านก่อนคอมมิตอ่านบัญชีหนี้ไม่ได้ แล้วแปลว่า "ไม่มีหนี้" จึงปล่อยคอมมิตผ่าน (ผิดซ้ำจาก 0002) | Medium | [20260906-post-mortem-report-0003-commit-gate-allowed-debt-when-ledger-unreadable.md](20260906-post-mortem-report-0003-commit-gate-allowed-debt-when-ledger-unreadable.md) |
 | 0004 | 2026-09-06 | บอกเจ้าของงานให้ปิด-เปิดเซสชันใหม่ ทั้งที่ไม่เคยวัด และของจริงคือ hook มีผลทันที (ผิดซ้ำจาก 0001) | Medium | [20260906-post-mortem-report-0004-claimed-sessions-need-restart-without-measuring.md](20260906-post-mortem-report-0004-claimed-sessions-need-restart-without-measuring.md) |
+| 0005 | 2026-09-06 | การ์ดกันแก้ข้อมูลลูกค้าปิดตัวเองเงียบๆ เมื่อโปรแกรมที่มันเรียกใช้ล้มเหลว (ผิดซ้ำจาก 0003) | High | [20260906-post-mortem-report-0005-customer-guard-allowed-writes-when-python-failed.md](20260906-post-mortem-report-0005-customer-guard-allowed-writes-when-python-failed.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
