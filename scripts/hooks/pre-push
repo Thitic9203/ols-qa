@@ -42,8 +42,10 @@ for sha in "${SHAS[@]}"; do
 
   echo "[ols-qa pre-push] รันชุดเทสต์บน ${sha:0:8} …"
   rc=0
+  found=0
   shopt -s nullglob
   for t in "$TMP"/wt/tools/*/*.test.js; do
+    found=$((found + 1))
     if ! ( cd "$TMP/wt" && node "$t" >"$TMP/out" 2>&1 ); then
       rc=1
       echo "  ❌ $(basename "$(dirname "$t")")/$(basename "$t")"
@@ -54,6 +56,17 @@ for sha in "${SHAS[@]}"; do
 
   git worktree remove --force "$TMP/wt" >/dev/null 2>&1 || true
 
+  # "ไม่มีเทสต์ให้รัน" ไม่เท่ากับ "เทสต์ผ่าน" — nullglob ทำให้ลูปไม่ทำงานเลยเมื่อไม่เจอไฟล์
+  # rc จึงยังเป็น 0 แล้ว gate พิมพ์ว่าเขียวทับ commit ที่มันไม่เคยวัดอะไรเลย (พิสูจน์กับ
+  # commit จริงในประวัติ: ผ่าน 0 ชุด exit 0). CI มีด่านนี้อยู่แล้วในไฟล์ tests.yml
+  # ส่วน gate ที่บล็อก push กลับไม่มี ทั้งที่หัวไฟล์ประกาศตัวว่า fail closed
+  if [ "$found" -eq 0 ]; then
+    echo "[ols-qa pre-push] ❌ push ถูกบล็อก — ไม่พบไฟล์เทสต์ใน commit ${sha:0:8} เลยสักไฟล์"
+    echo "  ไม่มีอะไรให้วัด ไม่เท่ากับวัดแล้วผ่าน — gate ที่ไม่ได้วัดจะไม่บอกว่าเขียว"
+    echo "  ถ้าชุดเทสต์ถูกย้ายที่จริง ให้แก้ path ใน hook นี้และใน .github/workflows/tests.yml พร้อมกัน"
+    exit 1
+  fi
+
   if [ "$rc" -ne 0 ]; then
     echo "[ols-qa pre-push] ❌ push ถูกบล็อก — commit ${sha:0:8} เทสต์ไม่ผ่าน"
     echo "  แก้ที่ต้นเหตุแล้วคอมมิตใหม่ ห้าม --no-verify"
@@ -62,5 +75,7 @@ for sha in "${SHAS[@]}"; do
   fi
 done
 
-echo "[ols-qa pre-push] ✅ ชุดเทสต์เขียวบนทุก commit ที่จะ push"
+# บอกจำนวนชุดที่รันจริงเสมอ ไม่ใช่แค่เครื่องหมายถูก — ตัวเลขที่หายไปหรือหดลงผิดปกติ
+# คือสัญญาณเดียวที่คนเห็นได้ว่า gate เริ่มวัดน้อยลง ก่อนที่มันจะวัดไม่ได้เลย
+echo "[ols-qa pre-push] ✅ ชุดเทสต์เขียวบนทุก commit ที่จะ push ($found ชุดต่อ commit)"
 exit 0

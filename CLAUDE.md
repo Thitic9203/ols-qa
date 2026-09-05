@@ -151,6 +151,21 @@ context ที่ inject ตอนเปิด session · memory · WIP note · 
 มีจุดบอดทั้งแกน · และ **คอมเมนต์ที่ประกาศคุณสมบัติด้านความปลอดภัยของโค้ดตัวเอง ต้องมีเทสยืนยัน**
 ไม่งั้นมันคือข้ออ้างที่ไม่มีใครตรวจ (บทเรียนเดียวกับ #0001)
 
+### ข้อย่อยที่ออกมาจากรายงานฉบับที่ 0006
+
+**ตัวแปรที่ตั้งต้นว่า "ยังไม่พบความล้มเหลว" ห้ามถูกอ่านเป็น "ผ่าน" ถ้าไม่มีตัวนับกำกับ** — `rc=0` ก่อนเข้าลูป
+แปลว่ายังไม่มีข้อมูล ส่วนตอนพิมพ์ผลมันถูกอ่านว่าตรวจแล้วผ่าน สองความหมายนี้ใช้ตัวแปรตัวเดียวกันไม่ได้
+· ต้องนับ **จำนวนสิ่งที่วัดไปจริง** แล้ว **ศูนย์ = ปฏิเสธ** · และข้อความตอนผ่านต้องมีตัวเลขนั้นอยู่ด้วย
+เครื่องหมายถูกเปล่าๆ ปิดบังการที่ด่านค่อยๆ วัดน้อยลงจนไม่วัดอะไรเลย
+
+**ประโยคที่เครื่องมือเขียนประกาศคุณสมบัติของตัวเอง ต้องมีเทสต์พิสูจน์** — `pre-push` เขียนไว้ในหัวไฟล์เองว่า
+fail closed แล้วพฤติกรรมจริงขัดกับประโยคนั้น เพราะไม่มีเทสต์สักข้อที่ยืนยัน (บทเรียนเดียวกับ #0001 และ #0005)
+· ด่านที่ไม่มีเทสต์ของตัวเอง คือด่านที่ไม่มีใครรู้ว่ามันยังทำงานอยู่ไหม
+
+**ของสองชิ้นที่ทำหน้าที่เดียวกัน ต้องมีอะไรผูกให้ตรงกัน** — ไฟล์ CI มีด่าน "ไม่มีเทสต์ให้รัน ≠ เทสต์ผ่าน"
+อยู่ก่อนแล้วพร้อมคำอธิบาย แต่ hook ที่ทำงานเดียวกันไม่ได้รับไปด้วย เพราะคนเขียนหยิบต้นแบบมาจากคนละไฟล์
+· ห้ามหวังว่าจะจำได้ว่าอีกไฟล์มีอะไร
+
 > 🔴 repo นี้ public — รายงานห้ามมีรหัสผ่าน อีเมลบัญชี host จริง tenant Sheet/Drive id หรือ path ที่มีชื่อผู้ใช้
 
 ## 🔴 กฎ: การตรวจสอบปัญหา = `superpowers:systematic-debugging` เท่านั้น — บังคับด้วย hook ไม่ใช่ความจำ
@@ -1606,6 +1621,29 @@ file's own comment claimed it could only ever over-block — an unverified safet
 our own code, which is #0001 again.
 
 Full report: [`docs/post-mortem/20260906-post-mortem-report-0005-customer-guard-allowed-writes-when-python-failed.md`](docs/post-mortem/20260906-post-mortem-report-0005-customer-guard-allowed-writes-when-python-failed.md)
+
+### Report #0006 — The push gate called zero suites a green run (2026-09-06)
+
+**Surface:** any loop whose iteration count is not measured, and any gate that prints a success
+mark. **Repeat of #0005**, and the same class as #0002 and #0003.
+
+`scripts/hooks/pre-push` globbed the suite files under `nullglob`. When the glob matched
+nothing the loop never ran, `rc` stayed at its initial 0, and the hook printed
+`✅ ชุดเทสต์เขียวบนทุก commit ที่จะ push` over a commit it had not measured at all. Verified
+against a real commit from this repo's own history — the last one before any test file existed:
+zero suites, exit 0, tick printed. The hook's own header declares it fail-closed. Fixed by
+counting what the glob matched, refusing zero, and putting that count in the success line.
+
+**The rules to carry forward:** *a variable initialised to "no failure seen yet" is not the same
+value as "passed"* — one means no data, the other means measured; they cannot share a variable,
+so count what was actually measured and treat zero as a refusal. *A tick with no number hides a
+gate that is measuring less and less* until it measures nothing. *A property a tool asserts about
+itself in a comment needs a test*, or it is just a claim — #0001 again, and #0005 again. And
+*two things doing the same job need something binding them together*: the CI workflow had carried
+this exact guard, in words, the whole time; the hook doing the same job never received it because
+its author took the pattern from a different file.
+
+Full report: [`docs/post-mortem/20260906-post-mortem-report-0006-push-gate-reported-green-with-zero-suites.md`](docs/post-mortem/20260906-post-mortem-report-0006-push-gate-reported-green-with-zero-suites.md)
 
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ

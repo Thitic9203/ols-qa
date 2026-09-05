@@ -25,6 +25,19 @@ set -uo pipefail
 
 INPUT="$(cat)"
 
+# Choose the interpreter deterministically, the way scripts/check-no-secrets.sh already does.
+# A plugin on this machine prepends a `python3` shim to PATH that refuses (and has hung) instead
+# of executing; a bare `python3` here therefore fails, and while the guard now refuses rather
+# than allowing when that happens, refusing every write to an OLS environment because of a shim
+# is a guard people would work around. First candidate that is not a shim and can actually run a
+# trivial program wins; an empty PYBIN is handled at each call site, never assumed away.
+PYBIN=""
+for cand in /opt/homebrew/bin/python3 /usr/bin/python3 /usr/local/bin/python3 "$(command -v python3 2>/dev/null)"; do
+  case "$cand" in ""|*hooks/shims*) continue ;; esac
+  [ -x "$cand" ] || continue
+  if "$cand" -c "pass" >/dev/null 2>&1; then PYBIN="$cand"; break; fi
+done
+
 # The command the Bash tool is about to run. Prefer python for correct JSON decoding; if that is
 # unavailable, fall back to the raw payload — over-matching here can only cause a false BLOCK,
 # never a false ALLOW, and a false block is the cheap direction.
@@ -32,8 +45,11 @@ INPUT="$(cat)"
 # prints its own refusal ON STDOUT and exits non-zero — a NON-EMPTY wrong value, which slid
 # past a `[ -z ... ]` fallback and became the "command" this guard then searched for a marker
 # in. That machine has carried such a shim before (memory python3-shim-breaks-guard).
-CMD_RC=0
-CMD="$(printf '%s' "$INPUT" | python3 -c '
+CMD_RC=127
+CMD=""
+if [ -n "$PYBIN" ]; then
+  CMD_RC=0
+  CMD="$(printf '%s' "$INPUT" | "$PYBIN" -c '
 import json,sys
 try:
     d = json.load(sys.stdin)
@@ -41,18 +57,23 @@ try:
 except Exception:
     print("")
 ' 2>/dev/null)" || CMD_RC=$?
+fi
 if [ "$CMD_RC" -ne 0 ] || [ -z "$CMD" ]; then CMD="$INPUT"; fi
 
 # (a) Does it name the marker? Compared on normalised text, for the same reason the toolkit
 # does: `[R<zwsp>GS]` and `[ＲＧＳ]` read on screen exactly as `[RGS]` does.
+MARKER_RC=127
+MARKER=""
+if [ -n "$PYBIN" ]; then
 MARKER_RC=0
-MARKER="$(printf '%s' "$CMD" | python3 -c '
+MARKER="$(printf '%s' "$CMD" | "$PYBIN" -c '
 import sys, unicodedata, re
 raw = sys.stdin.read()
 t = unicodedata.normalize("NFKC", raw)
 t = re.sub(r"[­​-‏⁠⁦-⁩﻿]", "", t)
 print("RGS" if re.search(r"(?<![A-Za-z])RGS(?![A-Za-z])", t, re.I) else "")
 ' 2>/dev/null)" || MARKER_RC=$?
+fi
 
 # "Could not check" is not "nothing found". An empty MARKER used to exit 0 outright, so every
 # way this normaliser can fail — absent, shimmed, erroring — turned the guard off silently

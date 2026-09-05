@@ -39,6 +39,7 @@
 | 0003 | 2026-09-06 | ด่านก่อนคอมมิตอ่านบัญชีหนี้ไม่ได้ แล้วแปลว่า "ไม่มีหนี้" จึงปล่อยคอมมิตผ่าน (ผิดซ้ำจาก 0002) | Medium | [20260906-post-mortem-report-0003-commit-gate-allowed-debt-when-ledger-unreadable.md](20260906-post-mortem-report-0003-commit-gate-allowed-debt-when-ledger-unreadable.md) |
 | 0004 | 2026-09-06 | บอกเจ้าของงานให้ปิด-เปิดเซสชันใหม่ ทั้งที่ไม่เคยวัด และของจริงคือ hook มีผลทันที (ผิดซ้ำจาก 0001) | Medium | [20260906-post-mortem-report-0004-claimed-sessions-need-restart-without-measuring.md](20260906-post-mortem-report-0004-claimed-sessions-need-restart-without-measuring.md) |
 | 0005 | 2026-09-06 | การ์ดกันแก้ข้อมูลลูกค้าปิดตัวเองเงียบๆ เมื่อโปรแกรมที่มันเรียกใช้ล้มเหลว (ผิดซ้ำจาก 0003) | High | [20260906-post-mortem-report-0005-customer-guard-allowed-writes-when-python-failed.md](20260906-post-mortem-report-0005-customer-guard-allowed-writes-when-python-failed.md) |
+| 0006 | 2026-09-06 | ด่านก่อน push บอกว่าเทสต์เขียว ทั้งที่รันไป 0 ชุด (ผิดซ้ำจาก 0005) | Medium | [20260906-post-mortem-report-0006-push-gate-reported-green-with-zero-suites.md](20260906-post-mortem-report-0006-push-gate-reported-green-with-zero-suites.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 

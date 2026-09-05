@@ -73,6 +73,45 @@ function verdictWithBrokenPython(command, mode) {
   }
 }
 
+/**
+ * The guard with NO usable interpreter at all.
+ *
+ * A shim on PATH is no longer enough to reach that state — the guard now picks an absolute
+ * python3 the way scripts/check-no-secrets.sh does, so a shim is simply stepped over. To
+ * exercise the no-interpreter branch honestly this runs THE SAME SCRIPT with only its
+ * candidate list pointed at paths that do not exist, and a failing python3 on PATH so the
+ * `command -v` candidate fails too. Nothing else about the script is changed, and there is no
+ * environment override in the real file for a caller to abuse.
+ */
+function verdictWithNoInterpreter(command) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'py-none-'));
+  const shim = path.join(dir, 'python3');
+  fs.writeFileSync(shim, '#!/bin/sh\nexit 127\n', 'utf8');
+  fs.chmodSync(shim, 0o755);
+
+  const src = fs.readFileSync(HOOK, 'utf8');
+  const patched = src.replace(
+    '/opt/homebrew/bin/python3 /usr/bin/python3 /usr/local/bin/python3',
+    `${dir}/none-a ${dir}/none-b ${dir}/none-c`,
+  );
+  assert.notStrictEqual(patched, src, 'the candidate list changed shape — this test is now blind');
+  const copy = path.join(dir, 'guard.sh');
+  fs.writeFileSync(copy, patched, 'utf8');
+
+  try {
+    execFileSync('bash', [copy], {
+      input: JSON.stringify({ tool_name: 'Bash', tool_input: { command } }),
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, PATH: `${dir}:/usr/bin:/bin` },
+    });
+    return 0;
+  } catch (e) {
+    return e.status;
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 /* A real environment host, read from the off-repo secrets dir — never written into this public
  * repo. Without one, the host half of the check cannot be exercised honestly, so those cases
  * are skipped rather than quietly passed on a made-up hostname. */
@@ -149,28 +188,46 @@ check('editing this repo is never blocked', () => {
  * Every case above assumes a working python3. These are the ones that were open: report #0005.
  */
 
-check('a broken python3 does not turn the guard off — the marker case still blocks', () => {
+check('a python3 shim on PATH no longer changes any verdict — the guard steps over it', () => {
+  // The stronger property, and the one that keeps the fail-closed branch from firing in daily
+  // work: a shim is bypassed for an absolute interpreter, so every verdict is the normal one.
   if (!HOST) { console.log('      (skipped — no OLS host available off-repo)'); return; }
-  const cmd = `curl -X PUT https://${HOST}/api/media/1 -d '{"title":"${M} x"}'`;
+  const theirs = `curl -X PUT https://${HOST}/api/media/1 -d '{"title":"${M} x"}'`;
+  const ours = `curl -X PUT https://${HOST}/api/media/1 -d '{"title":"ทะเลมหัศจรรย์"}'`;
   for (const mode of ['missing', 'stdout']) {
-    assert.strictEqual(verdictWithBrokenPython(cmd, mode), 2, `python3 ${mode}: the guard allowed it`);
+    assert.strictEqual(verdictWithBrokenPython(theirs, mode), 2, `shim ${mode}: customer write allowed`);
+    assert.strictEqual(verdictWithBrokenPython(ours, mode), 0, `shim ${mode}: our own write blocked`);
   }
 });
 
-check('with the normaliser down, a write aimed at an OLS environment is refused even with no marker seen', () => {
+check('with NO usable interpreter, the marker case still blocks', () => {
+  if (!HOST) { console.log('      (skipped — no OLS host available off-repo)'); return; }
+  const cmd = `curl -X PUT https://${HOST}/api/media/1 -d '{"title":"${M} x"}'`;
+  assert.strictEqual(verdictWithNoInterpreter(cmd), 2, 'the guard allowed a customer write');
+});
+
+check('with NO usable interpreter, a write aimed at an OLS environment is refused even with no marker seen', () => {
   // It cannot tell whose row it is, so it will not guess. Over-blocking costs one confirmation;
   // the other direction costs the customer's data, and we cannot undo that.
   if (!HOST) { console.log('      (skipped — no OLS host available off-repo)'); return; }
   const ours = `curl -X PUT https://${HOST}/api/media/1 -d '{"title":"ทะเลมหัศจรรย์"}'`;
-  assert.strictEqual(verdict(ours), 0, 'with python3 working this must still pass');
-  assert.strictEqual(verdictWithBrokenPython(ours, 'missing'), 2);
+  assert.strictEqual(verdict(ours), 0, 'with an interpreter available this must still pass');
+  assert.strictEqual(verdictWithNoInterpreter(ours), 2);
 });
 
-check('a broken python3 does not start blocking ordinary work', () => {
+check('a missing interpreter does not start blocking ordinary work', () => {
   for (const cmd of ['ls -la docs/', 'git status', 'node tools/name-guard/scan.js --help']) {
+    assert.strictEqual(verdictWithNoInterpreter(cmd), 0, cmd);
     assert.strictEqual(verdictWithBrokenPython(cmd, 'missing'), 0, cmd);
     assert.strictEqual(verdictWithBrokenPython(cmd, 'stdout'), 0, cmd);
   }
+});
+
+check('the interpreter is chosen the way the secret guard chooses it', () => {
+  const src = fs.readFileSync(HOOK, 'utf8');
+  assert.ok(/hooks\/shims/.test(src), 'the shim is no longer skipped');
+  assert.ok(/PYBIN/.test(src), 'the interpreter is no longer resolved deterministically');
+  assert.ok(!/\| python3 -c/.test(src), 'a bare python3 call came back');
 });
 
 check('the guard checks python3\'s exit status, not merely whether it printed something', () => {
