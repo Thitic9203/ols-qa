@@ -71,4 +71,7 @@ __pycache__/
 
 # Machine-written session handoff note — regenerated every turn, never committed
 .claude/session-state.md
+
+# investigation-guard: per-session arm flags, meaningless outside the running session
+.claude/.investigation-state/
 .serena/

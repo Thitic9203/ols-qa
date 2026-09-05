@@ -43,6 +43,14 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/inject-context.sh\""
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/investigation-rule.sh\""
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -51,6 +59,14 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/postmortem-debt.sh\""
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/investigation-rule.sh\""
           }
         ]
       }
@@ -87,6 +103,10 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/postmortem-debt.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/investigation-gate.sh\""
           }
         ]
       }
