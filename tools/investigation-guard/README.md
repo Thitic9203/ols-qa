@@ -57,8 +57,13 @@ alert ที่เด้งตอนข้อมูลปกติ คือว�
 ## ไม่มีสวิตช์ปิด มีแต่ทางออกที่ถูกบันทึก
 
 ```bash
-node tools/investigation-guard/check.js --not-an-investigation "เหตุผลที่ไม่ใช่การตรวจสอบปัญหา"
+node tools/investigation-guard/check.js --not-an-investigation "เหตุผล"
+node tools/investigation-guard/check.js --not-an-investigation "เหตุผล" --session <session-id>
 ```
+
+**มีธงค้างมากกว่า 1 session = ปฏิเสธ พร้อมบอกชื่อทุกอันให้เลือก** — เดิมมันหยิบไฟล์ที่ถูกแก้ล่าสุด
+โดยไม่รู้ว่าใครสั่ง ซึ่งใน worktree ที่มีหลาย session (ที่นี่มีเป็นปกติ) แปลว่าไปปลดการ์ดของคนอื่น
+ทั้งที่ธงของตัวเองยังค้าง — พิสูจน์แล้วว่าเกิดจริง
 
 ใช้เมื่อธงติดผิดจริงๆ เท่านั้น (เช่นสั่งแก้ typo คำว่า `error` ในเอกสาร) **ไม่ใส่เหตุผล = ปฏิเสธ**
 เหตุผลถูกเขียนลง state file และถูกพิมพ์ออกมาให้เจ้าของงานเห็น — การยกเลิกธงแบบเงียบๆ
@@ -76,6 +81,12 @@ node tools/investigation-guard/check.js --not-an-investigation "เหตุผ�
 node tools/investigation-guard/check.js --status                       # ดูธงที่ค้างอยู่
 node tools/investigation-guard/investigation_rules.test.js             # 20 เคส ต้องเขียวก่อน commit
 ```
+
+**อ่าน transcript ไม่ได้ ≠ ไม่เคยเรียกสกิล** — สองอย่างนี้แยกกันแล้ว ยังปฏิเสธการจบเทิร์นเหมือนเดิม
+(ตรวจไม่ได้ไม่นับว่าผ่าน) แต่เหตุผลที่แจ้งเป็นเรื่องจริง ไม่ส่งคนไปแก้ของที่ไม่ได้พัง
+
+**ไฟล์ state ถูกล้างเอง** — เฉพาะอันที่จบแล้วและเกิน 7 วัน · ธงที่ยังค้างไม่ถูกลบไม่ว่านานแค่ไหน
+(ไม่งั้นการรอให้ครบสัปดาห์จะกลายเป็นวิธีปลดการ์ด) · อันที่ค้างเกิน 30 วันถือว่า session ตายแล้ว
 
 State อยู่ที่ `.claude/.investigation-state/<session_id>.json` — ไฟล์ชั่วคราวต่อ session
 ไม่ commit (อยู่ใน `.gitignore` แล้ว)

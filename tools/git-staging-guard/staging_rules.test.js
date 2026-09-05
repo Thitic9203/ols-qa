@@ -47,6 +47,45 @@ check('explicit file staging is never refused', () => {
   ]) assert.strictEqual(d(c).block, false, `บล็อกผิด: ${c}`);
 });
 
+check('a path the SHELL expands is refused — the guard cannot read what it will become', () => {
+  // `git add tools/*` stages exactly what the incident staged; the expansion happens before git
+  // runs, so the typed command shows one innocent-looking argument.
+  for (const c of [
+    'git add tools/*', 'git add *.js', 'git add ./tools/*', 'git add tools/**',
+    'git add $(git diff --name-only)', 'git add `ls`', 'git add "$(ls)"',
+    'git add -- src/*.ts', 'git add file[0-9].txt',
+  ]) assert.ok(d(c).block, `ไม่บล็อก: ${c}`);
+});
+
+check('an ordinary path with no metacharacter is still allowed', () => {
+  for (const c of [
+    'git add tools/git-staging-guard/staging_rules.js',
+    'git add docs/post-mortem/PENDING.md CLAUDE.md',
+    'git add ../sibling/file.md',
+  ]) assert.strictEqual(d(c).block, false, `บล็อกผิด: ${c}`);
+});
+
+check('an operator INSIDE quotes is text, not a command boundary', () => {
+  // This blocked two of this repo's own review commands: a script that merely quoted a staging
+  // command was torn at the pipe inside the quotes, and the tail parsed as a real one.
+  const g = 'GG';
+  for (const c of [
+    `echo "note | ${g} here"`,
+    `git commit -m "before | ${g} after"`,
+    `echo 'a && ${g}'`,
+    `printf "%s" "x ; ${g}"`,
+  ]) assert.strictEqual(d(c.replace(/GG/g, 'git add -A')).block, false, `บล็อกผิด: ${c}`);
+});
+
+check('an operator OUTSIDE quotes still splits — the fix must not blunt the guard', () => {
+  for (const c of [
+    'echo "safe text" && git add -A',
+    'echo hi | git add -A',
+    'echo "a | b" ; git add -A',
+    'false || git add -A',
+  ]) assert.ok(d(c).block, `ไม่บล็อก: ${c}`);
+});
+
 check('reading, diffing and ordinary committing are untouched', () => {
   for (const c of [
     'git status --short', 'git diff --cached --stat', 'git log --oneline -5',

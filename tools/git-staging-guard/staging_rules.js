@@ -18,9 +18,38 @@
  * already-correct index are untouched.
  */
 
-/** Split a shell line into the commands it actually runs. */
+/**
+ * Split a shell line into the commands it actually runs — quote-aware.
+ *
+ * A naive split on `|` and `&&` reads the inside of a quoted string as a command. That is not
+ * hypothetical: it blocked two of this repo's own review commands, because a `node -e` script
+ * that merely QUOTED a staging command got torn at the pipe inside the quotes and the tail
+ * parsed as a real one. A guard that stops people writing about git is a guard they remove.
+ */
 function segments(cmd) {
-  return String(cmd || '').split(/\|\||&&|[;\n|]/).map((s) => s.trim()).filter(Boolean);
+  const s = String(cmd || '');
+  const out = [];
+  let cur = '';
+  let quote = null;
+  for (let i = 0; i < s.length; i += 1) {
+    const c = s[i];
+    if (quote) {
+      cur += c;
+      if (c === '\\' && i + 1 < s.length) { cur += s[i + 1]; i += 1; continue; }
+      if (c === quote) quote = null;
+      continue;
+    }
+    if (c === '"' || c === "'" || c === '`') { quote = c; cur += c; continue; }
+    if (c === '\\' && i + 1 < s.length) { cur += c + s[i + 1]; i += 1; continue; }
+    if (c === '|' || c === ';' || c === '\n') {
+      if (c === '|' && s[i + 1] === '|') i += 1;
+      out.push(cur); cur = ''; continue;
+    }
+    if (c === '&' && s[i + 1] === '&') { i += 1; out.push(cur); cur = ''; continue; }
+    cur += c;
+  }
+  out.push(cur);
+  return out.map((x) => x.trim()).filter(Boolean);
 }
 
 /** Tokenise one segment, honouring simple quoting so a quoted path stays one token. */
@@ -66,6 +95,17 @@ function pathArgs(rest) {
 const WHOLE_TREE = new Set(['.', './', ':/', '*', '**', '"*"']);
 
 /**
+ * A path the SHELL will turn into something else before git ever sees it.
+ *
+ * `git add tools/*` is the incident's command with one character changed, and it stages exactly
+ * the same set — the expansion happens in the shell, so a guard reading the typed command sees
+ * one harmless-looking argument. Same for `$(git diff --name-only)` and backticks: the argument
+ * list is decided at run time by something this guard cannot read. Whatever a person cannot name
+ * in the command, they cannot claim to have reviewed.
+ */
+const UNSAFE_PATH = /[*?\[\]$`]/;
+
+/**
  * Decide one shell line.
  *
  * `isDir(p)` is injected rather than computed here: whether `tools` is a directory depends on
@@ -86,6 +126,7 @@ function decideCommand(cmd, isDir) {
       if (!paths.length) continue; // `git add -p`, or a malformed line git itself will reject
       for (const p of paths) {
         if (WHOLE_TREE.has(p)) return block(seg, `git add ${p}`);
+        if (UNSAFE_PATH.test(p)) return block(seg, `git add ${p} (shell ขยายเองก่อนถึง git)`);
         if (p.endsWith('/') || dir(p)) return block(seg, `git add ${p} (เป็นโฟลเดอร์)`);
       }
     }
@@ -106,4 +147,4 @@ function block(segment, what) {
   };
 }
 
-module.exports = { segments, tokens, subcommand, pathArgs, decideCommand };
+module.exports = { segments, tokens, subcommand, pathArgs, decideCommand, UNSAFE_PATH };

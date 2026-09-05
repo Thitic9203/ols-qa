@@ -160,6 +160,78 @@ check('a corrupt transcript line is skipped, never fatal', () => {
   assert.ok(R.scanTranscript(lines, T0).satisfied);
 });
 
+check("a person's slash command counts in either shape the harness uses", () => {
+  const T = '2026-09-05T11:00:00.000Z';
+  const asArray = JSON.stringify({ type: 'user', timestamp: T, message: { content: [{ type: 'text', text: `/${R.DEBUG_SKILL} ดูให้ที` }] } });
+  const asString = JSON.stringify({ type: 'user', timestamp: T, message: { content: `/${R.DEBUG_SKILL} ดูให้ที` } });
+  assert.ok(R.scanTranscript([asArray], T0).satisfied, 'array-shaped user message ถูกมองข้าม = บล็อกงานที่ทำถูกแล้ว');
+  assert.ok(R.scanTranscript([asString], T0).satisfied);
+});
+
+check('an entry with no timestamp cannot satisfy — it cannot be placed after the arm', () => {
+  const noTs = JSON.stringify({ type: 'assistant', message: { content: [skillCall('Skill', { skill: R.DEBUG_SKILL })] } });
+  assert.strictEqual(R.scanTranscript([noTs], T0).satisfied, null,
+    'ของที่วางตำแหน่งเวลาไม่ได้ ถูกนับเป็นหลักฐานของรอบนี้');
+  // With no arm time to compare against, it is all we have, so it counts.
+  assert.ok(R.scanTranscript([noTs], null).satisfied);
+});
+
+// ── "cannot read" is not "did not happen" ───────────────────────────────────────
+
+check('an unreadable transcript gets its own verdict, never the missing-skill one', () => {
+  const armed = { armed_at: T0, hits: ['ทำไม'] };
+  const d = R.decide(armed, null);
+  assert.strictEqual(d.verdict, 'unreadable');
+  assert.ok(!d.reason.includes('ยังไม่มีการเรียก'), 'รายงานเหตุผลผิด — ส่งคนไปแก้ของที่ไม่ได้พัง');
+  assert.notStrictEqual(R.decide(armed, { satisfied: null, hedges: [] }).verdict, 'unreadable');
+});
+
+check('a dismissed arm is not re-raised by an unreadable transcript', () => {
+  const d = R.decide({ armed_at: T0, hits: ['x'], dismissed_reason: 'เอกสารเฉยๆ' }, null);
+  assert.strictEqual(d.verdict, 'dismissed');
+});
+
+// ── whose flag does a dismissal clear ───────────────────────────────────────────
+
+check('a dismissal never guesses between two sessions', () => {
+  const open = (id) => ({ id, state: { armed_at: T0, hits: ['x'] } });
+  const two = [open('AAA'), open('BBB')];
+  const r = R.pickDismissTarget(two, null);
+  assert.strictEqual(r.ok, false);
+  assert.strictEqual(r.reason, 'ambiguous');
+  assert.deepStrictEqual(r.ids.sort(), ['AAA', 'BBB']);
+});
+
+check('a named session is targeted exactly, and an unknown one is refused', () => {
+  const two = [{ id: 'AAA', state: { armed_at: T0 } }, { id: 'BBB', state: { armed_at: T0 } }];
+  assert.deepStrictEqual(R.pickDismissTarget(two, 'BBB'), { ok: true, id: 'BBB' });
+  assert.strictEqual(R.pickDismissTarget(two, 'NOPE').ok, false);
+});
+
+check('one open flag is unambiguous; settled ones are not candidates', () => {
+  const entries = [
+    { id: 'A', state: { armed_at: T0, satisfied_at: T0 } },
+    { id: 'B', state: { armed_at: T0, dismissed_reason: 'x' } },
+    { id: 'C', state: { armed_at: T0 } },
+  ];
+  assert.deepStrictEqual(R.pickDismissTarget(entries, null), { ok: true, id: 'C' });
+  assert.strictEqual(R.pickDismissTarget([], null).reason, 'none');
+});
+
+// ── housekeeping must not disarm anybody ────────────────────────────────────────
+
+check('only settled flags age out, and an armed one is never pruned by waiting', () => {
+  const now = Date.parse('2026-10-01T00:00:00.000Z');
+  const old = '2026-09-01T00:00:00.000Z';
+  assert.ok(R.prunable({ armed_at: old, satisfied_at: old }, now), 'ของที่จบแล้วและเก่า ควรถูกล้าง');
+  assert.ok(R.prunable({ armed_at: old, dismissed_at: old }, now));
+  assert.strictEqual(R.prunable({ armed_at: old }, now), false,
+    'ธงที่ยังค้างของ session อื่นถูกลบ = รอให้ครบสัปดาห์แล้วปลดการ์ดได้');
+  assert.strictEqual(R.prunable({ armed_at: '2026-09-30T00:00:00.000Z', satisfied_at: '2026-09-30T00:00:00.000Z' }, now), false);
+  assert.strictEqual(R.prunable(null, now), false);
+  assert.strictEqual(R.prunable({ armed_at: 'ไม่ใช่เวลา' }, now), false);
+});
+
 // ── the verdict ─────────────────────────────────────────────────────────────────
 
 check('no arm = clean; armed + satisfied = clean; armed + unsatisfied = block', () => {

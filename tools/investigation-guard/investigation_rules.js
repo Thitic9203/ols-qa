@@ -145,11 +145,22 @@ function isSatisfying(entry) {
     return `attributionSkill=${entry.attributionSkill}`;
   }
 
-  // The person typed the slash command themselves.
-  if (entry.type === 'user' && typeof content === 'string' && content.includes(DEBUG_SKILL)) {
+  // The person typed the slash command themselves. A user message carries its text either as
+  // a bare string or as an array of blocks depending on how it was entered, and reading only
+  // the string shape means a real invocation is scored as "never ran" — a block against work
+  // that was done correctly, which is the failure that gets a guard deleted.
+  if (entry.type === 'user' && userText(entry).includes(DEBUG_SKILL)) {
     return 'user ran the slash command';
   }
   return null;
+}
+
+/** Every piece of text in a user message, whichever shape the harness used. */
+function userText(entry) {
+  const c = entry && entry.message && entry.message.content;
+  if (typeof c === 'string') return c;
+  if (!Array.isArray(c)) return '';
+  return c.map((b) => (typeof b === 'string' ? b : (b && b.text) || '')).join('\n');
 }
 
 /** Assistant prose from one entry, for the hedge report. */
@@ -175,7 +186,11 @@ function scanTranscript(lines, sinceIso) {
     let d;
     try { d = JSON.parse(s); } catch { continue; }
     const when = ts(d.timestamp);
-    if (since !== null && when !== null && when < since) continue;
+    // No timestamp means the entry cannot be placed relative to the arm. Counting it would let
+    // an invocation from an EARLIER, unrelated problem satisfy this one — so it is skipped.
+    // Erring toward "not proven" is right here: the cost is one extra invocation of the skill,
+    // against silently accepting evidence that belongs to a different investigation.
+    if (since !== null && (when === null || when < since)) continue;
 
     if (!out.satisfied) {
       const how = isSatisfying(d);
@@ -200,6 +215,17 @@ function decide(state, scan) {
   if (state.dismissed_reason) {
     return { verdict: 'dismissed', reason: state.dismissed_reason, hits: state.hits || [] };
   }
+  // `scan === null` means the transcript could not be read at all — which is NOT the same fact
+  // as "the skill was never invoked", and must never be reported as if it were. Saying the
+  // wrong reason sends the reader to fix the wrong thing.
+  if (scan === null) {
+    return {
+      verdict: 'unreadable',
+      reason: 'อ่าน transcript ไม่ได้ จึงบอกไม่ได้ว่าเคยเรียกสกิลหรือยัง — ไม่ใช่ว่าไม่เคยเรียก',
+      hits: state.hits || [],
+      armed_at: state.armed_at,
+    };
+  }
   if (scan && scan.satisfied) {
     return { verdict: 'clean', reason: scan.satisfied, at: scan.at, hedges: (scan.hedges || []) };
   }
@@ -212,7 +238,42 @@ function decide(state, scan) {
   };
 }
 
+/**
+ * Which state file a dismissal targets — pure, so it can be pinned without touching the state
+ * of a session that is running right now.
+ *
+ * `entries` = [{ id, state }]. Returns `{ ok:true, id }` or `{ ok:false, reason, ids }`.
+ * "Ambiguous" is a refusal on purpose: the caller of a manual dismissal has no session id in
+ * hand, and picking for them is how one session disarms another's investigation.
+ */
+function pickDismissTarget(entries, sessionId) {
+  const list = Array.isArray(entries) ? entries : [];
+  if (sessionId) {
+    const hit = list.find((e) => e.id === sessionId);
+    return hit ? { ok: true, id: hit.id } : { ok: false, reason: 'no-such-session', ids: [] };
+  }
+  const open = list.filter((e) => e.state && e.state.armed_at && !e.state.dismissed_reason && !e.state.satisfied_at);
+  if (!open.length) return { ok: false, reason: 'none', ids: [] };
+  if (open.length > 1) return { ok: false, reason: 'ambiguous', ids: open.map((e) => e.id) };
+  return { ok: true, id: open[0].id };
+}
+
+/**
+ * May this state file be deleted? Settled flags age out; an armed one belonging to a session
+ * still running must not — waiting a week would otherwise become a way to disarm it.
+ */
+function prunable(state, now = Date.now()) {
+  if (!state) return false;
+  const SETTLED_MS = 7 * 24 * 3600 * 1000;
+  const ABANDONED_MS = 30 * 24 * 3600 * 1000;
+  const settled = state.dismissed_at || state.satisfied_at;
+  const age = now - Date.parse(settled || state.armed_at || '');
+  if (!Number.isFinite(age)) return false;
+  return settled ? age > SETTLED_MS : age > ABANDONED_MS;
+}
+
 module.exports = {
   DEBUG_SKILL, INTENT, HEDGE, VERDICT_VOCAB, verdictContext,
-  detectIntent, detectHedges, isSatisfying, assistantText, scanTranscript, decide,
+  detectIntent, detectHedges, isSatisfying, assistantText, userText, scanTranscript, decide,
+  pickDismissTarget, prunable,
 };

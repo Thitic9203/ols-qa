@@ -36,12 +36,40 @@ function saveState(p, o) {
   fs.mkdirSync(STATE_DIR, { recursive: true });
   fs.writeFileSync(p, JSON.stringify(o, null, 2) + '\n');
 }
+/**
+ * `null` = could not be read at all. `[]` = read fine and genuinely empty.
+ *
+ * Collapsing those two into `[]` made the gate refuse with "ยังไม่พบการเรียกสกิลนี้เลย" when the
+ * real fact was that it never opened the file — a refusal whose stated reason sends the reader
+ * to fix something that is not broken.
+ */
 function transcriptLines(p) {
-  try { return fs.readFileSync(p, 'utf8').split('\n'); } catch { return []; }
+  if (!p) return null;
+  try { return fs.readFileSync(p, 'utf8').split('\n'); } catch { return null; }
+}
+
+/**
+ * Finding 7 — state files are per-session and nothing ever removed them.
+ *
+ * Only SETTLED files are pruned, and only once they are old: an armed flag belonging to a
+ * session still running must survive, or this becomes a way to disarm someone else's
+ * investigation by waiting. Best-effort throughout — housekeeping must never break a run.
+ */
+function pruneState(now = Date.now()) {
+  let files = [];
+  try { files = fs.readdirSync(STATE_DIR).filter((f) => f.endsWith('.json')); } catch { return 0; }
+  let n = 0;
+  for (const f of files) {
+    const fp = path.join(STATE_DIR, f);
+    if (!R.prunable(loadState(fp), now)) continue;
+    try { fs.unlinkSync(fp); n += 1; } catch { /* best effort */ }
+  }
+  return n;
 }
 
 /** UserPromptSubmit: arm on a problem-shaped prompt, and say so in full. */
 function arm() {
+  pruneState();
   const hook = parse(readStdin());
   const { armed, hits } = R.detectIntent(hook.prompt || '');
   if (!armed) return 0;
@@ -100,14 +128,15 @@ function gate() {
   if (!state || !state.armed_at) return 0;
 
   const tPath = hook.transcript_path || state.transcript_path;
-  const scan = R.scanTranscript(transcriptLines(tPath), state.armed_at);
+  const lines = transcriptLines(tPath);
+  const scan = lines === null ? null : R.scanTranscript(lines, state.armed_at);
   const d = R.decide(state, scan);
 
-  if (d.verdict === 'clean' && scan.satisfied) {
+  if (d.verdict === 'clean' && scan && scan.satisfied) {
     saveState(p, { ...state, satisfied_at: scan.at || new Date().toISOString(), satisfied_by: scan.satisfied });
   }
 
-  if (d.verdict !== 'block') {
+  if (d.verdict === 'clean' || d.verdict === 'dismissed') {
     if (d.hedges && d.hedges.length) {
       process.stdout.write(
 `=== ⚠️  เจอคำที่ใช้กลบการเดาในคำตอบรอบนี้: ${d.hedges.join(' · ')} ===
@@ -121,11 +150,26 @@ function gate() {
   // Already refused once this stop cycle — say it again, but let the turn end.
   if (hook.stop_hook_active) {
     process.stdout.write(
-`=== 🔴 ยังค้าง: การตรวจสอบรอบนี้ไม่เคยเรียก ${R.DEBUG_SKILL} ===
+`=== 🔴 ยังค้าง: การตรวจสอบรอบนี้ยังไม่ผ่าน ===
     ${d.reason}
     ปล่อยให้จบเทิร์นได้เพื่อไม่ให้ session ติดกับ แต่ธงยังติดอยู่และจะทวงอีกในรอบถัดไป
 `);
     return 0;
+  }
+
+  if (d.verdict === 'unreadable') {
+    process.stderr.write(
+`ปฏิเสธการจบเทิร์น — ตรวจไม่ได้ว่าเคยเรียกสกิลหรือยัง
+
+  สัญญาณที่ทำให้ติดธง : ${(d.hits || []).join(' · ') || 'ไม่ระบุ'}
+  transcript ที่อ่าน   : ${tPath || '(ไม่มีค่า)'}
+  สถานะ               : เปิดไฟล์นี้ไม่ได้ จึงพิสูจน์ไม่ได้ทั้งสองทาง
+
+นี่ไม่ได้แปลว่าไม่เคยเรียกสกิล — แปลว่าตรวจไม่ได้ ซึ่งไม่นับว่าผ่าน
+ทางออก: เรียก ${R.DEBUG_SKILL} รอบนี้ให้เห็นชัด หรือถ้าธงติดผิดให้บันทึกเหตุผลด้วย
+  node tools/investigation-guard/check.js --not-an-investigation "เหตุผล"
+`);
+    return 2;
   }
 
   process.stderr.write(
@@ -147,24 +191,62 @@ function gate() {
   return 2;
 }
 
-/** Record an arm as a false positive. Written down, never silent. */
-function dismiss(reason) {
+/**
+ * Record an arm as a false positive. Written down, never silent.
+ *
+ * Finding 2 — this used to take whichever state file was modified most recently, with no idea
+ * who ran it. In a worktree where concurrent sessions are the norm (they are, here), that
+ * silently disarms somebody ELSE'S investigation while leaving the caller's own flag standing.
+ * Proven: session BBB ran it, session AAA's flag was cleared, BBB's stayed armed.
+ *
+ * So the target is now named, never inferred: `--session <id>` when it is known, otherwise the
+ * single armed flag if there is exactly one. Two or more and it refuses — which flag the caller
+ * meant is not guessable, and guessing is the bug.
+ */
+function dismiss(reason, sessionId) {
   if (!reason || !reason.trim()) {
     console.error('[investigation-guard] ต้องระบุเหตุผลด้วยครับ — การยกเลิกธงแบบไม่มีเหตุผล คือการปิดการ์ดเฉยๆ');
     return 2;
   }
-  let files = [];
-  try {
-    files = fs.readdirSync(STATE_DIR).filter((f) => f.endsWith('.json'))
-      .map((f) => path.join(STATE_DIR, f))
-      .sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
-  } catch { /* no dir yet */ }
-  if (!files.length) { console.log('[investigation-guard] ไม่มีธงติดอยู่ ไม่ต้องยกเลิกอะไรครับ'); return 0; }
 
-  const p = files[0];
-  const st = loadState(p) || {};
+  if (sessionId) {
+    const p = statePath(sessionId);
+    const st = loadState(p);
+    if (!st) {
+      console.error(`[investigation-guard] ไม่มีธงของ session "${sessionId}" — ตรวจรายการด้วย --status`);
+      return 2;
+    }
+    return writeDismissal(p, st, reason);
+  }
+
+  let entries = [];
+  try {
+    entries = fs.readdirSync(STATE_DIR).filter((f) => f.endsWith('.json'))
+      .map((f) => ({ id: path.basename(f, '.json'), state: loadState(path.join(STATE_DIR, f)) }));
+  } catch { /* no dir yet */ }
+
+  const pick = R.pickDismissTarget(entries, null);
+  if (pick.ok) {
+    const fp = statePath(pick.id);
+    return writeDismissal(fp, loadState(fp), reason);
+  }
+  if (pick.reason === 'none') {
+    console.log('[investigation-guard] ไม่มีธงติดอยู่ ไม่ต้องยกเลิกอะไรครับ');
+    return 0;
+  }
+  console.error('[investigation-guard] มีธงค้างอยู่มากกว่า 1 session — เลือกให้ชัดว่าจะยกเลิกอันไหน');
+  for (const id of pick.ids) {
+    const st = loadState(statePath(id)) || {};
+    console.error(`    --session ${id}   (ติดธง ${st.armed_at} · ${(st.hits || []).join(',')})`);
+  }
+  console.error('    ยกเลิกให้เองไม่ได้ครับ เพราะเดาผิดคือไปปลดการ์ดของอีก session');
+  return 2;
+}
+
+function writeDismissal(p, st, reason) {
   saveState(p, { ...st, dismissed_reason: reason.trim(), dismissed_at: new Date().toISOString() });
   console.log(`[investigation-guard] บันทึกแล้วว่าไม่ใช่การตรวจสอบปัญหา: ${reason.trim()}`);
+  console.log(`    session   : ${path.basename(p, '.json')}`);
   console.log(`    ไฟล์สถานะ: ${path.relative(ROOT, p)}`);
   return 0;
 }
@@ -185,8 +267,10 @@ function main() {
   const a = process.argv.slice(2);
   if (a.includes('--arm')) return arm();
   if (a.includes('--status')) return status();
+  const si = a.indexOf('--session');
+  const sessionId = si !== -1 ? a[si + 1] : null;
   const i = a.indexOf('--not-an-investigation');
-  if (i !== -1) return dismiss(a[i + 1]);
+  if (i !== -1) return dismiss(a[i + 1], sessionId);
   return gate();
 }
 
