@@ -41,7 +41,7 @@ one module with tests do not.
 | `retest_manifest.js` | the run manifest: scope arithmetic, coverage, and the verdict **the rows support** rather than the one that was hoped for |
 | `retest_render.js` | manifest → comment body (v2 wiki / v3 markdown). The markup rules become the only way the text can be produced |
 | `retest_guard.js` | the CLI: validate, render, scan, report, exit |
-| `*.test.js` | 62 cases pinning all of the above. Plain `node`, no framework |
+| `*.test.js` | the cases pinning all of the above — including one that compares the workflow's printed template against these rules. Plain `node`, no framework |
 
 ## Scope — a retest of named cases
 

@@ -425,8 +425,9 @@ remark (no bug, no halt); test-side cause → fix and re-run; confirmed defect �
 
 ### 5c. Reconcile the plan against what was captured (numbered, mandatory)
 
-Run the workspace's evidence reconciler over this ticket's plan **before drafting**, and treat its
-exit code as the result:
+**When the workspace provides an evidence reconciler**, run it over this ticket's plan **before
+drafting** and treat its exit code as the result. Where it does not, the same reconciliation is done
+by hand — every planned file opened, not counted:
 
 ```
 capture/evidence_plan.py <KEY>                                    # the required file list, from the ticket
@@ -547,7 +548,12 @@ the image shows, so no separate caption line is needed. If a field doesn't apply
 
 The comment is **produced from data**, not typed. Write `run.json` for this round — ticket, type,
 bug type, format, env, design ref, role(s), date, build, fixture, **scope**, the enumerated contract,
-the cases, the per-item results with their evidence — then:
+the cases, the per-item results with their evidence.
+
+**When the workspace provides `tools/retest-guard/` — run it; it is not optional there.** When the
+workspace does not (this skill also ships to projects that have not adopted it), the same rules still
+apply and this step is done by hand against the template below — a missing tool is not a lighter
+standard, and "the guard is not installed here" is never a reason to post something it would reject.
 
 ```
 node tools/retest-guard/retest_guard.js --manifest run.json --out body.txt --evidence-dir out/

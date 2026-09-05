@@ -120,7 +120,10 @@ function main() {
         findings.push({ rule: e.code || 'render-failed', field: '(render)', severity: 'error',
           message: e.message, fix: 'move that text into a section under the table and reference it' });
       }
-      if (body && a.out) fs.writeFileSync(a.out, body, 'utf8');
+      if (body && a.out) {
+        fs.writeFileSync(a.out, body, 'utf8');
+        a.wroteOut = true;
+      }
     }
   }
 
@@ -136,7 +139,13 @@ function main() {
   if (body) findings.push(...R.scanBody(body, { format, bugType }));
 
   report(findings, a.json);
-  return findings.some((f) => f.severity !== 'warn') ? 1 : 0;
+  const hasErrors = findings.some((f) => f.severity !== 'warn');
+  if (a.wroteOut && hasErrors && !a.json) {
+    // The file exists so the findings can be read against it — but it is not postable,
+    // and a rendered file sitting on disk looks finished.
+    console.log(`\nNOTE: ${a.out} was written for inspection. It is NOT postable while findings stand.`);
+  }
+  return hasErrors ? 1 : 0;
 }
 
 if (require.main === module) {

@@ -168,6 +168,22 @@ function validate(m) {
     if (!byId.has(id)) out.push(err('results', `in-scope item "${id}" has no result row`, 'run it, or record it BLOCKED with the reason — never drop it'));
   });
 
+  // Two shapes the source material does not settle. The summary line is locked to
+  // PASSED or FAILED, so both currently render FAILED — which may misroute the
+  // ticket. Warn rather than invent a third verdict or silently pick one.
+  const inScope = inScopeIds(m);
+  const statusOf = (id) => (byId.get(id) || {}).status;
+  if (inScope.length && inScope.every((id) => statusOf(id) === 'BLOCKED')) {
+    out.push({ field: 'verdict', severity: 'warn',
+      message: 'every in-scope item is BLOCKED — the summary will read FAILED, but a coverage gap is not a product defect',
+      fix: 'confirm with the ticket owner how a fully blocked round should be reported before posting' });
+  }
+  if (inScope.some((id) => statusOf(id) === 'PWMI')) {
+    out.push({ field: 'verdict', severity: 'warn',
+      message: 'a PWMI row makes the summary read FAILED — the workflow locks the summary to PASSED/FAILED and does not say which a minor-issue round takes',
+      fix: 'state the Priority per the bug matrix and confirm the intended summary wording before posting' });
+  }
+
   const computed = computedVerdict(m);
   if (computed === 'INCOMPLETE') {
     out.push(err('verdict', 'an in-scope item has no result — the retest is not complete', 'close the gap before drafting'));

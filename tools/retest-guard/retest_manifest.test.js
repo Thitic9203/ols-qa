@@ -177,5 +177,34 @@ check('a duplicate id is refused everywhere it can appear', () => {
   });
 });
 
+
+check('a fully BLOCKED round warns that FAILED may misreport it, without blocking', () => {
+  const m = base();
+  m.results.forEach((r) => { r.status = 'BLOCKED'; });
+  m.cases.forEach((c) => { c.status = 'BLOCKED'; });
+  m.verdict = 'FAILED';
+  m.symptomGone = false;
+  m.rootCause = { text: 'the fixture could not be created in this environment', label: 'Unknown — not investigated' };
+  m.resolutionOptions = [{ text: 'provide the fixture', owner: 'dev' }, { text: 'descope the round', owner: 'spec owner' }];
+  m.decidedBy = 'spec owner';
+  const f = M.validate(m);
+  assert.deepStrictEqual(f.filter((x) => x.severity !== 'warn'), [], 'a blocked round must not be an error');
+  assert.ok(f.some((x) => x.severity === 'warn' && /every in-scope item is BLOCKED/.test(x.message)));
+});
+
+check('a PWMI row warns that the locked summary wording is undecided', () => {
+  const m = base();
+  m.results[0].status = 'PWMI';
+  m.cases[0].status = 'PWMI';
+  m.verdict = 'FAILED';
+  m.symptomGone = true;
+  m.rootCause = { text: 'the label wraps at 320 px', label: 'Confirmed' };
+  m.resolutionOptions = [{ text: 'fix the wrap', owner: 'dev' }, { text: 'accept it', owner: 'spec owner' }];
+  m.decidedBy = 'spec owner';
+  const f = M.validate(m);
+  assert.deepStrictEqual(f.filter((x) => x.severity !== 'warn'), []);
+  assert.ok(f.some((x) => x.severity === 'warn' && /PWMI/.test(x.message)));
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);

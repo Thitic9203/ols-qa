@@ -100,5 +100,20 @@ check('the retest skill still points the reader at the project guide for those v
     'removing the project values without leaving a pointer just loses them');
 });
 
+
+check('a synced skill never orders an unconditional run of a workspace-local tool', () => {
+  // The retest workflow ships to projects that do not have tools/retest-guard/. An
+  // unconditional `node tools/...` there fails, and a failing gate command reads as
+  // "could not run" — which the same workflow says is not a pass. So it would block
+  // a retest in every project that has not adopted the tool.
+  const wf = fs.readFileSync(path.join(ROOT, 'skills', 'deprecated', 'retest-bug-workflow', 'WORKFLOW.md'), 'utf8');
+  assert.ok(/When the workspace provides `tools\/retest-guard\/` — run it;\s+it is not optional there/.test(wf),
+    'the guard step is not stated as conditional on the workspace providing it');
+  assert.ok(/a missing tool is not a lighter\s+standard/.test(wf),
+    'the conditional does not say the rules still apply without the tool');
+  assert.ok(/\*\*When the workspace provides an evidence reconciler\*\*/.test(wf),
+    'the reconciler step is not stated as conditional');
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);

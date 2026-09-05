@@ -390,8 +390,16 @@ const DRIFT_ALLOWLIST = Object.freeze([
  *     against a live Jira comment, so this file treats a link span as atomic when
  *     splitting cells and raises nothing. Verify by posting one comment that
  *     carries such a cell and reading `?expand=renderedBody`.
+ *
+ * Q2. The summary line is locked to PASSED or FAILED, and nothing says which one a
+ *     round takes when every in-scope item is BLOCKED (a coverage gap, which the
+ *     gates say is not a product defect) or when a row is PWMI. Both currently
+ *     render FAILED and `retest_manifest.validate` warns; neither was decided here.
  */
-const OPEN_QUESTIONS = Object.freeze(['Q1: link-with-pipe inside a v2 table cell — unverified']);
+const OPEN_QUESTIONS = Object.freeze([
+  'Q1: link-with-pipe inside a v2 table cell — unverified',
+  'Q2: summary wording for a fully BLOCKED round and for a PWMI row — undecided',
+]);
 
 module.exports = {
   FORMATS,
