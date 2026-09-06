@@ -30,6 +30,7 @@
 | PM-2026-09-06-05 | 2026-09-06 | บอกเจ้าของงานว่าต้องปิด-เปิดเซสชันใหม่ hook ถึงจะมีผล ทั้งที่ไม่เคยวัด และของจริงคือมีผลทันทีกับเซสชันที่เปิดค้างอยู่ | งานทำ hook บังคับกฎการตรวจสอบ ใน repo ols-qa | DONE | 20260906-post-mortem-report-0004-claimed-sessions-need-restart-without-measuring.md |
 | PM-2026-09-06-07 | 2026-09-06 | บอกเจ้าของงานซ้ำ 3 ครั้งว่าไฟล์ README.md ที่ค้างอยู่เป็นงานของเซสชันอื่นห้ามแตะ ทั้งที่ไม่เคยตรวจ ของจริงเป็นไฟล์ค้างจาก fast-forward ของ hook เอง และมันบล็อก git pull ของทุกเซสชันอยู่ | รอบไล่ปิดคลาส fail-open ใน repo ols-qa | DONE | 20260906-post-mortem-report-0007-called-stale-leftover-another-session-work.md |
 | PM-2026-09-06-06 | 2026-09-06 | ด่านก่อน push พิมพ์ว่าชุดเทสต์เขียวทุกคอมมิตและปล่อยผ่าน ทั้งที่ไม่เจอไฟล์เทสต์เลยสักไฟล์จึงไม่ได้วัดอะไร วัดกับคอมมิตจริงในประวัติแล้วปล่อยผ่านจริง | ไล่ปิดคลาสเดียวกันทุกการ์ดตามคำสั่งเจ้าของงาน | DONE | 20260906-post-mortem-report-0006-push-gate-reported-green-with-zero-suites.md |
+| PM-2026-09-06-08 | 2026-09-06 | เรียก `capture/session_verify.js` ตรวจสถานะ session บัญชี pool (dev/pre-prod) โดยไม่ได้เปิดอ่านซอร์สเช็คค่าเริ่มต้นของตัวแปร `OLS` ก่อนรัน สคริปต์ default ไปที่ training (`<TRAINING_HOST>`) ทำให้ยิง GET หน้าแรก + fetch `/api/auth/get-session` (อ่านอย่างเดียว ไม่ล็อกอิน ไม่มีการเขียน) เข้า training 11 ครั้ง ทั้งที่กฎ CLAUDE.md ห้าม poll env นั้นแม้แต่ครั้งเดียว | Lane 3 (บัญชีและเซสชันต่อล็อต) งานวางแผนอัดหลักฐานใหม่ Integration test evidence | DONE | 20260906-post-mortem-report-0009-env-default-sent-readonly-probe-to-training.md |
 
 ---
 

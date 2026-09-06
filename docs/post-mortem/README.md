@@ -42,6 +42,7 @@
 | 0006 | 2026-09-06 | ด่านก่อน push บอกว่าเทสต์เขียว ทั้งที่รันไป 0 ชุด (ผิดซ้ำจาก 0005) | Medium | [20260906-post-mortem-report-0006-push-gate-reported-green-with-zero-suites.md](20260906-post-mortem-report-0006-push-gate-reported-green-with-zero-suites.md) |
 | 0007 | 2026-09-06 | เรียกไฟล์ค้างว่าเป็นงานของเซสชันอื่น 3 ครั้งโดยไม่ตรวจ แล้วส่งคืนเป็นภาระเจ้าของงาน (ผิดซ้ำจาก 0004) | Medium | [20260906-post-mortem-report-0007-called-stale-leftover-another-session-work.md](20260906-post-mortem-report-0007-called-stale-leftover-another-session-work.md) |
 | 0008 | 2026-09-06 | เก็บคลิปและผลตรวจของรอบไว้ในโฟลเดอร์ชั่วคราว งานหายพร้อมการรีสตาร์ตเซสชัน | Medium | [20260906-post-mortem-report-0008-work-files-in-tmp-wiped-by-restart.md](20260906-post-mortem-report-0008-work-files-in-tmp-wiped-by-restart.md) |
+| 0009 | 2026-09-06 | เครื่องมือมีค่าเริ่มต้นชี้ไป training จึงยิงคำขออ่านเข้า env ที่ห้ามแตะ 11 ครั้ง | Medium | [20260906-post-mortem-report-0009-env-default-sent-readonly-probe-to-training.md](20260906-post-mortem-report-0009-env-default-sent-readonly-probe-to-training.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
