@@ -668,12 +668,18 @@ schedule, and it carries its own tests — there is no package manager and no bu
 **are** test commands, and they must be green before a change to that directory ships:
 
 ```bash
-rc=0; for t in tools/*/*.test.js; do node "$t" || rc=1; done; exit $rc
+bash scripts/run-test-suites.sh
 ```
 
-(`|| break` used to sit here instead of `|| rc=1; ... exit $rc` — `break` itself returns 0, so a
-failing suite still made the whole command exit 0. A gate that is supposed to block a broken
-change must never report success when a suite failed.)
+That script is a thin wrapper over `scripts/list-test-suites.sh`, which is the **one** place in
+this repo that decides where the suites live — the same one `scripts/hooks/pre-push` and
+`.github/workflows/tests.yml` call. Running the suites is therefore never a pattern anyone types.
+
+Two ways this line has been wrong before, both of which reported success over a broken tree:
+`|| break` instead of `|| rc=1; … exit $rc` (`break` returns 0, so a failing suite still exited 0),
+and an inline `for t in tools/*/*.test.js` that exits 0 when the glob matches **nothing** — report
+#0006's defect, sitting in the copy most likely to be run by hand. A gate meant to block a broken
+change must never report success when a suite failed, and **must refuse when it measured none.**
 
 Node ≥ 18 (the code uses global `fetch`). No dependencies, nothing to install.
 
@@ -1686,6 +1692,24 @@ this session had not changed the file, which was never the question.
 
 Full report: [`docs/post-mortem/20260906-post-mortem-report-0007-called-stale-leftover-another-session-work.md`](docs/post-mortem/20260906-post-mortem-report-0007-called-stale-leftover-another-session-work.md)
 
+### Report #0008 — งานทั้งรอบถูกเก็บไว้ในโฟลเดอร์ชั่วคราว แล้วหายพร้อมการรีสตาร์ต (2026-09-06)
+
+**Surface:** ที่ที่เซสชันวางไฟล์งานของรอบนั้น และรูปประโยคของกฎที่ห้ามเรื่องนี้ไว้แล้ว
+
+คลิป 148 เคสกับผลตรวจรอบแรกถูกวางไว้ใต้ `/private/tmp` แล้วหายไปตอนเซสชันรีสตาร์ต คลิปโหลดใหม่ได้
+ใน 51 วินาที ผลตรวจกู้ไม่ได้ ต้องเปิดดูใหม่ทั้งหมด ที่ต้องอธิบายให้ได้คือ **กฎเรื่องนี้ถูกใช้อยู่ในรอบเดียวกันนั้นเอง**
+ไฟล์บอร์ดถูกวางไว้ถูกที่พร้อมอ้างเหตุผลว่าโฟลเดอร์ชั่วคราวถูกล้างได้ แต่ไฟล์ข้างๆ ไม่เคยถูกตั้งคำถามเลย
+
+**กฎที่เพิ่มจากเหตุนี้:** *กฎที่เขียนโดยเอ่ยชื่อของที่ต้องคุ้มครอง จะคุ้มครองได้เฉพาะของชิ้นนั้น* —
+เมื่ออันตรายอยู่ที่ **สถานที่** กฎต้องเขียนถึงสถานที่ ไม่ใช่เขียนถึงของ กฎบอร์ดข้อ 3 จึงถูกเขียนใหม่ให้ผูกกับ
+โฟลเดอร์ทั้งก้อน และให้ **สร้างโฟลเดอร์งานถาวรก่อนเขียนไฟล์แรก** เพื่อให้ตัดสินครั้งเดียวต่อรอบ ไม่ใช่ตัดสินทีละไฟล์ ·
+และ *เหตุที่เคยเกิดแล้วต้องจบด้วยรายงาน ไม่ใช่จบด้วยการเติมกฎหนึ่งบรรทัด* — เหตุ 2026-09-03 จบด้วยการเติมกฎ
+จึงไม่มีใครถูกบังคับให้ตอบคำถามว่ายังมีของอื่นวางอยู่ในที่เดียวกันอีกไหม ซึ่งเป็นคำถามที่การเขียนรายงานบังคับให้ตอบ ·
+*คำแนะนำของสภาพแวดล้อมไม่ใช่นโยบายของงาน* เส้นทางที่เครื่องมือแนะนำว่าเหมาะกับไฟล์ชั่วคราว
+ตอบว่า "วางที่ไหนได้" ไม่ได้ตอบว่า "หายแล้วเสียหายแค่ไหน"
+
+Full report: [`docs/post-mortem/20260906-post-mortem-report-0008-work-files-in-tmp-wiped-by-restart.md`](docs/post-mortem/20260906-post-mortem-report-0008-work-files-in-tmp-wiped-by-restart.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
@@ -1731,8 +1755,11 @@ Full report: [`docs/post-mortem/20260906-post-mortem-report-0007-called-stale-le
 2. **แยกให้ชัดว่าอะไรสด อะไรไม่สด** — ค่าที่มาจาก db สดตลอด ส่วนโครงหน้า ชื่อหัวข้อ ชื่อเลน **ฝังอยู่ในตัวหน้าเว็บ
    ต้องโหลดใหม่ถึงจะเปลี่ยน** · 🔴 **รอบไหนที่แก้ของฝัง ต้องบอกในข้อความเดียวกันว่า "ต้องรีเฟรช"** ห้ามปล่อยให้เจ้าของงาน
    ไปเปิดแล้วเจอของเก่าเองแล้วต้องมาถาม
-3. **เก็บไฟล์ HTML และไฟล์ JSON ของบอร์ดไว้นอก `/private/tmp`** — `/private/tmp` ถูกล้างได้ทุกเมื่อ (เกิดจริง
-   2026-09-03: หายทั้งโฟลเดอร์พร้อมเซสชัน) · ที่ที่ใช้จริงคือ `~/ols-qa-testing-bot/out/<งานรอบนั้น>/board/`
+3. 🔴 **สร้างโฟลเดอร์งานถาวรก่อนเขียนไฟล์แรกของรอบ แล้วเก็บทุกอย่างของรอบนั้นไว้ในนั้น** —
+   `~/ols-qa-testing-bot/out/<งานรอบนั้น>/` ทั้งไฟล์บอร์ด คลิป ผลตรวจ สคริปต์ และไฟล์ระหว่างทาง ·
+   `/private/tmp` ถูกล้างได้ทุกเมื่อ **ใช้ได้เฉพาะของที่สร้างใหม่ได้ในไม่กี่วินาทีและไม่มีใครต้องลงแรงซ้ำถ้ามันหาย** ·
+   กฎนี้ผูกกับ **ตัวโฟลเดอร์ ไม่ใช่ชื่อไฟล์** เพราะกฎเดิมที่เอ่ยชื่อเฉพาะไฟล์บอร์ด คุ้มครองไฟล์บอร์ดได้จริง
+   แต่ปล่อยให้คลิปกับผลตรวจของรอบเดียวกันหายไปกับการรีสตาร์ต (เกิดจริง 2026-09-03 และซ้ำ 2026-09-06 → รายงาน #0008)
 4. **เขียน db ด้วย `file_path` ไม่ใช่ `data` แบบ inline** — payload ภาษาไทยยาวๆ จะถูกตัดกลางทางแล้ว JSON พัง
 
 **เนื้อหาบนบอร์ดที่ต้องมี**
