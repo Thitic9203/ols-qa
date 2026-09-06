@@ -107,7 +107,10 @@ const SCOPE_LINE = /^\**Scope:?\**\s*(FULL|CASES:\s*\S.*)$/i;
  * say. Forcing a fully blocked round to read FAILED tells the reader a defect was
  * found when none was — a coverage gap is not a defect.
  */
-const SUMMARY_LINE = /^\**Retest Result:\s*(PASSED|FAILED|BLOCKED|PWMI)(\s*\(scoped:[^)]*\))?\**\s*(✅|❌|⛔|⚠️)?\s*$/i;
+const SUMMARY_VERDICTS = ['PASSED', 'FAILED', 'BLOCKED', 'PWMI'];
+const SUMMARY_LINE = new RegExp(
+  '^\\**Retest Result:\\s*(' + SUMMARY_VERDICTS.join('|') + ')' +
+  '(\\s*\\(scoped:[^)]*\\))?\\**\\s*(✅|❌|⛔|⚠️)?\\s*$', 'i');
 /**
  * `*Expected-result coverage:* 7 / 7 items met` — the line the gate reconciles.
  *
@@ -125,8 +128,8 @@ const ITEM_COVERAGE_LINE = /(expected-result|acceptance-criteria|item)[ -]*cover
  * Split one wiki table row into cells.
  *
  * A `|` inside a `[...]` span is part of a link (`[▶ f.mp4|^f.mp4]`), not a cell
- * boundary, so link spans are treated as atomic. See OPEN_QUESTIONS below: whether
- * Jira itself agrees has not been verified against a live comment.
+ * boundary, so link spans are treated as atomic. Jira agrees — measured on OLS-701's
+ * retest comment, where such a cell renders with all five `<td>` intact (2026-09-05).
  */
 function splitWikiCells(line) {
   const trimmed = line.trim();
@@ -254,9 +257,12 @@ function scanBody(body, opts = {}) {
   if (summaryIdx === -1) {
     out.push(finding('summary-line-missing', 0, 'no *Retest Result:* summary line', 'first line is the verdict'));
   } else if (!SUMMARY_LINE.test(lines[summaryIdx].trim())) {
+    // The list comes from SUMMARY_VERDICTS, never retyped: this message told people to
+    // write PASSED or FAILED for a year after the rule started accepting BLOCKED and
+    // PWMI, so the refusal was teaching the mistake the rule exists to prevent.
     out.push(finding('summary-line-shape', summaryIdx + 1,
-      'summary line is not exactly PASSED/FAILED (optionally "(scoped: …)")',
-      'e.g. *Retest Result: PASSED* ✅'));
+      'summary line is not exactly one of ' + SUMMARY_VERDICTS.join(' / ') + ' (optionally "(scoped: …)")',
+      'e.g. *Retest Result: PASSED* ✅ — a round that nobody could reach says BLOCKED, not FAILED'));
   }
 
   HEADER_LINES.forEach((h) => {
@@ -421,6 +427,7 @@ module.exports = {
   NON_PASS_BLOCKS,
   SCOPE_LINE,
   SUMMARY_LINE,
+  SUMMARY_VERDICTS,
   ITEM_COVERAGE_LINE,
   DRIFT_ALLOWLIST,
   OPEN_QUESTIONS,

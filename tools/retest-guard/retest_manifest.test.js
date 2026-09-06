@@ -94,10 +94,17 @@ check('one differing item makes the round FAILED however the manifest labels it'
 });
 
 check('a BLOCKED item is a coverage gap, and never a PASS', () => {
+  // The property this case exists for is the one in its title: an item nobody could reach
+  // must never be counted as verified. It used to assert the specific value FAILED, which
+  // was the behaviour of the day rather than the property — and that value was itself the
+  // defect (announcing a defect in a case the round never touched). BLOCKED keeps the
+  // property and states the truth; the assertion is written both ways so a future change
+  // back to "PASSED" fails on the property, not merely on the string.
   const m = base();
   m.results[2].status = 'BLOCKED';
-  m.verdict = 'FAILED';
-  assert.strictEqual(M.computedVerdict(m), 'FAILED');
+  const v = M.computedVerdict(m);
+  assert.notStrictEqual(v, 'PASSED', 'an unreachable item was counted as verified');
+  assert.strictEqual(v, 'BLOCKED');
 });
 
 check('a passing FE row with no evidence is refused', () => {
@@ -189,6 +196,41 @@ check('a fully BLOCKED round reports BLOCKED — not a defect that was never obs
   m.decidedBy = 'spec owner';
   assert.strictEqual(M.computedVerdict(m), 'BLOCKED');
   assert.deepStrictEqual(M.validate(m), []);
+});
+
+check('a PARTLY blocked round reports BLOCKED — the unreached cases are not a defect either', () => {
+  // The ladder had a branch for "every row BLOCKED" and none for "some rows BLOCKED", so a
+  // round that verified two cases and could not reach a third fell through to the terminal
+  // `return 'FAILED'`. That announces a defect in cases the round never touched, which is
+  // the exact thing the comment above the ladder says must not happen — and, per the OLS
+  // rules, routes the ticket to In Progress for a dev fix that has nothing to fix.
+  const m = base();
+  m.results[0].status = 'BLOCKED';
+  m.cases[0].status = 'BLOCKED';
+  assert.strictEqual(M.computedVerdict(m), 'BLOCKED');
+});
+
+check('a defect still outranks an unreached case', () => {
+  // BLOCKED must not swallow a real finding: if something failed, the round failed.
+  const m1 = base();
+  m1.results[0].status = 'BLOCKED';
+  m1.results[1].status = 'FAILED';
+  assert.strictEqual(M.computedVerdict(m1), 'FAILED');
+
+  const m2 = base();
+  m2.results[0].status = 'BLOCKED';
+  m2.results[1].status = 'PWMI';
+  assert.strictEqual(M.computedVerdict(m2), 'PWMI');
+});
+
+check('a status the module does not know is INCOMPLETE, never FAILED', () => {
+  // "I cannot judge this" and "a defect was found" are different answers. The terminal
+  // fallback returned FAILED, so a typo in a status would have been published as a defect.
+  const m = base();
+  m.results[0].status = 'SKIPPED';        // not in STATUSES — validate() rejects it too
+  assert.strictEqual(M.computedVerdict(m), 'INCOMPLETE');
+  assert.ok(M.validate(m).some((f) => /status must be one of/.test(f.message)),
+    'an unknown status was accepted by validate()');
 });
 
 check('a round whose worst row is PWMI reports PWMI, not FAILED', () => {

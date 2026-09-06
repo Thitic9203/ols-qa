@@ -21,14 +21,38 @@ fi
 INPUT="$(cat 2>/dev/null || true)"
 CHECK="$ROOT/tools/investigation-guard/check.js"
 
-if ! command -v node >/dev/null 2>&1 || [ ! -f "$CHECK" ]; then
-  # ไม่มีธงติดอยู่ก็ไม่ต้องพูดอะไร — เตือนเฉพาะตอนที่มีของค้างจริง
-  if ls "$ROOT/.claude/.investigation-state/"*.json >/dev/null 2>&1; then
-    echo "=== ⚠️  investigation gate รันไม่ได้ ทั้งที่มีธงการตรวจสอบค้างอยู่ ==="
-    echo "    ชั้นที่บล็อกหายไป — ห้ามถือว่าผ่าน ต้องกู้ node / tools/investigation-guard/check.js ก่อน"
+# เตือนเฉพาะตอนที่มีของค้างจริง — และ "ของค้างจริง" อ่านจากไฟล์ ARMED ที่โมดูลเขียนไว้เอง
+# ไม่ใช่จากการ ls ไฟล์ .json ทั้งโฟลเดอร์ ซึ่งเป็นกฎคนละชุดกับของโมดูล: ธงที่ยกเลิกหรือ
+# ปิดไปแล้วยังถูกเก็บไว้ 7 วัน การ ls จึงนับมันด้วย แล้วเตือนทั้งสัปดาห์เรื่องงานที่ไม่มีใคร
+# ค้างอยู่ — คำเตือนที่ดังตอนไม่มีอะไรผิด คือคำเตือนที่คนเลิกอ่าน
+shout_if_armed() {
+  SD="$ROOT/.claude/.investigation-state"
+  if [ -e "$SD/ARMED" ]; then
+    # โมดูลเขียนคำตอบไว้แล้ว — ว่าง = ไม่มีอะไรค้าง
+    [ -s "$SD/ARMED" ] || return 0
+  else
+    # ยังไม่เคยมีใครเขียน (state เก่าก่อนมีไฟล์นี้) — ตอบไม่ได้ว่าค้างหรือไม่
+    # จึงเตือนไว้ก่อนถ้ามีไฟล์ธงอยู่เลย เพราะพลาดเตือนแพงกว่าเตือนเกิน
+    ls "$SD/"*.json >/dev/null 2>&1 || return 0
   fi
+  echo "=== ⚠️  investigation gate รันไม่ได้ ทั้งที่มีธงการตรวจสอบค้างอยู่ ==="
+  echo "    ชั้นที่บล็อกหายไป — ห้ามถือว่าผ่าน ต้องกู้ node / tools/investigation-guard/check.js ก่อน"
+}
+
+if ! command -v node >/dev/null 2>&1 || [ ! -f "$CHECK" ]; then
+  shout_if_armed
   exit 0
 fi
 
-printf '%s' "$INPUT" | node "$CHECK" --gate
-exit $?
+# รหัสจบที่ตัวตรวจ "ตั้งใจ" คืนมีแค่ 0 (ผ่าน) กับ 2 (ปฏิเสธไม่ให้จบเทิร์น) อย่างอื่นคือมันพัง
+# ไม่ใช่คำตัดสิน — `exit $?` เดิมส่ง exit 1 ของ node ต่อออกไปพร้อม stack ดิบ ซึ่งไม่ใช่ทั้ง
+# การบล็อกและไม่ใช่การปล่อยผ่านตามที่หัวไฟล์นี้ประกาศไว้ และไม่ได้ตะโกนอะไรเลย
+# (พังจริงได้ง่ายที่สุดคือ investigation_rules.js เสีย เพราะ require อยู่นอก try/catch ของ check.js)
+OUT="$(printf '%s' "$INPUT" | node "$CHECK" --gate 2>&1)"
+RC=$?
+case "$RC" in
+  0|2) [ -n "$OUT" ] && printf '%s\n' "$OUT"; exit "$RC" ;;
+  *)   shout_if_armed
+       echo "    (ตัวตรวจจบด้วยรหัส $RC ซึ่งไม่ใช่คำตัดสิน — ถือว่ารันไม่ได้)"
+       exit 0 ;;
+esac

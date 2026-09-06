@@ -26,14 +26,47 @@ if ! command -v node >/dev/null 2>&1; then
 fi
 
 # stdin: <local ref> <local sha> <remote ref> <remote sha>
+#
+# นับสองอย่างแยกกัน: บรรทัดที่อ่านได้ทั้งหมด กับ sha ที่ต้องเทสต์จริง เพราะ "ไม่มีบรรทัดเลย"
+# กับ "มีแต่บรรทัดลบ ref" เป็นคนละเรื่อง อันแรกแปลว่า git ไม่ได้บอกอะไรเรามา หรือมีคนรัน
+# hook นี้เองโดยไม่ป้อน stdin ซึ่ง "ไม่มีอะไรให้วัด" ไม่เท่ากับ "วัดแล้วผ่าน"
+# (วัดจริง 2026-09-06: stdin ว่างและ stdin ขยะ ทั้งคู่จบด้วย exit 0 และ output 0 ไบต์
+#  แยกไม่ออกจาก push ที่ผ่านจริงบนหน้าจอคนใช้)
+LINES=0
+MALFORMED=0
 SHAS=()
 while read -r _lref lsha _rref _rsha; do
-  [ -n "${lsha:-}" ] || continue
+  [ -n "${_lref:-}${lsha:-}" ] || continue
+  LINES=$((LINES + 1))
+  # บรรทัดที่อ่านไม่ออกต้องนับแยก ไม่ใช่ข้ามเงียบๆ — ตอนที่ข้ามเฉยๆ `garbage` หนึ่งบรรทัด
+  # ถูกนับเป็น ref แล้วตกไปอยู่กับสาขา "เป็นการลบทั้งหมด" จึงผ่านด้วยเหตุผลที่ไม่จริง
+  case "${lsha:-}" in
+    [0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]*) ;;
+    *) MALFORMED=$((MALFORMED + 1)); continue ;;
+  esac
   [ "$lsha" = "$ZERO" ] && continue      # การลบ ref ไม่มีอะไรให้เทสต์
   SHAS+=("$lsha")
 done
 
-[ "${#SHAS[@]}" -gt 0 ] || exit 0
+if [ "$MALFORMED" -gt 0 ]; then
+  echo "[ols-qa pre-push] ❌ push ถูกบล็อก — อ่าน $MALFORMED บรรทัดจาก stdin ไม่ออก"
+  echo "  รูปแบบที่ git ป้อนคือ '<local ref> <local sha> <remote ref> <remote sha>'"
+  echo "  อ่านไม่ออก = ไม่รู้ว่ากำลังจะ push อะไร ซึ่งไม่เท่ากับไม่มีอะไรให้ตรวจ"
+  exit 1
+fi
+
+if [ "$LINES" -eq 0 ]; then
+  echo "[ols-qa pre-push] ❌ push ถูกบล็อก — ไม่ได้รับรายการ ref ทาง stdin เลย"
+  echo "  git จะป้อน '<local ref> <local sha> <remote ref> <remote sha>' มาให้เสมอ"
+  echo "  ไม่ได้รับ = ตรวจไม่ได้ว่ากำลังจะ push อะไร ซึ่งไม่เท่ากับไม่มีอะไรให้ตรวจ"
+  exit 1
+fi
+
+# มีแต่บรรทัดลบ ref จริงๆ — ไม่มีอะไรให้เทสต์ และบอกออกไปด้วยว่าทำไมถึงผ่าน
+if [ "${#SHAS[@]}" -eq 0 ]; then
+  echo "[ols-qa pre-push] ผ่าน — $LINES ref ที่จะ push เป็นการลบทั้งหมด ไม่มี commit ให้วัด"
+  exit 0
+fi
 
 TMP="$(mktemp -d)"
 cleanup() { git worktree remove --force "$TMP/wt" >/dev/null 2>&1 || true; rm -rf "$TMP"; }
@@ -72,7 +105,11 @@ for sha in "${SHAS[@]}"; do
   while IFS= read -r t; do
     [ -n "$t" ] || continue
     found=$((found + 1))
-    if ! ( cd "$TMP/wt" && node "$t" >"$TMP/out" 2>&1 ); then
+    # git ส่ง GIT_DIR และพวกเดียวกันมาให้ hook เสมอ ถ้าปล่อยติดไปกับชุดเทสต์ ชุดที่สร้าง repo
+    # ชั่วคราวของตัวเองจะถูกเบนไปยิงใส่ repo ข้างนอกแทน — วัดจริง 2026-09-06 คอมมิตเดียวกัน
+    # push จากเวิร์กทรีหลักผ่าน push จากเวิร์กทรีที่กางเพิ่มแดง 2 เคส ด่านที่ตอบไม่เหมือนกัน
+    # ตามที่ยืนอยู่ ไม่ใช่ด่าน
+    if ! ( cd "$TMP/wt" && env -u GIT_DIR -u GIT_WORK_TREE -u GIT_INDEX_FILE -u GIT_OBJECT_DIRECTORY -u GIT_COMMON_DIR -u GIT_PREFIX -u GIT_QUARANTINE_PATH -u GIT_ALTERNATE_OBJECT_DIRECTORIES node "$t" >"$TMP/out" 2>&1 ); then
       rc=1
       echo "  ❌ $t"
       grep -E '^FAIL' "$TMP/out" | head -5 | sed 's/^/     /'
@@ -80,6 +117,22 @@ for sha in "${SHAS[@]}"; do
   done <<< "$SUITES"
 
   git worktree remove --force "$TMP/wt" >/dev/null 2>&1 || true
+
+  # ตัวนับของ hook เอง ไม่ใช่ของ lister
+  #
+  # รายงาน #0006 ปิดด้วยการ "นับสิ่งที่วัดจริง แล้วศูนย์ = ปฏิเสธ" แต่พอย้ายรายชื่อไปไว้ที่
+  # scripts/list-test-suites.sh ตัวปฏิเสธศูนย์ย้ายตามไปทั้งอัน เหลือที่เดียวในระบบ —
+  # และ `<<< "$SUITES"` บนค่าว่างให้หนึ่งบรรทัดว่าง ไม่ใช่ศูนย์บรรทัด ถ้า lister วันไหน
+  # จบด้วย 0 พร้อม stdout ว่าง ทั้ง hook นี้และ CI จะพิมพ์เครื่องหมายถูกทับศูนย์ชุดพร้อมกัน
+  # (วัดจริง 2026-09-06 ด้วย lister ปลอมที่ exit 0 แล้วไม่พิมพ์อะไร: found=0 และผ่าน)
+  #
+  # ชั้นนี้จึงต้องมีของตัวเอง ไม่ใช่ยืมของชั้นอื่น
+  if [ "$found" -eq 0 ]; then
+    echo "[ols-qa pre-push] ❌ push ถูกบล็อก — วัดไปได้ 0 ชุดบน commit ${sha:0:8}"
+    echo "  รายชื่อชุดเทสต์ตอบว่าสำเร็จแต่ไม่มีชื่อไหนออกมา — ตรวจ scripts/list-test-suites.sh"
+    echo "  ไม่ได้วัดอะไรเลย ไม่เท่ากับวัดแล้วผ่าน"
+    exit 1
+  fi
 
   if [ "$rc" -ne 0 ]; then
     echo "[ols-qa pre-push] ❌ push ถูกบล็อก — commit ${sha:0:8} เทสต์ไม่ผ่าน"

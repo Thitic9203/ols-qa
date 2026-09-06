@@ -72,14 +72,26 @@ function computedVerdict(m) {
   if (ids.length === 0) return 'INCOMPLETE';
   const statuses = ids.map((id) => (byId.has(id) ? byId.get(id).status : null));
   if (statuses.some((s) => s === null)) return 'INCOMPLETE';
+  // A status this module does not know is not a defect — it is an unanswerable question.
+  // The ladder used to end in `return 'FAILED'`, so anything unrecognised was published as
+  // a defect. `validate()` rejects such a row as well, but the two are called separately.
+  if (statuses.some((s) => !STATUSES.includes(s))) return 'INCOMPLETE';
+
   if (statuses.every((s) => PASSING.includes(s))) return 'PASSED';
-  // Report what the rows say. A round with nothing but BLOCKED found no defect — it
-  // reached nothing — and calling that FAILED sends a developer after a bug that was
-  // never observed. A round whose worst row is PWMI is not a failure either.
-  if (statuses.every((s) => s === 'BLOCKED')) return 'BLOCKED';
+
+  // Report what the rows say, worst finding first. A BLOCKED row found no defect — it
+  // reached nothing — so it can never turn a round into FAILED, and calling it that sends
+  // a developer after a bug nobody observed.
+  //
+  // The BLOCKED branch used to read `every(...)`, which covered the all-blocked round and
+  // left the PARTLY blocked one — two cases verified, a third unreachable — falling
+  // through to the terminal FAILED. Measured 2026-09-06: ['PASSED','BLOCKED'] → 'FAILED'.
+  // Ordering by severity instead of by shape removes the gap: a defect outranks an
+  // unreached case, and an unreached case outranks nothing at all.
   if (statuses.some((s) => s === 'FAILED')) return 'FAILED';
   if (statuses.some((s) => s === 'PWMI')) return 'PWMI';
-  return 'FAILED';
+  if (statuses.some((s) => s === 'BLOCKED')) return 'BLOCKED';
+  return 'INCOMPLETE';
 }
 
 /** The summary line's wording, including the scope marker when the round is partial. */

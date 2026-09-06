@@ -96,6 +96,30 @@ check('one failure word on its own still arms — suppression needs verdict COMP
   ]) assert.ok(R.detectIntent(p).armed, `ไม่ติดธงทั้งที่ควรติด: "${p}"`);
 });
 
+check('a breakage word keeps its own merit next to a verdict table, in English too', () => {
+  // The Thai case was already pinned below ('ตาราง passed/failed/blocked ขึ้นมาแล้วหน้าพัง'
+  // arms, because พัง is its own signal). English had no such split: `broken`, `flaky` and
+  // `failing` were bundled into the same entry as `failed`, which IS a status value, so the
+  // whole entry was suppressed in verdict company and an ordinary English breakage report
+  // stopped arming. Measured 2026-09-06 — none of these armed:
+  for (const p of [
+    'the smoke run is broken: 3 PASSED, 2 FAILED, 1 BLOCKED',
+    'these two suites are flaky — PASSED locally, FAILED in CI',
+    'the mirror is broken, the sheet still shows PASSED and BLOCKED rows',
+    'the job keeps failing while the table says passed / blocked',
+  ]) assert.ok(R.detectIntent(p).armed, `a breakage report stopped arming: "${p}"`);
+});
+
+check('a bare status list still does not arm, in either language', () => {
+  // The other direction, unchanged: these are column sets and data, not problem reports.
+  for (const p of [
+    'tab name | passed | failed | reviewing',
+    'here are the counts: passed 30 failed 5 blocked 2',
+    'the Test Status column holds PASSED FAILED BLOCKED SKIPPED',
+    'count passed and failed per tab please',
+  ]) assert.strictEqual(R.detectIntent(p).armed, false, `armed on a status list: "${p}"`);
+});
+
 check('suppression touches the verdict signal only — every other signal still arms', () => {
   const p = 'ทำไม passed 30 failed 5 ถึงไม่ตรงกับที่คาด';
   const r = R.detectIntent(p);
@@ -300,7 +324,7 @@ check('the decision lives in ONE runtime — bash delegates, it never re-impleme
   // A second copy of the pattern list in bash is two answers waiting to disagree.
   for (const src of [rule, gate]) {
     assert.ok(!/grep -[A-Za-z]*E[A-Za-z]*q?[^\n]*(หาสาเหตุ|ทำไม|root.cause)/.test(src),
-      'bash เริ่มตัดสิน intent เอง = มีกฎสองชุดที่รอวันไม่ตรงกัน');
+      'bash เริ่มตัดสิน intent เอง = มีกฎ 2 ชุดที่รอวันไม่ตรงกัน');
   }
 });
 

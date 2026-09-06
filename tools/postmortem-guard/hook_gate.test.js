@@ -29,10 +29,15 @@ function check(name, fn) {
   try { fn(); console.log('PASS  ' + name); } catch (e) { failed += 1; console.log('FAIL  ' + name + ' -> ' + e.message); }
 }
 
-/** Run the counter. Returns {code, out} — never throws on a non-zero exit. */
-function count(ledgerPath) {
+/** Run the counter. Returns {code, out} — never throws on a non-zero exit.
+ *  `locale` forces LC_ALL for that run; '' leaves whatever the runner inherited. */
+function count(ledgerPath, locale) {
+  const env = { ...process.env };
+  if (locale === undefined) { /* caller does not care — inherit */ }
+  else if (locale === '') { delete env.LC_ALL; delete env.LANG; }
+  else { env.LC_ALL = locale; env.LANG = locale; }
   try {
-    const out = execFileSync('bash', [COUNTER, ledgerPath], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    const out = execFileSync('bash', [COUNTER, ledgerPath], { encoding: 'utf8', env, stdio: ['ignore', 'pipe', 'pipe'] });
     return { code: 0, out: out.trim() };
   } catch (e) {
     return { code: e.status, out: String(e.stdout || '').trim() + String(e.stderr || '').trim() };
@@ -160,6 +165,51 @@ try {
       assert.ok(/^REFUSE:/.test(r.out), `${c}: ${r.out}`);
       assert.ok(!/^\d+$/.test(r.out), `${c} printed a bare number for something it could not read`);
     }
+  });
+
+  // ── the answer must not depend on the machine's locale ─────────────────────────
+  //
+  // The header names are Thai. On the awk this machine ships (version 20200816), `==`
+  // compares by COLLATION once the locale is a UTF-8 one, and an en_US collation table
+  // orders every Thai string equal to every other:
+  //
+  //   LC_ALL=en_US.UTF-8 awk 'BEGIN{ print ("อาการ" == "สถานะ") }'   →  1
+  //   LC_ALL=C           awk 'BEGIN{ print ("อาการ" == "สถานะ") }'   →  0
+  //
+  // So a loop that assigns `status_col = i` on every match kept the LAST Thai column
+  // (รายงาน) and `$status_col == "OPEN"` never matched — the counter answered 0 on a
+  // ledger with an OPEN row, and the fail-closed fallback of report #0003 became
+  // fail-open on the default locale of the machine it runs on. Nothing measured this,
+  // because every suite ran in whatever locale the test runner happened to inherit.
+
+  check('the count is identical under every locale — a header is resolved by name, not by collation', () => {
+    const f = fixture('locale.md', [...HEADER, OPEN_ROW, DONE_ROW]);
+    const seen = {};
+    for (const loc of ['C', 'en_US.UTF-8', 'th_TH.UTF-8', 'C.UTF-8', '']) {
+      const r = count(f, loc);
+      seen[loc || '(inherited)'] = `${r.out} (exit ${r.code})`;
+    }
+    const answers = new Set(Object.values(seen));
+    assert.strictEqual(answers.size, 1,
+      'the counter gives different answers in different locales:\n  ' +
+      Object.entries(seen).map(([k, v]) => `${k.padEnd(14)} -> ${v}`).join('\n  '));
+    assert.strictEqual([...answers][0], '1 (exit 0)',
+      'the one OPEN row was not counted: ' + [...answers][0]);
+  });
+
+  check('a header name matching two columns is REFUSED, never resolved to whichever came last', () => {
+    // PM-010's rule applied here: with two candidates no rule can say which holds the
+    // data, so the only safe answer is to refuse. This is also the second, independent
+    // net under the collation bug above — had it been here, that bug would have arrived
+    // as a loud refusal instead of a silent 0.
+    const f = fixture('dup-col.md', [
+      '| ID | เกิดเมื่อ | สถานะ | ที่มา | สถานะ | รายงาน |',
+      '|----|-----------|-------|-------|-------|--------|',
+      '| PM-2026-09-06-01 | 2026-09-06 | OPEN | ที่มา | OPEN | — |',
+    ]);
+    const r = count(f);
+    assert.strictEqual(r.code, 2, 'a duplicated header column was accepted: ' + r.out);
+    assert.ok(/^REFUSE:/.test(r.out), r.out);
   });
 
   // ── the callers are actually wired to it ───────────────────────────────────────

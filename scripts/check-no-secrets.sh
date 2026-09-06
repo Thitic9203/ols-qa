@@ -98,22 +98,36 @@ TIER1 = [(re.compile(p), why) for p, why in TIER1]
 EXEMPT_TIER1 = {"scripts/check-no-secrets.sh", "SECURITY.md"}
 
 bad = 0
+scanned = 0
+skipped_binary = 0
+unreadable = []
 for rel in sys.argv[1:]:
     path = os.path.join(ROOT, rel)
     try:
         with open(path, "rb") as fh:
             raw = fh.read()
-    except (FileNotFoundError, IsADirectoryError):
+    except IsADirectoryError:
+        # A directory in the list is a caller mistake, not a file to judge. Named, not hidden.
+        unreadable.append(f"{rel}: is a directory")
+        continue
+    except FileNotFoundError:
+        # "I never opened it" and "it is clean" used to be the same exit 0. On a public repo
+        # that is the one guard whose silence is irreversible, and the caller's own extraction
+        # step can fail — measured 2026-09-06, a staged file with a non-ASCII name left a
+        # 0-byte stand-in here and scanned clean. Report #0002's rule, on this file.
+        unreadable.append(f"{rel}: not found under {ROOT}")
         continue
     except OSError as exc:
-        print(f"[guard] ERROR reading {rel}: {exc}", file=sys.stderr)
-        sys.exit(2)
+        unreadable.append(f"{rel}: {exc}")
+        continue
     # Binary (png/jpg/pdf/mp4/…): decoded byte runs produce bogus SHAPE hits — a screenshot's pixel
     # data matched the 17-digit snowflake rule. A secret in a binary is not text-detectable anyway,
     # so scanning it buys nothing and only makes a full-tree scan unusable. NUL is the sniff, not the
     # extension, so an odd-suffixed text file is still scanned.
     if b"\0" in raw[:8192]:
+        skipped_binary += 1
         continue
+    scanned += 1
     lines = raw.decode("utf-8", "ignore").splitlines()
 
     for n, line in enumerate(lines, 1):
@@ -135,5 +149,20 @@ if bad:
     print("[guard] Replace the value with its placeholder; real values live in")
     print("[guard]   ~/.ols-qa-secrets/ols-secrets.md  (chmod 600, never committed).")
     sys.exit(1)
+
+# Nothing found — but that is only worth anything if everything asked for was read.
+# A file that could not be opened is "could not scan", which is exit 2 and the callers'
+# contract says they treat 2 as BLOCK. Saying so is the whole difference between a clean
+# scan and a scan that never happened.
+if unreadable:
+    print("[guard] ERROR: could not read the file(s) below, so this is NOT a clean result:", file=sys.stderr)
+    for u in unreadable:
+        print(f"[guard]   {u}", file=sys.stderr)
+    sys.exit(2)
+
+# And the count is printed even on success, so a guard that quietly starts measuring less
+# is visible before it measures nothing — the same reason pre-push prints its suite count.
+print(f"[guard] clean — {scanned} file(s) scanned"
+      + (f", {skipped_binary} binary skipped" if skipped_binary else ""))
 sys.exit(0)
 PY

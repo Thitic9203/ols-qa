@@ -161,7 +161,11 @@ check('a BLOCKED case is not counted as a case that ran', () => {
   const m = feManifest();
   m.cases[1].status = 'BLOCKED';
   m.results[1].status = 'BLOCKED';
-  m.verdict = 'FAILED';
+  // The declared verdict is setup here, not the property under test — the property is the
+  // coverage line asserted at the bottom. It used to read FAILED because that is what
+  // `computedVerdict` returned for a partly blocked round, which was itself the defect:
+  // announcing a defect in a case the round never reached. The truthful verdict is BLOCKED.
+  m.verdict = 'BLOCKED';
   m.symptomGone = true;
   m.rootCause = { text: 'the badge query needs a fixture we could not create', label: 'Unknown — not investigated' };
   m.resolutionOptions = [{ text: 'provide the fixture', owner: 'dev' }, { text: 'drop the item', owner: 'spec owner' }];

@@ -38,7 +38,18 @@ const INTENT = [
   { label: 'ค้าง', re: /ค้าง|แฮงก์|hang|stuck/i },
   { label: 'ผลเพี้ยน', re: /เพี้ยน|ผลไม่ตรง|ไม่ตรงที่คาด|ไม่ตรงกับที่คาด|ค่าผิด|ข้อมูลหาย/ },
   { label: 'บั๊ก', re: /บั๊ก|บัค|\bbug\b|\bbugs\b|regression/i },
-  { label: 'เฟล', re: /เฟล|\bfail(ed|ing|ure|s)?\b|\bbroken\b|\bflaky\b/i, verdictWord: true },
+  // Split in two, because only ONE of these words is also a value a result table records.
+  //
+  // `failed` appears in VERDICT_VOCAB below, so in verdict company it is data — that is the
+  // suppression this pair exists for. `broken`, `flaky`, `failing`, `failure`, `fails` and
+  // `เฟล` are not statuses anywhere in this workspace; they only ever describe something
+  // going wrong. Bundling them with `failed` under one `verdictWord: true` entry meant an
+  // English breakage report next to a results table stopped arming entirely — measured
+  // 2026-09-06: "the smoke run is broken: 3 PASSED, 2 FAILED, 1 BLOCKED" did not arm, while
+  // its Thai counterpart ("…ขึ้นมาแล้วหน้าพัง") did, because พัง has its own entry. The
+  // asymmetry was the bug; the suppression was not.
+  { label: 'เฟล', re: /\bfailed\b/i, verdictWord: true },
+  { label: 'เฟล', re: /เฟล|\bfail(ing|ure|s)\b|\bbroken\b|\bflaky\b/i },
 
   // ── Thai: find out why ───────────────────────────────────────────────────────
   { label: 'หาสาเหตุ', re: /หาสาเหตุ|ต้นเหตุ|สาเหตุ|root\s*cause/i },

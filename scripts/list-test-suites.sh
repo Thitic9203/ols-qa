@@ -23,14 +23,26 @@ DIR="${1:-}"
 
 cd "$DIR" 2>/dev/null || { echo "cannot enter: $DIR" >&2; exit 2; }
 
+# Every depth under tools/, not just `tools/<dir>/<file>.test.js`.
+#
+# The glob was exactly two levels deep, and because ONE match anywhere satisfied the
+# counter, a suite at any other depth was dropped while this still exited 0 and both gates
+# printed a green tick over files nobody ran. Measured 2026-09-06 on a tree holding
+# `tools/alpha/a.test.js`, `tools/beta/nested/deep.test.js` and `scripts/root.test.js`:
+# only the first was listed, exit 0. Latent — all 30 suites sit at depth 2 today — but this
+# file is now the single source both the push gate and CI ask, and its contract could only
+# tell "none at all" from "some", never "fewer than the tree holds". That is report #0002's
+# rule (a filter inside a checker is a claim that what it drops does not matter) arriving in
+# the file written to close #0006.
+#
+# `find` is used rather than a glob so depth is not a property of the pattern, and the
+# output is sorted so the two callers, and two runs, agree on the order.
 found=0
-shopt -s nullglob
-for t in tools/*/*.test.js; do
-  [ -f "$t" ] || continue
-  printf '%s\n' "$t"
+while IFS= read -r t; do
+  [ -n "$t" ] || continue
+  printf '%s\n' "${t#./}"
   found=$((found + 1))
-done
-shopt -u nullglob
+done < <(find . -type f -name '*.test.js' -not -path './.git/*' -not -path './node_modules/*' 2>/dev/null | LC_ALL=C sort)
 
 [ "$found" -gt 0 ] || exit 1
 exit 0

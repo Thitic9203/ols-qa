@@ -31,7 +31,24 @@ LEDGER="${1:-}"
 # outer pipes), so a row cut down to 5 columns yields NF=7, passes the guard, and `$6`
 # then reads a different column — an OPEN row read as something else and never counted.
 # Same class as PM-010: identity, not position.
-OUT="$(awk -F'|' '
+#
+# LC_ALL=C IS LOAD-BEARING, not tidiness. The header names are Thai, and on the awk this
+# machine ships (version 20200816) `==` compares by COLLATION as soon as the locale is a
+# UTF-8 one. An en_US collation table orders every Thai string equal to every other:
+#
+#   LC_ALL=en_US.UTF-8 awk 'BEGIN{ print ("อาการ"=="สถานะ"), ("อาการ"<"สถานะ") }'  →  1 0
+#   LC_ALL=C           awk 'BEGIN{ print ("อาการ"=="สถานะ"), ("อาการ"<"สถานะ") }'  →  0 1
+#
+# so the loop below matched EVERY Thai column and kept the last one (รายงาน). `$status_col
+# == "OPEN"` then never matched and this script printed 0 for a ledger with an OPEN row —
+# the fail-closed fallback of report #0003 running fail-open on the machine's own default
+# locale, which is en_US.UTF-8. Measured 2026-09-06. ASCII names ("ID") were unaffected,
+# which is why the header was still found at all and nothing looked wrong.
+#
+# C makes `==` a byte comparison, which is what a fixed literal needs. The duplicate check
+# below is the second, independent net: had it existed, the bug would have arrived as a
+# refusal instead of a silent zero.
+OUT="$(LC_ALL=C awk -F'|' '
   function trim(s) { gsub(/^[[:space:]]+|[[:space:]]+$/, "", s); return s }
 
   !/^[[:space:]]*\|/ { if (hdr) done = 1; next }
@@ -40,14 +57,24 @@ OUT="$(awk -F'|' '
     if (done) next
 
     if (!hdr) {
-      has_id = 0; has_status = 0; has_report = 0
+      n_id = 0; n_status = 0; n_report = 0
       for (i = 1; i <= NF; i++) {
         f = trim($i)
-        if (f == "ID")     { has_id = 1;     id_col = i }
-        if (f == "สถานะ")   { has_status = 1; status_col = i }
-        if (f == "รายงาน")  { has_report = 1 }
+        if (f == "ID")     { n_id++;     id_col = i }
+        if (f == "สถานะ")   { n_status++; status_col = i }
+        if (f == "รายงาน")  { n_report++ }
       }
-      if (has_id && has_status && has_report) { hdr = 1; hdr_nf = NF }
+      # Only a row carrying all three names is the ledger header; anything else is some
+      # other table and we keep looking. But once it IS the header, a name that matched
+      # more than one column is unresolvable — no rule can say which of them holds the
+      # data, so refuse rather than keep whichever the loop happened to see last.
+      if (n_id >= 1 && n_status >= 1 && n_report >= 1) {
+        if (n_id > 1 || n_status > 1 || n_report > 1) {
+          printf "REFUSE:line %d names a ledger column more than once (ID x%d, สถานะ x%d, รายงาน x%d)\n", NR, n_id, n_status, n_report
+          refused = 1; exit 2
+        }
+        hdr = 1; hdr_nf = NF
+      }
       next
     }
 

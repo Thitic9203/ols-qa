@@ -34,11 +34,21 @@ jobs:
           #
           # Exit 1 from the lister means "no suites in this tree" and 2 means "could not look".
           # Both are failures here; neither is a pass.
+          #
+          # The status is captured with `set +e` around the assignment ON PURPOSE. Actions runs
+          # this block as `bash --noprofile --norc -eo pipefail`, and under `-e` a bare
+          # `SUITES="$(...)"` aborts the step the moment the lister exits non-zero — so a
+          # `case $?` written after it is unreachable and the step dies with no reason printed.
+          # Fail-closed with a silent refusal is the `rc=3` alert all over again.
+          # Executed, not assumed, by tools/push-gate/pre_push.test.js.
+          set +e
           SUITES="$(bash scripts/list-test-suites.sh .)"
-          case $? in
+          LIST_RC=$?
+          set -e
+          case "$LIST_RC" in
             0) ;;
             1) echo "no test suite found in this tree — 'none ran' is not 'all passed'"; exit 1 ;;
-            *) echo "could not enumerate the test suites"; exit 1 ;;
+            *) echo "could not enumerate the test suites (lister exit $LIST_RC)"; exit 1 ;;
           esac
 
           rc=0

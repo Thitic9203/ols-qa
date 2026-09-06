@@ -175,5 +175,23 @@ check('the summary line may state BLOCKED or PWMI, because a round reports its r
   assert.ok(!R.SUMMARY_LINE.test('*Retest Result: probably fine*'));
 });
 
+check('the refusal names every verdict the summary line actually accepts', () => {
+  // The message is what a person reads when the gate stops them. When it named only
+  // PASSED/FAILED, a truthful BLOCKED round was told to rewrite itself as one of two
+  // words the rule had already stopped requiring — the gate teaching the exact mistake
+  // the rule exists to prevent. Read the accepted words out of the pattern so the two
+  // cannot drift apart again.
+  const accepted = /\(([A-Z|]+)\)/.exec(R.SUMMARY_LINE.source)[1].split('|');
+  assert.ok(accepted.length >= 4, 'could not read the verdicts out of SUMMARY_LINE');
+  const body = String(GOOD).split('\n');
+  body[0] = '*Retest Result: probably fine*';
+  const shape = R.scanBody(body.join('\n'), { format: R.FORMATS.WIKI, bugType: 'FE' })
+    .find((f) => f.rule === 'summary-line-shape');
+  assert.ok(shape, 'the malformed summary line was not caught at all');
+  accepted.forEach((v) => assert.ok(
+    (shape.message + ' ' + (shape.fix || '')).includes(v),
+    'the refusal never mentions ' + v + ': ' + shape.message));
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);

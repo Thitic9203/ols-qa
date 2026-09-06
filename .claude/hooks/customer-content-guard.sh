@@ -38,6 +38,30 @@ for cand in /opt/homebrew/bin/python3 /usr/bin/python3 /usr/local/bin/python3 "$
   if "$cand" -c "pass" >/dev/null 2>&1; then PYBIN="$cand"; break; fi
 done
 
+# The marker tokens come from tools/name-guard/customer_content.js — the single source every
+# other layer of the toolkit already reads (scan.js, write_guard.js, alert_format.js, notify.js
+# all `require('./customer_content')`; this hook was the one place that still spelled the token
+# itself). Resolved via node, which is this repo's own runtime and is on PATH in every real
+# invocation; the path is built from this script's own location so it does not depend on the
+# caller's cwd. When node cannot be found or the module cannot be read, the one token known at
+# the time this line was written is the fail-closed default — the same shape as the OLS-host
+# fallback further down when the secrets dir is unreadable: a source going dark does not mean
+# the check gets to do nothing.
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+MARKER_TOKENS=""
+if [ -n "$HOOK_DIR" ] && command -v node >/dev/null 2>&1; then
+  CC_MODULE="$HOOK_DIR/../../tools/name-guard/customer_content.js"
+  if [ -f "$CC_MODULE" ]; then
+    MARKER_TOKENS="$(node -e '
+      try {
+        const c = require(process.argv[1]);
+        process.stdout.write(c.CUSTOMER_MARKERS.map((m) => m.token).join(" "));
+      } catch (e) { /* leave empty — the fallback below covers it */ }
+    ' "$CC_MODULE" 2>/dev/null)"
+  fi
+fi
+[ -z "$MARKER_TOKENS" ] && MARKER_TOKENS="RGS"
+
 # The command the Bash tool is about to run. Prefer python for correct JSON decoding; if that is
 # unavailable, fall back to the raw payload — over-matching here can only cause a false BLOCK,
 # never a false ALLOW, and a false block is the cheap direction.
@@ -66,12 +90,17 @@ MARKER_RC=127
 MARKER=""
 if [ -n "$PYBIN" ]; then
 MARKER_RC=0
-MARKER="$(printf '%s' "$CMD" | "$PYBIN" -c '
-import sys, unicodedata, re
+MARKER="$(printf '%s' "$CMD" | MARKER_TOKENS="$MARKER_TOKENS" "$PYBIN" -c '
+import sys, os, unicodedata, re
 raw = sys.stdin.read()
 t = unicodedata.normalize("NFKC", raw)
 t = re.sub(r"[­​-‏⁠⁦-⁩﻿]", "", t)
-print("RGS" if re.search(r"(?<![A-Za-z])RGS(?![A-Za-z])", t, re.I) else "")
+found = ""
+for tok in os.environ.get("MARKER_TOKENS", "").split():
+    if re.search(r"(?<![A-Za-z])" + re.escape(tok) + r"(?![A-Za-z])", t, re.I):
+        found = tok
+        break
+print(found)
 ' 2>/dev/null)" || MARKER_RC=$?
 fi
 
@@ -85,18 +114,41 @@ NORMALISED=1
 if [ "$MARKER_RC" -ne 0 ]; then
   NORMALISED=0
   MARKER=""
-  # Tolerates characters wedged between the letters, which is the cheap version of what the
-  # normaliser does properly; the fullwidth form is matched literally.
-  if printf '%s' "$CMD" | grep -qiE 'R[^A-Za-z0-9]{0,3}G[^A-Za-z0-9]{0,3}S' \
-     || printf '%s' "$CMD" | grep -qF 'ＲＧＳ'; then
-    MARKER="RGS"
-  fi
+  # No interpreter left to normalise with, so this tolerates characters wedged between a
+  # token's own letters — the cheap version of what NFKC does properly above — built from the
+  # same $MARKER_TOKENS list rather than retyped. The fullwidth literal is checked only for the
+  # one token this branch was written against ("RGS"); a token added later still gets the ASCII
+  # fuzzy match here even before anyone extends the fullwidth line for it too.
+  for tok in $MARKER_TOKENS; do
+    fuzzy="" i=0 len=${#tok}
+    while [ "$i" -lt "$len" ]; do
+      [ "$i" -gt 0 ] && fuzzy="${fuzzy}[^A-Za-z0-9]{0,3}"
+      fuzzy="${fuzzy}${tok:$i:1}"
+      i=$((i + 1))
+    done
+    if printf '%s' "$CMD" | grep -qiE -- "$fuzzy"; then MARKER="$tok"; break; fi
+    if [ "$tok" = "RGS" ] && printf '%s' "$CMD" | grep -qF 'ＲＧＳ'; then MARKER="$tok"; break; fi
+  done
 fi
 
 if [ -z "$MARKER" ] && [ "$NORMALISED" -eq 1 ]; then exit 0; fi
 
 # (b) Would it change anything? A read is always fine — that is how anyone checks what is there.
-if ! printf '%s' "$CMD" | grep -Eqi -- '-X[[:space:]]*(POST|PUT|PATCH|DELETE)|--request[[:space:]]+(POST|PUT|PATCH|DELETE)|--data|--form|-d[[:space:]]|--upload-file|method[[:space:]]*[:=][[:space:]]*.?(POST|PUT|PATCH|DELETE)'; then
+#
+# Every short form must be listed beside its long form, and a short flag must be allowed to
+# carry its value GLUED to it, because that is how people actually type curl. The first
+# version required whitespace after `-d` and knew nothing of `-T`, `-F` or `--json`;
+# measured 2026-09-06 against this very regex, `curl -d'{…}'`, `curl -d@payload.json`,
+# `curl -T cover.png`, `curl -F file=@a.png` and `curl --json '{…}'` were all classified as
+# READS and took the exit below — before the marker or the target were ever considered.
+# Each of those implies POST or PUT in curl, so the calls that got through were precisely
+# the destructive ones.
+#
+# The line is deliberately over-inclusive: `-d` on a `-G` request is a query string, not a
+# write, and it is matched anyway. Over-blocking costs a rephrasing; under-blocking costs
+# the customer's fixtures, and this file has no override to reach for (report #0005).
+if ! printf '%s' "$CMD" | grep -Eqi -- \
+  '-X[[:space:]]*(POST|PUT|PATCH|DELETE)|--request[[:space:]]*(POST|PUT|PATCH|DELETE)|--data(-raw|-binary|-urlencode)?|--form(-string)?|--upload-file|--json|(^|[[:space:]])-[A-Za-z]*[dFT]([[:space:]]|@|=|'"'"'|"|$)|method[[:space:]]*[:=][[:space:]]*.?(POST|PUT|PATCH|DELETE)'; then
   exit 0
 fi
 

@@ -23,9 +23,24 @@ const HOOK = path.join(__dirname, '..', '..', '.claude', 'hooks', 'customer-cont
 const SETTINGS = path.join(__dirname, '..', '..', '.claude', 'settings.json');
 
 let failed = 0;
+let skipped = 0;
 const check = (name, fn) => {
   try { fn(); console.log('PASS  ' + name); } catch (e) { failed++; console.log('FAIL  ' + name + ' — ' + e.message); }
 };
+
+/**
+ * The early-return path a check takes when the off-repo secrets dir is unavailable — counted,
+ * not silent. A CI run never has `~/.ols-qa-secrets/`, so 7 of this file's checks used to take
+ * this branch every single time in CI and the run still finished "all green": the file's own
+ * properties about a real OLS host were never once measured there, with nothing in the output
+ * saying so. The count is reported at the bottom alongside pass/fail, the same shape as the
+ * "measured 0 suites" fix elsewhere in this repo (report #0006) — a skip nobody counts is a
+ * skip nobody notices growing.
+ */
+function skipNoHost() {
+  skipped++;
+  console.log('      (skipped — no OLS host available off-repo)');
+}
 
 /** Run the hook the way Claude Code does: the tool payload on stdin, the verdict as an exit code. */
 function verdict(command) {
@@ -112,6 +127,44 @@ function verdictWithNoInterpreter(command) {
   }
 }
 
+/**
+ * Proves the hook reads its marker list from customer_content.js instead of knowing "RGS"
+ * itself — the exact gap fixed 2026-09-06. Runs a COPY of the real hook against a COPY of the
+ * real module with one extra token added, at the same relative layout the hook expects
+ * (`.claude/hooks/` next to `tools/name-guard/`), so the assertion is that a token the hook was
+ * never told about by name still gets blocked, purely because the module now lists it.
+ */
+function verdictWithExtraMarker(command, extraToken) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cc-extra-'));
+  const hooksDir = path.join(dir, '.claude', 'hooks');
+  const nameGuardDir = path.join(dir, 'tools', 'name-guard');
+  fs.mkdirSync(hooksDir, { recursive: true });
+  fs.mkdirSync(nameGuardDir, { recursive: true });
+  const hookCopy = path.join(hooksDir, 'customer-content-guard.sh');
+  fs.copyFileSync(HOOK, hookCopy);
+
+  const ccSrc = fs.readFileSync(path.join(__dirname, 'customer_content.js'), 'utf8');
+  const needle = "{ token: 'RGS', owner: 'HI', why: 'ข้อมูลทดสอบของ HI' },";
+  const patched = ccSrc.replace(
+    needle,
+    `${needle}\n  { token: '${extraToken}', owner: 'TEST', why: 'test-only marker' },`,
+  );
+  assert.notStrictEqual(patched, ccSrc, 'CUSTOMER_MARKERS line changed shape — this test is now blind');
+  fs.writeFileSync(path.join(nameGuardDir, 'customer_content.js'), patched, 'utf8');
+
+  try {
+    execFileSync('bash', [hookCopy], {
+      input: JSON.stringify({ tool_name: 'Bash', tool_input: { command } }),
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    return 0;
+  } catch (e) {
+    return e.status;
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 /* A real environment host, read from the off-repo secrets dir — never written into this public
  * repo. Without one, the host half of the check cannot be exercised honestly, so those cases
  * are skipped rather than quietly passed on a made-up hostname. */
@@ -140,12 +193,12 @@ check('the hook exists and is registered on the Bash tool', () => {
 });
 
 check('a write to an OLS environment naming the marker is blocked', () => {
-  if (!HOST) { console.log('      (skipped — no OLS host available off-repo)'); return; }
+  if (!HOST) { skipNoHost(); return; }
   assert.strictEqual(verdict(`curl -X PUT https://${HOST}/api/media/1 -d '{"title":"${M} x"}'`), 2);
 });
 
 check('an absolute binary path does not slip past it', () => {
-  if (!HOST) { console.log('      (skipped — no OLS host available off-repo)'); return; }
+  if (!HOST) { skipNoHost(); return; }
   // This is exactly what a shell function or a PATH shim cannot catch.
   assert.strictEqual(verdict(`/usr/bin/curl -X DELETE https://${HOST}/api/media/9 -H 'x: ${M}'`), 2);
 });
@@ -160,15 +213,57 @@ check('an invisible or fullwidth marker is still the marker', () => {
   assert.strictEqual(verdict(`curl -X PUT /api/media/1 -d '${ZWSP}'`), 2);
 });
 
+check('a marker added to customer_content.js is picked up without editing this hook', () => {
+  const extra = 'ZQTESTMARK';
+  assert.strictEqual(
+    verdictWithExtraMarker(`curl -X PUT /api/media/1 -d '[${extra}] fixture'`, extra), 2,
+    'a brand-new token in the single source list was not blocked — the hook is not really reading it',
+  );
+  assert.strictEqual(
+    verdictWithExtraMarker(`curl -X PUT /api/media/1 -d 'ordinary title'`, extra), 0,
+    'adding a token to the list must not turn unrelated writes into blocks',
+  );
+});
+
+check('every curl form that writes is treated as a write', () => {
+  // The detector used to carry `--data`, `--form`, `--upload-file`, `--request` and `-X`,
+  // but of the short forms only `-d ` with a trailing space. Measured 2026-09-06 against
+  // the regex itself: `-d'…'` glued, `-d@file`, `-T`, `-F` and `--json` were all read as
+  // READS and took the early `exit 0` — before the marker was ever consulted. Each of
+  // them implies POST or PUT in curl, so they were the destructive calls, not the safe
+  // ones. A form missing here is not a cosmetic gap: it is the whole guard skipped.
+  for (const c of [
+    `curl -d'{"title":"${M} x"}' /api/media/1`,
+    `curl -d@payload.json /api/media/1  # ${M}`,
+    `curl -T ${M}-cover.png /api/media/1`,
+    `curl -F 'file=@${M}.png' /api/media/1`,
+    `curl --json '{"t":"${M}"}' /api/media/1`,
+    `curl --data-raw '{"t":"${M}"}' /api/media/1`,
+    `curl --data-binary @x.bin /api/media/1  # ${M}`,
+    `curl -G -d 'q=${M}' /api/media`,          // -G makes it a GET, but over-blocking here is the safe side
+  ]) assert.strictEqual(verdict(c), 2, `a write form was read as a read: ${c}`);
+});
+
+check('a plain read is still not a write', () => {
+  // The other direction — the widened detector must not turn every curl into a refusal,
+  // or it gets switched off and takes the protection with it.
+  for (const c of [
+    `curl -s /api/media | grep ${M}`,
+    `curl /api/media/1`,
+    `curl -H 'x: 1' /api/media/1`,
+    `curl -o out.json /api/media/1  # ${M}`,
+  ]) assert.strictEqual(verdict(c), 0, `an ordinary read was blocked: ${c}`);
+});
+
 // ── the other failure mode: ordinary work must not be blocked ───────────────────────────
 check('reading the customer\'s rows is never blocked', () => {
-  if (!HOST) { console.log('      (skipped — no OLS host available off-repo)'); return; }
+  if (!HOST) { skipNoHost(); return; }
   assert.strictEqual(verdict(`curl -s https://${HOST}/api/media | grep ${M}`), 0);
   assert.strictEqual(verdict(`grep -rn "${M}" out/name-guard-preprod.json`), 0);
 });
 
 check('a write to our own content is never blocked', () => {
-  if (!HOST) { console.log('      (skipped — no OLS host available off-repo)'); return; }
+  if (!HOST) { skipNoHost(); return; }
   assert.strictEqual(verdict(`curl -X PUT https://${HOST}/api/media/1 -d '{"title":"ทะเลมหัศจรรย์"}'`), 0);
 });
 
@@ -191,7 +286,7 @@ check('editing this repo is never blocked', () => {
 check('a python3 shim on PATH no longer changes any verdict — the guard steps over it', () => {
   // The stronger property, and the one that keeps the fail-closed branch from firing in daily
   // work: a shim is bypassed for an absolute interpreter, so every verdict is the normal one.
-  if (!HOST) { console.log('      (skipped — no OLS host available off-repo)'); return; }
+  if (!HOST) { skipNoHost(); return; }
   const theirs = `curl -X PUT https://${HOST}/api/media/1 -d '{"title":"${M} x"}'`;
   const ours = `curl -X PUT https://${HOST}/api/media/1 -d '{"title":"ทะเลมหัศจรรย์"}'`;
   for (const mode of ['missing', 'stdout']) {
@@ -201,7 +296,7 @@ check('a python3 shim on PATH no longer changes any verdict — the guard steps 
 });
 
 check('with NO usable interpreter, the marker case still blocks', () => {
-  if (!HOST) { console.log('      (skipped — no OLS host available off-repo)'); return; }
+  if (!HOST) { skipNoHost(); return; }
   const cmd = `curl -X PUT https://${HOST}/api/media/1 -d '{"title":"${M} x"}'`;
   assert.strictEqual(verdictWithNoInterpreter(cmd), 2, 'the guard allowed a customer write');
 });
@@ -209,7 +304,7 @@ check('with NO usable interpreter, the marker case still blocks', () => {
 check('with NO usable interpreter, a write aimed at an OLS environment is refused even with no marker seen', () => {
   // It cannot tell whose row it is, so it will not guess. Over-blocking costs one confirmation;
   // the other direction costs the customer's data, and we cannot undo that.
-  if (!HOST) { console.log('      (skipped — no OLS host available off-repo)'); return; }
+  if (!HOST) { skipNoHost(); return; }
   const ours = `curl -X PUT https://${HOST}/api/media/1 -d '{"title":"ทะเลมหัศจรรย์"}'`;
   assert.strictEqual(verdict(ours), 0, 'with an interpreter available this must still pass');
   assert.strictEqual(verdictWithNoInterpreter(ours), 2);
@@ -239,5 +334,8 @@ check('the guard checks python3\'s exit status, not merely whether it printed so
 });
 
 console.log();
+if (skipped) {
+  console.log(skipped + ' skipped — no OLS host available off-repo (this run never touched ~/.ols-qa-secrets/)');
+}
 if (failed) { console.log(failed + ' failing'); process.exit(1); }
-console.log('all green');
+console.log('all green' + (skipped ? ' (' + skipped + ' skipped)' : ''));

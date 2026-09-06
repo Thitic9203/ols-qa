@@ -18,10 +18,47 @@
 
 const fs = require('fs');
 const path = require('path');
-const R = require('./postmortem_rules');
+// Guarded, because a module-load error happens BEFORE any try/catch further down the file
+// and would leave node's default exit 1 — which `pre-commit` reads as "debt is open".
+// Measured 2026-09-06: a syntax error in the rules module made the gate report outstanding
+// debt instead of "cannot run", and the independent shell reader was never consulted. The
+// file this breaks on is the single decision module the whole system points at, so it is
+// exactly the failure that must not be silent.
+let R;
+try {
+  R = require('./postmortem_rules');
+} catch (e) {
+  console.error(`[postmortem-guard] CANNOT RUN: cannot load the rules module: ${(e && e.stack) || e}`);
+  process.exit(2);
+}
 
 const ROOT = path.join(__dirname, '..', '..');
-const DIR = path.join(ROOT, 'docs', 'post-mortem');
+
+/**
+ * Which folder to check.
+ *
+ * `--dir <path>` exists so a caller can check the tree that is about to be COMMITTED
+ * rather than the one lying on disk. `pre-commit` already materialised the staged blobs
+ * for the secret scanner and then handed this validator the working tree anyway, so a
+ * `git add -p` of half a report, or a stale revision staged while the worktree copy was
+ * fixed, was validated against the good copy and the broken blob went in. The gate has to
+ * report on the tree being shipped, which is the same principle `pre-push` was built on.
+ *
+ * A missing operand is an error, never a silent fall back to the default: "--dir" with
+ * nothing after it means the caller meant to name a folder and the name went missing.
+ */
+function resolveDir(argv) {
+  const i = argv.indexOf('--dir');
+  if (i === -1) return path.join(ROOT, 'docs', 'post-mortem');
+  const v = argv[i + 1];
+  if (!v || v.startsWith('--')) {
+    console.error('[postmortem-guard] CANNOT RUN: --dir needs a path');
+    process.exit(2);
+  }
+  return path.resolve(v);
+}
+
+const DIR = resolveDir(process.argv);
 const LEDGER = path.join(DIR, 'PENDING.md');
 const INDEX = path.join(DIR, 'README.md');
 
@@ -71,6 +108,18 @@ function main() {
   }
 
   if (debtOnly) {
+    // A ledger that does not parse cannot answer "is anything owed", and saying "no open
+    // debt" for one is the exact conflation report #0003 was written about — arriving here
+    // on the REMINDER path instead of the commit path. The reminder hook matches the
+    // sentence below and goes quiet on it, so layers 3, 4, 5 and 6 fall silent together
+    // while a report is owed. `--gate` and the shell reader both refuse such a ledger;
+    // this mode was the one that did not look.
+    if (parseProblems.length > 0) {
+      console.log('[postmortem-guard] อ่านบัญชีหนี้ไม่ได้ จึงบอกไม่ได้ว่ามีหนี้ค้างหรือไม่:');
+      for (const p of parseProblems) console.log(`  - ${p}`);
+      console.log('  แก้ตารางใน docs/post-mortem/PENDING.md ให้อ่านได้ก่อน');
+      return 2;
+    }
     if (open.length === 0) {
       console.log('[postmortem-guard] no open post-mortem debt.');
       return 0;
@@ -142,4 +191,14 @@ function main() {
   return 1;
 }
 
-process.exit(main());
+// A throw is "could not run" (2), never "found problems" (1). Without this an exception
+// left node's default exit 1, and `pre-commit` maps 1 to "debt is open" — so a crashed
+// gate was reported to the user as outstanding debt, and the independent shell reader that
+// exists for exactly this case was skipped. The sibling guard
+// (tools/investigation-guard/check.js) has carried this catch since it was written.
+try {
+  process.exit(main());
+} catch (e) {
+  console.error(`[postmortem-guard] CANNOT RUN: ${(e && e.stack) || e}`);
+  process.exit(2);
+}

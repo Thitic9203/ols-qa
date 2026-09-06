@@ -37,6 +37,28 @@ check('every broad form of staging is refused', () => {
   ]) assert.ok(d(c).block, `ไม่บล็อก: ${c}`);
 });
 
+check('a wrapper word in front does not hide the git command', () => {
+  // This machine rewrites git commands through a proxy — RTK.md: "All other commands are
+  // automatically rewritten by the Claude Code hook. Example: `git status` → `rtk git
+  // status` (transparent, 0 tokens overhead)". Measured 2026-09-06 against the live hook:
+  // `git add -A` exited 2 (blocked) while `rtk git add -A` exited 0 (allowed), so on this
+  // machine the guard written for the ceddf08 incident was not in the path at all.
+  for (const c of [
+    'rtk git add -A', 'rtk git add .', 'rtk git commit -a',
+    'command git add -A', 'sudo git add .', 'env git add -A',
+    'nohup git add -A', '/usr/bin/env git add .',
+    'GIT_DIR=.git git add -A',
+  ]) assert.ok(d(c).block, `wrapper hid the command: ${c}`);
+});
+
+check('a wrapper word does not turn an explicit path into a refusal either', () => {
+  for (const c of [
+    'rtk git add CLAUDE.md',
+    'command git add tools/git-staging-guard/staging_rules.js',
+    'sudo git add -- a.js b.sh',
+  ]) assert.strictEqual(d(c).block, false, `wrapper caused a false block: ${c}`);
+});
+
 check('explicit file staging is never refused', () => {
   for (const c of [
     'git add CLAUDE.md',
@@ -145,9 +167,9 @@ check('the pre-push gate exists and tests the pushed commit, not the working tre
   assert.ok(src.includes('worktree add'), 'pre-push เลิกตรวจ commit ที่จะ push แล้วไปตรวจ working tree แทน');
   // เดิมบรรทัดนี้ตรึง "ต้องมี glob เขียนอยู่ในไฟล์" ซึ่งเป็นการตรึง *วิธีเขียน* ไม่ใช่ *คุณสมบัติ*
   // 2026-09-06 pattern ถูกย้ายไปอยู่ที่เดียวคือ scripts/list-test-suites.sh เพราะตอนที่มันถูก
-  // เขียนสองที่ (ที่นี่กับไฟล์ CI) สองที่นั้นเพี้ยนจากกัน — ฝั่ง CI ปฏิเสธเมื่อไม่เจอชุดเทสต์
+  // เขียน 2 ที่ (ที่นี่กับไฟล์ CI) 2 ที่นั้นเพี้ยนจากกัน — ฝั่ง CI ปฏิเสธเมื่อไม่เจอชุดเทสต์
   // ฝั่ง pre-push ไม่ปฏิเสธ จึงพิมพ์ว่าเขียวทับ commit ที่ไม่เคยวัด (รายงาน #0006)
-  // เจตนาของข้อนี้ไม่เปลี่ยน: pre-push ต้องรันชุดเทสต์ทั้งหมด — รับได้ทั้งสองวิธี
+  // เจตนาของข้อนี้ไม่เปลี่ยน: pre-push ต้องรันชุดเทสต์ทั้งหมด — รับได้ทั้ง 2 วิธี
   assert.ok(
     /tools\/\*\/\*\.test\.js/.test(src) || src.includes('list-test-suites.sh'),
     'pre-push ไม่ได้รันชุดเทสต์ทั้งหมดแล้ว',
@@ -167,6 +189,82 @@ check('the guard has no override flag', () => {
   for (const bad of ['--force', 'SKIP_STAGING', 'ALLOW_BROAD', 'no-verify']) {
     assert.ok(!src.includes(bad), `มีทางลัด "${bad}"`);
   }
+});
+
+/* ── the hook itself, run as a process ───────────────────────────────────────────
+ * Everything above this line tests the rules module. The module is not what Claude
+ * Code executes — the shell hook is, and until this section existed the suite made
+ * zero process calls: the rules could be perfect while the hook that consults them
+ * was wired wrong, missing, or swallowing its own exit code, and every case here
+ * would still have printed PASS. Same lesson as #0002 and #0006 — a layer with no
+ * test of its own is a layer nobody knows is still running.
+ */
+const { spawnSync } = require('child_process');
+const os = require('os');
+
+const HOOK_SRC = path.join(ROOT, '.claude', 'hooks', 'git-staging-guard.sh');
+const RULES_SRC = path.join(__dirname, 'staging_rules.js');
+
+function sandbox() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'staging-hook-'));
+  fs.mkdirSync(path.join(dir, '.claude', 'hooks'), { recursive: true });
+  fs.mkdirSync(path.join(dir, 'tools', 'git-staging-guard'), { recursive: true });
+  fs.copyFileSync(HOOK_SRC, path.join(dir, '.claude', 'hooks', 'git-staging-guard.sh'));
+  fs.copyFileSync(RULES_SRC, path.join(dir, 'tools', 'git-staging-guard', 'staging_rules.js'));
+  fs.mkdirSync(path.join(dir, 'tools', 'name-guard'), { recursive: true }); // a real directory to refuse
+  return dir;
+}
+
+function runHook(dir, command, env) {
+  const r = spawnSync('bash', [path.join(dir, '.claude', 'hooks', 'git-staging-guard.sh')], {
+    input: JSON.stringify({ tool_input: { command }, cwd: dir }),
+    encoding: 'utf8',
+    env: Object.assign({}, process.env, { CLAUDE_PROJECT_DIR: dir }, env || {}),
+  });
+  return { code: r.status, err: (r.stderr || '') + (r.stdout || '') };
+}
+
+check('the hook process refuses a broad stage and lets an explicit path through', () => {
+  const dir = sandbox();
+  const bad = runHook(dir, 'git add -A');
+  assert.strictEqual(bad.code, 2, 'git add -A was not blocked by the hook: ' + bad.err);
+  assert.ok(/BLOCKED/.test(bad.err), 'the refusal carried no reason: ' + bad.err);
+
+  const folder = runHook(dir, 'git add tools/name-guard/');
+  assert.strictEqual(folder.code, 2, 'a directory argument was not blocked: ' + folder.err);
+
+  const ok = runHook(dir, 'git add tools/git-staging-guard/staging_rules.js');
+  assert.strictEqual(ok.code, 0, 'an explicit path was refused: ' + ok.err);
+  assert.ok(!/BLOCKED/.test(ok.err), 'an explicit path produced a refusal: ' + ok.err);
+});
+
+check('a wrapper in front of git is refused by the hook, not only by the module', () => {
+  const dir = sandbox();
+  for (const cmd of ['rtk git add -A', 'command git add .', 'env GIT_DIR=.git git add -u']) {
+    const r = runHook(dir, cmd);
+    assert.strictEqual(r.code, 2, 'not blocked through the hook: ' + cmd + ' -> ' + r.err);
+  }
+});
+
+check('when it cannot run it says so out loud, and says the rule is still on', () => {
+  // This layer is deliberately fail-OPEN — its own header says so, because blocking every
+  // git command when node breaks costs more than the sweep it prevents, and a swept file is
+  // always recoverable. Fail-open is only defensible while it is LOUD, so that is what is
+  // pinned here: silence would leave the agent believing it had been checked.
+  const noNode = (process.env.PATH || '').split(':')
+    .filter((d) => d && !fs.existsSync(path.join(d, 'node'))).join(':');
+
+  const gone = sandbox();
+  const r1 = runHook(gone, 'git add -A', { PATH: noNode });
+  assert.strictEqual(r1.code, 0, 'it blocked instead of degrading: ' + r1.err);
+  assert.ok(/รันไม่ได้/.test(r1.err), 'it went quiet with no node: ' + JSON.stringify(r1.err));
+  assert.ok(/ระบุไฟล์ทีละตัว/.test(r1.err), 'the warning does not restate the rule: ' + r1.err);
+
+  const norules = sandbox();
+  fs.unlinkSync(path.join(norules, 'tools', 'git-staging-guard', 'staging_rules.js'));
+  const r2 = runHook(norules, 'git add -A');
+  assert.strictEqual(r2.code, 0, r2.err);
+  assert.ok(/รันไม่ได้/.test(r2.err), 'a missing rules module passed silently: ' + JSON.stringify(r2.err));
 });
 
 console.log(failed ? `\n${failed} FAILED` : '\nall passed');

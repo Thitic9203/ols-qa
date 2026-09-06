@@ -14,17 +14,51 @@ set -uo pipefail
 ROOT="$(git rev-parse --show-toplevel)"
 GUARD="$ROOT/scripts/check-no-secrets.sh"
 
-# Staged text files (skip binaries — screenshots are scanned by eye, not by regex).
+# ── the tree this commit will produce ────────────────────────────────────────────
+#
+# Everything below judges the INDEX, never the working tree, and `git checkout-index -a`
+# materialises it once for both consumers. Extracting only the changed blobs one at a time
+# was wrong twice over:
+#
+#   * `git show ":$f" > "$TMP/$f" || continue` created the target BEFORE git ran, so a
+#     failed extraction left a 0-byte stand-in that the scanner then read as clean. It
+#     fails for real: `core.quotePath` defaults to true, so a staged `หลักฐาน.md` arrives
+#     C-quoted, `git show ":<that>"` exits 128, and a file carrying a live credential was
+#     handed to the guard as empty. Measured 2026-09-06.
+#   * the report validator was never given the snapshot at all and read the folder off
+#     disk, so a half-staged report passed whenever the worktree copy was intact.
+#
+# One extract, one truth, and it is the truth that is about to be committed. It costs about
+# a third of a second on this repo (219 files) — measured, not assumed.
+SNAP="$(mktemp -d)"
+trap 'rm -rf "$SNAP"' EXIT
+if ! git checkout-index -a --prefix="$SNAP/" 2>/dev/null; then
+  echo "[ols-qa pre-commit] ❌ commit BLOCKED — could not materialise the staged tree."
+  echo "  ตรวจสอบไม่ได้ว่าอะไรกำลังจะถูกคอมมิต จึงไม่ปล่อยผ่าน"
+  exit 1
+fi
+
+# Two lists, because they answer two different questions.
+#
+# ALL_STAGED is every path this commit touches, deletions included, and it decides which
+# GATES apply. Using the scan list for that was a hole: `--diff-filter=ACM` drops D, so a
+# commit that only deleted files produced an empty list and the hook exited at the check
+# below — fifty lines above the debt gate. A commit staging only a screenshot did the same.
+ALL_STAGED=()
+while IFS= read -r -d '' f; do
+  [ -n "$f" ] || continue
+  ALL_STAGED+=("$f")
+done < <(git diff --cached --name-only -z)
+
+# STAGED is the text blobs the secret scanner reads — present in the index, not binary.
 STAGED=()
-while IFS= read -r f; do
+while IFS= read -r -d '' f; do
   [ -n "$f" ] || continue
   case "$f" in
     *.png|*.jpg|*.jpeg|*.gif|*.webm|*.mp4|*.pdf|*.zip|*.csv) continue ;;
   esac
   STAGED+=("$f")
-done < <(git diff --cached --name-only --diff-filter=ACM)
-
-[ "${#STAGED[@]}" -gt 0 ] || exit 0
+done < <(git diff --cached --name-only -z --diff-filter=ACM)
 
 if [ ! -x "$GUARD" ]; then
   echo "[ols-qa pre-commit] ❌ secret guard missing or not executable: $GUARD"
@@ -32,23 +66,16 @@ if [ ! -x "$GUARD" ]; then
   exit 1
 fi
 
-echo "[ols-qa pre-commit] scanning ${#STAGED[@]} staged file(s) for OLS secrets…"
-
-# Scan the STAGED blobs, not the dirty working tree.
-TMP="$(mktemp -d)"
-trap 'rm -rf "$TMP"' EXIT
-for f in "${STAGED[@]}"; do
-  mkdir -p "$TMP/$(dirname "$f")"
-  git show ":$f" > "$TMP/$f" 2>/dev/null || continue
-done
-
-SCAN_ROOT="$TMP" "$GUARD" "${STAGED[@]}"
-rc=$?
-if [ "$rc" -ne 0 ]; then
-  echo "[ols-qa pre-commit] ❌ commit BLOCKED (guard exit $rc)."
-  echo "  Use the placeholder instead of the real value. Mapping:"
-  echo "    ~/.ols-qa-secrets/ols-secrets.md"
-  exit 1
+if [ "${#STAGED[@]}" -gt 0 ]; then
+  echo "[ols-qa pre-commit] scanning ${#STAGED[@]} staged file(s) for OLS secrets…"
+  SCAN_ROOT="$SNAP" "$GUARD" "${STAGED[@]}"
+  rc=$?
+  if [ "$rc" -ne 0 ]; then
+    echo "[ols-qa pre-commit] ❌ commit BLOCKED (guard exit $rc)."
+    echo "  Use the placeholder instead of the real value. Mapping:"
+    echo "    ~/.ols-qa-secrets/ols-secrets.md"
+    exit 1
+  fi
 fi
 
 # ── Post-mortem debt gate — layer 8 of ten ───────────────────────────────────────
@@ -77,10 +104,18 @@ LEDGER="$ROOT/docs/post-mortem/PENDING.md"
 COUNTER="$ROOT/tools/postmortem-guard/ledger_open_count.sh"
 GATE="$ROOT/tools/postmortem-guard/check.js"
 
+# The exemption is for the commit that CLOSES the debt, and closing it means editing the
+# LEDGER — writing the report, or recording the owner's WONTFIX. It used to match any file
+# under docs/post-mortem/, so a one-character edit to README.md carried an unlimited number
+# of unrelated files past the gate while the row stayed OPEN. Two flags now, because the
+# question "may this commit skip the gate" and the question "does this commit need the
+# folder validated" are not the same question.
+TOUCHES_LEDGER=0
 TOUCHES_POSTMORTEM=0
-for f in "${STAGED[@]}"; do
+for f in "${ALL_STAGED[@]}"; do
   case "$f" in
-    docs/post-mortem/*) TOUCHES_POSTMORTEM=1 ;;
+    docs/post-mortem/PENDING.md) TOUCHES_LEDGER=1; TOUCHES_POSTMORTEM=1 ;;
+    docs/post-mortem/*)          TOUCHES_POSTMORTEM=1 ;;
   esac
 done
 
@@ -118,7 +153,7 @@ if [ -z "$DEBT_OPEN" ]; then
   if [ "$COUNT_OUT" -gt 0 ]; then DEBT_OPEN=yes; else DEBT_OPEN=no; fi
 fi
 
-if [ "$DEBT_OPEN" = "yes" ] && [ "$TOUCHES_POSTMORTEM" -eq 0 ]; then
+if [ "$DEBT_OPEN" = "yes" ] && [ "$TOUCHES_LEDGER" -eq 0 ]; then
   echo "[ols-qa pre-commit] ❌ commit BLOCKED — post-mortem debt ค้างอยู่"
   bash "$ROOT/.claude/hooks/postmortem-debt.sh" 2>/dev/null || true
   echo "  เขียนรายงานให้จบก่อน หรือให้เจ้าของงานสั่ง WONTFIX พร้อมเหตุผลและวันที่"
@@ -128,8 +163,21 @@ fi
 
 # Validate the folder whenever the commit touches it — a broken report must not land.
 # Unrelated commits are not held hostage to it; CI validates the folder on every push.
-if [ "$TOUCHES_POSTMORTEM" -eq 1 ] && command -v node >/dev/null 2>&1; then
-  if ! node "$ROOT/tools/postmortem-guard/check.js"; then
+#
+# `--dir` points it at the snapshot, so what is judged is what will be committed.
+#
+# And no node is a REFUSAL, not a pass. The condition used to be
+# `if [ touches ] && command -v node; then … fi` with no else, so the one path the
+# exemption above already lets past the debt gate was also the path with no validation
+# left on it. Every other "cannot run" in this file blocks; this one evaporated.
+if [ "$TOUCHES_POSTMORTEM" -eq 1 ]; then
+  if ! command -v node >/dev/null 2>&1; then
+    echo "[ols-qa pre-commit] ❌ commit BLOCKED — ไม่มี node จึงตรวจรายงานไม่ได้"
+    echo "  คอมมิตนี้แตะ docs/post-mortem/ ซึ่งต้องผ่านตัวตรวจก่อนเสมอ"
+    echo "  ตรวจไม่ได้ ไม่เท่ากับ ตรวจแล้วผ่าน"
+    exit 1
+  fi
+  if ! node "$ROOT/tools/postmortem-guard/check.js" --dir "$SNAP/docs/post-mortem"; then
     echo "[ols-qa pre-commit] ❌ commit BLOCKED — postmortem-guard พบปัญหาในรายงาน/บัญชีหนี้"
     exit 1
   fi

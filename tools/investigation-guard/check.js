@@ -32,9 +32,41 @@ function readStdin() {
 function parse(s) { try { return JSON.parse(s); } catch { return {}; } }
 function statePath(id) { return path.join(STATE_DIR, `${String(id || 'unknown').replace(/[^\w.-]/g, '_')}.json`); }
 function loadState(p) { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; } }
+/**
+ * The one fact the shell layer is allowed to read: which sessions still owe an
+ * investigation. One session id per line, empty when none.
+ *
+ * `investigation-gate.sh` needs to know "is anything armed" precisely when it CANNOT ask
+ * this module — node missing, or the rules file broken. It used to answer that with
+ * `ls .investigation-state/*.json`, which is a second, different rule: settled files are
+ * kept for seven days (see `prunable`), so a dismissed or satisfied flag counted, and a
+ * broken node produced a week of warnings about investigations nobody owed. A warning that
+ * fires when nothing is wrong is how a real one gets ignored.
+ *
+ * Publishing the answer keeps the decision here, in the module that owns it, and leaves
+ * the shell reading a fact rather than re-deriving one. Best-effort: failing to write this
+ * must never break a run, and a stale or missing file only costs an extra warning, never a
+ * missed one — `refreshArmed` is called after every state change and after pruning.
+ */
+const ARMED_LIST = path.join(STATE_DIR, 'ARMED');
+function refreshArmed() {
+  try {
+    let files = [];
+    try { files = fs.readdirSync(STATE_DIR).filter((f) => f.endsWith('.json')); } catch { return; }
+    const armed = [];
+    for (const f of files) {
+      const s = loadState(path.join(STATE_DIR, f));
+      if (s && s.armed_at && !s.dismissed_reason && !s.satisfied_at) armed.push(f.replace(/\.json$/, ''));
+    }
+    fs.mkdirSync(STATE_DIR, { recursive: true });
+    fs.writeFileSync(ARMED_LIST, armed.length ? armed.join('\n') + '\n' : '');
+  } catch { /* best effort — never break a run over housekeeping */ }
+}
+
 function saveState(p, o) {
   fs.mkdirSync(STATE_DIR, { recursive: true });
   fs.writeFileSync(p, JSON.stringify(o, null, 2) + '\n');
+  refreshArmed();
 }
 /**
  * `null` = could not be read at all. `[]` = read fine and genuinely empty.
@@ -64,6 +96,7 @@ function pruneState(now = Date.now()) {
     if (!R.prunable(loadState(fp), now)) continue;
     try { fs.unlinkSync(fp); n += 1; } catch { /* best effort */ }
   }
+  refreshArmed();
   return n;
 }
 
@@ -163,7 +196,7 @@ function gate() {
 
   สัญญาณที่ทำให้ติดธง : ${(d.hits || []).join(' · ') || 'ไม่ระบุ'}
   transcript ที่อ่าน   : ${tPath || '(ไม่มีค่า)'}
-  สถานะ               : เปิดไฟล์นี้ไม่ได้ จึงพิสูจน์ไม่ได้ทั้งสองทาง
+  สถานะ               : เปิดไฟล์นี้ไม่ได้ จึงพิสูจน์ไม่ได้ทั้ง 2 ทาง
 
 นี่ไม่ได้แปลว่าไม่เคยเรียกสกิล — แปลว่าตรวจไม่ได้ ซึ่งไม่นับว่าผ่าน
 ทางออก: เรียก ${R.DEBUG_SKILL} รอบนี้ให้เห็นชัด หรือถ้าธงติดผิดให้บันทึกเหตุผลด้วย

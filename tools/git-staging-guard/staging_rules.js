@@ -61,12 +61,30 @@ function tokens(seg) {
   return out;
 }
 
-/** git's own options sit before the subcommand; skip them to find it. */
+/**
+ * Find the git command inside a segment, then skip git's own options to reach the
+ * subcommand.
+ *
+ * `git` is looked for ANYWHERE in the segment, not only at the front. Requiring argv[0]
+ * to be `git` was a bypass on this very machine: RTK.md documents that a hook rewrites
+ * git commands transparently into `rtk git …`, and measured 2026-09-06 against the live
+ * PreToolUse hook, `git add -A` exited 2 while `rtk git add -A` exited 0 — the guard
+ * written for the ceddf08 incident was never in the path. `command`, `sudo`, `env`,
+ * `nohup` and a leading `VAR=value` did the same.
+ *
+ * An allow-list of wrapper words would only move the bypass to the next wrapper nobody
+ * listed, so the scan is open-ended. The cost is that a segment which merely MENTIONS
+ * `git add -A` as separate words (`echo git add -A`) is refused too. That direction is
+ * deliberate and is this repo's stated rule for guards (report #0005): a false refusal
+ * costs one rephrasing, a false allow costs another session's work on main. A quoted
+ * mention is unaffected — `tokens()` keeps `"git add -A"` as a single token.
+ */
 function subcommand(tk) {
   let i = 0;
   if (!tk.length) return null;
-  if (!/(^|\/)git$/.test(tk[0])) return null;
-  i = 1;
+  while (i < tk.length && !/(^|\/)git$/.test(tk[i])) i += 1;
+  if (i >= tk.length) return null;
+  i += 1;
   while (i < tk.length) {
     const t = tk[i];
     if (t === '-C' || t === '-c') { i += 2; continue; }

@@ -62,9 +62,14 @@ them.
 
 ## Open question, recorded rather than guessed
 
-`OPEN_QUESTIONS` in `retest_rules.js` carries what is genuinely undecided. One entry was closed by
-measurement rather than by opinion: a `[label|url]` link inside a v2 table cell does **not** split its
-row — OLS-701's retest comment renders such a cell with all five `<td>` intact and the MP4 as a working
-attachment link. What remains open is the summary wording for a round where every in-scope item is
-BLOCKED, and for a round carrying a PWMI row: both render FAILED today because the summary line is
-locked to PASSED/FAILED, and nothing in the workflow says which they should take.
+`OPEN_QUESTIONS` in `retest_rules.js` is the list of things this module refuses to guess about.
+It is **empty today**, and that is the point: an entry leaves it only when it is answered by
+measurement, never by opinion.
+
+Both entries it used to hold are now closed. A `[label|url]` link inside a v2 table cell does
+**not** split its row — OLS-701's retest comment renders such a cell with all five `<td>` intact
+and the MP4 as a working attachment link. And the summary wording for a BLOCKED or PWMI round is
+settled: `SUMMARY_LINE` accepts `PASSED | FAILED | BLOCKED | PWMI`, and `computedVerdict` returns
+the status the rows actually carry — a round nobody could reach reports BLOCKED, and a round whose
+worst row is a non-High defect reports PWMI. Calling either of those FAILED sends a developer after
+a bug that was never observed, which is what the owner's 2026-09-05 rule forbids.
