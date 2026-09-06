@@ -40,6 +40,7 @@
 | 0004 | 2026-09-06 | บอกเจ้าของงานให้ปิด-เปิดเซสชันใหม่ ทั้งที่ไม่เคยวัด และของจริงคือ hook มีผลทันที (ผิดซ้ำจาก 0001) | Medium | [20260906-post-mortem-report-0004-claimed-sessions-need-restart-without-measuring.md](20260906-post-mortem-report-0004-claimed-sessions-need-restart-without-measuring.md) |
 | 0005 | 2026-09-06 | การ์ดกันแก้ข้อมูลลูกค้าปิดตัวเองเงียบๆ เมื่อโปรแกรมที่มันเรียกใช้ล้มเหลว (ผิดซ้ำจาก 0003) | High | [20260906-post-mortem-report-0005-customer-guard-allowed-writes-when-python-failed.md](20260906-post-mortem-report-0005-customer-guard-allowed-writes-when-python-failed.md) |
 | 0006 | 2026-09-06 | ด่านก่อน push บอกว่าเทสต์เขียว ทั้งที่รันไป 0 ชุด (ผิดซ้ำจาก 0005) | Medium | [20260906-post-mortem-report-0006-push-gate-reported-green-with-zero-suites.md](20260906-post-mortem-report-0006-push-gate-reported-green-with-zero-suites.md) |
+| 0007 | 2026-09-06 | เรียกไฟล์ค้างว่าเป็นงานของเซสชันอื่น 3 ครั้งโดยไม่ตรวจ แล้วส่งคืนเป็นภาระเจ้าของงาน (ผิดซ้ำจาก 0004) | Medium | [20260906-post-mortem-report-0007-called-stale-leftover-another-session-work.md](20260906-post-mortem-report-0007-called-stale-leftover-another-session-work.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 

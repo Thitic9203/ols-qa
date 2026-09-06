@@ -166,6 +166,22 @@ fail closed แล้วพฤติกรรมจริงขัดกับ�
 อยู่ก่อนแล้วพร้อมคำอธิบาย แต่ hook ที่ทำงานเดียวกันไม่ได้รับไปด้วย เพราะคนเขียนหยิบต้นแบบมาจากคนละไฟล์
 · ห้ามหวังว่าจะจำได้ว่าอีกไฟล์มีอะไร
 
+### ข้อย่อยที่ออกมาจากรายงานฉบับที่ 0007
+
+**`git status` บอกว่าไฟล์ถูกแก้ ไม่ได้บอกว่าใครแก้ — ห้ามเดาว่าเป็นของเซสชันอื่น ให้วัดก่อน**
+รัน `bash scripts/whose-change.sh` แล้วอ่านผล: **`STALE`** = เนื้อไฟล์ตรงกับคอมมิตในประวัติทุกไบต์
+แปลว่าเป็นของค้างจากการ checkout/fast-forward ไม่ใช่งานของใคร คืนค่าได้เลย · **`EDITED`** = เนื้อไม่เคยอยู่ใน
+ประวัติ แปลว่ามีคนพิมพ์ขึ้นมาจริง ห้ามแตะ
+
+**"ฉันไม่ได้แก้" ไม่เท่ากับ "เป็นของคนอื่น"** — กฎเรื่องหลายเซสชันใช้เวิร์กทรีร่วมกัน ทำให้ ` M` ที่อธิบายไม่ได้
+ถูกอ่านเป็นงานของคนอื่นโดยอัตโนมัติ ซึ่งเป็นการใช้กฎโดยไม่ตรวจว่าเงื่อนไขของกฎเป็นจริงไหม
+
+**การไม่แตะไม่ได้ฟรีเสมอไป** — ไฟล์ค้างใบนั้นบล็อก `git pull` ของทุกเซสชันในเวิร์กทรีอยู่ประมาณหนึ่งชั่วโมง
+และถูกรายงานกลับไปให้เจ้าของงานว่าเป็นปัญหาของคนอื่น · **ก่อนจะส่งของค้างคืนไปเป็นภาระเจ้าของงาน
+ต้องวัดก่อนว่ามันเป็นของใครจริง**
+
+**และ md5 ก่อน-หลัง พิสูจน์ได้แค่ว่าเราไม่ได้เปลี่ยนมัน ไม่เคยพิสูจน์ว่ามันเป็นของใคร** — วัดถูกวิธี แต่วัดผิดคำถาม
+
 > 🔴 repo นี้ public — รายงานห้ามมีรหัสผ่าน อีเมลบัญชี host จริง tenant Sheet/Drive id หรือ path ที่มีชื่อผู้ใช้
 
 ## 🔴 กฎ: การตรวจสอบปัญหา = `superpowers:systematic-debugging` เท่านั้น — บังคับด้วย hook ไม่ใช่ความจำ
@@ -1644,6 +1660,31 @@ this exact guard, in words, the whole time; the hook doing the same job never re
 its author took the pattern from a different file.
 
 Full report: [`docs/post-mortem/20260906-post-mortem-report-0006-push-gate-reported-green-with-zero-suites.md`](docs/post-mortem/20260906-post-mortem-report-0006-push-gate-reported-green-with-zero-suites.md)
+
+### Report #0007 — A leftover file was called another session's work, three times (2026-09-06)
+
+**Surface:** every ` M` in a worktree several sessions share, and every sentence that hands a
+leftover back to the owner as somebody else's problem. **Repeat of #0004** — same mechanism:
+a claim that directs the owner to act, written without measuring the claim.
+
+`git status` showed ` M README.md`. It was reported as another session's work three times,
+protected through three temp-worktree pushes, and finally handed back as "not mine, look at it
+when convenient". It was a leftover from this repo's own SessionStart hook: reflog
+`00:49:54 pull --ff-only … Fast-forward` to `fc65ef3`, which wrote the v1.39.2 line to disk;
+later `git reset --soft` moved HEAD past it without touching the worktree. The file was
+**byte-identical to `fc65ef3:README.md`** and differed from HEAD by one version line — nobody's
+work at all — while blocking `git pull` for every session in the worktree.
+
+**The rules to carry forward:** *`git status` says a file changed, never who changed it* — run
+`scripts/whose-change.sh`: content that matches a commit in history is a leftover (`STALE`),
+content that appears nowhere is somebody's typing (`EDITED`). *"I did not edit it" is not "it
+belongs to someone else"*; the shared-worktree rule was applied without testing whether its
+premise held. *Leaving a thing alone is not automatically free* — this one blocked everyone's
+pull for about an hour and was then handed to the owner as their item. And *measuring the wrong
+thing feels like having measured*: an md5 taken before and after every push proved only that
+this session had not changed the file, which was never the question.
+
+Full report: [`docs/post-mortem/20260906-post-mortem-report-0007-called-stale-leftover-another-session-work.md`](docs/post-mortem/20260906-post-mortem-report-0007-called-stale-leftover-another-session-work.md)
 
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
