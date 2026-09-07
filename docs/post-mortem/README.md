@@ -43,6 +43,8 @@
 | 0007 | 2026-09-06 | เรียกไฟล์ค้างว่าเป็นงานของเซสชันอื่น 3 ครั้งโดยไม่ตรวจ แล้วส่งคืนเป็นภาระเจ้าของงาน (ผิดซ้ำจาก 0004) | Medium | [20260906-post-mortem-report-0007-called-stale-leftover-another-session-work.md](20260906-post-mortem-report-0007-called-stale-leftover-another-session-work.md) |
 | 0008 | 2026-09-06 | เก็บคลิปและผลตรวจของรอบไว้ในโฟลเดอร์ชั่วคราว งานหายพร้อมการรีสตาร์ตเซสชัน | Medium | [20260906-post-mortem-report-0008-work-files-in-tmp-wiped-by-restart.md](20260906-post-mortem-report-0008-work-files-in-tmp-wiped-by-restart.md) |
 | 0009 | 2026-09-06 | เครื่องมือมีค่าเริ่มต้นชี้ไป training จึงยิงคำขออ่านเข้า env ที่ห้ามแตะ 11 ครั้ง | Medium | [20260906-post-mortem-report-0009-env-default-sent-readonly-probe-to-training.md](20260906-post-mortem-report-0009-env-default-sent-readonly-probe-to-training.md) |
+| 0010 | 2026-09-06 | ตัวรันชุดเทสต์พิมพ์ว่าเขียว ทั้งที่รันไป 0 ข้อ — กฎไปถึงด่านที่ถูกทดสอบ แล้วหยุดที่เครื่องมือทดสอบ (ผิดซ้ำจาก 0006) | Medium | [20260906-post-mortem-report-0010-test-harness-reported-green-running-zero-tests.md](20260906-post-mortem-report-0010-test-harness-reported-green-running-zero-tests.md) |
+| 0011 | 2026-09-06 | งานต่ออายุ session ล้มเหลวไม่เป็น เพราะรหัสจบเป็นของคำสั่งตัดล็อก และตาข่ายเฝ้าไฟล์ 0 ไบต์ (ผิดซ้ำจาก 0006 · 0009 · 0003) | High | [20260906-post-mortem-report-0011-keepalive-job-could-not-fail-watched-by-empty-log.md](20260906-post-mortem-report-0011-keepalive-job-could-not-fail-watched-by-empty-log.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
