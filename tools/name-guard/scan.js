@@ -8,18 +8,56 @@
  *   OLS_ORIGIN=https://<app-host>  OLS_SSO=https://<sso-host>/sign-in/embed \
  *   OLS_EMAIL=... OLS_PW=... node scan.js [--json report.json] [--own] [--quiet]
  *
+ * Or with a session captured earlier by a person, so no password is ever typed — the only mode
+ * an agent may use (see capture/session_capture.js in the QA toolkit for how the file is made):
+ *
+ *   OLS_ORIGIN=https://<app-host> OLS_ENV_LABEL=preprod \
+ *   node scan.js --session /path/to/state_<tag>.json [--json report.json] [--own] [--quiet]
+ *
+ *   ...or set OLS_SESSION_STATE=/path/to/state_<tag>.json instead of the flag.
+ *   In session mode OLS_EMAIL/OLS_PW/OLS_SSO are not required and are never read; a session
+ *   that is missing, unreadable, expired or captured against another host is REFUSED (exit 2),
+ *   never quietly replaced by a password login.
+ *
  * Exit codes: 0 = clean · 1 = findings · 2 = scan could not run (login/network/etc).
  */
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
 
+/* A saved Playwright storageState may stand in for the password login.
+ *
+ * Why this exists: typing a password is something an agent is never allowed to do, for any
+ * account, and no instruction from anyone overrides that. Until this flag the scanner had
+ * exactly one way in — ssoLogin() typing OLS_EMAIL/OLS_PW — which made a read-only tool
+ * (every API call in this file is a GET) unusable by the very sessions that most need it.
+ * The rest of this toolkit already solved the problem: capture/session_capture.js writes a
+ * state_<tag>.json that a person logs in for ONCE, and capture/session_verify.js +
+ * session_refresh.js consume it with `newContext({ storageState: file })`. This reuses that
+ * file format exactly; it does not invent a second one.
+ *
+ * Read from argv here rather than at the argv block further down because the answer decides
+ * whether OLS_EMAIL/OLS_PW are required at all — in session mode they must NOT be, since the
+ * whole point is that no password exists to supply.
+ */
+const SESSION_FILE = (() => {
+  const a = process.argv.slice(2);
+  const i = a.indexOf('--session');
+  const v = i >= 0 ? a[i + 1] : process.env.OLS_SESSION_STATE;
+  return v && !String(v).startsWith('--') ? String(v) : null;
+})();
+
 const ORIGIN = process.env.OLS_ORIGIN;
 const SSO = process.env.OLS_SSO;
 const EMAIL = process.env.OLS_EMAIL;
 const PW = process.env.OLS_PW;
 const RAW_LABEL = process.env.OLS_ENV_LABEL;
-for (const [k, v] of [['OLS_ORIGIN', ORIGIN], ['OLS_SSO', SSO], ['OLS_EMAIL', EMAIL], ['OLS_PW', PW], ['OLS_ENV_LABEL', RAW_LABEL]]) {
+/* OLS_EMAIL/OLS_PW are required ONLY when there is no saved session to use. Everything else
+ * stays required in both modes, so a run with no --session behaves exactly as it always has —
+ * which is what the twice-daily scheduled job does. */
+const REQUIRED_VARS = [['OLS_ORIGIN', ORIGIN], ['OLS_ENV_LABEL', RAW_LABEL]]
+  .concat(SESSION_FILE ? [] : [['OLS_SSO', SSO], ['OLS_EMAIL', EMAIL], ['OLS_PW', PW]]);
+for (const [k, v] of REQUIRED_VARS) {
   if (!v) { console.error('missing env ' + k); process.exit(2); }
 }
 // Every comparison below is case-insensitive on purpose (review round 1: `LABEL === 'prod'` let
@@ -126,6 +164,102 @@ if (handsOff.protected) {
   process.exit(2);
 }
 
+/* ── Saved-session mode: validated HERE, before a browser exists ───────────────────────────
+ *
+ * Placement is the point. Every check below sits ABOVE `require('playwright')`, so a session
+ * that is missing, unreadable, malformed, expired, or captured against a different host is
+ * refused before the scanner can open a browser at all. That is what makes "never fall back
+ * to typing a password" structural rather than a branch someone can fall through: in session
+ * mode OLS_EMAIL/OLS_PW are not even required (see the top of this file), so by the time any
+ * login code could run there is nothing to type — and ssoLogin() additionally refuses to run
+ * outright (third layer, at its own definition).
+ *
+ * Exit 2, never 0 — same contract as every other refusal in this file. "Could not run" is not
+ * "scanned and found nothing"; reports #0002, #0003, #0005 and #0006 in docs/post-mortem/ are
+ * all the same bug, a guard whose failure landed on the permissive side.
+ */
+const AUTH_COOKIE_NAMES = new Set(['access_token', 'refresh_token', 'user_proof_token',
+  'session_id', '__Host-ols-auth.session_token']);
+
+function refuseSession(msg, hint) {
+  console.error('REFUSED — ' + msg);
+  if (hint) console.error('          ' + hint);
+  console.error('          ไม่ fallback ไปล็อกอินด้วยรหัสผ่านเด็ดขาด — agent พิมพ์รหัสผ่านไม่ได้ทุกกรณี');
+  console.error('          ไม่ได้รัน = ไม่ใช่ผลว่า "สะอาด".');
+  process.exit(2);
+}
+
+if (SESSION_FILE) {
+  /* A creator sweep needs a password per creator, which session mode does not have. Refusing is
+   * the honest answer; silently dropping the creators would let the run report a clean scan over
+   * fewer sources than it claims to cover — the exact shape of report #0002. */
+  if ((process.env.OLS_OWN_EMAILS || '').trim()) {
+    refuseSession('ใช้ --session พร้อม OLS_OWN_EMAILS ไม่ได้',
+      'creator sweep ต้องล็อกอินแยกรายบัญชีด้วยรหัสผ่าน — เก็บ session ของแต่ละ creator แล้วรันทีละใบแทน');
+  }
+
+  let raw;
+  try { raw = fs.readFileSync(SESSION_FILE, 'utf8'); }
+  catch (e) {
+    refuseSession('เปิดไฟล์ session ไม่ได้: ' + SESSION_FILE,
+      String((e && e.message) || e).split('\n')[0]);
+  }
+
+  let state;
+  try { state = JSON.parse(raw); }
+  catch (e) {
+    refuseSession('ไฟล์ session ไม่ใช่ JSON ที่อ่านได้: ' + SESSION_FILE,
+      String((e && e.message) || e).split('\n')[0]);
+  }
+
+  const cookies = state && Array.isArray(state.cookies) ? state.cookies : null;
+  if (!cookies) {
+    refuseSession('ไฟล์ session ไม่มี array "cookies": ' + SESSION_FILE,
+      'ต้องเป็น Playwright storageState จาก capture/session_capture.js');
+  }
+
+  /* Judge life by the AUTH cookies ONLY — the lesson session_status.js already paid for. A state
+   * file also carries analytics cookies, and Microsoft Clarity's ANONCHK expires ~30 minutes out;
+   * taking the minimum across everything reports a perfectly healthy 24h session as expired.
+   * Verified again on a live pre-prod state file while writing this: 5 auth cookies with 14.3h
+   * left sitting beside an ANONCHK that was already 9.5h past its expiry. */
+  const auth = cookies.filter((c) => c && AUTH_COOKIE_NAMES.has(c.name));
+  if (!auth.length) {
+    refuseSession('ไฟล์ session ไม่มี auth cookie สักตัว: ' + SESSION_FILE,
+      'คาดหวังอย่างน้อยหนึ่งใน: ' + [...AUTH_COOKIE_NAMES].join(', '));
+  }
+
+  const exps = auth.map((c) => c.expires).filter((e) => typeof e === 'number' && e > 0);
+  const soonest = exps.length ? Math.min(...exps) : null;
+  if (soonest === null) {
+    refuseSession('auth cookie ในไฟล์ session ไม่มีวันหมดอายุที่อ่านได้: ' + SESSION_FILE,
+      'อ่านอายุไม่ได้ = ตรวจไม่ได้ = ปฏิเสธ ไม่ใช่เดาว่ายังใช้ได้');
+  }
+  const hoursLeft = (soonest * 1000 - Date.now()) / 3600000;
+  if (hoursLeft <= 0) {
+    refuseSession('session หมดอายุแล้ว (' + Math.abs(hoursLeft).toFixed(1) + ' ชม.ที่แล้ว): ' + SESSION_FILE,
+      'ต่ออายุด้วย: node capture/session_refresh.js — ถ้าต่อไม่ได้ ต้องให้คนล็อกอินใหม่');
+  }
+
+  /* The saved session must belong to the host being scanned. Without this a state file captured
+   * against one environment, pointed at another, produces a puzzling "not authenticated" failure
+   * halfway through instead of a clear refusal at the door. Cookies land on the shared parent
+   * domain, so the match is a domain-suffix test, not equality. */
+  let originHost = '';
+  try { originHost = new URL(ORIGIN).hostname.toLowerCase(); } catch (e) { /* refused just below */ }
+  const applies = auth.some((c) => {
+    const d = String(c.domain || '').toLowerCase().replace(/^\./, '');
+    return d && (originHost === d || originHost.endsWith('.' + d));
+  });
+  if (!applies) {
+    refuseSession('session นี้ไม่ได้เป็นของ host ที่กำลังจะสแกน ("' + originHost + '"): ' + SESSION_FILE,
+      'คุกกี้ในไฟล์เป็นของโดเมนอื่น — เก็บ session ของ env นี้ก่อน อย่าเอาของ env อื่นมาใช้ข้าม');
+  }
+
+  console.error('session mode — ใช้ storageState ที่บันทึกไว้ ไม่มีการล็อกอินด้วยรหัสผ่าน (auth cookie '
+    + auth.length + ' ตัว · เหลืออายุ ' + hoursLeft.toFixed(1) + ' ชม.)');
+}
+
 const { chromium } = require('playwright');
 const rules = require('./name_rules');
 const customer = require('./customer_content');
@@ -147,6 +281,19 @@ const OWN_SOURCES = [{ key: 'media-own', urlBase: '/api/media/me', label: 'ส�
 const SOURCES = PUBLIC_SOURCES.concat(argv.includes('--own') ? OWN_SOURCES : []);
 
 async function ssoLogin(ctx) {
+  /* Third layer, and it must stay even though it looks unreachable.
+   *
+   * In session mode the call site below never calls this, and OLS_EMAIL/OLS_PW are not even
+   * required — so this throw is a "cannot happen" that fails CLOSED if some future edit makes
+   * it happen anyway. An agent is never permitted to type a password, so the one outcome that
+   * must be impossible is a silent fallback from a bad session into this function. A guard that
+   * only exists on the happy path is the shape of report #0005: the helper broke, and the guard
+   * answered "nothing found" instead of "cannot check".
+   */
+  if (SESSION_FILE) {
+    throw new Error('ssoLogin() reached while a saved session is in use — refusing to type a '
+      + 'password. This is a bug in the caller: session mode must never fall back to a login.');
+  }
   const page = await ctx.newPage();
   /* Capture what the auth backend actually answered. Without this a backend outage is
      reported as "not authenticated after SSO login", which reads like our bug — the real
@@ -314,8 +461,13 @@ async function checkCoversLoad(page, items) {
   const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] });
   const report = { env: LABEL, startedAt: new Date().toISOString(), sources: {}, findings: [] };
   try {
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 }, ignoreHTTPSErrors: true });
-    const authErrors = await ssoLogin(ctx);
+    /* Session mode loads the saved cookies straight into the context — the same one line
+     * capture/session_verify.js and session_refresh.js use — and then never logs in. Password
+     * mode is byte-for-byte what it always was. */
+    const ctx = await browser.newContext(Object.assign(
+      { viewport: { width: 1280, height: 900 }, ignoreHTTPSErrors: true },
+      SESSION_FILE ? { storageState: SESSION_FILE } : {}));
+    const authErrors = SESSION_FILE ? [] : await ssoLogin(ctx);
     const page = await ctx.newPage();
     await gotoApp(page);
     await sleep(2500);
@@ -325,6 +477,17 @@ async function checkCoversLoad(page, items) {
     const s = (await call('GET', '/api/auth/get-session')).json;
     report.session = s && s.user ? { role: s.user.role } : null;   // never log the account itself
     if (!report.session) {
+      /* A saved session can be revoked server-side while its cookies still look unexpired, so
+       * the boot check cannot be the only one. This is where that shows up — and it FAILS, it
+       * does not quietly log in instead. The message says which mode was in play, because
+       * "not authenticated after SSO login" would be a plain lie about a run that never
+       * attempted an SSO login. */
+      if (SESSION_FILE) {
+        throw new Error('saved session is not live — the cookies loaded but the app returned no '
+          + 'session (revoked, or renewed elsewhere and this file left holding a rotated token). '
+          + 'Refresh it with capture/session_refresh.js, or have a person capture it again. '
+          + 'Not falling back to a password login.');
+      }
       throw new Error('not authenticated after SSO login'
         + (authErrors && authErrors.length ? ' — auth backend replied: ' + authErrors.join(' | ') : ''));
     }
