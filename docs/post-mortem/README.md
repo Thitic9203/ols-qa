@@ -54,6 +54,7 @@
 | 0018 | 2026-09-07 | รายงานว่าอัปเดตบอร์ดแล้ว 4 ครั้งในวันเดียว โดยยืนยันจากผลการเขียนฐานข้อมูล ซึ่งเป็นฝั่งที่ตัวเองเขียน ไม่ใช่ฝั่งที่เจ้าของงานเห็น ของจริงคือหน้าเว็บเปิดแล้วขาว | Medium | [20260907-post-mortem-report-0018-claimed-board-updated-without-checking-what-the-owner-could-see.md](20260907-post-mortem-report-0018-claimed-board-updated-without-checking-what-the-owner-could-see.md) |
 | 0019 | 2026-09-07 | รายงานตัวเลขที่ยังไม่ได้วัด 2 ครั้งในเซสชันเดียว โดยพูดเหมือนวัดแล้ว — คลิปหาย 142 ไฟล์ (ของจริงครบ 148) และเลข 52 ของด่านเชื่อได้ (ของจริงเป็นค่าขั้นต่ำ) ผิดซ้ำจาก #0016 | Medium | [20260907-post-mortem-report-0019-reported-two-unmeasured-numbers-as-verified-fact.md](20260907-post-mortem-report-0019-reported-two-unmeasured-numbers-as-verified-fact.md) |
 | 0020 | 2026-09-07 | เผยแพร่บอร์ดสดโดยที่ข้อมูลเลนผิดรูป ช่องเลนทั้ง 5 จึงหายไปจากหน้าที่เจ้าของงานเปิด ยืนยันที่ไฟล์และคำสั่งแทนที่จะยืนยันที่หน้าเว็บ ผิดซ้ำจาก #0018 | Medium | [20260907-post-mortem-report-0020-published-board-with-lane-data-in-the-wrong-shape.md](20260907-post-mortem-report-0020-published-board-with-lane-data-in-the-wrong-shape.md) |
+| 0021 | 2026-09-07 | ถามเจ้าของงานซ้ำว่าจะอัดบนสภาพแวดล้อมไหน ทั้งที่คำตอบถูกบันทึกเป็นตัวหนาอยู่ในไฟล์บทถ่ายทำที่ตัวเองเขียน มติของเจ้าของงานถูกเก็บในที่ที่มันถูกใช้ ไม่ใช่ที่ที่มันถูกค้น ผิดซ้ำจาก #0019 | Medium | [20260907-post-mortem-report-0021-asked-owner-again-for-an-answer-already-in-my-own-file.md](20260907-post-mortem-report-0021-asked-owner-again-for-an-answer-already-in-my-own-file.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
