@@ -48,6 +48,8 @@
 | 0012 | 2026-09-07 | ตัวรันชุดเทสต์อีก 2 ไฟล์เขียวทั้งที่รัน 0 ข้อ เพราะรอบก่อนปิดเฉพาะไฟล์ที่เกิดเหตุ ไม่ได้ปิดคลาส (ผิดซ้ำจาก 0010 · 0006) | Medium | [20260907-post-mortem-report-0012-zero-test-green-fixed-in-two-files-not-the-class.md](20260907-post-mortem-report-0012-zero-test-green-fixed-in-two-files-not-the-class.md) |
 | 0013 | 2026-09-07 | ช่องไม่บังคับในใบสั่งอัดปิดการตรวจข้อหนึ่งเงียบๆ แล้วตัวเลขยังบอกว่าวัดครบ (ผิดซ้ำจาก 0002 · 0006) | High | [20260907-post-mortem-report-0013-optional-field-silently-disabled-one-gate-check.md](20260907-post-mortem-report-0013-optional-field-silently-disabled-one-gate-check.md) |
 | 0014 | 2026-09-07 | เลนย่อย 3 ตัวถูกตัวเฝ้าฆ่าเพราะเงียบเกิน 600 วินาที งานหาย และผมรายงานสถานะผิดจากข้อความสุดท้ายที่มันพิมพ์ไว้ | Medium | [20260907-post-mortem-report-0014-worker-lanes-killed-by-watchdog-lost-their-work.md](20260907-post-mortem-report-0014-worker-lanes-killed-by-watchdog-lost-their-work.md) |
+| 0015 | 2026-09-07 | เครื่องมือไล่หาแถบที่อยู่เว็บที่เขียนเอง หยิบภาพนิ่งคนละภาพกับที่ประกาศ จึงรายงานว่าคลิปสะอาดทั้งที่มีแถบ และตัวเลขนั้นถูกใช้ตัดสินขอบเขตงานถ่ายใหม่ | High | [20260907-post-mortem-report-0015-url-sweep-read-the-wrong-frame-and-reported-false-clean.md](20260907-post-mortem-report-0015-url-sweep-read-the-wrong-frame-and-reported-false-clean.md) |
+| 0016 | 2026-09-07 | อ่านสถานะจากสิ่งที่ไม่ใช่สถานะ 5 ครั้งในเซสชันเดียว ผิดซ้ำจาก #0014 ที่เขียนบทเรียนข้อนี้ไว้เองก่อนหน้าราว 1 ชั่วโมง | Medium | [20260907-post-mortem-report-0016-read-status-from-something-that-was-not-the-status-five-times.md](20260907-post-mortem-report-0016-read-status-from-something-that-was-not-the-status-five-times.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
