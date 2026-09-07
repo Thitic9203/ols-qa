@@ -45,6 +45,7 @@
 | 0009 | 2026-09-06 | เครื่องมือมีค่าเริ่มต้นชี้ไป training จึงยิงคำขออ่านเข้า env ที่ห้ามแตะ 11 ครั้ง | Medium | [20260906-post-mortem-report-0009-env-default-sent-readonly-probe-to-training.md](20260906-post-mortem-report-0009-env-default-sent-readonly-probe-to-training.md) |
 | 0010 | 2026-09-06 | ตัวรันชุดเทสต์พิมพ์ว่าเขียว ทั้งที่รันไป 0 ข้อ — กฎไปถึงด่านที่ถูกทดสอบ แล้วหยุดที่เครื่องมือทดสอบ (ผิดซ้ำจาก 0006) | Medium | [20260906-post-mortem-report-0010-test-harness-reported-green-running-zero-tests.md](20260906-post-mortem-report-0010-test-harness-reported-green-running-zero-tests.md) |
 | 0011 | 2026-09-06 | งานต่ออายุ session ล้มเหลวไม่เป็น เพราะรหัสจบเป็นของคำสั่งตัดล็อก และตาข่ายเฝ้าไฟล์ 0 ไบต์ (ผิดซ้ำจาก 0006 · 0009 · 0003) | High | [20260906-post-mortem-report-0011-keepalive-job-could-not-fail-watched-by-empty-log.md](20260906-post-mortem-report-0011-keepalive-job-could-not-fail-watched-by-empty-log.md) |
+| 0012 | 2026-09-07 | ตัวรันชุดเทสต์อีก 2 ไฟล์เขียวทั้งที่รัน 0 ข้อ เพราะรอบก่อนปิดเฉพาะไฟล์ที่เกิดเหตุ ไม่ได้ปิดคลาส (ผิดซ้ำจาก 0010 · 0006) | Medium | [20260907-post-mortem-report-0012-zero-test-green-fixed-in-two-files-not-the-class.md](20260907-post-mortem-report-0012-zero-test-green-fixed-in-two-files-not-the-class.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
