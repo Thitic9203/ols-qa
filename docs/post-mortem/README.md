@@ -50,6 +50,7 @@
 | 0014 | 2026-09-07 | เลนย่อย 3 ตัวถูกตัวเฝ้าฆ่าเพราะเงียบเกิน 600 วินาที งานหาย และผมรายงานสถานะผิดจากข้อความสุดท้ายที่มันพิมพ์ไว้ | Medium | [20260907-post-mortem-report-0014-worker-lanes-killed-by-watchdog-lost-their-work.md](20260907-post-mortem-report-0014-worker-lanes-killed-by-watchdog-lost-their-work.md) |
 | 0015 | 2026-09-07 | เครื่องมือไล่หาแถบที่อยู่เว็บที่เขียนเอง หยิบภาพนิ่งคนละภาพกับที่ประกาศ จึงรายงานว่าคลิปสะอาดทั้งที่มีแถบ และตัวเลขนั้นถูกใช้ตัดสินขอบเขตงานถ่ายใหม่ | High | [20260907-post-mortem-report-0015-url-sweep-read-the-wrong-frame-and-reported-false-clean.md](20260907-post-mortem-report-0015-url-sweep-read-the-wrong-frame-and-reported-false-clean.md) |
 | 0016 | 2026-09-07 | อ่านสถานะจากสิ่งที่ไม่ใช่สถานะ 5 ครั้งในเซสชันเดียว ผิดซ้ำจาก #0014 ที่เขียนบทเรียนข้อนี้ไว้เองก่อนหน้าราว 1 ชั่วโมง | Medium | [20260907-post-mortem-report-0016-read-status-from-something-that-was-not-the-status-five-times.md](20260907-post-mortem-report-0016-read-status-from-something-that-was-not-the-status-five-times.md) |
+| 0017 | 2026-09-07 | ใส่ Fix Version บน Jira ให้ทิคเกต OLS 86 ใบ ทั้งที่ผู้ใช้ชี้แค่ 32 ใบในภาพหน้าจอที่แนบมา — รู้ตัวเองว่าคลุมเครือระหว่างวางแผนแต่ไปถามคำถามอื่นแทน | High | [20260907-post-mortem-report-0017-fix-version-written-beyond-screenshot-scope.md](20260907-post-mortem-report-0017-fix-version-written-beyond-screenshot-scope.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
