@@ -47,6 +47,7 @@
 | 0011 | 2026-09-06 | งานต่ออายุ session ล้มเหลวไม่เป็น เพราะรหัสจบเป็นของคำสั่งตัดล็อก และตาข่ายเฝ้าไฟล์ 0 ไบต์ (ผิดซ้ำจาก 0006 · 0009 · 0003) | High | [20260906-post-mortem-report-0011-keepalive-job-could-not-fail-watched-by-empty-log.md](20260906-post-mortem-report-0011-keepalive-job-could-not-fail-watched-by-empty-log.md) |
 | 0012 | 2026-09-07 | ตัวรันชุดเทสต์อีก 2 ไฟล์เขียวทั้งที่รัน 0 ข้อ เพราะรอบก่อนปิดเฉพาะไฟล์ที่เกิดเหตุ ไม่ได้ปิดคลาส (ผิดซ้ำจาก 0010 · 0006) | Medium | [20260907-post-mortem-report-0012-zero-test-green-fixed-in-two-files-not-the-class.md](20260907-post-mortem-report-0012-zero-test-green-fixed-in-two-files-not-the-class.md) |
 | 0013 | 2026-09-07 | ช่องไม่บังคับในใบสั่งอัดปิดการตรวจข้อหนึ่งเงียบๆ แล้วตัวเลขยังบอกว่าวัดครบ (ผิดซ้ำจาก 0002 · 0006) | High | [20260907-post-mortem-report-0013-optional-field-silently-disabled-one-gate-check.md](20260907-post-mortem-report-0013-optional-field-silently-disabled-one-gate-check.md) |
+| 0014 | 2026-09-07 | เลนย่อย 3 ตัวถูกตัวเฝ้าฆ่าเพราะเงียบเกิน 600 วินาที งานหาย และผมรายงานสถานะผิดจากข้อความสุดท้ายที่มันพิมพ์ไว้ | Medium | [20260907-post-mortem-report-0014-worker-lanes-killed-by-watchdog-lost-their-work.md](20260907-post-mortem-report-0014-worker-lanes-killed-by-watchdog-lost-their-work.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
