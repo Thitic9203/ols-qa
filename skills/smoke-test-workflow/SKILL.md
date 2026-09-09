@@ -50,6 +50,43 @@ The app exposes **no version endpoint**. Pin it by evidence, not by assumption:
 
 If no marker separates two candidate tags, say the version is a range. Do not name one.
 
+## Stage 2.5 — The one-shot rule (read this before running anything)
+
+**A round must finish in ONE run invocation.** On 2026-09-09 it took eleven, and every extra one was
+avoidable. What makes it one:
+
+**Start from the exclusion registry, not from the full set.**
+`~/ols-qa-testing-bot/smoke/excluded-cases.json` holds the cases that cannot produce a clean pass on
+this environment, grouped by *why* — external identity, live broadcast, irreversible fixture, fixture
+not yet built, awaiting design, spec gap, unstable. Build `--grep-invert` from it:
+
+```bash
+EXCL=$(python3 -c "import json;d=json.load(open('$HOME/ols-qa-testing-bot/smoke/excluded-cases.json'));print('|'.join(sorted(c for g in d['groups'].values() for c in g['cases'])))")
+```
+
+Verified 2026-09-09 on dev: excluding those 22 leaves **111 cases that pass clean, exit 0, zero flaky,
+zero skipped, in 4.9 minutes.** Re-derive the list when the environment changes; do not treat it as
+permanent, and never let it grow just to make a run look green.
+
+**Decide the pass-only policy with the owner BEFORE the first run**, not after seeing the numbers.
+Ask once: *report every case and its verdict, or only the cases that pass clean?* Chasing a green
+report by excluding whatever went yellow this round does not converge — measured four rounds in a
+row, a different one or two cases went flaky or skipped each time, never the same ones. Excluding
+them one round at a time only shrinks the suite.
+
+**Watch the VPN for the whole run, not just at the start.** It dropped twice on 2026-09-09; the second
+drop was not noticed for 40 minutes and produced 41 failures that were all the tunnel, not the
+product. Every case waits out its own timeout, so a dropped tunnel costs ~20s × the remaining cases.
+
+```bash
+( while :; do sleep 60
+    scutil --nc list | grep -q '(Connected)' || { echo "VPN DROPPED $(date +%H:%M:%S)"; pkill -f 'playwright test'; break; }
+  done ) &
+```
+
+**A run whose failures are the tunnel is not a result.** Throw the whole round away and re-run —
+never report it, never triage it, never let it reach a deliverable.
+
 ## Stage 3 — Run
 
 ```bash
@@ -173,7 +210,19 @@ Post to the QA release channel `<QA_RELEASE_CHANNEL_ID>` as bot `<QA_BOT_ID>` (t
 4. To make a mention ping, use `<@id>` **and** `allowed_mentions.users`. Look an id up with
    `GET /guilds/<GUILD_ID>/members/search?query=<name>`.
 5. Attach both files in the same request (`files[0]`, `files[1]` + `payload_json`).
-6. **A correction is a `PATCH` to the same message id.** Never delete and repost.
+6. **A correction is a `PATCH` to the same message id.** Never delete and repost. To swap the files
+   in place, PATCH as multipart with the new `files[0]`/`files[1]` **and** an `attachments` array in
+   `payload_json` listing only the new ids — anything left out of that array is dropped:
+
+   ```json
+   "attachments": [{"id":0,"filename":"YYYYMMDD-Smoke-Test-Summary.pdf"},
+                   {"id":1,"filename":"YYYYMMDD-Playwright-Test-Report.html"}]
+   ```
+
+   Re-send `allowed_mentions` on every PATCH or the ping is lost. Read the response back and confirm
+   `edited_timestamp`, the attachment list and the mention list before saying it is done.
+7. Times in the notify are `9 Sep 2026, 4:55 PM`. The Thai PDF keeps `16.55 น.` — two audiences, two
+   conventions, both correct.
 
 Message shape:
 
@@ -192,6 +241,26 @@ See the attached files for details:
 
 **This build is cleared to deploy to pre-production.** <@id>
 ```
+
+## Stage 7.5 — The numbers gate (the trap that cost a round)
+
+The PDF, the Discord text and the Playwright report are three surfaces showing the same run. **They
+must agree, and the report is the one nobody can edit.** On 2026-09-09 the text said "All 115 cases
+passed" while the attached report showed `113 passed · 2 flaky` — anyone opening the file saw the
+mismatch.
+
+Before sending, read all three and check the same number appears in each:
+
+```bash
+grep -E '^\s+[0-9]+ (passed|failed|flaky|skipped)' <WORKDIR>/run.log   # what the report will show
+```
+
+- Playwright counts a **flaky** case as passed and exits 0. "All N passed" is only safe when the log
+  shows a bare `N passed` line and no `flaky` or `skipped` line at all.
+- If the log has a flaky or skipped line, either re-run from the exclusion registry so it does not,
+  or word it as `N cases · 0 failed`. Never let the wording outrun the file.
+- Confirm the report you are attaching came from the run you are quoting: `playwright-report/index.html`
+  is overwritten by every run, so compare its mtime against the run's own log.
 
 ## MUST / NEVER
 

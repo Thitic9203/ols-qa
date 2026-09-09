@@ -36,6 +36,19 @@ that is `/testing-ticket`.
 Everything is written to `~/ols-qa-testing-bot/out/<env>-smoke-<YYYY-MM-DD>/`, which is permanent —
 never `/tmp`.
 
+## Finishing in one run
+
+The workflow's Stage 2.5 exists so this command does **not** turn into eleven runs the way
+2026-09-09 did. The three things that make it one:
+
+1. Build `--grep-invert` from the exclusion registry at
+   `~/ols-qa-testing-bot/smoke/excluded-cases.json` before the first run. Verified 2026-09-09 on
+   dev: the remaining **111 cases pass clean in 4.9 minutes**, zero flaky, zero skipped.
+2. Ask the owner once, up front, whether the report covers every case or only the clean passes.
+   Deciding after seeing the numbers is what causes the re-runs.
+3. Start the VPN watchdog with the run. A dropped tunnel produces failures that look like the
+   product; that round is thrown away, not triaged.
+
 ## Before it will run
 
 - The owner has named the environment.
