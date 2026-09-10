@@ -13,6 +13,7 @@ Canonical map for `/helix`, [commands/helix.md](../commands/helix.md), and [AGEN
 | File bug(s) on Jira/GitHub | `create-bug-workflow` | `/create-bug` |
 | Hide a set of published content from public view | `content-takedown-workflow` | `/content-takedown` |
 | Review already-recorded results and their evidence clips | `review-result-workflow` | `/review-result` |
+| Audit finished work against its governing sources | `catch-ai-workflow` | `/catch-ai` |
 | Unsure / multi-step | `helix` skill or `/helix` (Claude Code) | `/helix` or `@helix` |
 
 ## Proactive suggestion (suggest-only)
@@ -41,3 +42,4 @@ From context (branch, linked ticket, defects in chat) the router MAY **suggest**
 | `retest-bug-workflow` | Draft new TC tables or file new bugs |
 | `content-takedown-workflow` | Delete content permanently, rename items, or hide an item whose defect has not been surfaced first |
 | `review-result-workflow` | Run the tests being reviewed, retest a ticket after a dev fix, or rename an evidence file |
+| `catch-ai-workflow` | File the bug it confirms (→ create-bug), retest a ticket after a dev fix (→ retest-bug), or rewrite the audited work |

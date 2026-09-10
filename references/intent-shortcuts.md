@@ -9,6 +9,7 @@ Use when the user writes **Thai or mixed language** but Helix still replies in *
 | retest, ทดสอบซ้ำ, verify fix, เช็คบั๊กแก้แล้ว | `retest-bug-workflow` |
 | รัน playwright, test ticket, ทดสอบ ticket | `testing-ticket-workflow` |
 | สร้างบั๊ก, file bug, open issue, log defect | `create-bug-workflow` |
+| ตรวจงานตัวเองอีกรอบ, audit this, review my work, check yourself, CatchAI | `catch-ai-workflow` |
 | Helix, เมนู, ทำอะไรได้บ้าง | Show menu (`helix` / `/helix`) |
 
 Extract `PROJ-123` or URLs from the same message when present.

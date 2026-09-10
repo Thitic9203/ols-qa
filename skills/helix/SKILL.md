@@ -63,7 +63,8 @@ Say the number/name to start, or ignore. (Set HELIX_PROACTIVE=0 to silence.)
 | 3, retest, verify fix | Read and follow [retest-bug-workflow](../retest-bug-workflow/SKILL.md) |
 | 4, testing ticket, Playwright | Read and follow [testing-ticket-workflow](../testing-ticket-workflow/SKILL.md) |
 | 5, create bug, file bug | Read and follow [create-bug-workflow](../create-bug-workflow/SKILL.md) |
-| 6, other | Clarify; suggest closest workflow |
+| 6, catch ai, audit, review my work | Read and follow [catch-ai-workflow](../catch-ai-workflow/SKILL.md) |
+| 7, other | Clarify; suggest closest workflow |
 
 Handoffs: [skill-routing.md](../../references/skill-routing.md).
 
@@ -71,7 +72,7 @@ Handoffs: [skill-routing.md](../../references/skill-routing.md).
 
 Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + router-specific:
 
-- [ ] User selected a workflow (1–6 or named skill).
+- [ ] User selected a workflow (1–7 or named skill).
 - [ ] Child workflow skill is loaded (not just described).
 - [ ] No Jira post or issue create happened in this router skill.
 
@@ -84,5 +85,5 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Rou
 | Rule | Because |
 |------|---------|
 | MUST show English menu from commands/helix.md | Consistent UX across agents |
-| MUST NOT start a workflow without user picking 1–6 or naming one | Avoid wrong scope |
+| MUST NOT start a workflow without user picking 1–7 or naming one | Avoid wrong scope |
 | MUST NOT post to Jira or create issues from this router | Side effects belong in child workflows |
