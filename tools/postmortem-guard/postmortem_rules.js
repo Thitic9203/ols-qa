@@ -212,12 +212,33 @@ function repeatsOf(text) {
  * Parse the ledger table out of PENDING.md. The table is found by its header, never by
  * line number — a paragraph added above it must not silently shift what is read
  * (the PM-010 lesson: identity, not position).
+ *
+ * Every line in the file is classified, not only the ones between the header and the
+ * first line that breaks the table. The original version's row loop started at
+ * `headerIdx + 1` and stopped at the first non-`|` line — a `| PM-... |` row pasted
+ * above the header, or appended below the table (as happened for real on 2026-09-10,
+ * two OPEN rows sat under "## วิธีเขียนแถวใหม่" until someone moved them back by hand),
+ * was never inside that range and so was never visited by this function at all: not
+ * filtered, structurally unreachable. `check.js` then printed "structure clean" and
+ * the shell counter (`ledger_open_count.sh`) undercounted, over a ledger that in fact
+ * had open debt. This is report #0002's class — a parser that silently drops what it
+ * does not expect — reapplied to the ledger itself. `firstCellIsPmId` below is swept
+ * over the WHOLE file, and anything it flags outside the parsed table span becomes a
+ * `problems` entry instead of vanishing.
+ *
  * @returns {{rows: object[], problems: string[]}}
  */
 function parseLedger(text) {
   const lines = text.split('\n');
   const problems = [];
   const rows = [];
+
+  const cells = (l) => l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
+  // A line that reads as ledger data anywhere in the file: starts with `|`, and its
+  // first cell is a `PM-` id. Deliberately loose (no format/date validation here) —
+  // this only has to decide "does this look like it belongs in the table", and a
+  // malformed id outside the table is exactly the kind of thing that must not go quiet.
+  const firstCellIsPmId = (l) => /^\s*\|/.test(l) && /^PM-/i.test(cells(l)[0] || '');
 
   let headerIdx = -1;
   for (let i = 0; i < lines.length; i++) {
@@ -229,29 +250,49 @@ function parseLedger(text) {
   }
   if (headerIdx === -1) {
     problems.push('PENDING.md: no ledger table found (need a header row with ID … สถานะ … รายงาน)');
-    return { rows, problems };
   }
 
-  const cells = (l) => l.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((c) => c.trim());
-  const headers = cells(lines[headerIdx]);
-  if (headers.length !== 6) {
+  const headers = headerIdx === -1 ? null : cells(lines[headerIdx]);
+  if (headers && headers.length !== 6) {
     problems.push(`PENDING.md: ledger must have 6 columns, found ${headers.length} — hooks and the gate read it by position after this header`);
-    return { rows, problems };
   }
 
-  for (let i = headerIdx + 1; i < lines.length; i++) {
-    const raw = lines[i];
-    if (!raw.trim().startsWith('|')) break;
-    const c = cells(raw);
-    if (c.every((x) => /^:?-{2,}:?$/.test(x))) continue; // separator
-    if (c.length !== 6) {
-      problems.push(`PENDING.md line ${i + 1}: expected 6 columns, found ${c.length}`);
-      continue;
+  // The table body is only entered once the header resolved to exactly 6 columns.
+  // `tableEnd` (exclusive) is the boundary the stray-row sweep below uses to know what
+  // this loop already parsed, so a legitimately-parsed row is never reported twice.
+  let tableEnd = headerIdx === -1 ? -1 : headerIdx + 1;
+  if (headers && headers.length === 6) {
+    let i = headerIdx + 1;
+    for (; i < lines.length; i++) {
+      const raw = lines[i];
+      if (!raw.trim().startsWith('|')) break;
+      const c = cells(raw);
+      if (c.every((x) => /^:?-{2,}:?$/.test(x))) continue; // separator
+      if (c.length !== 6) {
+        problems.push(`PENDING.md line ${i + 1}: expected 6 columns, found ${c.length}`);
+        continue;
+      }
+      rows.push({
+        id: c[0], occurred: c[1], symptom: c[2], origin: c[3], status: c[4], report: c[5], line: i + 1,
+      });
     }
-    rows.push({
-      id: c[0], occurred: c[1], symptom: c[2], origin: c[3], status: c[4], report: c[5], line: i + 1,
-    });
+    tableEnd = i;
   }
+
+  // Anything that looks like a ledger row but sits outside [headerIdx+1, tableEnd) —
+  // before the header, or after the table already ended — was never reached above.
+  // Report it here instead of letting it disappear.
+  for (let i = 0; i < lines.length; i++) {
+    if (i === headerIdx) continue;
+    if (headerIdx !== -1 && i > headerIdx && i < tableEnd) continue; // already parsed as a row
+    if (firstCellIsPmId(lines[i])) {
+      problems.push(
+        `PENDING.md line ${i + 1}: looks like a ledger row (starts with "| PM-") but sits outside ` +
+        `the ledger table — move it into the table, right after the header, or delete it: "${lines[i].trim()}"`,
+      );
+    }
+  }
+
   return { rows, problems };
 }
 

@@ -2417,6 +2417,27 @@ Full report: [`docs/post-mortem/20260910-post-mortem-report-0048-claimed-six-scr
 
 Full report: [`docs/post-mortem/20260910-post-mortem-report-0049-capture-tool-masked-real-failure-behind-starved-diagnostic.md`](docs/post-mortem/20260910-post-mortem-report-0049-capture-tool-masked-real-failure-behind-starved-diagnostic.md)
 
+### Report #0050 — ตัวอ่านบัญชีหนี้ post-mortem เองทิ้งแถวที่อยู่นอกตารางไปเงียบๆ (2026-09-11)
+
+**Surface:** `tools/postmortem-guard/postmortem_rules.js` (`parseLedger()`) กับ `tools/postmortem-guard/ledger_open_count.sh`
+— ตัวป้องกันชั้น 7-8 ที่บล็อกทุกคอมมิตของทั้ง repo เมื่อมีหนี้ค้าง **ผิดซ้ำจาก:** #0002 · #0003
+(เกิดที่ตัวบัญชีหนี้เองซึ่งทั้งสองรายงานไม่เคยครอบ)
+
+ทั้งสองไฟล์อ่านเฉพาะแถวระหว่างหัวตารางถึงบรรทัดแรกที่ไม่ขึ้นต้นด้วย `\|` เท่านั้น มาตั้งแต่คอมมิตแรกที่เขียน
+(`0bc009f` 2026-09-05 / `3dffca6` 2026-09-06) แถว `\| PM-...` ที่วางไว้ก่อนหัวตารางหรือหลังตารางจบ (เช่นใต้
+"## วิธีเขียนแถวใหม่") จึงไม่เคยถูกมองเห็นเลยทั้ง 2 runtime ทำซ้ำยืนยันแล้ว: เติมแถว OPEN ไว้หลังตาราง
+`check.js` ยังพิมพ์ `structure clean … 1 open` (นับแค่แถวเดิม) `ledger_open_count.sh` คืน `1` ขณะที่
+`grep -c "\| OPEN \|"` นับได้ `2` และรัน `scripts/hooks/pre-commit` จริงในโฟลเดอร์ทดลองพบว่า**คอมมิตผ่าน
+ทั้งที่มีหนี้ OPEN ค้างจริง** ทั้ง 2 ตำแหน่ง ทั้งมี-ไม่มี `node`
+
+**กฎที่เพิ่มจากเหตุนี้:** *ฟังก์ชันที่นิยาม "ขอบเขตของตาราง" ด้วยตำแหน่งที่ loop เดินถึง ต้องตรวจ**ทั้งสองด้าน
+ของขอบเขตเสมอ** ไม่ใช่แค่ด้านที่เคยมีปัญหามาก่อน* — บทเรียน PM-010 ("identity, not position") เคยถูกใช้แก้แค่
+"หาหัวตารางถูกไหม" ไม่เคยถูกขยายไปถึง "อะไรอยู่หลังตารางจบ" — แก้แล้วด้วยการสแกนทั้งไฟล์หาบรรทัดที่ดู
+เหมือนแถวลำดับ แล้วรายงานทุกอันที่อยู่นอกขอบเขต ตรึงด้วยเทสต์ที่อ่าน `PENDING.md` จริงบนดิสก์ ไม่ใช่แค่
+fixture สังเคราะห์
+
+Full report: [`docs/post-mortem/20260911-post-mortem-report-0050-ledger-parser-dropped-stray-rows-outside-table.md`](docs/post-mortem/20260911-post-mortem-report-0050-ledger-parser-dropped-stray-rows-outside-table.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
