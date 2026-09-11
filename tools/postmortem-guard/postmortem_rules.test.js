@@ -187,6 +187,64 @@ check('a ledger with no table at all is a finding, not an empty pass', () => {
   assert.ok(problems.some((p) => p.includes('no ledger table')));
 });
 
+check('a "| PM-..." row AFTER the table has ended is reported, not silently dropped', () => {
+  // The real defect: parseLedger's row loop breaks at the first non-`|` line and never
+  // looks past it. A row pasted below "## วิธีเขียนแถวใหม่" is exactly this shape — this
+  // happened for real on 2026-09-10 and the ledger read as 0 open until someone noticed.
+  const text = ledger(`| PM-2026-09-05-01 | 2026-09-05 | อาการ | ที่มา | DONE | ${GOOD_NAME} |`) + '\n## วิธีเขียนแถวใหม่\n\n1. ทำตามแบบ\n\n' +
+    '| PM-2099-01-01-01 | 2099-01-01 | stray row appended after the table | test | OPEN | — |\n';
+  const { rows, problems } = R.parseLedger(text);
+  assert.strictEqual(rows.length, 1, 'the in-table row must still parse normally');
+  assert.ok(
+    problems.some((p) => p.includes('sits outside') && p.includes('PM-2099-01-01-01')),
+    `stray row after the table was not reported: ${problems.join(' | ')}`,
+  );
+});
+
+check('a "| PM-..." row BEFORE the table header is reported, not silently dropped', () => {
+  const text = '# หัวข้อ\n\n| PM-2099-01-01-01 | 2099-01-01 | stray row before the header | test | OPEN | — |\n\n' +
+    ledger(`| PM-2026-09-05-01 | 2026-09-05 | อาการ | ที่มา | DONE | ${GOOD_NAME} |`);
+  const { rows, problems } = R.parseLedger(text);
+  assert.strictEqual(rows.length, 1, 'the real table must still parse normally');
+  assert.ok(
+    problems.some((p) => p.includes('sits outside') && p.includes('PM-2099-01-01-01')),
+    `stray row before the header was not reported: ${problems.join(' | ')}`,
+  );
+});
+
+check('a stray row is reported even when the table itself is otherwise malformed', () => {
+  // The original code RETURNED early on "no header" / "wrong column count" and never
+  // reached anything past that point — a stray row must still surface in both cases.
+  const noHeader = '# หัวข้อ\n\nไม่มีตารางเลย\n\n' +
+    '| PM-2099-01-01-01 | 2099-01-01 | stray | test | OPEN | — |\n';
+  assert.ok(
+    R.parseLedger(noHeader).problems.some((p) => p.includes('PM-2099-01-01-01')),
+    'a stray row with no ledger table at all went unreported',
+  );
+
+  const badHeader = '| ID | เกิดเมื่อ | อาการ | ที่มา | เพิ่ม | สถานะ | รายงาน |\n|--|--|--|--|--|--|--|\n' +
+    '| PM-2099-01-01-01 | 2099-01-01 | stray | test | OPEN | — |\n';
+  assert.ok(
+    R.parseLedger(badHeader).problems.some((p) => p.includes('PM-2099-01-01-01')),
+    'a stray row after a malformed (7-column) header went unreported',
+  );
+});
+
+check('the live docs/post-mortem/PENDING.md, with one stray row appended, is still caught', () => {
+  // Reads the REAL file on disk — not a synthetic fixture — so this fails if the live
+  // ledger's actual shape (real headings, real prose, real row count) ever stops
+  // tripping the stray-row sweep. The live file itself is never written to.
+  const live = fs.readFileSync(path.join(DIR, 'PENDING.md'), 'utf8');
+  const { rows: liveRows } = R.parseLedger(live);
+  const withStray = live + '\n| PM-2099-01-01-01 | 2099-01-01 | stray row appended to the real ledger | test | OPEN | — |\n';
+  const { rows, problems } = R.parseLedger(withStray);
+  assert.strictEqual(rows.length, liveRows.length, 'appending a stray row must not change what the real rows parse to');
+  assert.ok(
+    problems.some((p) => p.includes('sits outside') && p.includes('PM-2099-01-01-01')),
+    `appending a stray row to the real PENDING.md was not caught: ${problems.join(' | ')}`,
+  );
+});
+
 check('a column added or removed stops the parse instead of shifting what is read', () => {
   const shifted = '| ID | เกิดเมื่อ | อาการ | ที่มา | เพิ่ม | สถานะ | รายงาน |\n|--|--|--|--|--|--|--|\n';
   const { problems } = R.parseLedger(shifted);

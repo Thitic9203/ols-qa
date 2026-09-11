@@ -16,6 +16,10 @@
 #
 # The path is an ARGUMENT, never an environment variable: the two real callers pass the
 # one real ledger, and the tests pass fixtures. An env override would be a bypass.
+#
+# A `| PM-... |` row OUTSIDE the table (before the header, or after the first non-`|`
+# line that ends it) is refused too, not silently uncounted — real occurrence 2026-09-10,
+# two OPEN rows sat below "## วิธีเขียนแถวใหม่" and this counter said 0 the whole time.
 set -uo pipefail
 
 LEDGER="${1:-}"
@@ -54,9 +58,31 @@ OUT="$(LC_ALL=C awk -F'|' '
   !/^[[:space:]]*\|/ { if (hdr) done = 1; next }
 
   {
-    if (done) next
+    if (done) {
+      # A `| PM-... |` line after the table has already ended (its first non-`|` line
+      # was seen) used to fall straight into `next` below and vanish — a row appended
+      # under "## วิธีเขียนแถวใหม่" this way sat unread for real on 2026-09-10. The
+      # candidate id is always the SECOND field ($1 is empty, before the leading pipe;
+      # $2 is the first cell) because the ledger schema fixes ID as column 1 — the same
+      # assumption postmortem_rules.js makes on the Node side, and it has to, because
+      # nothing about "the table has ended" tells us where a resolved id_col would be.
+      cand = trim($2)
+      if (cand ~ /^PM-/) {
+        printf "REFUSE:line %d looks like a ledger row (id \"%s\") but appears after the ledger table has ended\n", NR, cand
+        refused = 1; exit 2
+      }
+      next
+    }
 
     if (!hdr) {
+      # Same failure, mirrored: a `| PM-... |` line seen BEFORE the real header is found
+      # used to fall through the header-name check below (it names no header column) and
+      # get silently skipped by the trailing `next` — never counted, never refused.
+      cand = trim($2)
+      if (cand ~ /^PM-/) {
+        printf "REFUSE:line %d looks like a ledger row (id \"%s\") but appears before the ledger table header\n", NR, cand
+        refused = 1; exit 2
+      }
       n_id = 0; n_status = 0; n_report = 0
       for (i = 1; i <= NF; i++) {
         f = trim($i)
