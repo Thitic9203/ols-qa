@@ -2438,6 +2438,29 @@ fixture สังเคราะห์
 
 Full report: [`docs/post-mortem/20260911-post-mortem-report-0050-ledger-parser-dropped-stray-rows-outside-table.md`](docs/post-mortem/20260911-post-mortem-report-0050-ledger-parser-dropped-stray-rows-outside-table.md)
 
+### Report #0051 — CI ของ repo แดงต่อเนื่อง 5 วันเพราะเทสต์สร้าง commit โดยไม่ตั้ง git identity (2026-09-11)
+
+**Surface:** `.github/workflows/tests.yml` (job `node-tests`) และ `tools/push-gate/pre_push.test.js`
+**ผิดซ้ำจาก:** ไม่ตรงฉบับไหนตรงๆ แต่คลาสเดียวกับ #0002/#0003 — โค้ดที่ถูกบนเครื่อง dev เงียบ/พังบน CI โดยไม่มีใครสังเกต
+
+ระหว่างเช็คสถานะ PR ของรายงาน #0050 พบ `node-tests` ขึ้น FAILURE ทั้งที่รันในเครื่องผ่านครบ ไล่ `gh run list`
+พบแดงต่อเนื่อง **28 จาก 30 รอบ** ตั้งแต่คอมมิต `8e83464` (2026-09-06 08:08:45 UTC) — รอบก่อนหน้ายังเขียวอยู่
+สาเหตุ: `commitWithNoSuites()` เรียก `git commit-tree` สร้าง commit ชั่วคราวโดยไม่เคยตั้ง `user.name`/`user.email`
+เลย เครื่อง dev ทุกเครื่องมี global git config อยู่แล้วโดยธรรมชาติจึงผ่านตลอด แต่ GitHub Actions runner เป็นเครื่อง
+สดไม่มี `~/.gitconfig` ล้มด้วย `fatal: empty ident name … not allowed` ทำซ้ำยืนยันตรงกันเป๊ะในเครื่องตัวเองด้วยการ
+ลบ `HOME` แล้วรันคำสั่งเดียวกัน คอมมิตที่ทำให้แดงคือคอมมิตที่แก้บั๊ก shallow-clone (report #0006) ให้ผ่าน โดย
+เปลี่ยนจากอ้าง sha คงที่มาเป็นสร้าง commit สดแทน — แก้ปัญหาหนึ่งได้แต่เปิดช่องใหม่ (ต้องมี identity) ที่ไม่เคยต้องมี
+มาก่อน โดยไม่มีใครถามว่า "ยังมีความต่างอื่นระหว่าง dev กับ CI อีกไหม"
+
+**กฎที่เพิ่มจากเหตุนี้:** *แก้บั๊กที่เกิดจากความต่างระหว่างเครื่อง dev กับ CI runner ต้องถามต่อว่ายังมีความต่างอื่น
+ที่การแก้รอบนั้นอาจไปพึ่งพาเข้าโดยไม่ตั้งใจไหม* — โดยเฉพาะ git identity ซึ่งมีอยู่บนเครื่อง dev ทุกเครื่องจนไม่มีใคร
+คิดว่าต้องตั้งเอง เทสต์ที่เรียก git plumbing command ซึ่งสร้าง object ใหม่ต้องระบุ identity ของตัวเองเสมอ — แก้แล้ว
+ด้วย `-c user.email=… -c user.name=…` scoped เฉพาะคำสั่งนั้น ยืนยันผ่านทั้งสภาพแวดล้อมปกติและจำลองแบบ CI
+· `.github/workflows/tests.yml` ยังไม่มีกลไกแจ้งเตือนเชิงรุกเมื่อมันแดงเอง ต่างจาก workflow อื่นที่มี SFD ครอบ —
+เป็นคำถามเปิดที่ต้องถามเจ้าของงานแยก ไม่ใช่งานที่อนุมัติในรอบที่เขียนรายงานนี้
+
+Full report: [`docs/post-mortem/20260911-post-mortem-report-0051-ci-red-five-days-unset-git-identity-in-test-fixture.md`](docs/post-mortem/20260911-post-mortem-report-0051-ci-red-five-days-unset-git-identity-in-test-fixture.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
