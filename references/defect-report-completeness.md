@@ -4,8 +4,10 @@ A defect report is finished when **a developer who has never seen the ticket can
 asking you anything**. Every question a reader asks after you post is a section you failed to write,
 and every answer you give in chat instead of in the report is knowledge the next reader will not have.
 
-Applies to every verdict that is not a clean PASSED: the retest comment (retest-bug-workflow Step 6)
-and the defect list / external result write (testing-ticket-workflow Phase F3, Phase G).
+Applies to every verdict that is not a clean PASSED: the retest comment (retest-bug-workflow Step 6),
+the defect list / external result write (testing-ticket-workflow Phase F3, Phase G), and the audit
+report produced by [catch-ai-workflow](../skills/catch-ai-workflow/SKILL.md) — its pre-delivery
+adversarial pass (catch-ai-workflow/reference.md) applies this contract by name.
 
 ---
 

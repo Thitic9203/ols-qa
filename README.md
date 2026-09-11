@@ -55,6 +55,7 @@ over the Jira REST API — they never touch a visible browser or the user's scre
 | `/retest-bug` | Verify a fix on a Jira bug, capture a whole-flow MP4 (+ screenshot on text-check cases) into the Jira comment, verdict + comment |
 | `/testing-ticket` | Playwright test for a ticket, optionally update results |
 | `/create-bug` | Open bug(s) on Jira |
+| `/catch-ai` | Audit finished work — your own output, a report, a feature: every defect traced to a confirmed source, unconfirmed items kept as Questions, sourced fix + prevention layer, pre-delivery second-reviewer pass |
 | `/test-data-prep` | Prepare/seed/fix OLS test data (media · course · LP · cover · video · account) per `ols-data-prep.md` — full ordered Gate 0 intake (env + account + CF URL → data types → style/qty → details) then every quality gate before use. OLS-local, not synced to helix |
 
 ## OLS links
