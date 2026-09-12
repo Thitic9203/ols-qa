@@ -56,7 +56,7 @@ over the Jira REST API — they never touch a visible browser or the user's scre
 | `/testing-ticket` | Playwright test for a ticket, optionally update results |
 | `/create-bug` | Open bug(s) on Jira |
 | `/catch-ai` | Audit finished work — your own output, a document, a report, or a feature — into sourced findings, open questions, coverage gaps, and a verdict. Run before claiming a check passed, a defect exists, or work is complete |
-| `/smoke-test` | **OLS-local** — post-deployment smoke test of OLS core features on a named env; triage every non-passing case to a verified root cause; output a one-page A4-landscape PDF + Playwright artifacts and post to the QA release channel |
+| `/smoke-test` | **OLS-local** — post-deployment smoke test of OLS core features on a named env; triage every non-passing case to a verified root cause; output a one-page A4-landscape PDF summary + the Playwright per-case report and post to the QA release channel |
 | `/review-result` | **OLS-local** — review already-recorded results + their evidence clips: one contact sheet per clip, judge each case against the 10 review criteria, record PASSED / FAILED / AWAITING RE-REVIEW |
 | `/sync-tc-result` | **OLS-local** — route every TC result from the QA source sheet into the 3 test-type deliverable sheets (System / Integration / Unit), all-or-nothing per tab behind a 5-layer gate (manual counterpart of the hourly auto-sync) |
 | `/content-takedown` | **OLS-local** — take a set of published content items out of public view: inventory the set, health-check, pick the least-damaging mechanism the accounts can use, execute, verify |
