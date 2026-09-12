@@ -4,7 +4,7 @@ Helix QA assistant pre-configured for the **OLS** project at <ORG>.
 
 Helix skills embedded directly — no separate install needed.
 
-**OLS Workspace version: v1.42.5** (12 Sep 2026) — based on helix v1.5.79
+**OLS Workspace version: v1.42.5** (12 Sep 2026) — Helix skills vendored in-repo (see *Helix commands* below)
 
 ## Quick start
 
@@ -55,7 +55,14 @@ over the Jira REST API — they never touch a visible browser or the user's scre
 | `/retest-bug` | Verify a fix on a Jira bug, capture a whole-flow MP4 (+ screenshot on text-check cases) into the Jira comment, verdict + comment |
 | `/testing-ticket` | Playwright test for a ticket, optionally update results |
 | `/create-bug` | Open bug(s) on Jira |
-| `/test-data-prep` | Prepare/seed/fix OLS test data (media · course · LP · cover · video · account) per `ols-data-prep.md` — full ordered Gate 0 intake (env + account + CF URL → data types → style/qty → details) then every quality gate before use. OLS-local, not synced to helix |
+| `/catch-ai` | Audit finished work — your own output, a document, a report, or a feature — into sourced findings, open questions, coverage gaps, and a verdict. Run before claiming a check passed, a defect exists, or work is complete |
+| `/smoke-test` | **OLS-local** — post-deployment smoke test of OLS core features on a named env; triage every non-passing case to a verified root cause; output a one-page A4-landscape PDF + Playwright artifacts and post to the QA release channel |
+| `/review-result` | **OLS-local** — review already-recorded results + their evidence clips: one contact sheet per clip, judge each case against the 10 review criteria, record PASSED / FAILED / AWAITING RE-REVIEW |
+| `/sync-tc-result` | **OLS-local** — route every TC result from the QA source sheet into the 3 test-type deliverable sheets (System / Integration / Unit), all-or-nothing per tab behind a 5-layer gate (manual counterpart of the hourly auto-sync) |
+| `/content-takedown` | **OLS-local** — take a set of published content items out of public view: inventory the set, health-check, pick the least-damaging mechanism the accounts can use, execute, verify |
+| `/test-data-prep` | **OLS-local** — prepare/seed/fix OLS test data (media · course · LP · cover · video · account) per `ols-data-prep.md`; full ordered Gate 0 intake (env + account + CF URL → data types → style/qty → details) then every quality gate before use |
+
+Contributor commands (developing Helix, not QA workflows): `/helix-check` (regression check before merge) · `/helix-release` (verify and ship Helix changes to main; CI owns the version bump).
 
 ## OLS links
 
