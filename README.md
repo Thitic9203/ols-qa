@@ -58,7 +58,7 @@ over the Jira REST API — they never touch a visible browser or the user's scre
 | `/catch-ai` | Audit finished work — your own output, a document, a report, or a feature — into sourced findings, open questions, coverage gaps, and a verdict. Run before claiming a check passed, a defect exists, or work is complete |
 | `/smoke-test` | **OLS-local** — post-deployment smoke test of OLS core features on a named env; triage every non-passing case to a verified root cause; output a one-page A4-landscape PDF summary + the Playwright per-case report and post to the QA release channel |
 | `/review-result` | **OLS-local** — review already-recorded results + their evidence clips: one contact sheet per clip, judge each case against the 10 review criteria, record PASSED / FAILED / AWAITING RE-REVIEW |
-| `/sync-tc-result` | **OLS-local** — route every TC result from the QA source sheet into the 3 test-type deliverable sheets (System / Integration / Unit), all-or-nothing per tab behind a 5-layer gate (manual counterpart of the hourly auto-sync) |
+| `/sync-tc-result` | **OLS-local** — route every TC result from the QA source sheet into the 3 test-type deliverable sheets (System / Integration / Unit), all-or-nothing per tab behind a 5-layer gate. Run manually — the hourly `ols-tc-result-sync` launchd job is frozen (2026-08-11) |
 | `/content-takedown` | **OLS-local** — take a set of published content items out of public view: inventory the set, health-check, pick the least-damaging mechanism the accounts can use, execute, verify |
 | `/test-data-prep` | **OLS-local** — prepare/seed/fix OLS test data (media · course · LP · cover · video · account) per `ols-data-prep.md`; full ordered Gate 0 intake (env + account + CF URL → data types → style/qty → details) then every quality gate before use |
 
@@ -180,7 +180,9 @@ expiry **12 h**. Team roster (Discord user → Jira account) for ownership:
 `autopoll armed`, `auto-resume`, `QA Owner ->`). Restart after editing:
 `launchctl kickstart -k gui/$(id -u)/com.<USER>.ols-testing-listener`.
 
-## Automated TC auto-draft (ทุก ~4 ชม.)
+## Automated TC auto-draft (เดิมทุก ~4 ชม.)
+
+> **สถานะปัจจุบัน: ปิดใช้งาน (2026-07-25).** launchd job `ols-tc-autodraft` และตัวคู่ `ols-tc-token-check` ถูก disable ตั้งแต่ 25 ก.ค. 2026 (ไฟล์ plist ถูก rename เป็น `.disabled-2026-07-25` จึงไม่ถูกโหลด) — ส่วนด้านล่างเก็บไว้อธิบายวิธีทำงาน "ตอนเปิด" เป็น reference หากจะเปิดใช้อีกครั้ง
 
 งานอัตโนมัติที่ **ร่างเทสเคส FE** ให้ ticket ที่ยังไม่มี TC แล้วเขียนลง **QA tracking sheet** โดยตรง — เพื่อให้ทีม QA
 มี TC ตั้งต้นรอรีวิว ไม่ต้องเริ่มจากศูนย์ เป็น **OLS-specific infrastructure** (launchd bot บนเครื่อง QA) ไม่ใช่ helix skill
@@ -268,7 +270,7 @@ Two steps the AI/bot performs to hand a story back to its human QA Owner once th
 
 **1. Progress tab — nothing to do (RETIRED 2026-07-24)**
 - `sort_test_progress.py` and the whole `progress_closeout.sh` chain are **deprecated** (the sorter now hard-refuses on start); their target tab `Test Progress - ALL TC` was **deleted**. Do not run them.
-- The tab is now **`Test Progress - ALL TC - Revised`**, rebuilt atomically from source by the single writer `progress_build.py` (launchd, every 5 min) — it already sorts `% Passed` desc, tie-break ticket number asc. See [docs/progress-tab-single-flow.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/progress-tab-single-flow.md).
+- The tab is now **`Test Progress - ALL TC - Revised`**, rebuilt atomically from source by the single writer `progress_build.py` (launchd `ols-progress-build`, every 2 min) — it already sorts `% Passed` desc, tie-break ticket number asc. See [docs/progress-tab-single-flow.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/progress-tab-single-flow.md).
 - **No row highlighting.** The AI-row solid-yellow highlight was **removed 2026-07-24** at the user's request; the builder resets the whole data block to white every run. Do not re-add it.
 
 **2. Hand QA Owner back to the real person** — after posting the result comment:
@@ -289,12 +291,12 @@ otherwise).
 |-----|----------|--------------|
 | **Testing listener** (`ols-testing-listener`) | ทำงานตลอด (KeepAlive) | Runs the Discord bot: `/bot-testing` on-request **+** the autopoll trigger |
 | ↳ Autopoll (inside the listener) | every 2 h | Finds ready tickets → asks in Discord → first click claims + runs on **Yes** (see *Automated testing trigger*) |
-| **TC auto-draft** (`ols-tc-autodraft`) | every 4 h (00/04/08/12/16/20) | Drafts FE test cases for tickets that have none yet (see *Automated TC auto-draft*) |
+| **TC auto-draft** (`ols-tc-autodraft`) | **disabled 2026-07-25** (was every 4 h) | Drafts FE test cases for tickets that have none yet — launchd trigger currently disabled (see *Automated TC auto-draft*) |
 | **QA-owner sync** (`ols-qa-owner-sync`) | every 2 min | Keeps the QA Owner shown in already-sent Discord notifications in step with Jira |
-| **Test-type deliverable sync** (`ols-tc-result-sync`) | every 1 h | Rebuilds the 3 customer deliverable sheets (System / Integration / Unit test-type) from the QA source sheet — Sheets/Drive API only, no VPN; each tab behind a 5-layer gate, grid-clamped + per-request timeout + per-leg watchdog (see Changelog) |
+| **Test-type deliverable sync** (`ols-tc-result-sync`) | **frozen 2026-08-11** (was every 1 h) | Rebuilds the 3 customer deliverable sheets (System / Integration / Unit test-type) from the QA source sheet — Sheets/Drive API only, no VPN; each tab behind a 5-layer gate, grid-clamped + per-request timeout + per-leg watchdog. Currently frozen; run `/sync-tc-result` to refresh manually (see Changelog) |
 | **Auto-flip to TESTING** (`ols-flip-testing`) | Mon–Fri 10 AM & 5 PM | Flips any story at **READY TO TEST** whose sheet TC tab has **≥1 started case** to **TESTING**, QA Owner untouched (see *Auto-flip stories to TESTING*) |
 | **Login smoke-test** (`ols-login-check`) | Mon–Fri 10:35 AM | Connects the VPN and checks NDLP→OLS SSO login still works; logs the result |
-| **Auth-token check** (`ols-tc-token-check`) | เป็นรอบ | Keeps the headless Claude auth token fresh — unattended runs fail silently on a stale token |
+| **Auth-token check** (`ols-tc-token-check`) | **disabled 2026-07-25** | Kept the headless Claude auth token fresh for the auto-draft bot — disabled together with TC auto-draft |
 | **Wake-for-audit** (`wake-for-audit`) | Mon–Fri 10:25 AM | Wakes the Mac ~10 min before the morning jobs so the schedule actually fires |
 
 Separately, a Google Apps Script syncs the tracking sheet's **QA Owner** column from Jira — so ownership set
