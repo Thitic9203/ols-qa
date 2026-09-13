@@ -2417,6 +2417,36 @@ Full report: [`docs/post-mortem/20260910-post-mortem-report-0048-claimed-six-scr
 
 Full report: [`docs/post-mortem/20260910-post-mortem-report-0049-capture-tool-masked-real-failure-behind-starved-diagnostic.md`](docs/post-mortem/20260910-post-mortem-report-0049-capture-tool-masked-real-failure-behind-starved-diagnostic.md)
 
+### Report #0053 — 3 ใน 4 เลนอัดหลักฐานวิดีโอตายเงียบกลางสตรีม งานที่ทำเสร็จแล้วหายทั้งหมด (2026-09-13)
+
+**Surface:** ทุก subagent lane ที่ถูกจ่ายงานพร้อมกันหลายตัวแบบ background **ผิดซ้ำจาก:** #0014 (เลนย่อยถูก
+watchdog ฆ่าแล้วงานหาย) · #0042 (ห้ามใช้ mtime/stat วัดว่าโปรเซสยังทำงานอยู่ไหม)
+
+จ่าย 4 subagent lane อัด/ตรวจหลักฐานวิดีโอพร้อมกันภายในหน้าต่าง 41 วินาที 3 ใน 4 ตัวตายด้วย
+`Agent stalled: no progress for 600s (stream watchdog did not recover)` ภายใน 53–64 วินาทีแรก สืบด้วย
+`superpowers:systematic-debugging` อ่าน JSONL transcript ทั้ง 5 ไฟล์ (4 เลน + เซสชันแม่) พบว่า
+**ไม่มีคำสั่งไหนค้างเลยสักตัว** (`tool_use` เท่ากับ `tool_result` พอดีทุกเลน 5/5·8/8·3/3) — สิ่งที่ตายคือ
+สตรีมคำตอบของโมเดลเงียบไป 600+ วินาทีหลัง tool result สุดท้ายกลับมาสำเร็จ เลนที่ 2 (System) ถูกจ่ายห่าง
+จากเลนแรกเพียง 14 วินาที ใช้โมเดล/โครงสร้างเดียวกัน แต่วิ่งต่อเนื่อง 517 tool call ผ่านหน้าต่าง 600
+วินาทีเดียวกันได้สบาย — ตัด VPN/Playwright/login/sleep-loop/API ล่มทั้งระบบ/token หมด/คนกด Stop ออกจาก
+สมมติฐานได้หมดด้วยหลักฐานจากเลนควบคุมตัวนี้ **สาเหตุต้นทางที่ทำให้สตรีมเงียบยังตรวจไม่ได้จริง** (ไม่มี
+HTTP status/error object/retry log ที่ไหนเลย ต้องมี log ฝั่ง harness/transport ถึงจะตอบได้)
+
+ปัญหาชั้นที่สองที่แพงกว่าตัว stall เอง: **ไม่มีเลนไหนเขียนอะไรลงดิสก์ก่อนตาย** งานที่ทำเสร็จจริงแล้ว
+(Lane 3 นับ codes/tabs ของ Unit 71 เคสเสร็จ, Lane 4 นับผล System จาก sandbox เสร็จ) หายไปกับ transcript
+ทั้งหมด — เสียเวลา wall-clock ไปเปล่าราว 30 นาที (600s × 3 เลน) heartbeat instruction ที่มีอยู่แล้วในทุก
+lane prompt ("print status line ทุกเคส") **พิสูจน์แล้วว่าไม่ช่วย** เพราะ `print` ไปอยู่ใน transcript ที่ตาย
+ไปพร้อม agent ไม่ใช่การบันทึกจริง
+
+**กฎที่เพิ่มจากเหตุนี้:** *กฎ heartbeat แบบ "print status" ไม่ใช่ชั้นป้องกันของความล้มเหลวชนิดที่ทำลาย
+transcript ทั้งก้อน — ต้อง "persist ก่อน print" คือเขียนบรรทัดผลลัพธ์ย่อยลงดิสก์ทันทีทุกครั้ง (append) ก่อน
+ยิง tool ถัดไป ไม่ถือไว้ในหัวข้าม tool call* · และ *เจอ agent ตายเงียบ ให้หาเลนควบคุมที่รอดในช่วงเวลา
+เดียวกันก่อนเสมอ — ถ้ามีเลนที่รอด ตัดสาเหตุ "ระบบล่มทั้งหมด" ออกได้ทันที* (ข้อนี้คือข้อที่พลิกคดีรอบนี้)
+main thread ต้อง poll ไฟล์ log ของเลนที่จ่ายไปทุก 60–90 วินาที ไม่ใช่รอ 600s ของ watchdog — รายละเอียด
+เต็มอยู่ในรายงาน รวม checklist 4 ขั้นเมื่อเจอ agent ตาย และตารางสมมติฐานที่ตัดออกได้ทั้งหมดพร้อมหลักฐาน
+
+Full report: [`docs/post-mortem/20260913-post-mortem-report-0053-recording-lanes-died-mid-stream-lost-work.md`](docs/post-mortem/20260913-post-mortem-report-0053-recording-lanes-died-mid-stream-lost-work.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
