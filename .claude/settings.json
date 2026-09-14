@@ -51,6 +51,14 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/investigation-rule.sh\""
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/board-reminder.sh\""
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -82,6 +90,15 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/git-staging-guard.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*__createJiraIssue",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/jira-ticket-guard.sh\""
           }
         ]
       }

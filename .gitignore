@@ -74,4 +74,7 @@ __pycache__/
 
 # investigation-guard: per-session arm flags, meaningless outside the running session
 .claude/.investigation-state/
+
+# jira-ticket-guard: single-use, short-TTL confirm marker — meaningless outside the run
+.claude/.jira-ticket-guard-state/
 .serena/
