@@ -68,8 +68,16 @@ function runHook(localSha) {
 function commitWithNoSuites() {
   const sha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
   const tree = execFileSync('git', ['mktree'], { cwd: ROOT, encoding: 'utf8', input: '' }).trim();
-  return execFileSync('git', ['commit-tree', tree, '-p', sha, '-m', 'fixture: a tree with no test suite'],
-    { cwd: ROOT, encoding: 'utf8' }).trim();
+  // `commit-tree` needs a committer identity, and this call must not depend on one being
+  // set globally — a fresh CI runner has no `~/.gitconfig` at all, while every developer
+  // machine does, so this passed everywhere it was written and failed on GitHub Actions
+  // the moment it actually ran there. `-c` scopes the identity to this one invocation:
+  // nothing is written to the real repo's config, local or global.
+  return execFileSync('git', [
+    '-c', 'user.email=postmortem-guard-tests@example.invalid',
+    '-c', 'user.name=postmortem-guard-tests',
+    'commit-tree', tree, '-p', sha, '-m', 'fixture: a tree with no test suite',
+  ], { cwd: ROOT, encoding: 'utf8' }).trim();
 }
 
 check('the hook refuses a commit whose tree contains no test file at all', () => {

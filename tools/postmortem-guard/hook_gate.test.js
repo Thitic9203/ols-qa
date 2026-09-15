@@ -146,6 +146,35 @@ try {
     assert.ok(r.out.includes('not a ledger id'), r.out);
   });
 
+  check('an OPEN row AFTER the table has ended is REFUSED, not undercounted', () => {
+    // Real occurrence 2026-09-10: two OPEN rows sat below "## วิธีเขียนแถวใหม่" and this
+    // counter's `if (done) next` swallowed both — it printed a bare count as if the
+    // table's real content were all there was, on a ledger that in fact had open debt.
+    const r = count(fixture('stray-after.md', [
+      ...HEADER, DONE_ROW, '', '## วิธีเขียนแถวใหม่', '', '1. ทำตามแบบ', '',
+      '| PM-2099-01-01-01 | 2099-01-01 | stray row appended after the table | test | OPEN | — |',
+    ]));
+    assert.strictEqual(r.code, 2, `a stray OPEN row after the table was not refused: ${r.out}`);
+    assert.ok(/^REFUSE:/.test(r.out) && r.out.includes('PM-2099-01-01-01'), r.out);
+  });
+
+  check('an OPEN row BEFORE the table header is REFUSED, not undercounted', () => {
+    const r = count(fixture('stray-before.md', [
+      '# หัวข้อ', '',
+      '| PM-2099-01-01-01 | 2099-01-01 | stray row before the header | test | OPEN | — |',
+      '', ...HEADER, DONE_ROW,
+    ]));
+    assert.strictEqual(r.code, 2, `a stray OPEN row before the header was not refused: ${r.out}`);
+    assert.ok(/^REFUSE:/.test(r.out) && r.out.includes('PM-2099-01-01-01'), r.out);
+  });
+
+  check('a real IN-TABLE row still counts once the stray-row check is in place', () => {
+    // Guards against the fix over-firing: the row directly above the stray row in the
+    // "after" fixture is a genuine table row and must not itself be flagged.
+    const r = count(fixture('control-in-table.md', [...HEADER, DONE_ROW, OPEN_ROW]));
+    assert.deepStrictEqual([r.code, r.out], [0, '1']);
+  });
+
   check('no path argument is REFUSED', () => {
     let code = 0; let out = '';
     try { execFileSync('bash', [COUNTER], { encoding: 'utf8' }); } catch (e) { code = e.status; out = String(e.stdout || ''); }

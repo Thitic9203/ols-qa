@@ -2467,6 +2467,42 @@ PreToolUse hook ดักการเรียก `createJiraIssue` แบบเ
 
 Full report: [`docs/post-mortem/20260914-post-mortem-report-0054-filed-two-jira-tickets-without-explicit-go-ahead.md`](docs/post-mortem/20260914-post-mortem-report-0054-filed-two-jira-tickets-without-explicit-go-ahead.md)
 
+### Report #0055 — ตัวอ่านบัญชีหนี้ post-mortem ทิ้งแถวที่อยู่นอกตารางไปเงียบๆ ทั้ง Node และ shell fallback (2026-09-05/06)
+
+**Surface:** `tools/postmortem-guard/postmortem_rules.js` (`parseLedger()`) และ `tools/postmortem-guard/ledger_open_count.sh` — ตัวป้องกันชั้น 7-8 ของแนวป้องกัน 10 ชั้นที่บล็อกคอมมิตเมื่อมีหนี้ post-mortem ค้าง
+
+ทั้งสองไฟล์อ่านเฉพาะแถวระหว่างหัวตารางถึงบรรทัดแรกที่ไม่ขึ้นต้นด้วย `|` เท่านั้น มาตั้งแต่บรรทัดแรกที่เขียน —
+แถว `| PM-... |` ที่วางก่อนหัวตาราง หรือหลังตารางจบ (เช่นใต้หัวข้อ "## วิธีเขียนแถวใหม่") จึงไม่เคยถูกมองเห็นเลย
+ทั้ง 2 ฝั่ง ทำซ้ำยืนยันแล้วว่า `scripts/hooks/pre-commit` จริงปล่อยคอมมิตผ่าน (exit 0) ทั้งที่มีหนี้ OPEN ค้างอยู่จริง
+ทั้ง 2 ตำแหน่ง ทั้งมีและไม่มี `node` ในเครื่อง
+
+**กฎที่เพิ่มจากเหตุนี้:** ฟังก์ชันที่นิยาม "ขอบเขตของตาราง" ด้วยตำแหน่งที่ loop เดินถึง ต้องแยกตรวจ **ทั้งสองด้าน
+ของขอบเขต** เสมอ ไม่ใช่แค่ด้านที่เคยมีปัญหามาก่อน (ต่อยอด PM-010) — ผิดซ้ำคลาสเดียวกับ #0002/#0003 ที่เกิด
+ที่ตัวบัญชีหนี้เองซึ่งทั้งสองรายงานก่อนหน้าไม่เคยครอบ 🔴 **เขียนเสร็จสมบูรณ์จริง 2026-09-11 บน git worktree แยก
+(`.claude/worktrees/serene-mendel-f2977e`) แต่ไม่เคย merge เข้า `main` — ค้างไว้ 4 วัน จนถูกพบและนำเข้าจริง
+เมื่อ 2026-09-15 ระหว่างสืบสาเหตุที่ `bash scripts/run-test-suites.sh` ล้ม** (worktree ที่ค้างอยู่ทำให้
+`list-test-suites.sh` เจอไฟล์เทสต์ซ้อนอยู่ข้างในมันด้วย นับเป็นหนึ่งใน "odd path") — เลขรายงานเปลี่ยนจาก `#0050`
+(เลขที่จองไว้บน worktree ที่แยกออกไป) เป็น `#0055` เพราะ `main` เดินหน้าใช้เลขนั้นกับรายงานอื่นไปแล้ว
+
+Full report: [`docs/post-mortem/20260911-post-mortem-report-0055-ledger-parser-dropped-stray-rows-outside-table.md`](docs/post-mortem/20260911-post-mortem-report-0055-ledger-parser-dropped-stray-rows-outside-table.md)
+
+### Report #0056 — CI ของ repo แดงต่อเนื่อง 5 วันเพราะเทสต์สร้าง commit โดยไม่ตั้ง git identity (2026-09-06)
+
+**Surface:** `.github/workflows/tests.yml` (job `node-tests`) และ `tools/push-gate/pre_push.test.js`
+
+`commitWithNoSuites()` เรียก `git commit-tree` สร้าง commit ชั่วคราวเพื่อทดสอบทางปฏิเสธ-ศูนย์-ชุด โดยไม่เคยตั้ง
+`user.name`/`user.email` — เครื่อง dev ทุกเครื่องมี global git config อยู่แล้วโดยธรรมชาติจึงผ่านตลอด แต่ GitHub
+Actions runner เป็นเครื่องสดไม่มี `~/.gitconfig` เลย ล้มด้วย `fatal: empty ident name … not allowed` ทุกครั้ง —
+CI แดงต่อเนื่อง 28 จาก 30 รอบตั้งแต่คอมมิต `8e83464` (2026-09-06) โดยไม่มีใครสังเกต
+
+**กฎที่เพิ่มจากเหตุนี้:** แก้บั๊กที่เกิดจากความต่างระหว่างเครื่อง dev กับ CI runner (ที่นี่คือ shallow clone) ต้องถาม
+ต่อว่ายังมีความต่างอื่นระหว่างสองสภาพแวดล้อมนั้นที่การแก้รอบนั้นอาจไปพึ่งพาเข้าโดยไม่ตั้งใจไหม — โดยเฉพาะ git
+identity ซึ่งมีอยู่บนเครื่อง dev ทุกเครื่องจนไม่มีใครคิดว่าต้องตั้งเอง 🔴 **เขียนเสร็จบน worktree เดียวกับ #0055
+เมื่อ 2026-09-11 ก็ไม่เคย merge เข้า `main` เช่นกัน — นำเข้าคู่กันเมื่อ 2026-09-15** เลขรายงานเปลี่ยนจาก `#0051`
+เป็น `#0056` ด้วยเหตุผลเดียวกับ #0055
+
+Full report: [`docs/post-mortem/20260911-post-mortem-report-0056-ci-red-five-days-unset-git-identity-in-test-fixture.md`](docs/post-mortem/20260911-post-mortem-report-0056-ci-red-five-days-unset-git-identity-in-test-fixture.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
