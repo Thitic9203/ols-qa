@@ -27,11 +27,12 @@ If the user’s message already names a workflow (including Thai phrases), map v
 | `4`, testing ticket, test ticket, playwright ticket | Read and follow [testing-ticket-workflow](../skills/testing-ticket-workflow/SKILL.md). Pass any issue key/URL; complete Phase A intake if fields are missing. |
 | `5`, create bug, file bug, open bug, log bug | Read and follow [create-bug-workflow](../skills/create-bug-workflow/SKILL.md). Reuse bug evidence from the same chat if present. |
 | `6`, catch ai, audit, review my work | Read and follow [catch-ai-workflow](../skills/catch-ai-workflow/SKILL.md). Pass the audit target from the message. |
-| `7`, other | Ask one clarifying question, then help or suggest which Helix workflow fits. |
+| `7`, tc review, review test cases, review the tc sheet | Read and follow [tc-review-workflow](../skills/tc-review-workflow/SKILL.md). Pass the TC document and the ticket key/URL from the message. |
+| `8`, other | Ask one clarifying question, then help or suggest which Helix workflow fits. |
 
 If the user invoked `/helix PROJ-123` with no mode:
 
-- Ask which of the seven options applies, **or**
+- Ask which of the eight options applies, **or**
 - Infer only if obvious (e.g. "API test cases from Swagger" → TC API prep; "retest this bug" → retest; "write FE TC" → TC FE prep). If unclear, ask.
 
 ## Rules

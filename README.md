@@ -56,6 +56,7 @@ over the Jira REST API — they never touch a visible browser or the user's scre
 | `/testing-ticket` | Playwright test for a ticket, optionally update results |
 | `/create-bug` | Open bug(s) on Jira |
 | `/catch-ai` | Audit finished work — your own output, a document, a report, or a feature — into sourced findings, open questions, coverage gaps, and a verdict. Run before claiming a check passed, a defect exists, or work is complete |
+| `/tc-review` | Review an already-written TC document against a ticket's AC/EC and business rules — traceability matrix, row-quality check, Good vs Need Improve findings anchored to quoted sources |
 | `/smoke-test` | **OLS-local** — post-deployment smoke test of OLS core features on a named env; triage every non-passing case to a verified root cause; output a one-page A4-landscape PDF summary + the Playwright per-case report and post to the QA release channel |
 | `/review-result` | **OLS-local** — review already-recorded results + their evidence clips: one contact sheet per clip, judge each case against the 10 review criteria, record PASSED / FAILED / AWAITING RE-REVIEW |
 | `/sync-tc-result` | **OLS-local** — route every TC result from the QA source sheet into the 3 test-type deliverable sheets (System / Integration / Unit), all-or-nothing per tab behind a 5-layer gate. Run manually — the hourly `ols-tc-result-sync` launchd job is frozen (2026-08-11) |
@@ -303,6 +304,18 @@ Separately, a Google Apps Script syncs the tracking sheet's **QA Owner** column 
 anywhere (a `/bot-testing` verdict, an autopoll click, a manual Jira edit) shows up in the sheet on its own.
 
 ## Changelog
+
+### v1.44.0 — new `/tc-review` skill: review an already-written TC document against a ticket's AC/EC (15 Sep 2026)
+
+No existing skill covered reviewing a TC document someone already wrote — `/tc-fe-prep`/`/tc-api-prep`
+author new cases, `/review-result` judges recorded execution evidence. `/tc-review` fills the gap
+between them: build a traceability matrix from the ticket's AC/EC and business-rules sub-items, flag
+every row-quality defect against `tc-quality-standards.md`, and report Good vs Need Improve with every
+finding anchored to a quoted source on both sides — no finding without a quote, the same Iron Law
+`catch-ai-workflow` uses. Distinguishes a spec-level gap (missing from the ticket's own AC list) from
+an actual TC-document gap, and an unclear/conflicting AC becomes a BLOCKED row with an actionable
+Remark, never a guessed finding. Optional external share (Discord/Slack/etc.) never invents a
+channel/thread/mention id, and always reads the send back before declaring done.
 
 ### v1.36.15 — re-recording a clip the customer already has is its own job, with its own gate (1 Sep 2026)
 

@@ -38,6 +38,14 @@ Terms used across Helix skills. For install, menu, and versioning see [README.md
 | **Confirm gate** | User approves summary before Playwright |
 | **Result update** | Optional destination link + columns + verify |
 
+## TC review
+
+| Term | Meaning |
+|------|---------|
+| **TC document** | The already-written sheet/CSV/markdown under review — never authored by this workflow |
+| **Traceability matrix** | Every AC/EC (and business-rules sub-item) mapped to the TC row(s) claiming to cover it |
+| **Spec-level gap** | Missing from the ticket's own AC list, not a defect in the TC document |
+
 ## Create bug
 
 | Term | Meaning |

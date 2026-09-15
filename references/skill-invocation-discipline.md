@@ -26,6 +26,7 @@ If there is even a **small chance** a Helix workflow applies (TC prep, retest, P
 | Retest bug | `/retest-bug` |
 | Playwright ticket | `/testing-ticket` |
 | File bugs | `/create-bug` |
+| Review an existing TC document against AC/EC | `/tc-review` |
 
 ## Red flags
 

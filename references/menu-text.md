@@ -17,7 +17,8 @@ What would you like to do?
 4. **Testing Ticket** — Playwright test for a ticket; summarize in chat; optionally update results elsewhere
 5. **Create Bug** — open bug(s) on Jira or GitHub (target link, format, details → confirm → file)
 6. **Catch AI** — audit finished work (your own output, a document, a report, a feature): sourced findings, questions, coverage gaps, verdict
-7. **Other** — describe what you need
+7. **TC Review** — check an existing test case document against a ticket's AC/EC and business rules: traceability matrix, Good vs Need Improve findings
+8. **Other** — describe what you need
 
-Reply with **1**–**7**, or the option name. You can also pass a Jira key or URL with your choice.
+Reply with **1**–**8**, or the option name. You can also pass a Jira key or URL with your choice.
 ```
