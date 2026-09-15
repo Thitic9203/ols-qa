@@ -2522,6 +2522,20 @@ Full report: [`docs/post-mortem/20260911-post-mortem-report-0056-ci-red-five-day
 
 Full report: [`docs/post-mortem/20260915-post-mortem-report-0057-parallel-trim-agents-died-repeat-of-0053.md`](docs/post-mortem/20260915-post-mortem-report-0057-parallel-trim-agents-died-repeat-of-0053.md)
 
+### Report #0058 — Dispatch เลนตัดฉากซ้ำ pool ที่เอกสารสั่งห้ามแตะแล้ว (2026-09-15)
+
+**Surface:** การคัดกรองคิวงานตัดฉากวิดีโอ (Unit track) ก่อน dispatch
+
+คัดกรอง "เคสที่ยังไม่เคยถูกแก้" ด้วยเกณฑ์ mtime ของไฟล์ผลตัดสินอย่างเดียว (`< 14/Sep 17:00`) โดยไม่เช็คว่ามีบันทึก
+การตัดสินใจจากรอบ 14:00 อยู่แล้วหรือไม่ — ทำให้ dispatch เลน "Unit batch B" (14 เคส) ไปทำงานที่เอกสารแผนงาน
+เขียนห้ามไว้ชัดแล้วว่า "ห้ามส่งเลนใหม่ไปทำซ้ำ pool นี้" agent ที่ถูก dispatch เองจับได้ (verify สด 5/14 + cross-check
+log เดิม 9/14 ตรงกันหมด) หยุดเองไม่เขียนทับ ไม่มีข้อมูลเสียหาย เสียแค่ agent-hours โดยไม่จำเป็น
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎเครื่องมือใหม่ — mtime ตอบได้แค่ "ไฟล์ถูกแก้เมื่อไหร่" ไม่ตอบว่า "เรื่องนี้ถูกตัดสิน
+จบหรือยัง" ก่อน dispatch งานเป็นชุดต้องอ่านเอกสารแผนงานส่วน "ห้ามทำซ้ำ" ก่อนเสมอ ไม่ใช่คำนวณจาก mtime อย่างเดียว
+
+Full report: [`docs/post-mortem/20260915-post-mortem-report-0058-redispatched-already-decided-unit-trim-pool.md`](docs/post-mortem/20260915-post-mortem-report-0058-redispatched-already-decided-unit-trim-pool.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
