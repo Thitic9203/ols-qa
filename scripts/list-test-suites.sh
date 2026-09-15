@@ -35,6 +35,31 @@ cd "$DIR" 2>/dev/null || { echo "cannot enter: $DIR" >&2; exit 2; }
 # rule (a filter inside a checker is a claim that what it drops does not matter) arriving in
 # the file written to close #0006.
 #
+# A nested git worktree carries its own full copy of every suite in tools/, and `find`
+# cannot tell that copy from the real one — CLAUDE.md's own rule 6 (this repo's shared
+# worktree convention) and the Claude Code app's own per-agent worktrees both create these
+# under `$DIR` routinely, so an abandoned or even a live one is not an edge case here, it is
+# the normal state. Left unexcluded, the listed count balloons with duplicates and
+# pre_push.test.js's own regression guard (every path matches `tools/<dir>/<file>.test.js`)
+# fails on the worktree's path prefix — report #0055 traced a real 4-day-stale example of
+# exactly this. Computed fresh from `git worktree list` every run, never hardcoded to
+# `.worktrees/`/`.claude/worktrees/` alone, because a worktree can be created at any path
+# (report #0012 — closing one path is not closing the class). Best-effort: no git, no
+# worktree info, or a path that no longer resolves just means nothing extra is excluded —
+# never a reason to fail this script's own contract of "did I find suites in $DIR".
+FIND_ARGS=(. -type f -name '*.test.js' -not -path './.git/*' -not -path './node_modules/*')
+HERE="$(pwd -P)"
+if command -v git >/dev/null 2>&1 && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  while IFS= read -r wt; do
+    [ -n "$wt" ] || continue
+    wt_real="$(cd "$wt" 2>/dev/null && pwd -P)" || continue
+    [ "$wt_real" = "$HERE" ] && continue
+    case "$wt_real" in
+      "$HERE"/*) FIND_ARGS+=(-not -path "./${wt_real#"$HERE"/}/*") ;;
+    esac
+  done < <(git worktree list --porcelain 2>/dev/null | awk '/^worktree /{print substr($0,10)}')
+fi
+
 # `find` is used rather than a glob so depth is not a property of the pattern, and the
 # output is sorted so the two callers, and two runs, agree on the order.
 found=0
@@ -42,7 +67,7 @@ while IFS= read -r t; do
   [ -n "$t" ] || continue
   printf '%s\n' "${t#./}"
   found=$((found + 1))
-done < <(find . -type f -name '*.test.js' -not -path './.git/*' -not -path './node_modules/*' 2>/dev/null | LC_ALL=C sort)
+done < <(find "${FIND_ARGS[@]}" 2>/dev/null | LC_ALL=C sort)
 
 [ "$found" -gt 0 ] || exit 1
 exit 0

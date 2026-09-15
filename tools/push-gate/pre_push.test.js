@@ -164,6 +164,30 @@ check('the lister answers with a list and a status, and this tree has suites', (
   assert.ok(lines.includes('tools/push-gate/pre_push.test.js'), 'this very file was not listed');
 });
 
+check('a nested git worktree does not double-count or leak an odd path into the listing', () => {
+  // Report #0055/#0056: a worktree abandoned at `.claude/worktrees/serene-mendel-f2977e`
+  // (this repo's own multi-session convention, CLAUDE.md rule 6) sat inside the tree for 4
+  // days holding a second full copy of every tools/ suite. `find` cannot tell that copy from
+  // the real one, so it inflated the count and broke the very check above (each duplicate
+  // path is prefixed with the worktree's own path, so it can never match
+  // `tools/<dir>/<file>.test.js`). Reproduced here with a throwaway worktree instead of
+  // trusting that no worktree happens to exist on the machine running this test.
+  const wtName = `.pre_push_test_wt_${process.pid}`;
+  const wtPath = path.join(ROOT, wtName);
+  const before = lister(ROOT);
+  assert.strictEqual(before.code, 0, before.err);
+  execFileSync('git', ['worktree', 'add', '--detach', '--quiet', wtPath, 'HEAD'], { cwd: ROOT });
+  try {
+    const after = lister(ROOT);
+    assert.strictEqual(after.code, 0, after.err);
+    assert.deepStrictEqual(after.out, before.out,
+      'a nested worktree changed what the lister sees — it should be invisible to it');
+    assert.ok(!after.out.includes(wtName), 'a worktree path leaked into the listing');
+  } finally {
+    execFileSync('git', ['worktree', 'remove', '--force', wtPath], { cwd: ROOT });
+  }
+});
+
 check('a tree with no suites is exit 1, and an unlookable one is exit 2 — never confused', () => {
   const empty = fs.mkdtempSync(path.join(require('os').tmpdir(), 'no-suites-'));
   try {
@@ -322,10 +346,32 @@ check('the lister is the only place that decides where the suites live', () => {
   assert.ok(/exit 1/.test(src) && /exit 2/.test(src),
     'the lister lost the difference between "none" and "could not look"');
 
-  // And it must actually agree with the tree: every suite present is listed, none invented.
-  const onDisk = execFileSync('bash', ['-c',
-    `find . -type f -name '*.test.js' -not -path './.git/*' | sed 's|^\\./||' | LC_ALL=C sort`],
-    { cwd: ROOT, encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+  // And it must actually agree with the tree: every suite present is listed, none invented —
+  // EXCEPT a suite sitting inside a nested git worktree, which is a full second checkout of
+  // this same repo, not a suite belonging to this one. Computed independently from the
+  // lister's own exclusion (a plain `git worktree list`, filtered in test code, not production
+  // code) so this stays a check on the PROPERTY, not a check that the two implementations
+  // happen to be spelled the same way.
+  const here = fs.realpathSync(ROOT);
+  const worktreePruneArgs = [];
+  try {
+    const wtOut = execFileSync('git', ['worktree', 'list', '--porcelain'], { cwd: ROOT, encoding: 'utf8' });
+    for (const line of wtOut.split('\n')) {
+      const m = /^worktree (.+)$/.exec(line);
+      if (!m) continue;
+      let real;
+      try { real = fs.realpathSync(m[1]); } catch { continue; }
+      if (real === here) continue;
+      if (real.startsWith(here + path.sep)) {
+        worktreePruneArgs.push('-not', '-path', `./${path.relative(here, real)}/*`);
+      }
+    }
+  } catch { /* no git, or not a worktree-aware checkout — nothing extra to prune */ }
+
+  const onDisk = execFileSync('find',
+    ['.', '-type', 'f', '-name', '*.test.js', '-not', '-path', './.git/*', ...worktreePruneArgs],
+    { cwd: ROOT, encoding: 'utf8' })
+    .split('\n').filter(Boolean).map((p) => p.replace(/^\.\//, '')).sort((a, b) => a < b ? -1 : a > b ? 1 : 0);
   const listed = lister(ROOT).out.split('\n').filter(Boolean);
   assert.deepStrictEqual(listed, onDisk,
     'the lister and the tree disagree — a suite is dropped or invented');
