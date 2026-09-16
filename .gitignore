@@ -77,4 +77,5 @@ __pycache__/
 
 # jira-ticket-guard: single-use, short-TTL confirm marker — meaningless outside the run
 .claude/.jira-ticket-guard-state/
+.claude/.ask-guard-state/
 .serena/

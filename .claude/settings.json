@@ -101,6 +101,15 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/jira-ticket-guard.sh\""
           }
         ]
+      },
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/ask-guard.sh\""
+          }
+        ]
       }
     ],
     "PreCompact": [
