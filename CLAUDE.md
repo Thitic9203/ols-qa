@@ -2628,6 +2628,28 @@ brief เดิมของมันก่อนเสมอ — ขัดกั
 
 Full report: [`docs/post-mortem/20260917-post-mortem-report-0061-resumed-forbidden-lanes-into-live-recording-without-direct-consent.md`](docs/post-mortem/20260917-post-mortem-report-0061-resumed-forbidden-lanes-into-live-recording-without-direct-consent.md)
 
+### Report #0062 — Dispatched 4 recording lanes onto dev sessions already dead for hours (2026-09-17)
+
+**Surface:** the check run before dispatching any lane that depends on saved OLS sessions.
+**ผิดซ้ำจาก:** #0026 (keepalive died silently; main work still started normally — the exact gap that report said needed a hard gate, never built).
+
+Found `.keepwarm_dev.pid`'s process dead before dispatching 4 recording lanes, but checked the
+cookie `expires` field in each `state_*.json` instead (~12h remaining) and used that as the
+green light. `expires` is a client-side claim; it says nothing about server-side idle-timeout or
+short JWT `exp`. All 5 dev accounts had in fact been server-invalidated ~10h earlier
+(`keepwarm_dev.log`'s last line: 16/Sep 17:48 +07). Result: 4 lanes, 30 cases, 0 recorded — every
+case BLOCKED on the identical `get-session` → HTTP 200 + empty body signature, confirmed 6
+independent ways.
+
+**กฎที่เพิ่มจากเหตุนี้:** a dead keepalive outranks an unexpired `expires` value — it is a signal
+that nothing has been renewing the session, not a data point to average against a friendlier one.
+Before dispatching any session-dependent work, check the session live against the server, never
+only the cookie file. Built `~/ols-qa-testing-bot/capture/recording_preflight.js` (off-repo) which
+does exactly that and refuses (exit 1) when either check fails — verified against real dead data.
+**Not yet wired as a mandatory gate in the actual dispatch path** — that remains open.
+
+Full report: [`docs/post-mortem/20260917-post-mortem-report-0062-dispatched-recording-onto-sessions-already-dead-for-hours.md`](docs/post-mortem/20260917-post-mortem-report-0062-dispatched-recording-onto-sessions-already-dead-for-hours.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
