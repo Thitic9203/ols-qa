@@ -2671,6 +2671,24 @@ only what it measured — git failing is "cannot check", never "uncommitted chan
 
 Full report: [`docs/post-mortem/20260917-post-mortem-report-0063-helix-sync-read-olsqa-index-from-worktree-hook.md`](docs/post-mortem/20260917-post-mortem-report-0063-helix-sync-read-olsqa-index-from-worktree-hook.md)
 
+### Report #0064 — Stated how git feeds pre-push on a rejected push before testing it (2026-09-17)
+
+**Surface:** every progress message that explains a cause or a mechanism before it was measured.
+**ผิดซ้ำจาก:** #0004 · #0019
+
+A push was blocked by pre-push ("no refs on stdin") and the owner was told, as fact, that a
+non-fast-forward push makes git send pre-push no refs — then it was tested. `fetch first` (remote
+tip not in the local object store): the hook got 103 bytes. `non-fast-forward` (tip already
+fetched): 0 bytes. The real push matched the second case (`fe338f8` fetched at 09:39:43), so nothing
+was acted on wrongly, but the sentence was a mechanism nobody had measured, in the form of a fact.
+
+**กฎที่เพิ่มจากเหตุนี้:** a cause or mechanism not yet measured is written as
+"สมมติฐาน: … (จะตรวจด้วย …)", never in the form of a fact — even when the check is planned for
+the same turn. Related finding left to the owner: `scripts/hooks/pre-push` claims git always feeds
+it refs, which is false for a non-fast-forward push with a known remote tip.
+
+Full report: [`docs/post-mortem/20260917-post-mortem-report-0064-stated-push-hook-stdin-mechanism-before-testing-it.md`](docs/post-mortem/20260917-post-mortem-report-0064-stated-push-hook-stdin-mechanism-before-testing-it.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
