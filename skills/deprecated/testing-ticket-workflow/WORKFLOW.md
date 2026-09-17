@@ -595,7 +595,7 @@ A follow-up question is a **defect in the write-up**, not a normal step
 
 ## QA closing (mandatory before session end)
 
-Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific:
+Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific. **Run its [cross-ticket conflict check](../../../references/qa-closing-shared.md#cross-ticket-conflict-check) first** — the session is not done until the user has answered it:
 
 - [ ] F1–F4 posted before any external update.
 - [ ] **AC/EC coverage gate (7-layer) PASSED — `enumerated AC*/EC* ids == rows carrying a verdict + evidence (or explicit BLOCKED)`** ([qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *AC/EC & bug-detail coverage*): every Acceptance Criteria / Expected-Condition line was enumerated char-exact in Phase B, mapped 1:1 to a scenario, executed on its real surface, and appears as its **own row** in F2 — none parked only in a remark/Notes/chat, no case PASSED on partial coverage; a differing item is a FAILED/PWMI row (per matrix), an unreached item a BLOCKED row (a coverage gap, not a product FAILED) — neither a footnote. Fail closed: any id unrun/unrowed/verdict-less ⇒ story not complete.
@@ -611,6 +611,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] If Phase G ran: destination re-read matches agreed column formats.
 - [ ] Close-out includes `Verified:` (or partial-failure honesty per Phase F).
 - [ ] Phase G6 fix-verify completed when Phase G ran.
+- [ ] **Cross-ticket conflict check ran** ([qa-closing-shared.md](../../../references/qa-closing-shared.md#cross-ticket-conflict-check)): the whole project searched with every layer's query + hit count recorded, candidates opened (fields + every comment), the table posted in chat with a clickable link per ticket, and the user answered *Investigate further* / *Close out now* before the session was called done.
 - [ ] **Fresh-eyes:** re-read F2 before Phase G when **> 15 scenarios**.
 - [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (Testing ticket section).
 - [ ] Suggest **create-bug** if F3 has defects; handoff if long run.
@@ -693,3 +694,4 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST report anything wrong observed during a run even when no AC asked for it | "Badges render correctly" was written while the badge-overflow defect was on screen |
 | MUST preflight the authenticated session (see the user in the session response) and confirm a toggle's starting state before pressing it | A dead session reported "no defects" for a whole set; a two-way button measured the opposite direction |
 | MUST open the trace (changelog / comments / logs) before claiming an action never happened | An empty tracking field was read as "never tested" and became a wrong number-one root cause |
+| MUST run the cross-ticket conflict check ([qa-closing-shared.md](../../../references/qa-closing-shared.md#cross-ticket-conflict-check)) before calling the session done — whole project, every type and status (Done included), a chat table with a clickable link per ticket, then ask *Investigate further* / *Close out now* and wait | Another ticket in the same project can contradict, supersede, or duplicate what was just verified; a check limited to the tested ticket never sees it |
