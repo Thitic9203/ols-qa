@@ -18,6 +18,10 @@ if [ -z "$ROOT" ] || [ ! -f "$ROOT/scripts/list-test-suites.sh" ]; then
   echo "[ols-qa pre-push] ❌ หา scripts/list-test-suites.sh ไม่เจอ — ตรวจไม่ได้ = ไม่ให้ push"
   exit 1
 fi
+if ! . "$ROOT/scripts/git-env-clean.sh" || ! ( git_env_clean ); then
+  echo "[ols-qa pre-push] ❌ ล้างตัวแปร git ที่ hook ได้รับไม่ได้ (scripts/git-env-clean.sh) — ตรวจไม่ได้ = ไม่ให้ push"
+  exit 1
+fi
 ZERO='0000000000000000000000000000000000000000'
 
 if ! command -v node >/dev/null 2>&1; then
@@ -109,7 +113,7 @@ for sha in "${SHAS[@]}"; do
     # ชั่วคราวของตัวเองจะถูกเบนไปยิงใส่ repo ข้างนอกแทน — วัดจริง 2026-09-06 คอมมิตเดียวกัน
     # push จากเวิร์กทรีหลักผ่าน push จากเวิร์กทรีที่กางเพิ่มแดง 2 เคส ด่านที่ตอบไม่เหมือนกัน
     # ตามที่ยืนอยู่ ไม่ใช่ด่าน
-    if ! ( cd "$TMP/wt" && env -u GIT_DIR -u GIT_WORK_TREE -u GIT_INDEX_FILE -u GIT_OBJECT_DIRECTORY -u GIT_COMMON_DIR -u GIT_PREFIX -u GIT_QUARANTINE_PATH -u GIT_ALTERNATE_OBJECT_DIRECTORIES node "$t" >"$TMP/out" 2>&1 ); then
+    if ! ( cd "$TMP/wt" && git_env_clean && node "$t" >"$TMP/out" 2>&1 ); then
       rc=1
       echo "  ❌ $t"
       grep -E '^FAIL' "$TMP/out" | head -5 | sed 's/^/     /'

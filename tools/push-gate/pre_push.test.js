@@ -403,18 +403,17 @@ check('the suites run without the git environment git handed the hook', () => {
   // a scratch repo then has its `git` calls aimed at the outer repository instead. Two cases of
   // tools/worktree-attribution/whose_change.test.js failed that way and nothing else explained it.
   // A gate whose answer depends on where it was invoked from is not a gate.
+  // Since report #0063 the list comes from git itself (scripts/git-env-clean.sh), shared with the
+  // post-commit sync, so the two paths cannot drift apart again.
   const hook = fs.readFileSync(HOOK, 'utf8');
-  const m = hook.match(/cd "\$TMP\/wt" && (env(?:\s+-u\s+[A-Z_]+)+)\s+node/);
-  assert.ok(m, 'the suite runner no longer strips the git environment before running a suite');
-  const stripped = m[1].split(/\s+/).filter((w) => w !== 'env' && w !== '-u');
-  for (const v of ['GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE']) {
-    assert.ok(stripped.includes(v), `${v} still reaches the suites`);
-  }
-  // and the construct in the file must actually neutralise it, not merely look like it does
+  assert.ok(/cd "\$TMP\/wt" && git_env_clean && node "\$t"/.test(hook),
+    'the suite runner no longer strips the git environment before running a suite');
+  assert.ok(/\. "\$ROOT\/scripts\/git-env-clean\.sh"/.test(hook), 'pre-push no longer loads scripts/git-env-clean.sh');
+  // and the construct must actually neutralise it, not merely look like it does
   const suite = path.join(ROOT, 'tools', 'worktree-attribution', 'whose_change.test.js');
-  const dirty = { ...process.env, GIT_DIR: path.join(ROOT, '.git') };
-  const words = m[1].split(/\s+/);
-  const r = spawnSync(words[0], [...words.slice(1), 'node', suite],
+  const helper = path.join(ROOT, 'scripts', 'git-env-clean.sh');
+  const dirty = { ...process.env, GIT_DIR: path.join(ROOT, '.git'), GIT_INDEX_FILE: path.join(ROOT, '.git', 'index'), GIT_WORK_TREE: ROOT };
+  const r = spawnSync('bash', ['-c', `. "${helper}" && git_env_clean && node "${suite}"`],
     { cwd: ROOT, env: dirty, encoding: 'utf8' });
   assert.strictEqual(r.status, 0,
     'a suite still fails when the hook runs it with a git environment present:\n' + (r.stdout || '') + (r.stderr || ''));

@@ -2650,6 +2650,27 @@ does exactly that and refuses (exit 1) when either check fails — verified agai
 
 Full report: [`docs/post-mortem/20260917-post-mortem-report-0062-dispatched-recording-onto-sessions-already-dead-for-hours.md`](docs/post-mortem/20260917-post-mortem-report-0062-dispatched-recording-onto-sessions-already-dead-for-hours.md)
 
+### Report #0063 — Helix sync read ols-qa's index when the commit came from a linked worktree (2026-09-17)
+
+**Surface:** every script a git hook calls that then runs git for another repository or directory.
+**ผิดซ้ำจาก:** #0003 · #0006
+
+commit `ff42766` from a linked worktree: the post-commit sync aborted with "helix has uncommitted
+changes" for the 3 changed files and told the reader to stash or commit helix — helix was clean
+(blobs equal to its own HEAD). git hands a hook `GIT_DIR`/`GIT_INDEX_FILE`; from the main checkout
+only a relative `GIT_INDEX_FILE` that still resolves to helix after `cd`, from a linked worktree
+absolute paths into ols-qa. `sync-skills-to-helix.sh` never cleared them, so every `git` after
+`cd "$HELIX"` read ols-qa's index. The same class had been fixed in `pre-push` on 2026-09-06
+(`8e83464`) and never carried to the post-commit path; the sync script had no tests.
+
+**กฎที่เพิ่มจากเหตุนี้:** a script run from a git hook that runs git anywhere else must source
+`scripts/git-env-clean.sh` and call `git_env_clean` before its first git command, and must confirm
+`git rev-parse --show-toplevel` is the target repository before writing · a gate's message states
+only what it measured — git failing is "cannot check", never "uncommitted changes" · pinned by
+`tools/helix-sync/sync_env.test.js`, which fails on the pre-fix script (4 of 5).
+
+Full report: [`docs/post-mortem/20260917-post-mortem-report-0063-helix-sync-read-olsqa-index-from-worktree-hook.md`](docs/post-mortem/20260917-post-mortem-report-0063-helix-sync-read-olsqa-index-from-worktree-hook.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว

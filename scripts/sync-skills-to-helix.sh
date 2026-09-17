@@ -17,6 +17,8 @@
 #        HELIX_SYNC_NEW=1 to also create new generic skills/commands files in helix.
 
 set -o pipefail
+. "$(dirname "$0")/git-env-clean.sh" || { echo "sync: ❌ scripts/git-env-clean.sh missing — NOTHING deployed."; exit 1; }
+git_env_clean || { echo "sync: ❌ cannot clear the repository environment inherited from the caller — NOTHING deployed."; exit 1; }
 OLSQA="$(cd "$(dirname "$0")/.." && pwd)"
 HELIX="${HELIX_REPO:-$HOME/GitHub/helix}"
 PUSH="${HELIX_SYNC_PUSH:-1}"
@@ -80,11 +82,23 @@ if ! "$HELIX/scripts/check-no-secrets.sh" "${SRC_ABS[@]}"; then
 fi
 
 cd "$HELIX" || exit 1
+TOP="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "sync: ❌ cannot check helix — no repository resolves at $HELIX. NOTHING deployed."; exit 1; }
+if [ "$(cd "$TOP" && pwd -P)" != "$(pwd -P)" ]; then
+  echo "sync: ❌ git resolves $TOP, not helix ($HELIX) — refusing to write. NOTHING deployed."
+  exit 1
+fi
 
 # --- fail-closed: refuse to sync onto a dirty helix worktree (don't clobber WIP) ---
+# exit 1 = differs, anything above 1 = git could not answer; the second is never reported as the first
 DIRTY=0
 for f in "${FILES[@]}"; do
-  if ! git diff --quiet -- "$f" 2>/dev/null || ! git diff --cached --quiet -- "$f" 2>/dev/null; then
+  if git diff --quiet -- "$f" 2>/dev/null; then W=0; else W=$?; fi
+  if git diff --cached --quiet -- "$f" 2>/dev/null; then C=0; else C=$?; fi
+  if [ "$W" -gt 1 ] || [ "$C" -gt 1 ]; then
+    echo "sync: ❌ cannot check helix for uncommitted changes in $f (git exited $W/$C). NOTHING deployed."
+    exit 1
+  fi
+  if [ "$W" = "1" ] || [ "$C" = "1" ]; then
     DIRTY=1; echo "sync: ⚠️ helix has uncommitted changes in $f"
   fi
 done
