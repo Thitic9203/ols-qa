@@ -2940,6 +2940,16 @@ Full report: [`docs/post-mortem/20260918-post-mortem-report-0082-expected-result
 
 Full report: [`docs/post-mortem/20260918-post-mortem-report-0083-postmortem-offered-unverified-delete-path-and-estimated-times.md`](docs/post-mortem/20260918-post-mortem-report-0083-postmortem-offered-unverified-delete-path-and-estimated-times.md)
 
+### Report #0084 — ใช้สถานะ Jira แทนการวัดว่าโค้ดขึ้น dev แล้วหรือยัง จึงบอกว่าเคสที่อัดได้ "รอ deploy" (2026-09-18)
+
+**Surface:** ทุก blocker ที่บอกว่า "รอ deploy" · ทุกครั้งที่ใช้สถานะ ticket ตอบคำถามเรื่อง env **ผิดซ้ำจาก:** #0080 · #0077
+
+บอกเจ้าของงานและเขียนบนบอร์ดสดว่า `LiveStream_TC_014` รอ deploy เพราะ OLS-744 เป็น DEPLOYING และรายการชั้นปีบนฟีดรอเพราะ OLS-774 เป็น TESTING · สถานะ Jira ที่อ่านมาถูกต้อง แต่ตอบคนละคำถาม — PR #1434 ของ OLS-744 (หน้ารายละเอียดที่เคสใช้) อยู่ใน `v2026.09.17.1` ที่ขึ้น dev 17/Sep 11:05 และ OLS-774 อยู่ใน `v2026.09.18.1` ที่ขึ้น dev 18/Sep 12:15 · ที่ยังไม่ออก tag คือ PR ตามหลัง #1464 ซึ่งเป็นเรื่องการ์ดในหน้ารายการ · dossier `Feed_TC_003` ของเราเองเห็นป้ายชั้นปีบน dev แล้ว ขัดกับบอร์ด · เจ้าของงานทักเอง ไม่มีข้อมูลผิดถูกเขียนลงชีทหรือ Jira
+
+**กฎที่เพิ่มจากเหตุนี้:** *blocker "รอ deploy" ต้องมาจากการตรวจว่าคอมมิตอยู่ใน tag ที่ deploy ขึ้น env นั้นแล้ว (`git tag --contains <commit>` เทียบประกาศ deploy ของ env นั้น) ห้ามมาจากสถานะ Jira* — ticket 1 ใบมีได้หลาย PR และค่าที่อ่านมาถูกไม่ได้แปลว่าตอบคำถามที่ถาม · *ก่อนเผยแพร่บอร์ด blocker ทุกข้อต้องถูกเทียบกับ dossier ของเราเอง* · ด่านในตัวสร้างบอร์ดที่ปฏิเสธ blocker เรื่อง deploy ที่ไม่มีช่องหลักฐาน tag + เวลา deploy ยังเป็นข้อเสนอ ยังไม่ได้สร้าง
+
+Full report: [`docs/post-mortem/20260918-post-mortem-report-0084-used-jira-status-as-proxy-for-code-deployed-on-dev.md`](docs/post-mortem/20260918-post-mortem-report-0084-used-jira-status-as-proxy-for-code-deployed-on-dev.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
