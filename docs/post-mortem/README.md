@@ -107,6 +107,7 @@
 | 0071 | 2026-09-18 | ยิง refresh ต่ออายุ session dev ที่ยังใช้ได้โดยไม่เคยวัดว่าต่ออายุได้บน dev จน session ตาย 1 บัญชี และเปิดหน้าต่างล็อกอินที่พอร์ทัลแทนหน้าแอป OLS (ผิดซ้ำจาก #0038 · #0065) | Medium | [20260918-post-mortem-report-0071-refreshed-dev-session-without-measuring-refresh-works-on-dev.md](20260918-post-mortem-report-0071-refreshed-dev-session-without-measuring-refresh-works-on-dev.md) |
 | 0072 | 2026-09-18 | ล็อกอินบัญชี dev ใหม่แล้วส่งเลนอัดไปใช้ โดยไม่ตรวจว่าตัวรักษา session ดูแลบัญชีนั้น 3 บัญชีตายเพราะไม่มีการใช้งานเกิน 30 นาที (ผิดซ้ำจาก #0062 · #0026) | Medium | [20260918-post-mortem-report-0072-relogged-dev-accounts-not-covered-by-keepalive.md](20260918-post-mortem-report-0072-relogged-dev-accounts-not-covered-by-keepalive.md) |
 | 0073 | 2026-09-18 | เลนอัดเปิดเว็บ NDLP ด้วยไฟล์ session ที่บันทึกไว้ เว็บต่ออายุ login เองโดยไม่มีการเซฟกลับ เพราะคำสั่งงานห้ามแค่เครื่องมือ ไม่ได้ห้ามปลายทาง (ผิดซ้ำจาก #0038) | Low | [20260918-post-mortem-report-0073-recording-lane-let-ndlp-site-rotate-saved-login-token.md](20260918-post-mortem-report-0073-recording-lane-let-ndlp-site-rotate-saved-login-token.md) |
+| 0074 | 2026-09-18 | บอกเจ้าของงานว่าหน้าต่างล็อกอินพร้อมให้ใส่รหัส ทั้งที่บนจอไม่มีฟอร์ม — ยืนยันจาก DOM ไม่ใช่จากจอ (viewport 1920 บนหน้าต่าง 1404 · หน้าต่างอยู่ด้านหลัง) (ผิดซ้ำจาก #0018) | Medium | [20260918-post-mortem-report-0074-login-window-reported-ready-while-owner-saw-no-form.md](20260918-post-mortem-report-0074-login-window-reported-ready-while-owner-saw-no-form.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
