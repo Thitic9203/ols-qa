@@ -2880,6 +2880,36 @@ Full report: [`docs/post-mortem/20260918-post-mortem-report-0076-relayed-agent-c
 
 Full report: [`docs/post-mortem/20260918-post-mortem-report-0077-relayed-prior-round-triage-as-verified-root-cause.md`](docs/post-mortem/20260918-post-mortem-report-0077-relayed-prior-round-triage-as-verified-root-cause.md)
 
+### Report #0078 — ตัวรักษา session ยืนยันจากคุกกี้หลังโหลดหน้า ไม่ใช่จากไฟล์ที่งานจริงเปิด (2026-09-18)
+
+**Surface:** ทุกด่านที่ตอบว่า "session พร้อม" **ผิดซ้ำจาก:** #0062 · #0072 · #0018
+
+ตัวรักษา session ของรอบ prod โหลดหน้า `/content` ก่อน แล้วถาม `get-session` ในบริบทเดียวกัน จึงรายงาน `warmed+verified` ให้บัญชีผู้ดูแลระบบทั้งก่อนและหลังนาทีที่ตัวรันเทสต์อ่านไฟล์เดียวกันได้ "session ตาย" จน 4 เคสติด BLOCKED · กลไกที่ทำให้สองอย่างต่างกันยังไม่ได้ยืนยัน
+
+**กฎที่เพิ่มจากเหตุนี้:** *ด่านที่ตอบว่า "session พร้อม" ต้องวัดจากอินพุตเดียวกับที่งานปลายทางจะเปิด* — ถามจากไฟล์ session ตรงๆ โดยไม่มีการโหลดหน้าคั่น ผลที่วัดหลังการนำทางใช้ยืนยันไฟล์ไม่ได้
+
+Full report: [`docs/post-mortem/20260918-post-mortem-report-0078-keepalive-verified-in-memory-cookie-not-saved-session.md`](docs/post-mortem/20260918-post-mortem-report-0078-keepalive-verified-in-memory-cookie-not-saved-session.md)
+
+### Report #0079 — บอกว่าชีทลูกค้ามีเลขข้อซ้ำ โดยยกข้อความของตัวอ่านที่เราเขียนเอง (2026-09-18)
+
+**Surface:** ทุกครั้งที่ด่านของเราชี้ว่าข้อมูลของคนอื่นผิด **ผิดซ้ำจาก:** #0025 · #0015
+
+ด่านก่อนอัดรายงาน `เลขลำดับซ้ำ: [1]` กับผลคาดหวังของ Profile_TC_001 แล้วถูกส่งต่อว่าชีทผิด ของจริงเป็นข้อย่อย 1.1–1.3 ซึ่งถูกต้อง ตัวอ่าน `split_items` ผิดเอง · จับได้ตอนเปิดค่าจริงก่อนเขียนชีท
+
+**กฎที่เพิ่มจากเหตุนี้:** *ข้อความของด่านคือสมมติฐาน ไม่ใช่ข้อเท็จจริงของข้อมูล* — ก่อนบอกว่าข้อมูลของคนอื่นผิด ต้องเปิดค่าดิบก่อน และแนบค่าดิบไว้ในประโยคที่รายงาน
+
+Full report: [`docs/post-mortem/20260918-post-mortem-report-0079-relayed-own-parser-output-as-sheet-data-error.md`](docs/post-mortem/20260918-post-mortem-report-0079-relayed-own-parser-output-as-sheet-data-error.md)
+
+### Report #0080 — บอกว่าตรวจ `path:line` ครบทุกตัว ทั้งที่ตัวตรวจวัดแค่ว่าบรรทัดไม่ว่าง (2026-09-18)
+
+**Surface:** ทุกประโยค "ตรวจแล้ว" / "ครบทุกตัว" · ทุกการส่งต่อผลเลน **ผิดซ้ำจาก:** #0077 · #0076 · #0025
+
+รายงานว่าอ้างอิงโค้ดในใบพร้อมอัด 15 ใบมีอยู่จริงทุกตัว ทั้งที่ตัวตรวจไม่ได้เทียบเนื้อความ และมีช่องว่าง 3 ช่อง · รอบเดียวกันยกสถานะ ticket และข้อจำกัดจากผลเลน D8 มาพูดเหมือนตรวจแล้ว · เจ้าของงานทักว่า "ห้ามเดา"
+
+**กฎที่เพิ่มจากเหตุนี้:** *"ตรวจแล้ว" ต้องบอกว่าวัดอะไร และจำนวนผ่าน · ไม่ผ่าน · ยังไม่ได้วัด เทียบกับทั้งหมด* — ตัวตรวจที่รู้แค่ว่า "บรรทัดมีอยู่" ห้ามถูกรายงานเป็น "อ้างอิงถูกต้อง"
+
+Full report: [`docs/post-mortem/20260918-post-mortem-report-0080-claimed-code-refs-verified-when-checker-measured-only-nonempty-lines.md`](docs/post-mortem/20260918-post-mortem-report-0080-claimed-code-refs-verified-when-checker-measured-only-nonempty-lines.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
