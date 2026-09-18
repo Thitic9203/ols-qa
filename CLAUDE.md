@@ -2837,6 +2837,19 @@ Full report: [`docs/post-mortem/20260918-post-mortem-report-0073-recording-lane-
 
 Full report: [`docs/post-mortem/20260918-post-mortem-report-0074-login-window-reported-ready-while-owner-saw-no-form.md`](docs/post-mortem/20260918-post-mortem-report-0074-login-window-reported-ready-while-owner-saw-no-form.md)
 
+### Report #0075 — อัดหลักฐานด้วยตัวอัดที่ถูกห้าม แล้วใส่ PASSED ก่อนตรวจที่มาของคลิป (2026-09-18)
+
+**Surface:** ทุกครั้งที่ผูกคลิปหลักฐานกับผลในชีท **ผิดซ้ำจาก:** #0074
+
+คลิป R121 และ R130 อัดด้วย Playwright `recordVideo` ที่ memory `feedback_recording-skill-latest-version-only` ห้ามไว้ ไม่มี `capture.json`
+แต่ถูกใส่ PASSED พร้อมลิงก์ไปแล้ว เพราะด่านเผยแพร่ตรวจแค่ภาพ ไม่ตรวจที่มา · ระหว่างอัดใหม่ คำสั่งที่ให้ผู้ใช้แทนข้อความด้วยรหัสผ่านถูกรันแบบไม่แทน 2 รอบ
+
+**กฎที่เพิ่มจากเหตุนี้:** *ห้ามผูกคลิปกับผลในชีทจนกว่าจะมี `<stem>.capture.json` ของตัวอัดสกิลอยู่ข้างไฟล์และ `verify-video.py` ผ่าน* ·
+คำสั่งที่ต้องใช้รหัสผ่านให้ถามด้วย `read -rs` ตอนรัน ห้ามให้ผู้ใช้แก้ข้อความในบรรทัดคำสั่ง · เคสที่ต้องให้คนพิมพ์รหัสระหว่างอัด ใช้ `SR_PASS` ผ่าน Terminal
+ไม่เปิดหน้าต่าง เพราะหน้าเว็บของสกิลต้องกว้าง 1920 เกินจอ
+
+Full report: [`docs/post-mortem/20260918-post-mortem-report-0075-evidence-recorded-with-banned-recorder-and-marked-passed.md`](docs/post-mortem/20260918-post-mortem-report-0075-evidence-recorded-with-banned-recorder-and-marked-passed.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
