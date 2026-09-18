@@ -2775,6 +2775,22 @@ anything to the model · a report whose appendix says "could not verify" is not 
 
 Full report: [`docs/post-mortem/20260918-post-mortem-report-0070-blamed-the-model-for-replies-the-app-wrote.md`](docs/post-mortem/20260918-post-mortem-report-0070-blamed-the-model-for-replies-the-app-wrote.md)
 
+### Report #0071 — ต่ออายุ session dev โดยไม่เคยวัดว่าต่ออายุได้บน dev จน session ตาย และเปิดหน้าล็อกอินผิดหน้าซ้ำ (2026-09-18)
+
+**Surface:** ทุกเครื่องมือ session ที่ใช้กับ env ใด env หนึ่ง โดยอาศัยข้อเท็จจริงที่วัดมาจาก env อื่น
+**ผิดซ้ำจาก:** #0038 · #0065
+
+ยิง `session_refresh.js` กับบัญชี dev ที่ยังใช้ได้ 1 บัญชี เพราะอ่าน "ต่ออายุได้จริง" ในไฟล์นี้เป็นข้อเท็จจริงของทุก env
+ทั้งที่วัดมาจาก production (2026-09-04) · เซิร์ฟเวอร์ไม่คืนคุกกี้ session ตายทันที เจ้าของงานต้องล็อกอินใหม่ 1 บัญชี ·
+รอบเดียวกันเปิดหน้าต่างล็อกอินที่หน้าพอร์ทัลเพราะไม่ใส่ `SIGNIN_URL` ซึ่งเป็นเรื่องเดียวกับ #0065
+
+**กฎที่เพิ่มจากเหตุนี้:** *ความสามารถที่วัดบน env หนึ่ง ไม่ใช่ข้อเท็จจริงของ env อื่น* — ก่อนยิง endpoint ที่เปลี่ยนสถานะถาวร
+ต้องชี้หลักฐานที่วัดบน env นั้นเองได้ ชี้ไม่ได้ = ไม่ยิง · **บน dev ตอนนี้ยังไม่มีหลักฐาน ทางเดียวคือล็อกอินใหม่ด้วยมือ**
+ผ่านหน้าแอป OLS (`SIGNIN_URL=<OLS>/?signIn=1`) · ข้อเท็จจริงที่วัดแล้วในกฎต้องระบุ env ที่วัดไว้ในประโยคเดียวกัน ·
+ด่านในเครื่องมือ (รายการ env ที่พิสูจน์แล้ว · ปฏิเสธเมื่อไม่มี `SIGNIN_URL`) ยังค้างรออนุมัติ
+
+Full report: [`docs/post-mortem/20260918-post-mortem-report-0071-refreshed-dev-session-without-measuring-refresh-works-on-dev.md`](docs/post-mortem/20260918-post-mortem-report-0071-refreshed-dev-session-without-measuring-refresh-works-on-dev.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
