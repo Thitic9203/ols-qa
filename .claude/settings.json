@@ -110,6 +110,15 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/ask-guard.sh\""
           }
         ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/agent-dispatch-guard.sh\""
+          }
+        ]
       }
     ],
     "PreCompact": [

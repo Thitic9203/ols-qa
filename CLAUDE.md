@@ -594,6 +594,62 @@ user คอมเมนต์แก้ซ้ำหลายรอบใน sessi
 
 **Why:** user สั่ง (2026-08-15) — ปัญหาต้องถูกสืบแบบเจาะจงโดยตัวที่โฟกัสเรื่องนั้นอย่างเดียว ไม่ใช่ให้เธรดหลักงมจนงานทั้งรอบหยุดเดิน. คู่กับ memory `root-cause-invoke-debug-skill` (ทุกการตรวจสอบ/แก้ไขต้องเรียก debug skill) และกฎ always-on ข้อ 7 (ห้ามหนีปัญหา)
 
+## 🔴 กฎ: จ่ายงานให้ agent เบื้องหลัง — เขียนผลลงดิสก์ก่อนเรียก tool ถัดไป · คุมขนาด context · บังคับด้วย hook
+
+**ทุกคำสั่งที่จ่ายให้ agent เบื้องหลัง ต้องสั่งให้มันเขียนผลแต่ละชิ้นลงดิสก์ *ก่อน* เรียกเครื่องมือตัวถัดไป**
+ไม่ใช่ตอนจบงาน — เพราะสิ่งที่ agent ถือไว้ในหน่วยความจำของตัวเอง หายทั้งหมดเมื่อถูก watchdog ตัด
+
+**ตัวเลขที่วัดแล้ว (2026-09-18, transcript ของ subagent 2,611 ไฟล์ · คำขอ 198,027 ครั้ง)** —
+ทำซ้ำได้ด้วย `node tools/agent-stall-metrics/measure.js` ซึ่งตรึงด้วยเทสต์ 25 ข้อ:
+
+| สิ่งที่วัด | ผล |
+|---|---|
+| ตอนถูก watchdog ตัด agent กำลังรอ **โมเดล** | **328 จาก 328 ครั้ง (100%)** |
+| ตอนถูก watchdog ตัด agent กำลังรอ **tool** | **0 ครั้ง (0%)** |
+| ช่วงเงียบสุดท้ายก่อนถูกตัด (มัธยฐาน) | **600.2 วินาที** = เกณฑ์ watchdog พอดี |
+| ที่ลงท้ายด้วย marker เดียวกันแต่เป็นคนกด interrupt เอง | 236 ครั้ง — **ไม่นับเป็น stall** |
+
+**ตัวแปรที่วัดแล้วเห็นผล มี 2 ตัว และไม่ใช่จำนวน agent ที่วิ่งพร้อมกัน** (ดูข้อแก้ท้ายรายงาน #0057):
+
+| ขนาด context ของ agent | อัตราตายต่อ 1,000 คำขอ (sonnet-5) | (opus-5) |
+|---|---|---|
+| 200–300k | 0.9 | 0.9 |
+| **300–400k** | **2.4** | **2.0** |
+| 400–500k | 2.8 | 1.6 |
+| >700k | 4.3 | — |
+
+| ภาพที่ดึงเข้า context | อัตราตาย |
+|---|---|
+| 0 | **9.8%** |
+| 1–5 | 14.3% |
+| 6–20 | 20.8% |
+| 21–60 | **30.8%** |
+
+**บังคับ 3 ข้อ:**
+
+1. **เขียนผลก่อนเรียก tool ถัดไป** — ระบุชื่อไฟล์ปลายทาง คำว่าเขียน/append และจังหวะต่อเคสให้ครบในคำสั่ง
+   เช่น *"append 1 บรรทัด JSON ต่อ 1 เคส ลง `out/<รอบ>/lane1.jsonl` ก่อนเรียกเครื่องมือตัวถัดไป"* ·
+   ใส่ token `PERSIST-BEFORE-PRINT` ในคำสั่งก็นับเช่นกัน · **คำสั่งที่บอกให้เขียนผล "ตอนจบ" ไม่นับ**
+   เพราะนั่นคือคำสั่งที่ผลหายทุกครั้งที่สตรีมเงียบพอดี
+2. **ห้ามให้ agent ดึงภาพหน้าจอเข้า context** — ให้บันทึกเป็นไฟล์ (`filename`) แล้วอ่านด้วย `ctx_execute_file`
+   หรืออ่านหน้าเป็นข้อความด้วย `get_page_text` / `read_page` แทน
+3. **ตัดงานให้ context ของแต่ละ agent ไม่แตะ 300k** — งานยาวแยกเป็นหลายตัว ตัวละขอบเขตจำกัดและระบุจำนวนชิ้น
+
+**บังคับด้วยเครื่อง ไม่ใช่ความจำ** — PreToolUse hook บน `Agent`
+([`tools/agent-dispatch-guard/`](tools/agent-dispatch-guard/README.md)) ปฏิเสธ dispatch ที่ไม่มีสัญญาข้อ 1
+และ **รายงาน** (ไม่บล็อก) ข้อ 2 กับข้อ 3 เพราะทั้งคู่มีกรณีที่ใช้ถูกต้องอยู่จริง และการ์ดที่บล็อกเกินจะถูกปิดทิ้ง ·
+การตัดสินอยู่ที่ `dispatch_rules.js` ที่เดียว ชั้น shell พิมพ์อย่างเดียว · ไม่มี node = **ปฏิเสธ** ไม่ใช่ปล่อยผ่าน
+
+**สิ่งที่ยังตอบไม่ได้ และห้ามเดา:** *ทำไม*เซิร์ฟเวอร์ถึงไม่เริ่มส่งคำตอบ — ไม่มี HTTP status ไม่มี retry log
+อยู่ที่ไหนเลยสำหรับเคสเหล่านี้ สแกนแบบเข้มพบ API error จริง **2 ไฟล์จาก 419** · `~/.claude/debug/` เขียนเฉพาะ
+ตอนเปิดโหมด debug จึงไม่มีข้อมูลของรอบที่ตาย — **ยังไม่ได้เปิด** (ไฟล์ล่าสุดในโฟลเดอร์นั้นลงวันที่ 9/Sep ตรวจ 2026-09-18)
+เพราะ `--debug` เป็น flag ของ CLI ตอนสั่งรัน และยังไม่พบวิธีตั้งให้แอป desktop เปิดติดไว้ถาวร
+
+**เธรดหลักก็เจออาการเดียวกัน และแอปเขียนข้อความแทนโมเดล** — แอปบันทึกข้อความฝั่ง assistant ของตัวเองด้วย
+`model: "<synthetic>"` และ 0 token เช่น `API Error: No response from API (waited 3m, then 15m on the retry)` ·
+`Prompt is too long` · และ **`No response requested.` ซึ่งแอปตอบเองทันทีหลังข้อความ resume ของมัน โดยไม่ได้เรียกโมเดล**
+(696 จาก 705 ครั้งบนเครื่องนี้) · ก่อนจะสรุปว่าโมเดลทำอะไร ต้องเช็ค `M.replyAuthor()` ใน `stall_metrics.js` ก่อน (รายงาน #0070)
+
 ## 🔴 กฎ: โนติที่ `Status: Needs fix` = คิวงาน — แก้เองจนจบ แล้วอัปเดตในข้อความเดิม ห้ามรอให้สั่ง
 
 **เจอโนติใน QA channel ที่ `Status: Needs fix` → ลงมือแก้ของจริงเองทันทีจนจบ แล้ว `PATCH` สถานะในข้อความเดิมเป็น `Fixed` — ห้ามรอคำสั่ง ห้ามถามกลับว่าจะให้ทำไหม ห้ามลบโพสต์เดิมแล้วโพสต์ใหม่** (user สั่ง 2026-08-16: "ไม่ต้องให้เรามาถาม หรือสั่ง")
@@ -2556,6 +2612,15 @@ Full report: [`docs/post-mortem/20260911-post-mortem-report-0056-ci-red-five-day
 ต่างหากถึงจะตั้งเพดานที่วัดแล้วได้จริง แนวทางที่ใช้ได้ตอนนี้คือวินัยของ session: เช็ค `ListAgents` ก่อน dispatch
 ชุดใหม่เสมอเมื่อกำลังจะเกิน ~5-6 ตัวรวมกัน
 
+> 🔴 **แก้ไขข้อสรุปของรายงานนี้ 2026-09-18 — จำนวน agent ที่วิ่งพร้อมกันไม่ใช่ตัวแปรที่วัดแล้วเห็นผล**
+> รอบทดลองที่รายงานนี้เรียกหาเกิดขึ้นแล้ว วัดจาก transcript ของ subagent **2,611 ไฟล์** บนเครื่องนี้ด้วย
+> [`tools/agent-stall-metrics/measure.js`](tools/agent-stall-metrics/README.md) (ทำซ้ำได้ ตรึงด้วยเทสต์ 25 ข้อ):
+> **ไม่พบหลักฐานว่าการจ่ายหลายเลนพร้อมกันเป็นสาเหตุ** — เลนที่ตายมีเลนอื่นวิ่งพร้อมกันเฉลี่ย 0.54 ตัว ส่วนเลนที่รอด
+> เฉลี่ย 1.34 ตัว คือสวนทางกับข้อสรุปเดิม (ตัววัดนี้หยาบ จึงพูดได้แค่ว่าไม่พบหลักฐานสนับสนุน ไม่ใช่หักล้างเด็ดขาด) ·
+> ประโยค "1 เลนตายด้วย rate limit 429" ด้านบน**ใช้อ้างอิงต่อไม่ได้เช่นกัน** — สแกนแบบเข้มที่ผูกรหัสเข้ากับข้อความ
+> แจ้งข้อผิดพลาดจริง พบ API error เพียง **2 ไฟล์จาก 419** ส่วนรหัส `429`/`529` ที่สแกนหยาบเจอ เป็นตัวเลขที่บังเอิญ
+> อยู่ในเนื้อหาอื่น · ตัวแปรที่วัดแล้วเห็นผลจริงอยู่ในหัวข้อ **"กฎ: จ่ายงานให้ agent เบื้องหลัง"** ด้านบนของไฟล์นี้
+
 Full report: [`docs/post-mortem/20260915-post-mortem-report-0057-parallel-trim-agents-died-repeat-of-0053.md`](docs/post-mortem/20260915-post-mortem-report-0057-parallel-trim-agents-died-repeat-of-0053.md)
 
 ### Report #0058 — Dispatch เลนตัดฉากซ้ำ pool ที่เอกสารสั่งห้ามแตะแล้ว (2026-09-15)
@@ -2688,6 +2753,24 @@ the same turn. Related finding left to the owner: `scripts/hooks/pre-push` claim
 it refs, which is false for a non-fast-forward push with a known remote tip.
 
 Full report: [`docs/post-mortem/20260917-post-mortem-report-0064-stated-push-hook-stdin-mechanism-before-testing-it.md`](docs/post-mortem/20260917-post-mortem-report-0064-stated-push-hook-stdin-mechanism-before-testing-it.md)
+
+### Report #0070 — Blamed the model for "No response requested." replies the app wrote itself (2026-09-18)
+
+**Surface:** every conclusion about what the model did, drawn from what appears in the assistant's slot.
+**ผิดซ้ำจาก:** #0069
+
+#0069 concluded the model ignored real requests, and this session repeated it three times — in a
+summary, an apology to the owner, and a ledger row. The transcripts say otherwise: **696 of 705**
+`No response requested.` records on this machine carry `model: "<synthetic>"` and 0 tokens, written
+1–3 ms after the app's own `isMeta` resume prompt. The model was never called. The 17/Sep command
+was preceded by `API Error: No response from API` — the main thread was hitting the same stall as
+the background agents.
+
+**กฎที่เพิ่มจากเหตุนี้:** where a message appears is not evidence of who wrote it — check the record's
+`model` field with `replyAuthor()` in `tools/agent-stall-metrics/stall_metrics.js` before attributing
+anything to the model · a report whose appendix says "could not verify" is not evidence of a cause.
+
+Full report: [`docs/post-mortem/20260918-post-mortem-report-0070-blamed-the-model-for-replies-the-app-wrote.md`](docs/post-mortem/20260918-post-mortem-report-0070-blamed-the-model-for-replies-the-app-wrote.md)
 
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
