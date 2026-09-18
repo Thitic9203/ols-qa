@@ -114,6 +114,7 @@
 | 0078 | 2026-09-18 | ตัวรักษา session รายงาน warmed+verified จากคุกกี้หลังโหลดหน้า ไม่ใช่จากไฟล์ session ที่ตัวรันเทสต์เปิด 4 เคสผู้ดูแลระบบจึงติด BLOCKED (ผิดซ้ำจาก #0062 · #0072 · #0018) | Medium | [20260918-post-mortem-report-0078-keepalive-verified-in-memory-cookie-not-saved-session.md](20260918-post-mortem-report-0078-keepalive-verified-in-memory-cookie-not-saved-session.md) |
 | 0079 | 2026-09-18 | บอกเจ้าของงานว่าชีทลูกค้ามีเลขข้อซ้ำ โดยยกข้อความของตัวอ่านเลขข้อที่เราเขียนเอง ซึ่งอ่านข้อย่อย 1.1 ผิด (ผิดซ้ำจาก #0025 · #0015) | Medium | [20260918-post-mortem-report-0079-relayed-own-parser-output-as-sheet-data-error.md](20260918-post-mortem-report-0079-relayed-own-parser-output-as-sheet-data-error.md) |
 | 0080 | 2026-09-18 | บอกว่าตรวจ path:line ในใบพร้อมอัดครบทุกตัว ทั้งที่ตัวตรวจวัดแค่ว่าบรรทัดไม่ว่าง และยกผลเลน D8 มาพูดเหมือนตรวจแล้ว (ผิดซ้ำจาก #0077 · #0076 · #0025) | Medium | [20260918-post-mortem-report-0080-claimed-code-refs-verified-when-checker-measured-only-nonempty-lines.md](20260918-post-mortem-report-0080-claimed-code-refs-verified-when-checker-measured-only-nonempty-lines.md) |
+| 0081 | 2026-09-18 | ส่งต่อคำของเลนว่าวิดีโอย้อนหลัง 2 รายการเป็นแบบร่าง แล้วขออนุมัติลบ ของจริง 1 รายการเผยแพร่อยู่และลบไม่ได้ | Medium | [20260918-post-mortem-report-0081-relayed-lane-claim-recordings-were-drafts-before-delete-approval.md](20260918-post-mortem-report-0081-relayed-lane-claim-recordings-were-drafts-before-delete-approval.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 

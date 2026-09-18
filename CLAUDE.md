@@ -2910,6 +2910,16 @@ Full report: [`docs/post-mortem/20260918-post-mortem-report-0079-relayed-own-par
 
 Full report: [`docs/post-mortem/20260918-post-mortem-report-0080-claimed-code-refs-verified-when-checker-measured-only-nonempty-lines.md`](docs/post-mortem/20260918-post-mortem-report-0080-claimed-code-refs-verified-when-checker-measured-only-nonempty-lines.md)
 
+### Report #0081 — ส่งต่อคำของเลนว่าวิดีโอย้อนหลังเป็นแบบร่าง แล้วขออนุมัติลบบนข้อมูลนั้น (2026-09-18)
+
+**Surface:** ทุกคำถามที่ขอให้เจ้าของงานอนุมัติการเขียนหรือลบข้อมูล **ผิดซ้ำจาก:** #0076 · #0077 · #0080
+
+เลนซ้อมบันทึกว่าวิดีโอย้อนหลัง 2 รายการเป็น DRAFT ผมพิมพ์ต่อว่าผู้เรียนมองไม่เห็นแล้วขออนุมัติลบ ของจริง 1 รายการเป็น PUBLISHED · รอบแก้ผมแนะนำ "ลบ" อีกครั้งโดยไม่ได้ตรวจว่าสถานะเผยแพร่ลบได้ไหม เซิร์ฟเวอร์ตอบ 409 เพราะลบได้เฉพาะ Draft กับ PendingEdit
+
+**กฎที่เพิ่มจากเหตุนี้:** *ก่อนขออนุมัติเขียนหรือลบข้อมูล ต้องอ่านสถานะของทุกรายการสดในเทิร์นนั้น และใส่สถานะที่อ่านได้ลงในคำถาม* · ตัวเลือกที่ติด "(แนะนำ)" ต้องชี้เงื่อนไขในโค้ดที่ **อนุญาตการกระทำนั้น** ได้ ไม่ใช่แค่เงื่อนไขของผลลัพธ์ · บรรทัด ledger ของเลนเป็นคำบรรยาย ไม่ใช่ผลวัด
+
+Full report: [`docs/post-mortem/20260918-post-mortem-report-0081-relayed-lane-claim-recordings-were-drafts-before-delete-approval.md`](docs/post-mortem/20260918-post-mortem-report-0081-relayed-lane-claim-recordings-were-drafts-before-delete-approval.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
