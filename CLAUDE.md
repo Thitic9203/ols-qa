@@ -2854,6 +2854,16 @@ Full report: [`docs/post-mortem/20260918-post-mortem-report-0074-login-window-re
 
 Full report: [`docs/post-mortem/20260918-post-mortem-report-0075-evidence-recorded-with-banned-recorder-and-marked-passed.md`](docs/post-mortem/20260918-post-mortem-report-0075-evidence-recorded-with-banned-recorder-and-marked-passed.md)
 
+### Report #0076 — ยกคำของ agent ว่า prod ไม่มีบัญชี admin-user มาพูดต่อ โดยไม่ได้เปิดชีทบัญชีดู (2026-09-18)
+
+**Surface:** ทุกข้ออ้างเชิงลบที่รับมาจาก subagent · ทุกข้ออ้างเรื่อง "มี/ไม่มีบัญชี" **ผิดซ้ำจาก:** #0070 · #0025
+
+agent นับเฉพาะไฟล์ session ในเครื่อง 5 ไฟล์ แล้วรายงานว่า prod ไม่มี admin-user ผมส่งต่อ 2 ครั้งและตั้งขอบเขตการรันตามนั้น ทั้งที่ชีทบัญชีของรอบมี System Admin 3 บัญชี และผู้เรียน/ผู้สร้างอย่างละ 3
+
+**กฎที่เพิ่มจากเหตุนี้:** *"ไม่มี session" ไม่ใช่ "ไม่มีบัญชี"* — ข้ออ้างเรื่องบัญชีต้องมาจากชีทบัญชีของรอบนั้นเท่านั้น · ข้ออ้างเชิงลบที่มาจาก subagent ต้องผ่านด่านเดียวกับ #0040 (คำสั่งค้น + ขอบเขต + จำนวน) ก่อนส่งต่อ · คำสั่งงาน agent ที่ใช้บัญชีต้องแนบรายชื่อจากชีทไปด้วย
+
+Full report: [`docs/post-mortem/20260918-post-mortem-report-0076-relayed-agent-claim-of-no-admin-account-without-checking-sheet.md`](docs/post-mortem/20260918-post-mortem-report-0076-relayed-agent-claim-of-no-admin-account-without-checking-sheet.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว

@@ -109,6 +109,7 @@
 | 0073 | 2026-09-18 | เลนอัดเปิดเว็บ NDLP ด้วยไฟล์ session ที่บันทึกไว้ เว็บต่ออายุ login เองโดยไม่มีการเซฟกลับ เพราะคำสั่งงานห้ามแค่เครื่องมือ ไม่ได้ห้ามปลายทาง (ผิดซ้ำจาก #0038) | Low | [20260918-post-mortem-report-0073-recording-lane-let-ndlp-site-rotate-saved-login-token.md](20260918-post-mortem-report-0073-recording-lane-let-ndlp-site-rotate-saved-login-token.md) |
 | 0074 | 2026-09-18 | บอกเจ้าของงานว่าหน้าต่างล็อกอินพร้อมให้ใส่รหัส ทั้งที่บนจอไม่มีฟอร์ม — ยืนยันจาก DOM ไม่ใช่จากจอ (viewport 1920 บนหน้าต่าง 1404 · หน้าต่างอยู่ด้านหลัง) (ผิดซ้ำจาก #0018) | Medium | [20260918-post-mortem-report-0074-login-window-reported-ready-while-owner-saw-no-form.md](20260918-post-mortem-report-0074-login-window-reported-ready-while-owner-saw-no-form.md) |
 | 0075 | 2026-09-18 | อัดหลักฐาน 2 เคสด้วย Playwright recordVideo ที่ถูกห้าม แล้วใส่ PASSED ในชีทก่อนตรวจที่มาของคลิป · คำสั่งรหัสผ่านแบบให้แก้ข้อความถูกรันโดยไม่แทนค่า (ผิดซ้ำจาก #0074) | Medium | [20260918-post-mortem-report-0075-evidence-recorded-with-banned-recorder-and-marked-passed.md](20260918-post-mortem-report-0075-evidence-recorded-with-banned-recorder-and-marked-passed.md) |
+| 0076 | 2026-09-18 | บอกเจ้าของงานว่า prod ไม่มีบัญชี admin-user โดยยกคำของ agent มาพูดต่อ ไม่ได้เปิดชีทบัญชีดู (ผิดซ้ำจาก #0070 · #0025) | Medium | [20260918-post-mortem-report-0076-relayed-agent-claim-of-no-admin-account-without-checking-sheet.md](20260918-post-mortem-report-0076-relayed-agent-claim-of-no-admin-account-without-checking-sheet.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
