@@ -2791,6 +2791,18 @@ Full report: [`docs/post-mortem/20260918-post-mortem-report-0070-blamed-the-mode
 
 Full report: [`docs/post-mortem/20260918-post-mortem-report-0071-refreshed-dev-session-without-measuring-refresh-works-on-dev.md`](docs/post-mortem/20260918-post-mortem-report-0071-refreshed-dev-session-without-measuring-refresh-works-on-dev.md)
 
+### Report #0072 — ล็อกอินบัญชี dev ใหม่แล้วส่งเลนอัดไปใช้ โดยไม่ตรวจว่ามีตัวรักษา session ดูแล (2026-09-18)
+
+**Surface:** ทุกครั้งที่รายงานว่าบัญชี "พร้อม" หรือส่งงานที่ต้องใช้ session **ผิดซ้ำจาก:** #0062 · #0026
+
+ตรวจสดได้ 13/13 แล้วส่งเลนอัด แต่ตัวรักษา session ที่รันอยู่ดูแลรายชื่อ 10 บัญชีตายตัวตั้งแต่ 17/Sep (`keep_sessions_warm.js:36` อ่าน `TAGS` ครั้งเดียว)
+3 บัญชีที่ล็อกอินเพิ่มจึงตายเมื่อไม่มีการใช้งานเกิน 30 นาที · เลนอัดตรวจก่อนอัดแล้วหยุดเอง ไม่มีคลิปผิด · เจ้าของงานต้องล็อกอินใหม่ 3 บัญชี
+
+**กฎที่เพิ่มจากเหตุนี้:** *"session ใช้ได้ตอนนี้" ไม่ใช่คำตอบของ "session จะใช้ได้ตอนที่งานเริ่ม"* — ก่อนรายงานว่าบัญชีพร้อมหรือส่งเลน
+ต้องชี้ได้ว่าตัวรักษา session ที่ยังมีชีวิตตัวไหนดูแล tag นั้น และเธรดหลักต้องรัน `recording_preflight.js` เองก่อนส่ง ไม่ใช่ปล่อยให้เลนรัน
+
+Full report: [`docs/post-mortem/20260918-post-mortem-report-0072-relogged-dev-accounts-not-covered-by-keepalive.md`](docs/post-mortem/20260918-post-mortem-report-0072-relogged-dev-accounts-not-covered-by-keepalive.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
