@@ -2920,6 +2920,26 @@ Full report: [`docs/post-mortem/20260918-post-mortem-report-0080-claimed-code-re
 
 Full report: [`docs/post-mortem/20260918-post-mortem-report-0081-relayed-lane-claim-recordings-were-drafts-before-delete-approval.md`](docs/post-mortem/20260918-post-mortem-report-0081-relayed-lane-claim-recordings-were-drafts-before-delete-approval.md)
 
+### Report #0082 — แก้ผลคาดหวังในชีทส่งมอบ แต่ขั้นตอนในแถวเดียวกันยังขัดกับข้อความใหม่ (2026-09-18)
+
+**Surface:** ทุกตัวเขียนที่แก้ข้อความช่องหนึ่งของเคสในชีทส่งมอบ **ผิดซ้ำจาก:** #0080
+
+ตัวเขียนผลคาดหวังอ่านค่ากลับได้ตรง (`readback_ok: true`) แต่ไม่ได้เทียบกับช่องอื่นในแถว · Integration `Profile_TC_009` ผลคาดหวังใหม่เทียบกับหน้า "ตั้งค่าช่องของฉัน" ขณะที่ขั้นตอนยังสั่งให้ดูแท็บ Network และผลเป็น "ผ่าน" · Unit `Search_TC_003` ผลคาดหวังใหม่บอก "ไม่แสดงปุ่ม" แต่ชื่อเคสและขั้นตอนยังพูดถึงปุ่ม "เปิด/ปิดใช้งาน" · บันทึกสถานะจดเคสแรกว่าขัดกันโดยไม่บอกว่าเราทำให้ขัด · การแก้ชีทรอเจ้าของงานตัดสิน
+
+**กฎที่เพิ่มจากเหตุนี้:** *การแก้ข้อความช่องหนึ่งของเคส ต้องอ่านทั้งแถวก่อนเขียน และความขัดที่เกิดจากการเขียนของเรา ต้องถามเจ้าของงานก่อน ห้ามจดเป็นความขัดที่มีอยู่เดิม* · read-back พิสูจน์แค่ว่าเขียนสำเร็จ ไม่ได้พิสูจน์ว่าเคสสอดคล้อง · ด่านเทียบทั้งแถวในตัวเขียนยังเป็นข้อเสนอ
+
+Full report: [`docs/post-mortem/20260918-post-mortem-report-0082-expected-result-write-left-steps-contradicting-new-text.md`](docs/post-mortem/20260918-post-mortem-report-0082-expected-result-write-left-steps-contradicting-new-text.md)
+
+### Report #0083 — รายงาน #0081 เสนอทางลบที่ไม่ได้ตรวจ และใช้เวลาประมาณในไทม์ไลน์ (2026-09-18)
+
+**Surface:** ทุกทางเลือกและทุกเวลาที่เขียนในรายงาน **ผิดซ้ำจาก:** #0081 · #0060
+
+#0081 เสนอ "ยกเลิกการเผยแพร่ แล้วค่อยลบ" ว่าตรวจแล้ว แต่ `media-status.vo.ts` ให้ Unpublished ไปได้แค่ RequestEdit → PendingEdit หรือ Republish → Published และลบได้เฉพาะ Draft กับ PendingEdit · ทางที่ใช้ได้คือ Published → RequestEdit → PendingEdit → ลบ (กรณี LIVESTREAM ยังไม่ได้ตรวจ) · ไทม์ไลน์ใช้เวลา `~` จนการอนุมัติดูเกิดหลังเลนลบเริ่ม · แก้ #0081 ในที่เดิมแล้ว
+
+**กฎที่เพิ่มจากเหตุนี้:** *ทุกทางเลือกในรายงานต้องชี้บรรทัดที่อนุญาตทุกขั้นของการเปลี่ยนสถานะ ไม่ใช่แค่ปลายทาง* · *ทุกเวลาในรายงานต้องมาจาก ts ของ log หรือ ledger ห้ามใช้ `~`* ไม่มีบันทึกให้ระบุเฉพาะลำดับ
+
+Full report: [`docs/post-mortem/20260918-post-mortem-report-0083-postmortem-offered-unverified-delete-path-and-estimated-times.md`](docs/post-mortem/20260918-post-mortem-report-0083-postmortem-offered-unverified-delete-path-and-estimated-times.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว

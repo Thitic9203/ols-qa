@@ -115,6 +115,8 @@
 | 0079 | 2026-09-18 | บอกเจ้าของงานว่าชีทลูกค้ามีเลขข้อซ้ำ โดยยกข้อความของตัวอ่านเลขข้อที่เราเขียนเอง ซึ่งอ่านข้อย่อย 1.1 ผิด (ผิดซ้ำจาก #0025 · #0015) | Medium | [20260918-post-mortem-report-0079-relayed-own-parser-output-as-sheet-data-error.md](20260918-post-mortem-report-0079-relayed-own-parser-output-as-sheet-data-error.md) |
 | 0080 | 2026-09-18 | บอกว่าตรวจ path:line ในใบพร้อมอัดครบทุกตัว ทั้งที่ตัวตรวจวัดแค่ว่าบรรทัดไม่ว่าง และยกผลเลน D8 มาพูดเหมือนตรวจแล้ว (ผิดซ้ำจาก #0077 · #0076 · #0025) | Medium | [20260918-post-mortem-report-0080-claimed-code-refs-verified-when-checker-measured-only-nonempty-lines.md](20260918-post-mortem-report-0080-claimed-code-refs-verified-when-checker-measured-only-nonempty-lines.md) |
 | 0081 | 2026-09-18 | ส่งต่อคำของเลนว่าวิดีโอย้อนหลัง 2 รายการเป็นแบบร่าง แล้วขออนุมัติลบ ของจริง 1 รายการเผยแพร่อยู่และลบไม่ได้ | Medium | [20260918-post-mortem-report-0081-relayed-lane-claim-recordings-were-drafts-before-delete-approval.md](20260918-post-mortem-report-0081-relayed-lane-claim-recordings-were-drafts-before-delete-approval.md) |
+| 0082 | 2026-09-18 | แก้ผลคาดหวังในชีทส่งมอบ 2 แถว แต่ชื่อเคสและขั้นตอนในแถวเดียวกันยังขัดกับข้อความใหม่ | Medium | [20260918-post-mortem-report-0082-expected-result-write-left-steps-contradicting-new-text.md](20260918-post-mortem-report-0082-expected-result-write-left-steps-contradicting-new-text.md) |
+| 0083 | 2026-09-18 | รายงาน #0081 เสนอทาง "ยกเลิกการเผยแพร่ แล้วค่อยลบ" ที่ตารางสถานะไม่อนุญาต และใช้เวลาประมาณในไทม์ไลน์ | Medium | [20260918-post-mortem-report-0083-postmortem-offered-unverified-delete-path-and-estimated-times.md](20260918-post-mortem-report-0083-postmortem-offered-unverified-delete-path-and-estimated-times.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
