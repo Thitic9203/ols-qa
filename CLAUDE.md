@@ -2803,6 +2803,18 @@ Full report: [`docs/post-mortem/20260918-post-mortem-report-0071-refreshed-dev-s
 
 Full report: [`docs/post-mortem/20260918-post-mortem-report-0072-relogged-dev-accounts-not-covered-by-keepalive.md`](docs/post-mortem/20260918-post-mortem-report-0072-relogged-dev-accounts-not-covered-by-keepalive.md)
 
+### Report #0073 — เลนอัดเปิดเว็บ NDLP ด้วยไฟล์ session แล้วเว็บหมุนโทเคนเอง (2026-09-18)
+
+**Surface:** ทุกคำสั่งงานของเลนที่ใช้ไฟล์ session **ผิดซ้ำจาก:** #0038
+
+คำสั่งงานห้าม `session_refresh.js` แต่ไม่ได้ห้ามเปิดเว็บของผู้ออกโทเคน เลนเปิดเว็บ NDLP ด้วยไฟล์ session เพื่อดูหน้าต้นทาง
+หน้าเว็บเรียก `/auth/refresh-token` เอง 2 ครั้ง (201) และไม่มีการเซฟกลับ · ตรวจสดหลังเหตุ session ยังใช้ได้
+
+**กฎที่เพิ่มจากเหตุนี้:** *ข้อห้ามเรื่อง endpoint ที่หมุนโทเคน ต้องผูกกับปลายทาง ไม่ใช่กับเครื่องมือที่ยิง* — ห้ามเปิดโดเมนที่ออกโทเคน
+(เว็บ NDLP · auth API) ด้วยไฟล์ session ใดๆ เพราะหน้าเว็บเรียก endpoint นั้นเองได้
+
+Full report: [`docs/post-mortem/20260918-post-mortem-report-0073-recording-lane-let-ndlp-site-rotate-saved-login-token.md`](docs/post-mortem/20260918-post-mortem-report-0073-recording-lane-let-ndlp-site-rotate-saved-login-token.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
