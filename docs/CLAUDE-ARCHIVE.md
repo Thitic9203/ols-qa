@@ -3059,6 +3059,16 @@ Full report: [`docs/post-mortem/20260919-post-mortem-report-0093-rtk-rewrote-inv
 
 Full report: [`docs/post-mortem/20260919-post-mortem-report-0094-stated-guessed-session-check-times-and-named-logs-by-them.md`](docs/post-mortem/20260919-post-mortem-report-0094-stated-guessed-session-check-times-and-named-logs-by-them.md)
 
+### Report #0095 — สั่ง agent และรัน preflight กับโฟลเดอร์ session ผิด (2026-09-19)
+
+**Surface:** brief ของ agent เลนอัดคลิป · `recording_preflight.js` (`--accounts-dir` อิสระจาก `--pidfile`) · `gen_board_data.py` · **ผิดซ้ำจาก:** #0092
+
+brief ของเลน Course_TC_012 ชี้ `capture/state_<tag>.json` (ชุดเก่า ตายแล้ว) แทนโฟลเดอร์ session ของรอบที่ keepalive ดูแล · preflight ที่รันกับโฟลเดอร์ผิดผ่านชั้น keepalive แล้วได้ 0 live / 4 dead (19:03:38) เกือบขึ้นบอร์ด · จับได้จากเหตุผลรายบัญชี + mtime เก่า · เปลี่ยนชื่อ log เป็น `wrongdir_…` · รันใหม่กับโฟลเดอร์ที่ถูก 4/4 live (19:04:36) · แก้ brief ก่อน agent ใช้ session
+
+**กฎที่เพิ่มจากเหตุนี้:** ตำแหน่ง session ที่ส่งให้ agent หรือ preflight ต้องอ่านจากโปรเซส keepalive ที่รันอยู่ ไม่ใช่จากความจำหรือตำแหน่งมาตรฐาน · ชั้นเครื่องมือเสนอ รออนุมัติ: preflight เทียบ `--accounts-dir` กับ cwd ของ keepalive (pid ใน `--pidfile`) ไม่ตรง = REFUSED "ตรวจไม่ได้" · preflight พิมพ์โฟลเดอร์ที่ตรวจในผล
+
+Full report: [`docs/post-mortem/20260919-post-mortem-report-0095-briefed-agent-and-ran-preflight-on-wrong-session-folder.md`](docs/post-mortem/20260919-post-mortem-report-0095-briefed-agent-and-ran-preflight-on-wrong-session-folder.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
