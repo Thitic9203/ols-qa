@@ -118,6 +118,7 @@
 | 0082 | 2026-09-18 | แก้ผลคาดหวังในชีทส่งมอบ 2 แถว แต่ชื่อเคสและขั้นตอนในแถวเดียวกันยังขัดกับข้อความใหม่ | Medium | [20260918-post-mortem-report-0082-expected-result-write-left-steps-contradicting-new-text.md](20260918-post-mortem-report-0082-expected-result-write-left-steps-contradicting-new-text.md) |
 | 0083 | 2026-09-18 | รายงาน #0081 เสนอทาง "ยกเลิกการเผยแพร่ แล้วค่อยลบ" ที่ตารางสถานะไม่อนุญาต และใช้เวลาประมาณในไทม์ไลน์ | Medium | [20260918-post-mortem-report-0083-postmortem-offered-unverified-delete-path-and-estimated-times.md](20260918-post-mortem-report-0083-postmortem-offered-unverified-delete-path-and-estimated-times.md) |
 | 0084 | 2026-09-18 | บอกว่าเคสที่อัดได้ "รอ deploy" เพราะใช้สถานะ Jira แทนการตรวจว่าคอมมิตอยู่ใน tag ที่ deploy ขึ้น dev แล้ว | Medium | [20260918-post-mortem-report-0084-used-jira-status-as-proxy-for-code-deployed-on-dev.md](20260918-post-mortem-report-0084-used-jira-status-as-proxy-for-code-deployed-on-dev.md) |
+| 0085 | 2026-09-19 | เลนอัดคลิปกดโหวต "ไม่อนุมัติ" ผิดสื่อบน dev เพราะตัวเลือกการ์ดจับผิดใบและไม่มีด่านตรวจชื่อก่อนกดยืนยัน ข้อมูลทดสอบของอีกเคสจึงถูกใช้ไป | Medium | [20260919-post-mortem-report-0085-recording-lane-voted-reject-on-wrong-media-and-consumed-another-fixture.md](20260919-post-mortem-report-0085-recording-lane-voted-reject-on-wrong-media-and-consumed-another-fixture.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
