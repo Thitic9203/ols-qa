@@ -2995,6 +2995,17 @@ Full report: [`docs/post-mortem/20260919-post-mortem-report-0087-said-login-proc
 
 Full report: [`docs/post-mortem/20260919-post-mortem-report-0088-preprod-login-used-local-roster-instead-of-account-sheet.md`](docs/post-mortem/20260919-post-mortem-report-0088-preprod-login-used-local-roster-instead-of-account-sheet.md)
 
+### Report #0089 — keepalive ส่ง refresh ของ pre-prod ไปหา auth ของ tenant dev (2026-09-19)
+
+**Surface:** `session_refresh.js` · `env_hosts.js` (off-repo) ทุกงานที่ต่ออายุ session นอก prod
+
+`resolveAuthApi()` เลือก env `dev` ให้ทุกงานที่ไม่ใช่ prod และ `ENV_KEYS` ผูก pre-prod กับ auth key ของ dev ทั้งที่ pre-prod แยก tenant แล้ว
+คำขอ refresh ล้างคุกกี้ access แล้ว proxy ของ OLS ปิด session ที่เพิ่งล็อกอิน 2 จาก 3 บัญชี · ผิดซ้ำจาก #0027
+
+**กฎที่เพิ่มจากเหตุนี้:** เครื่องมือที่ส่งโทเคนต้องหาปลายทางจาก host เป้าหมาย ห้ามใช้ env ปริยาย และปฏิเสธก่อนส่งเมื่อปลายทางไม่ใช่ผู้ออกโทเคน · การแก้ในโค้ด (auth key ของ pre-prod · env จาก host · ด่านตรวจ tenant · เทสต์) อนุมัติแล้ว กำลังทำ
+
+Full report: [`docs/post-mortem/20260919-post-mortem-report-0089-keepalive-refresh-sent-preprod-sessions-to-dev-auth-tenant.md`](docs/post-mortem/20260919-post-mortem-report-0089-keepalive-refresh-sent-preprod-sessions-to-dev-auth-tenant.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว

@@ -122,6 +122,7 @@
 | 0086 | 2026-09-19 | ข้อความคอมมิตบอกขนาดไฟล์แผน VDO เป็น "~20 KB" ก่อนวัด (จริง 25,681 ไบต์) และแผนผูกเหตุ #0085 ไว้กับเคสผิด · git-staging-guard จึงบล็อกข้อความคอมมิตที่มีตัวเลขประมาณ | Low | [20260919-post-mortem-report-0086-commit-message-stated-unmeasured-size-and-plan-misattributed-fixture.md](20260919-post-mortem-report-0086-commit-message-stated-unmeasured-size-and-plan-misattributed-fixture.md) |
 | 0087 | 2026-09-19 | บอกเจ้าของงานว่าหยุดโปรเซสล็อกอินแล้ว ทั้งที่ยังเปิดหน้าต่างล็อกอิน dev เด้งซ้ำ ซ้อนกับรอบใหม่ (ผิดซ้ำจาก #0030) | Medium | [20260919-post-mortem-report-0087-said-login-process-stopped-while-it-kept-opening-windows.md](20260919-post-mortem-report-0087-said-login-process-stopped-while-it-kept-opening-windows.md) |
 | 0088 | 2026-09-19 | เปิดหน้าล็อกอิน pre-prod ด้วยบัญชีจาก roster ในเครื่อง ไม่ใช่ชีต Account_Test จนได้บัญชีที่มีแต่บน dev (ผิดซ้ำจาก #0047) | Low | [20260919-post-mortem-report-0088-preprod-login-used-local-roster-instead-of-account-sheet.md](20260919-post-mortem-report-0088-preprod-login-used-local-roster-instead-of-account-sheet.md) |
+| 0089 | 2026-09-19 | keepalive เรียก `session_refresh.js` กับ pre-prod ซึ่งเลือก auth ของ tenant dev ตายตัว คำขอ refresh ล้างคุกกี้แล้ว OLS ปิด session ที่เพิ่งล็อกอิน 2 จาก 3 บัญชี (ผิดซ้ำจาก #0027) | Medium | [20260919-post-mortem-report-0089-keepalive-refresh-sent-preprod-sessions-to-dev-auth-tenant.md](20260919-post-mortem-report-0089-keepalive-refresh-sent-preprod-sessions-to-dev-auth-tenant.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
