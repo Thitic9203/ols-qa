@@ -243,6 +243,16 @@ function runHook(dir, command, env) {
   return { code: r.status, err: (r.stderr || '') + (r.stdout || '') };
 }
 
+check('#0086: the hook names an approximate number as the problem, not a broad stage', () => {
+  const dir = sandbox();
+  const r = runHook(dir, 'git commit -m "condense 43.6 KB -> ~20 KB"');
+  assert.strictEqual(r.code, 2, 'the incident message was not blocked by the hook: ' + r.err);
+  assert.ok(/ตัวเลขประมาณ/.test(r.err) && /~20/.test(r.err), 'header/reason missing: ' + r.err);
+  assert.ok(!/stage แบบเหมา/.test(r.err), 'the refusal still claims a broad stage: ' + r.err);
+  const ok = runHook(dir, 'git commit -m "condense to 25,681 bytes"');
+  assert.strictEqual(ok.code, 0, 'a measured number was blocked: ' + ok.err);
+});
+
 check('the hook process refuses a broad stage and lets an explicit path through', () => {
   const dir = sandbox();
   const bad = runHook(dir, 'git add -A');

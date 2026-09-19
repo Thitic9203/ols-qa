@@ -155,6 +155,7 @@ function decideCommand(cmd, isDir) {
       if (approx) {
         return {
           block: true,
+          kind: 'approx-number',
           what: `ข้อความคอมมิตมีตัวเลขประมาณ "${approx}"`,
           segment: seg,
           reason: `ข้อความคอมมิตมีตัวเลขประมาณ "${approx}" — วัดก่อน (wc -c / stat / date) แล้วใส่ค่าจริง `

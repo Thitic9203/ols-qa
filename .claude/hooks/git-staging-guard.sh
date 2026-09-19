@@ -40,6 +40,18 @@ const isDir = (p) => {
 };
 const d = R.decideCommand(cmd, isDir);
 if (!d.block) process.exit(0);
+if (d.kind === "approx-number") {
+  process.stderr.write(
+`BLOCKED — ข้อความคอมมิตมีตัวเลขประมาณ
+
+  คำสั่ง : ${d.segment}
+  ปัญหา  : ${d.reason}
+
+วัดค่าจริงในคำสั่งก่อนหน้า (wc -c / stat -f %z / date) แล้วใส่ตัวเลขนั้นในข้อความ
+คอมมิตที่ push แล้วแก้ข้อความไม่ได้ (post-mortem #0086 · tools/git-staging-guard/)
+`);
+  process.exit(2);
+}
 process.stderr.write(
 `BLOCKED — ห้าม stage แบบเหมาใน worktree ที่มีหลาย session ทำงานพร้อมกัน
 
