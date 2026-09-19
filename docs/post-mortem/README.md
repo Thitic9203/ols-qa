@@ -119,6 +119,7 @@
 | 0083 | 2026-09-18 | รายงาน #0081 เสนอทาง "ยกเลิกการเผยแพร่ แล้วค่อยลบ" ที่ตารางสถานะไม่อนุญาต และใช้เวลาประมาณในไทม์ไลน์ | Medium | [20260918-post-mortem-report-0083-postmortem-offered-unverified-delete-path-and-estimated-times.md](20260918-post-mortem-report-0083-postmortem-offered-unverified-delete-path-and-estimated-times.md) |
 | 0084 | 2026-09-18 | บอกว่าเคสที่อัดได้ "รอ deploy" เพราะใช้สถานะ Jira แทนการตรวจว่าคอมมิตอยู่ใน tag ที่ deploy ขึ้น dev แล้ว | Medium | [20260918-post-mortem-report-0084-used-jira-status-as-proxy-for-code-deployed-on-dev.md](20260918-post-mortem-report-0084-used-jira-status-as-proxy-for-code-deployed-on-dev.md) |
 | 0085 | 2026-09-19 | เลนอัดคลิปกดโหวต "ไม่อนุมัติ" ผิดสื่อบน dev เพราะตัวเลือกการ์ดจับผิดใบและไม่มีด่านตรวจชื่อก่อนกดยืนยัน ข้อมูลทดสอบของอีกเคสจึงถูกใช้ไป | Medium | [20260919-post-mortem-report-0085-recording-lane-voted-reject-on-wrong-media-and-consumed-another-fixture.md](20260919-post-mortem-report-0085-recording-lane-voted-reject-on-wrong-media-and-consumed-another-fixture.md) |
+| 0086 | 2026-09-19 | ข้อความคอมมิตบอกขนาดไฟล์แผน VDO เป็น "~20 KB" ก่อนวัด (จริง 25,681 ไบต์) และแผนผูกเหตุ #0085 ไว้กับเคสผิด · git-staging-guard จึงบล็อกข้อความคอมมิตที่มีตัวเลขประมาณ | Low | [20260919-post-mortem-report-0086-commit-message-stated-unmeasured-size-and-plan-misattributed-fixture.md](20260919-post-mortem-report-0086-commit-message-stated-unmeasured-size-and-plan-misattributed-fixture.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 

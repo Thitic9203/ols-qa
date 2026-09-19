@@ -116,6 +116,25 @@ check('reading, diffing and ordinary committing are untouched', () => {
   ]) assert.strictEqual(d(c).block, false, `บล็อกผิด: ${c}`);
 });
 
+check('#0086: a commit message carrying an approximate number is refused', () => {
+  // the real d8ac2ce message, stated before the file was measured (25,681 bytes)
+  const real = 'git commit -q -m "docs(plan): condense VDO remaining-work 43.6 KB -> ~20 KB; live recount"';
+  const r = d(real);
+  assert.ok(r.block, 'the incident message passed');
+  assert.ok(/~20/.test(r.reason) && /#0086/.test(r.reason), 'reason does not name the number or the report: ' + r.reason);
+  for (const c of [
+    'git commit -m "took ~3 min"', 'git commit -m "size (~5 KB)"', 'git commit --message="about ~ 12 files"',
+    'git commit -m "title" -m "body ~40 KB"', 'cd x && git commit -qm "~7 cases"',
+  ]) assert.ok(d(c).block, `ไม่บล็อก: ${c}`);
+});
+
+check('#0086: measured numbers and revision syntax in a commit message are allowed', () => {
+  for (const c of [
+    'git commit -m "condense plan 43.6 KB -> 25,681 bytes"', 'git commit -m "fixup of HEAD~1"',
+    'git commit --fixup HEAD~2', 'git commit -m "path ~/notes is fine"', 'echo "~20" && git commit -m "ok"',
+  ]) assert.strictEqual(d(c).block, false, `บล็อกผิด: ${c}`);
+});
+
 check('a broad stage hidden later in a chained line is still caught', () => {
   assert.ok(d('cd /tmp && git add -A && git commit -m x').block);
   assert.ok(d('git status; git add .').block);

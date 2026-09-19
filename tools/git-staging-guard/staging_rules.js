@@ -151,9 +151,41 @@ function decideCommand(cmd, isDir) {
 
     if (sub.name === 'commit') {
       if (hasShort(sub.rest, 'a') || hasLong(sub.rest, 'all')) return block(seg, 'git commit -a / --all');
+      const approx = approximateNumber(commitMessage(seg));
+      if (approx) {
+        return {
+          block: true,
+          what: `ข้อความคอมมิตมีตัวเลขประมาณ "${approx}"`,
+          segment: seg,
+          reason: `ข้อความคอมมิตมีตัวเลขประมาณ "${approx}" — วัดก่อน (wc -c / stat / date) แล้วใส่ค่าจริง `
+            + 'คอมมิตที่ push แล้วแก้ข้อความไม่ได้ (CLAUDE.md §0 ห้าม ~ · post-mortem #0086)',
+        };
+      }
     }
   }
   return { block: false };
+}
+
+/**
+ * Every `-m` / `--message` value of a commit segment, joined. Read from the raw segment, not from
+ * `tokens()`, because `--message="a b"` tokenises as `--message="a` + `b"`. `-F <file>` is not read.
+ */
+function commitMessage(seg) {
+  const out = [];
+  const re = /(?:^|\s)(?:-[A-Za-z]*m|--message)(?:=|\s+)(?:"((?:[^"\\]|\\.)*)"|'([^']*)'|(\S+))/g;
+  let m;
+  while ((m = re.exec(String(seg || ''))) !== null) out.push(m[1] !== undefined ? m[1] : m[2] !== undefined ? m[2] : m[3]);
+  return out.join('\n');
+}
+
+/**
+ * An approximate number: `~20 KB`, `~ 3 min`, `(~5)`. Report #0086: a pushed commit message said
+ * a file shrank to "~20 KB" before anyone measured it (25,681 bytes), and a pushed message cannot
+ * be amended. The tilde must follow a boundary so revision syntax like `HEAD~1` stays legal.
+ */
+function approximateNumber(msg) {
+  const m = /(^|[\s(\[/,:>-])~\s?\d[\d.,]*/.exec(String(msg || ''));
+  return m ? m[0].slice(m[1].length) : null;
 }
 
 function block(segment, what) {
@@ -165,4 +197,4 @@ function block(segment, what) {
   };
 }
 
-module.exports = { segments, tokens, subcommand, pathArgs, decideCommand, UNSAFE_PATH };
+module.exports = { segments, tokens, subcommand, pathArgs, decideCommand, commitMessage, approximateNumber, UNSAFE_PATH };

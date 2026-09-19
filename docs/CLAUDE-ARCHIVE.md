@@ -2962,6 +2962,18 @@ Full report: [`docs/post-mortem/20260918-post-mortem-report-0084-used-jira-statu
 
 Full report: [`docs/post-mortem/20260919-post-mortem-report-0085-recording-lane-voted-reject-on-wrong-media-and-consumed-another-fixture.md`](docs/post-mortem/20260919-post-mortem-report-0085-recording-lane-voted-reject-on-wrong-media-and-consumed-another-fixture.md)
 
+### Report #0086 — ข้อความคอมมิตบอกขนาดไฟล์ก่อนวัด และแผนงานผูกเหตุ #0085 ผิดเคส (2026-09-19)
+
+**Surface:** ข้อความคอมมิตทุก repo ที่คอมมิตจากเซสชันนี้ · เอกสารที่อ้างรายงาน post-mortem **ผิดซ้ำจาก:** #0083
+
+คอมมิต `d8ac2ce` (ols-qa-evidence) เขียนว่าแผนเหลือ "~20 KB" ก่อนวัด ส่วนขนาดจริงคือ 25,681 ไบต์ และ push แล้วจึงแก้ไม่ได้ · แผนเดียวกันผูกการโหวตผิดสื่อของ #0085
+ไว้กับ Content_TC_005 ทั้งที่ fixture ที่เสียเป็นของ Content_TC_007 · แก้แผนแล้วใน `ea7b3c9`
+
+**กฎที่เพิ่มจากเหตุนี้:** *ข้อความถาวรต้องมาจากค่าที่วัดแล้ว* — `tools/git-staging-guard/staging_rules.js` บล็อก `git commit` ที่ข้อความ `-m` มี `~<ตัวเลข>`
+(ยังอนุญาต `HEAD~1` และ `~/path`) · ข้อเท็จจริงจากรายงาน post-mortem ต้องยกพร้อมเลขบรรทัดของรายงาน
+
+Full report: [`docs/post-mortem/20260919-post-mortem-report-0086-commit-message-stated-unmeasured-size-and-plan-misattributed-fixture.md`](docs/post-mortem/20260919-post-mortem-report-0086-commit-message-stated-unmeasured-size-and-plan-misattributed-fixture.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
