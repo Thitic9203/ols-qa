@@ -3006,6 +3006,17 @@ Full report: [`docs/post-mortem/20260919-post-mortem-report-0088-preprod-login-u
 
 Full report: [`docs/post-mortem/20260919-post-mortem-report-0089-keepalive-refresh-sent-preprod-sessions-to-dev-auth-tenant.md`](docs/post-mortem/20260919-post-mortem-report-0089-keepalive-refresh-sent-preprod-sessions-to-dev-auth-tenant.md)
 
+### Report #0090 — subagent พิมพ์บรรทัดจากไฟล์ secrets ทั้งบรรทัดเข้า context (2026-09-19)
+
+**Surface:** brief ของ subagent ทุกฉบับที่อาจอ่าน `~/.ols-qa-secrets/` · คำสั่งกรองที่ตั้งใจซ่อนค่า
+
+subagent ที่แก้ `session_refresh.js` ใช้ `grep -n` ต่อท่อเข้า `sed` เพื่อตัดค่าให้เหลือชื่อ key แต่ pattern ไม่ตรง prefix เลขบรรทัด sed จึงปล่อยบรรทัดลับผ่านทั้งบรรทัด (รหัสผ่านบัญชีทดสอบ · token Figma · id ชีท/Drive/Discord)
+ค่าไม่ลงไฟล์งาน ไม่เข้า git · brief จากเธรดหลักไม่ได้ห้ามพิมพ์ค่า และไม่มีชั้นใดกันค่า secrets เข้า context (ทุกชั้นเดิมกันแค่การ commit)
+
+**กฎที่เพิ่มจากเหตุนี้:** ค่าในไฟล์ secrets ห้ามเข้า context ทุกกรณี — brief ต้องสั่งให้ถามได้แค่ชื่อ key หรือจำนวน (`grep -c`) และตัวกรองต้อง fail-closed · เสนอเครื่องมืออ่านแค่ชื่อ key + PreToolUse hook + กฎใน agent-dispatch-guard (ยังไม่ติดตั้ง รออนุมัติ) · การหมุน token Figma/รหัสผ่าน เจ้าของงานเป็นผู้ตัดสิน
+
+Full report: [`docs/post-mortem/20260919-post-mortem-report-0090-subagent-printed-secrets-file-lines-into-context.md`](docs/post-mortem/20260919-post-mortem-report-0090-subagent-printed-secrets-file-lines-into-context.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
