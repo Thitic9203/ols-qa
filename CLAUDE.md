@@ -4,7 +4,8 @@
 > ทุกบรรทัดด้านล่างคือกฎบังคับ ตัดคำอธิบายออกเท่านั้น ไม่ได้ตัดกฎ
 
 @CONTEXT.md
-@references/ols-project-guide.md
+
+> ค่าคอนฟิก OLS (Jira/ชีท/Drive/env/field id/เครื่องมือ sync) อยู่ที่ [`references/ols-project-guide.md`](references/ols-project-guide.md) — ไม่ auto-load (109 KB) **ต้อง grep หัวข้อที่เกี่ยวก่อนทำงาน OLS ทุกครั้ง** และก่อนถามค่าใดๆ กับ user
 
 ## 0. ห้ามเดา (ใหญ่สุด)
 - มี 3 สถานะเท่านั้น: **ตรวจแล้ว** (แนบ path:line / คำสั่ง+output / API / commit) · **ยังไม่ตรวจ** (บอกตรงๆ แล้วไปตรวจ) · **ตรวจไม่ได้** (บอกว่าติดอะไร ต้องมีอะไร แล้วหยุดถาม)

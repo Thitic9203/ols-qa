@@ -42,8 +42,12 @@ if [ -f .claude/session-state.md ]; then
   echo ""
 fi
 
-# Show WIP context if exists
+# The hand-written WIP note is a pointer, not a dump: printed in full it was 12 KB (2026-09-19)
+# injected into every session and every compaction, and together with a 478 KB CLAUDE.md it made
+# autocompact thrash. Its title line carries the date, which is what decides whether to open it.
 if [ -f .claude/session-context.md ]; then
-  echo "=== WIP Context (hand-written — check its date before trusting it) ==="
-  cat .claude/session-context.md
+  echo "=== WIP Context (hand-written — not auto-loaded; open only if the task touches it) ==="
+  echo "File: .claude/session-context.md ($(wc -c < .claude/session-context.md | tr -d ' ') bytes)"
+  grep -m1 '^# ' .claude/session-context.md
+  grep '^## ' .claude/session-context.md | head -8
 fi
