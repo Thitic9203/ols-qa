@@ -22,6 +22,7 @@
 
 | ID | เกิดเมื่อ | อาการ | ที่มา | สถานะ | รายงาน |
 |----|-----------|-------|-------|-------|--------|
+| PM-2026-09-20-01 | 2026-09-20 | อัด Content_TC_005 บน pre-prod เดินครบ 24 สเต็ปแล้วพังตอน encode — ffmpeg รับ `-r undefined` แล้วจบด้วยรหัส 234 ไม่มีคลิปออกมา งานอัดทั้งรอบสูญ · `IB4_play_runner.js:28` ส่ง `fps: undefined` เมื่อไม่ได้ใส่ `--fps` และ `qa_recorder.js:98` ใช้ `Object.assign` ซึ่งเอา `undefined` ทับค่า default 25 · ไม่มีชั้นไหนตรวจ fps ตอนเริ่ม จึงรู้ตัวหลังเสียเวลาอัดไปแล้ว | อัดหลักฐาน VDO เลน Content_TC_005 ตามแผน remaining-work | DONE | 20260920-post-mortem-report-0097-unset-fps-flag-clobbered-the-default-and-killed-the-encode.md |
 | PM-2026-09-05-01 | 2026-09-05 | แก้ลิงก์ในเอกสารโดยตั้งสมมติฐานเองว่าลิงก์เดิมผิด ทั้งที่ยังไม่ได้เปิดปลายทางอ่าน ต้องย้อนคอมมิตคืน | งานแก้ลิงก์ใน repo ols-qa | DONE | 20260905-post-mortem-report-0001-deleted-working-links-on-unverified-claim.md |
 | PM-2026-09-06-01 | 2026-09-06 | ตัวตรวจ postmortem-guard พิมพ์ว่าโครงสร้างเรียบร้อยและจบด้วยรหัส 0 ทั้งที่มีไฟล์รายงานตั้งชื่อผิดวางอยู่ในโฟลเดอร์ เพราะตัวกรองข้ามไฟล์ที่ชื่อไม่ตรงแบบไปเงียบๆ | ตรวจงานระบบ post-mortem รอบเต็ม | DONE | 20260906-post-mortem-report-0002-guard-reported-clean-over-files-it-never-read.md |
 | PM-2026-09-06-03 | 2026-09-06 | ด่านก่อนคอมมิตยอมให้คอมมิตผ่านทั้งที่มีหนี้ค้าง เมื่อไฟล์บัญชีหนี้อ่านไม่ได้หรือตารางถูกตัดคอลัมน์ และตัวเตือนก็เงียบสนิทในสถานการณ์เดียวกัน | รีวิวโค้ดของระบบ post-mortem ตามคำสั่งเจ้าของงาน | DONE | 20260906-post-mortem-report-0003-commit-gate-allowed-debt-when-ledger-unreadable.md |
