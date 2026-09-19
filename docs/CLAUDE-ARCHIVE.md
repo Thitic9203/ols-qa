@@ -2974,6 +2974,27 @@ Full report: [`docs/post-mortem/20260919-post-mortem-report-0085-recording-lane-
 
 Full report: [`docs/post-mortem/20260919-post-mortem-report-0086-commit-message-stated-unmeasured-size-and-plan-misattributed-fixture.md`](docs/post-mortem/20260919-post-mortem-report-0086-commit-message-stated-unmeasured-size-and-plan-misattributed-fixture.md)
 
+### Report #0087 — บอกว่าหยุดโปรเซสล็อกอินแล้ว ทั้งที่ยังเปิดหน้าต่างเด้งซ้ำ (2026-09-19)
+
+**Surface:** การหยุดโปรเซสที่เราเปิดเอง (`session_capture.js` และตัวรันอื่น)
+
+หลังสั่ง kill ตัวเก็บ session รอบแรก `pgrep` นับได้ 1 แต่รายงานว่าหยุดแล้ว โปรเซสเดิมเปิดหน้าต่างล็อกอิน dev ซ้อนกับรอบใหม่
+จนเจ้าของงานสับสน · ผิดซ้ำจาก #0030
+
+**กฎที่เพิ่มจากเหตุนี้:** รายงานว่าหยุดแล้วได้ต่อเมื่อ `kill -0 <pid>` ล้มเหลว · เสนอให้ `session_capture.js` ปฏิเสธการรันซ้อน (รออนุมัติ)
+
+Full report: [`docs/post-mortem/20260919-post-mortem-report-0087-said-login-process-stopped-while-it-kept-opening-windows.md`](docs/post-mortem/20260919-post-mortem-report-0087-said-login-process-stopped-while-it-kept-opening-windows.md)
+
+### Report #0088 — ล็อกอิน pre-prod ด้วยบัญชีจาก roster ในเครื่อง ไม่ใช่ชีต (2026-09-19)
+
+**Surface:** การเลือกบัญชีก่อนเก็บ session ทุก env
+
+ใช้ `accounts_preprod.json` แทนชีต Account_Test บัญชีแรกเป็น Env "Dev" อย่างเดียว ล็อกอิน pre-prod ไม่ได้ · ผิดซ้ำจาก #0047
+
+**กฎที่เพิ่มจากเหตุนี้:** อ่านชีต Account_Test สดแล้วสร้าง roster จากแถวที่ Env ตรงเป้าหมาย · เสนอให้ `session_capture.js` ตรวจ `env_sheet` (รออนุมัติ)
+
+Full report: [`docs/post-mortem/20260919-post-mortem-report-0088-preprod-login-used-local-roster-instead-of-account-sheet.md`](docs/post-mortem/20260919-post-mortem-report-0088-preprod-login-used-local-roster-instead-of-account-sheet.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
