@@ -3028,6 +3028,37 @@ brief ระบุ `short.json` (track Integration) เป็นแหล่ง�
 
 Full report: [`docs/post-mortem/20260919-post-mortem-report-0091-published-live-board-with-partial-scope-instead-of-approved-layout.md`](docs/post-mortem/20260919-post-mortem-report-0091-published-live-board-with-partial-scope-instead-of-approved-layout.md)
 
+### Report #0092 — รายงานว่า session pre-prod ใช้ได้ 4/4 จากตัวตรวจที่โหลดหน้าก่อนถาม get-session (2026-09-19)
+
+**Surface:** `session_verify.js` + `keepalive_preprod.sh` (นอก repo) · `capture/recording_preflight.js` · บอร์ดสดเลน session · **ผิดซ้ำจาก:** #0078 · #0062 · #0026
+
+`session_verify.js` โหลดหน้าแรกของ OLS ก่อนถาม get-session แล้วปิดบริบทโดยไม่บันทึก · proxy NDLP link (`with-ndlp-link.proxy.ts:122-180`) สร้าง session OLS ใหม่เมื่อ session เดิมตายแต่ access_token NDLP ยังดี จึงได้ ok ให้ session ที่บันทึกไว้ซึ่งตายแล้ว
+ถามตรงจากไฟล์ 18:32 → 2 บัญชี 0 ไบต์ · `recording_preflight.js` (ด่านที่ §9 กำหนด) ไม่ได้ถูกใช้ก่อนรายงาน และครั้งแรกที่ใช้ปฏิเสธเพราะ pidfile เป็น `pid=37904` · หลังแก้ได้ 3 live / 4 dead จาก 7 · บอร์ดเปลี่ยนไปอ่าน `preflight_*.log` แล้ว
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎใหม่ (§9 + §0 ครอบอยู่แล้ว) · ชั้นเครื่องมือเสนอ รออนุมัติ: ตัวตรวจถามจากไฟล์โดยไม่นำทางและปฏิเสธเมื่อเห็น relink · keepalive ใช้ `recording_preflight.js` เป็นตัวตัดสิน · pidfile เลข pid ล้วน · เทสต์ไฟล์ตายที่ access_token ยังดี
+
+Full report: [`docs/post-mortem/20260919-post-mortem-report-0092-reported-preprod-sessions-alive-from-page-load-check.md`](docs/post-mortem/20260919-post-mortem-report-0092-reported-preprod-sessions-alive-from-page-load-check.md)
+
+### Report #0093 — rtk hook เขียนทับ `grep -v … > file` จน PENDING.md ที่ stage หาย 126 บรรทัด (2026-09-19)
+
+**Surface:** hook `rtk` · subagent เขียนรายงาน · `docs/post-mortem/PENDING.md` · **ผิดซ้ำจาก:** #0051 · #0090
+
+`grep -v` ที่ redirect ลงไฟล์ถูกเขียนใหม่เป็น `rtk grep` ซึ่งพิมพ์บรรทัดที่ **ตรง** ในรูปแบบของ rtk และจบด้วย 0 (ทำซ้ำได้ในโฟลเดอร์ชั่วคราว) · จับได้จาก `git diff --cached --stat` ก่อนคอมมิต สร้างใหม่ด้วย python → `663a0e5` ถูกต้อง
+
+**กฎที่เพิ่มจากเหตุนี้:** คำสั่ง shell ที่ผลถูกเขียนลงไฟล์อาจถูก hook เปลี่ยนความหมาย — แก้ไฟล์ใน repo ด้วย Edit tool หรือ python และตรวจ `git diff --cached --stat` ก่อนคอมมิตทุกครั้ง · ชั้นเครื่องมือเสนอ รออนุมัติ: postmortem-guard ปฏิเสธเมื่อแถว `PM-...` ที่ stage หายเทียบกับ HEAD · config rtk ไม่เขียนคำสั่งที่มี redirect ใหม่
+
+Full report: [`docs/post-mortem/20260919-post-mortem-report-0093-rtk-rewrote-inverted-grep-redirect-and-staged-truncated-ledger.md`](docs/post-mortem/20260919-post-mortem-report-0093-rtk-rewrote-inverted-grep-redirect-and-staged-truncated-ledger.md)
+
+### Report #0094 — บอกเวลาตรวจ session ที่ไม่ได้วัด และตั้งชื่อไฟล์ log ตามเวลาที่เดา (2026-09-19)
+
+**Surface:** ข้อความถึงเจ้าของงาน/agent · ชื่อไฟล์ `preflight_*.log` · `gen_board_data.py` (เรียงตามชื่อ) · **ผิดซ้ำจาก:** #0060 · #0083 · #0086
+
+พูดว่าตรวจเมื่อ 18:52 / 18:53 / 18:4x โดยไม่รัน `date` — mtime จริง 18:42:17 · 18:46:48 · 18:48:05 · ชื่อไฟล์จากเวลาเดาทำให้บอร์ดเลือกผลที่ไม่ใช่ล่าสุด · ข้อสรุปว่า keepalive ต่ออายุ session ได้ ไม่มีการวัดรองรับ (เส้นตาย idle เป็นการอนุมาน และการทดสอบ §6 ของการสืบเหตุยังไม่มีผล) · เปลี่ยนชื่อไฟล์เป็น `HHMMSS` จาก mtime แล้ว
+
+**กฎที่เพิ่มจากเหตุนี้:** ชื่อไฟล์ที่ระบบอื่นใช้เรียงลำดับเวลา ต้องสร้างจากนาฬิกาเครื่องในคำสั่งเดียวกับที่เขียนไฟล์ ห้ามพิมพ์เวลาในชื่อเอง · ชั้นเครื่องมือเสนอ รออนุมัติ: `recording_preflight.js` ประทับเวลาในผลและเขียนไฟล์ log เอง · บอร์ดเลือกผลจากเวลาในไฟล์
+
+Full report: [`docs/post-mortem/20260919-post-mortem-report-0094-stated-guessed-session-check-times-and-named-logs-by-them.md`](docs/post-mortem/20260919-post-mortem-report-0094-stated-guessed-session-check-times-and-named-logs-by-them.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
