@@ -3017,6 +3017,17 @@ subagent ที่แก้ `session_refresh.js` ใช้ `grep -n` ต่อ�
 
 Full report: [`docs/post-mortem/20260919-post-mortem-report-0090-subagent-printed-secrets-file-lines-into-context.md`](docs/post-mortem/20260919-post-mortem-report-0090-subagent-printed-secrets-file-lines-into-context.md)
 
+### Report #0091 — เผยแพร่บอร์ดสดที่ช่องสรุปแสดงแค่ Integration 148 เคส แทนฟอร์แมตที่อนุมัติ (2026-09-19)
+
+**Surface:** brief ของ subagent สร้างบอร์ด · `board/build_board.js` + `board/check_theme.js` · ตัวนับที่อนุมัติ `make_board.py` (`EXPECTED_TOTALS`) · **ผิดซ้ำจาก:** #0066 · #0020
+
+brief ระบุ `short.json` (track Integration) เป็นแหล่งตัวเลข subagent ได้ 146 เธรดหลักแก้เป็น 148 แต่ไม่แก้ขอบเขต แล้ว publish ฉบับที่ 21 โดยไม่เทียบกับฉบับที่ 20 ที่อ่านมาแล้ว (รวม 875 + แยก 148/595/132)
+เจ้าของงานทัก · แก้ด้วย `add_track_tiles.py` ที่เรียกฟังก์ชันนับ + ด่าน `EXPECTED_TOTALS` ของ `make_board.py` → ฉบับที่ 22 (875 · ผ่าน 831 · ไม่ผ่าน 44) · ด่านเนื้อหา P3 ของ #0066 ยังค้าง จึงไม่มีชั้นใดปฏิเสธ
+
+**กฎที่เพิ่มจากเหตุนี้:** ตัวเลขช่องสรุปบอร์ดต้องมาจากตัวนับที่อนุมัติแหล่งเดียว และผ่านด่านที่เทียบยอดกับจำนวนคาดต่อ track ก่อน publish · ก่อน publish ต้อง diff ช่องสรุปกับเวอร์ชันที่ live (แถวหาย/ยอดรวมลด = ถามก่อน) · ด่านใน `build_board.js`/`check_theme.js` + เทสคู่ และกฎ brief ยังไม่ทำ รออนุมัติ
+
+Full report: [`docs/post-mortem/20260919-post-mortem-report-0091-published-live-board-with-partial-scope-instead-of-approved-layout.md`](docs/post-mortem/20260919-post-mortem-report-0091-published-live-board-with-partial-scope-instead-of-approved-layout.md)
+
 > **หมายเหตุการเปลี่ยนผ่าน (2026-09-05):** PM-001 ถึง PM-010 ด้านบนเป็นบันทึกยุคก่อนมีโฟลเดอร์
 > `docs/post-mortem/` ตั้งแต่วันนี้ไป **รายงานฉบับเต็มอยู่ในโฟลเดอร์นั้น** และหัวข้อนี้เก็บเฉพาะ
 > สรุปสั้นกับลิงก์ อ้างชื่อเหตุการณ์ด้วยเลขรายงาน 4 หลัก (`Report #0001`) เพียงชุดเดียว
