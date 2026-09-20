@@ -22,6 +22,8 @@
 ## 1. post-mortem — ทุกความผิดพลาดต้องมีรายงาน ห้ามผิดซ้ำ
 
 กฎทั้งหมดอยู่ใน [`docs/POSTMORTEM_RULE.md`](docs/POSTMORTEM_RULE.md) — กติกา post-mortem ทุกความผิดพลาด · อ่านไฟล์นั้นก่อนเขียนหรืออ่าน post-mortemทุกครั้ง
+- ไฟล์ ` M` ที่ไม่รู้ที่มา: รัน `bash scripts/whose-change.sh` — `STALE` = ของค้าง คืนค่าได้ · `EDITED` = มีคนพิมพ์ ห้ามแตะ (#0007)
+
 
 ## 2. ตรวจสอบปัญหา = `superpowers:systematic-debugging` เท่านั้น (investigation-guard)
 - prompt เรื่องพัง/ค้าง/เฟล/error/ผลไม่ตรง/ทำไม → เรียกสกิล (เธรดหลักหรือ subagent) ห้ามไล่เดาก่อน · Stop hook บล็อกถ้าไม่เรียก · ธงผิดจริง: `node tools/investigation-guard/check.js --not-an-investigation "เหตุผล"`
