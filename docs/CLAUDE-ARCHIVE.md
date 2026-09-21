@@ -3251,6 +3251,19 @@ node/browser ลูกที่เพิ่งกรอกอีเมลเส�
 
 Full report: [`docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md`](docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md)
 
+### Report #0107 — claimed tc9021 owns media without checking the API
+
+**Surface:** OLS QA workspace / training69
+
+บอกเจ้าของงานว่า `tc9021` เป็นเจ้าของสื่อที่จะปลดล็อกเคส MLV-016/021/022/023/024/025 ได้ โดยไม่เคยเรียก
+`/api/media/me` ตรวจก่อน เจ้าของงานอนุมัติแผนนี้และล็อกอินให้ 3 บัญชี วัดหลังล็อกอินได้ ผลคือ 0 ชิ้น แผนล้มทั้งหมด
+และการเก็บ session รอบนั้นทำให้ session ของ `tc9020` กับ `ct9020` ตายเพิ่ม ต้องล็อกอินซ้ำ สาเหตุรากคือสมมติว่าบัญชี
+ที่มีบทบาท "ครู" จะมีสื่ออยู่ โดยไม่ตรวจกับ API จริง ผิดซ้ำจาก #0025 · #0019
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎใหม่ — กฎ §0 "ห้ามเดา" ครอบคลุมอยู่แล้ว ปัญหาคือไม่ปฏิบัติตาม
+
+Full report: [`docs/post-mortem/20260922-post-mortem-report-0107-claimed-tc9021-owns-media-without-checking-api.md`](docs/post-mortem/20260922-post-mortem-report-0107-claimed-tc9021-owns-media-without-checking-api.md)
+
 ## 🔴 ข้อยกเว้น: เขียนข้อมูลบน production ได้ — เฉพาะรอบ smoke test 2026-09 เท่านั้น
 
 **เจ้าของงานอนุมัติเมื่อ 2026-09-03 ให้ สร้าง · แก้ไข · ลบ ข้อมูลบน production ได้ ตามแผน
