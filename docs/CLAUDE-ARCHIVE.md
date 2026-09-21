@@ -3221,6 +3221,21 @@ Full report: [`docs/post-mortem/20260921-post-mortem-report-0103-idle-verify-nev
 
 Full report: [`docs/post-mortem/20260922-post-mortem-report-0104-cast-irreversible-vote-on-partial-rehearsal.md`](docs/post-mortem/20260922-post-mortem-report-0104-cast-irreversible-vote-on-partial-rehearsal.md)
 
+### Report #0105 — ผิดซ้ำจาก #0104: โหวตจริงครั้งที่ 2 ตามหลัง rehearsal ที่ผ่านแค่ ณ จุดเวลาหนึ่ง (2026-09-22)
+
+**Surface:** `capture/content_tc005_t69_record.js` · **ผิดซ้ำจาก:** #0104
+
+แก้ #0104 แล้ว (rehearsal ครอบทุกสเต็ป + `rec.held()` ครอบ navigation) — rehearsal รอบหนึ่งผ่านสะอาด (0% เฟรมค้าง) พอดีตอนที่
+process `npm` ของ session อื่นที่กิน CPU 228% เพิ่งจบไป รันจริงทันทีโดยไม่วัดสภาพแวดล้อมซ้ำ ผลคือคลิปเต็มตกเกณฑ์อีกครั้ง (38.2%
+เฟรมค้าง) ทั้งที่โหวตสำเร็จฝั่งฟังก์ชันครบ root cause: rehearsal ที่แยก process/เวลาจากการรันจริงพิสูจน์ได้แค่ ณ ขณะที่มันจบ
+ไม่ใช่หลักประกันสำหรับวินาทีถัดไป — การแก้ #0104 ถอดหลักการแค่มิติเนื้อหา (rehearsal ต้องครอบทุกสเต็ป) แต่ไม่ได้ถอดมิติเวลา
+(หลักฐานต้องร่วมสมัยกับการกระทำที่ย้อนกลับไม่ได้) สื่อ `นิทาน 2` กลายเป็น REJECTED ถาวร เหลือ pending media ของ tc9020 อีก 3 ชิ้น
+
+**กฎที่เพิ่มจากเหตุนี้:** ยังไม่เพิ่มกฎถาวร — เสนอ "หลักฐานที่ใช้ตัดสินใจกระทำการย้อนกลับไม่ได้ ต้องวัด ณ ช่วงเวลาเดียวกับการกระทำ
+ไม่ใช่ก่อนหน้า" (Action Item ค้างในรายงาน) — หยุดพยายามโหวตจริงเพิ่มจนกว่าจะมีกลไกใหม่จริง ไม่ใช่แค่ "รอเครื่องว่างแล้วลองใหม่"
+
+Full report: [`docs/post-mortem/20260922-post-mortem-report-0105-repeated-vote-on-point-in-time-rehearsal.md`](docs/post-mortem/20260922-post-mortem-report-0105-repeated-vote-on-point-in-time-rehearsal.md)
+
 ## 🔴 ข้อยกเว้น: เขียนข้อมูลบน production ได้ — เฉพาะรอบ smoke test 2026-09 เท่านั้น
 
 **เจ้าของงานอนุมัติเมื่อ 2026-09-03 ให้ สร้าง · แก้ไข · ลบ ข้อมูลบน production ได้ ตามแผน
