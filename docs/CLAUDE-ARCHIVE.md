@@ -3236,6 +3236,21 @@ process `npm` ของ session อื่นที่กิน CPU 228% เพ�
 
 Full report: [`docs/post-mortem/20260922-post-mortem-report-0105-repeated-vote-on-point-in-time-rehearsal.md`](docs/post-mortem/20260922-post-mortem-report-0105-repeated-vote-on-point-in-time-rehearsal.md)
 
+### Report #0106 — double-backgrounded Bash call killed the rg9020 login window before the owner could type a password
+
+**Surface:** เครื่องมือ QA (Claude Code Bash tool `run_in_background`) ใช้เปิด `capture/session_capture.js`
+
+สั่งเปิดหน้าต่างล็อกอิน rg9020 ผ่าน Bash tool โดยใส่ทั้ง `run_in_background: true` (ของ tool เอง) และ shell `&`+`echo PID=$!`
+ซ้อนกัน — wrapper script จบตัวเองทันที ทำให้ harness รายงาน exit code 0 ของ wrapper ไม่ใช่ของ node จริง และ process
+node/browser ลูกที่เพิ่งกรอกอีเมลเสร็จถูกฆ่าไปพร้อมกับ parent shell ก่อนเข้าลูปรอ 8 นาทีให้เจ้าของงานพิมพ์รหัสผ่าน จับได้จาก
+`ps aux` ไม่พบ process ค้างอยู่ (ทั้งที่ log ควรมีบรรทัดรายงานทุก 15 วิ) แก้โดยรันคำสั่งเดิมใหม่ใช้ `run_in_background: true`
+เพียงอย่างเดียว (ไม่มี `&`) — สำเร็จ ได้ session ใหม่ถูกต้อง
+
+**กฎที่เพิ่มจากเหตุนี้:** ยังไม่เพิ่มกฎถาวรข้ามเซสชัน — `run_in_background: true` ของ Bash tool จัดการ backgrounding ทั้งก้อนอยู่แล้ว
+ห้ามเติม shell `&`/เก็บ PID ซ้อนอีกชั้นเมื่อรอ interactive input ของมนุษย์
+
+Full report: [`docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md`](docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md)
+
 ## 🔴 ข้อยกเว้น: เขียนข้อมูลบน production ได้ — เฉพาะรอบ smoke test 2026-09 เท่านั้น
 
 **เจ้าของงานอนุมัติเมื่อ 2026-09-03 ให้ สร้าง · แก้ไข · ลบ ข้อมูลบน production ได้ ตามแผน
