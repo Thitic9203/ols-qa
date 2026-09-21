@@ -3205,6 +3205,22 @@ root cause จริงคือ idle timeout 30 นาที (`AUTH_SESSION_IDL
 
 Full report: [`docs/post-mortem/20260921-post-mortem-report-0103-idle-verify-never-refreshes-training69-sessions.md`](docs/post-mortem/20260921-post-mortem-report-0103-idle-verify-never-refreshes-training69-sessions.md)
 
+### Report #0104 — โหวตไม่อนุมัติจริงบน training69 หลัง rehearsal ครอบคลุมแค่ 2 จาก 10 สเต็ป คลิปเต็มตกเกณฑ์เฟรมค้าง (2026-09-22)
+
+**Surface:** `capture/content_tc005_t69_record.js` · `capture/qa_recorder.js` · `capture/verify_video.py`
+
+รัน rehearsal (`REHEARSAL=1`) ที่หยุดก่อนคลิกโหวต ครอบคลุมแค่ 2 จาก 10 สเต็ป (ไม่มี `goto` เปลี่ยนหน้าเต็มเลยสักครั้ง) ได้ผลผ่าน (`uniqueFps 15.92`)
+แล้วสรุปเกินว่าคลิปเต็ม (10 สเต็ป มี `goto` เปลี่ยนหน้าเต็ม 3 ครั้ง หนักกว่ามาก) จะผ่านด้วยเหตุผลเดียวกัน จึงรันจริงทันที การโหวต "ไม่อนุมัติ"
+สื่อ `นิทานคุณธรรม` (tc9020) **สำเร็จจริงทุกด้านฝั่งฟังก์ชัน** (การ์ด/ไดอะล็อก/tooltip หลังโหวตตรง ER ทุกจุด) แต่คลิปเต็มตกเกณฑ์ `verify_video.py`
+(เฟรมค้าง 48.3% ระหว่างเคลื่อนไหว เกณฑ์ ≤5%, `maxGapMs` 2232ms) — สื่อกลายเป็น `REJECTED` ถาวร (ไม่มี endpoint ถอนโหวต) โดยไม่มีคลิปหลักฐาน
+ที่ใช้แนบชีทได้ root cause: สับสนระหว่าง "rehearsal พิสูจน์ pipeline/selector ถูกต้อง" กับ "rehearsal พิสูจน์ว่าคลิปความยาวเต็มจะผ่านเกณฑ์คุณภาพ" —
+สองเป้าหมายต่างกัน อย่างแรกพิสูจน์ได้จาก prefix สั้นๆ อย่างหลังพิสูจน์ไม่ได้จนกว่าจะรันครบทุกสเต็ปที่หนักที่สุดในเส้นทางจริง
+
+**กฎที่เพิ่มจากเหตุนี้:** ยังไม่เพิ่มกฎถาวร — เสนอ "rehearsal ก่อนกระทำการย้อนกลับไม่ได้ต้องครอบคลุมทุกสเต็ปรวม navigation หนักทั้งหมด ไม่ใช่ prefix"
+(Action Item ค้างในรายงาน)
+
+Full report: [`docs/post-mortem/20260922-post-mortem-report-0104-cast-irreversible-vote-on-partial-rehearsal.md`](docs/post-mortem/20260922-post-mortem-report-0104-cast-irreversible-vote-on-partial-rehearsal.md)
+
 ## 🔴 ข้อยกเว้น: เขียนข้อมูลบน production ได้ — เฉพาะรอบ smoke test 2026-09 เท่านั้น
 
 **เจ้าของงานอนุมัติเมื่อ 2026-09-03 ให้ สร้าง · แก้ไข · ลบ ข้อมูลบน production ได้ ตามแผน
