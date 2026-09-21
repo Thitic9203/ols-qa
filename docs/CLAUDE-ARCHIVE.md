@@ -3119,6 +3119,22 @@ ffmpeg ได้รับ `-r undefined` จบด้วยรหัส 234 ไ�
 
 Full report: [`docs/post-mortem/20260921-post-mortem-report-0098-training-smoke-self-heal-logged-in-by-password.md`](docs/post-mortem/20260921-post-mortem-report-0098-training-smoke-self-heal-logged-in-by-password.md)
 
+### Report #0099 — บอกว่าการ์ดกันเขียนปิดกั้นการอัดคลิป ทั้งที่ยังไม่ได้ตรวจว่าตัวอัดเรียกการ์ดหรือไม่ (2026-09-21)
+
+**Surface:** `WRITE_SCOPE_REQUEST.md` §5 · ตัวเลือกใน `AskUserQuestion` · **ผิดซ้ำจาก:** #0091
+
+เจ้าของงานสั่งย้ายเลนอัดไป training69 — บอกในไฟล์ขออนุมัติและในแชทว่า `write_guard.js` "ปิดกั้นการเขียนทุก env รวม
+training69" โดยไม่ตรวจ อนุมานจาก memory ว่าการ์ดครอบทุกเครื่องมือ ข้อความผิดถูกใส่เป็นตัวเลือกใน `AskUserQuestion`
+จนเจ้าของงานอนุมัติให้ผ่อนการ์ดโดยไม่จำเป็น ก่อนแก้จริง ไล่เส้นทางเรียกพบว่า `IB4_play_runner.js:12-17` และ
+`qa_recorder.js:40-44` ไม่ได้ `require()` การ์ดเลย การ์ดผูกกับ `namecheck/guard.js:15` ซึ่งเป็นเครื่องมือแก้ชื่อคนละเส้นทาง
+จึงหยุด ไม่แก้การ์ด แจ้งเจ้าของงานทันที
+
+**กฎที่เพิ่มจากเหตุนี้:** ข้ออ้างว่าเครื่องมือหนึ่งควบคุมอีกตัวหนึ่ง ต้องพิสูจน์ด้วยเส้นทางเรียกจริง (`require`/`import`)
+ไม่ใช่จาก memory หรือคำอธิบายในคอมเมนต์ · ตัวเลือกใน `AskUserQuestion` ต้องผ่านเกณฑ์หลักฐานเดียวกับข้อความอื่น —
+ข้ออ้างเชิงกลไกต้องมี `path:line` แนบ มิฉะนั้นเขียนว่า "ยังไม่ตรวจ" (ask-guard ชั้นใหม่ P1+P2 ในรายงาน — รออนุมัติ)
+
+Full report: [`docs/post-mortem/20260921-post-mortem-report-0099-claimed-write-guard-blocked-recording-without-checking.md`](docs/post-mortem/20260921-post-mortem-report-0099-claimed-write-guard-blocked-recording-without-checking.md)
+
 ## 🔴 ข้อยกเว้น: เขียนข้อมูลบน production ได้ — เฉพาะรอบ smoke test 2026-09 เท่านั้น
 
 **เจ้าของงานอนุมัติเมื่อ 2026-09-03 ให้ สร้าง · แก้ไข · ลบ ข้อมูลบน production ได้ ตามแผน
