@@ -77,6 +77,14 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/investigation-rule.sh\""
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/discord-notify-guard.sh\" --record"
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -134,6 +142,15 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/issue-creation-guard.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Write|Edit|MultiEdit|NotebookEdit|mcp__.*(start_process|interact_with_process|write_file|edit_block|move_file)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/discord-notify-guard.sh\" --gate"
           }
         ]
       }
