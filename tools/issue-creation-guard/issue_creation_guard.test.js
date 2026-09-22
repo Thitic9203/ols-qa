@@ -86,6 +86,36 @@ t("agent must-pass: งานอัดคลิปปกติ", () =>
   )
 );
 
+// ---------- root cause #0054: "ลง Jira" ต้องยังจับได้ แต่ "ลง" เดี่ยวๆ ต้องไม่จับมั่ว ----------
+// (post-mortem 2026-09-22: bare "ลง" เคยจับ "หลงเหลือ"/"ลงมือ"/"ลงไฟล์" ที่ไม่เกี่ยวกับ tracker เลย)
+t("agent must-catch: บันทึกผลลง Jira เป็น bug ใหม่", () =>
+  assert.strictEqual(
+    G.inspectAgentPrompt("บันทึกผลการค้นคว้าที่ทำเสร็จแล้วอย่างเป็นทางการลง Jira เป็น bug ใหม่").hit,
+    true
+  )
+);
+// พบระหว่างเขียนเทสต์ข้อบน: "อย่า" เดิมจับ "อย่าง" มั่ว ทำให้บรรทัดนี้เคยหลุดผ่านการ์ดทั้งที่ควรบล็อก
+t("agent must-catch: คำว่า 'อย่าง' ต้องไม่ถูกนับเป็นคำห้าม (false-negative เดิม)", () =>
+  assert.strictEqual(
+    G.inspectAgentPrompt("เปิด bug ใหม่อย่างเป็นทางการใน Jira ให้ด้วย").hit,
+    true
+  )
+);
+t("agent must-pass: หลงเหลือ (ไม่ใช่ ลง+object ติดกัน)", () =>
+  assert.strictEqual(
+    G.inspectAgentPrompt(
+      "หลงเหลือในคลิปจริงหรือไม่ เพื่อประเมินว่าความเสี่ยงที่พบเป็นแค่ช่องว่างเอกสาร หรือมีคลิปเปื้อนจริงหลุดผ่าน issue tracking ไปแล้ว"
+    ).hit,
+    false
+  )
+);
+t("agent must-pass: เขียนผลลงไฟล์ (ลงไฟล์ ไม่ใช่ ลง tracker) แม้บรรทัดมีคำว่าบั๊กด้วย", () =>
+  assert.strictEqual(
+    G.inspectAgentPrompt("เขียนผลลงไฟล์ตามเคสนี้ก่อนเสมอ ปัญหานี้คือบั๊กที่ต้องสืบเพิ่ม").hit,
+    false
+  )
+);
+
 // ---------- อายุของ confirm ----------
 t("isFresh: consumed แล้วใช้ไม่ได้", () =>
   assert.strictEqual(G.isFresh({ armedAt: Date.now(), consumed: true }), false)
@@ -177,4 +207,4 @@ if (fails.length) {
   fails.forEach((f) => console.error("  ✗ " + f));
   process.exit(1);
 }
-console.log(`issue-creation-guard: ผ่านครบ ${pass} ข้อ (must-catch ${MUST_CATCH_BASH.length + 2} · must-pass ${MUST_PASS_BASH.length + 3} · แตะดิสก์จริง 6)`);
+console.log(`issue-creation-guard: ผ่านครบ ${pass} ข้อ (must-catch ${MUST_CATCH_BASH.length + 4} · must-pass ${MUST_PASS_BASH.length + 5} · แตะดิสก์จริง 6)`);

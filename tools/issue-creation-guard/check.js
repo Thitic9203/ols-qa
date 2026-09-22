@@ -47,8 +47,13 @@ const BASH_PATTERNS = [
 ];
 
 /** prompt ของ subagent ที่สั่งให้ "เปิด/สร้าง" bug · issue · ticket · improvement */
-const AGENT_VERB = /(เปิด|สร้าง|ยื่น|แจ้ง|ลง|open|create|file|raise|submit)/i;
+const AGENT_VERB = /(เปิด|สร้าง|ยื่น|แจ้ง|open|create|file|raise|submit)/i;
 const AGENT_OBJECT = /(บั๊ก|บัค|ticket|issue|bug|defect|improvement)/i;
+// "ลง" (post/file to a tracker — ต้นเหตุจริงคือ #0054 "...ลง Jira") ตัดออกจาก AGENT_VERB
+// เพราะเป็นพยางค์เดี่ยวไม่มีขอบเขตคำในภาษาไทย จับซ้อนเข้าไปใน "หลง"/"ลงมือ"/"ลงไฟล์" ที่ไม่เกี่ยว
+// (post-mortem 2026-09-22: บล็อก Agent dispatch 2 ครั้งผิดจากคำเหล่านี้) — ต้องให้ "ลง" อยู่ติดกับ
+// ปลายทางจริง (Jira/ticket/issue/บั๊ก) แทน ไม่ใช่แค่ปรากฏที่ไหนก็ได้ในบรรทัดเดียวกับ AGENT_OBJECT
+const POST_TO_TRACKER_VERB = /ลง\s*(Jira|jira|บั๊ก|บัค|ticket|issue|bug|defect|improvement)/i;
 
 function readState() {
   try {
@@ -128,9 +133,11 @@ function inspectAgentPrompt(text) {
   for (const raw of text.split(/\n+/)) {
     const line = raw.trim();
     if (!AGENT_OBJECT.test(line)) continue;
-    if (!AGENT_VERB.test(line)) continue;
+    if (!AGENT_VERB.test(line) && !POST_TO_TRACKER_VERB.test(line)) continue;
     // บรรทัดที่เป็น "ข้อห้าม" ไม่ใช่คำสั่งให้เปิด
-    if (/(ห้าม|อย่า|ไม่ต้อง|never|do not|don't|must not|without)/i.test(line)) continue;
+    // "อย่า(?!ง)" กันไม่ให้จับคำว่า "อย่าง" (แปลว่า kind/way ไม่ใช่คำห้าม) ที่พบระหว่างเขียนเทสต์
+    // ของบั๊ก "ลง" ข้างบนพอดี (2026-09-22) — เป็นบั๊กคนละตัวแต่คลาสเดียวกัน (bare Thai substring)
+    if (/(ห้าม|อย่า(?!ง)|ไม่ต้อง|never|do not|don't|must not|without)/i.test(line)) continue;
     return { hit: true, why: line.slice(0, 120) };
   }
   return { hit: false };
