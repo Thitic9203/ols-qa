@@ -51,8 +51,9 @@ fi
 OUT="$(printf '%s' "$INPUT" | node "$CHECK" --gate 2>&1)"
 RC=$?
 case "$RC" in
-  0|2) [ -n "$OUT" ] && printf '%s\n' "$OUT"; exit "$RC" ;;
-  *)   shout_if_armed
-       echo "    (ตัวตรวจจบด้วยรหัส $RC ซึ่งไม่ใช่คำตัดสิน — ถือว่ารันไม่ได้)"
-       exit 0 ;;
+  0) [ -n "$OUT" ] && printf '%s\n' "$OUT"; exit 0 ;;
+  2) printf '%s\n' "$OUT" >&2; exit 2 ;;   # a block is relayed to the agent only via stderr (measured 2026-09-21)
+  *) shout_if_armed
+     echo "    (ตัวตรวจจบด้วยรหัส $RC ซึ่งไม่ใช่คำตัดสิน — ถือว่ารันไม่ได้)"
+     exit 0 ;;
 esac

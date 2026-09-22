@@ -24,13 +24,16 @@ if ! command -v node >/dev/null 2>&1 || [ ! -f "$CHECK" ]; then
 fi
 
 # rc "ตั้งใจ" มีแค่ 0 (ผ่าน) กับ 2 (บล็อก) — อย่างอื่นคือ node เองพังกลางทาง ไม่ใช่คำตัดสิน
-# printf ไปที่ stdout เสมอ (ไม่ใช่ stderr) — ทำตามแพตเทิร์นเดียวกับ investigation-gate.sh เป๊ะ
-# ซึ่งพิสูจน์แล้วว่าใช้งานได้จริงใน repo นี้
+# RC=2 ต้องส่งไป stderr เท่านั้น — Claude Code harness อ่านเหตุผลบล็อกจาก stderr
+# (2026-09-22: investigation-gate.sh/issue-creation-guard.sh/issue-creation-stop.sh เคยส่งไป
+# stdout เหมือนไฟล์นี้มาก่อน ทำให้ harness รายงาน "No stderr output" แทนข้อความจริง — แก้
+# ทั้งคลาสพร้อมกันให้ตรงกับ pattern ที่ถูกต้องอยู่แล้วใน discord-notify-guard.sh/ask-guard.sh)
 OUT="$(printf '%s' "$INPUT" | node "$CHECK" --gate 2>&1)"
 RC=$?
 case "$RC" in
-  0|2) [ -n "$OUT" ] && printf '%s\n' "$OUT"; exit "$RC" ;;
-  *)   echo "=== ⚠️  jira-ticket-guard: check.js จบด้วยรหัส $RC (ไม่ใช่คำตัดสิน) — ปล่อยผ่าน ==="
-       [ -n "$OUT" ] && printf '%s\n' "$OUT"
-       exit 0 ;;
+  0) [ -n "$OUT" ] && printf '%s\n' "$OUT"; exit 0 ;;
+  2) printf '%s\n' "$OUT" >&2; exit 2 ;;
+  *) echo "=== ⚠️  jira-ticket-guard: check.js จบด้วยรหัส $RC (ไม่ใช่คำตัดสิน) — ปล่อยผ่าน ==="
+     [ -n "$OUT" ] && printf '%s\n' "$OUT"
+     exit 0 ;;
 esac

@@ -15,8 +15,9 @@ fi
 OUT="$(printf '%s' "$INPUT" | node "$CHECK" --stop-audit 2>&1)"
 RC=$?
 case "$RC" in
-  0|2) [ -n "$OUT" ] && printf '%s\n' "$OUT"; exit "$RC" ;;
-  *)   echo "=== ⚠️  issue-creation-guard: check.js จบด้วยรหัส $RC (ไม่ใช่คำตัดสิน) — ปล่อยผ่าน ==="
-       [ -n "$OUT" ] && printf '%s\n' "$OUT"
-       exit 0 ;;
+  0) [ -n "$OUT" ] && printf '%s\n' "$OUT"; exit 0 ;;
+  2) printf '%s\n' "$OUT" >&2; exit 2 ;;   # a block is relayed to the agent only via stderr (measured 2026-09-21)
+  *) echo "=== ⚠️  issue-creation-guard: check.js จบด้วยรหัส $RC (ไม่ใช่คำตัดสิน) — ปล่อยผ่าน ==="
+     [ -n "$OUT" ] && printf '%s\n' "$OUT"
+     exit 0 ;;
 esac
