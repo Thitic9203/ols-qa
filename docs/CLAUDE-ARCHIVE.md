@@ -3251,6 +3251,19 @@ node/browser ลูกที่เพิ่งกรอกอีเมลเส�
 
 Full report: [`docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md`](docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md)
 
+### Report #0108 — wrong premise: told agent INTEG_SHEET_ID is not in frozen Lot1/Lot2
+
+**Surface:** OLS QA workspace
+
+บอก subagent ว่าชีท `INTEG_SHEET_ID` "ไม่ได้อยู่ใน Lot1/Lot2 frozen list" แล้วสั่งให้แก้ Expected Result
+ของ Authen_TC_005 ทั้งที่ชีทนั้นคือ "Integration Test - 03 OLS (Lot 1 & 2 ALL)" ซึ่ง freeze ตั้งแต่ 2026-08-11
+พร้อม 5-layer protection ครบ agent ปฏิเสธเขียนเองเพราะ protectedRange จึงไม่เสียหาย สาเหตุรากคือตีความจาก
+ชื่อตัวแปรว่า "เป็นชีทรวม ไม่ใช่ชีทของ Lot" โดยไม่เปิด `ols-secrets.md` หรือ `frozen_sheets.json` ตรวจค่าจริง
+
+**กฎที่เพิ่มจากเหตุนี้:** ก่อน dispatch agent แก้ชีทใดๆ ต้องเทียบ sheet ID กับ `frozen_sheets.json` ก่อนเสมอ
+
+Full report: [`docs/post-mortem/20260922-post-mortem-report-0108-wrong-premise-integ-sheet-not-in-lot12.md`](docs/post-mortem/20260922-post-mortem-report-0108-wrong-premise-integ-sheet-not-in-lot12.md)
+
 ### Report #0107 — claimed tc9021 owns media without checking the API
 
 **Surface:** OLS QA workspace / training69
