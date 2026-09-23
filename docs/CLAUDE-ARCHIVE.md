@@ -3251,6 +3251,36 @@ node/browser ลูกที่เพิ่งกรอกอีเมลเส�
 
 Full report: [`docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md`](docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md)
 
+### Report #0117 — ผิดซ้ำจาก #0097/#0009: รัน A/B ใน zsh ตัวแปรไม่ถูกแยก ทั้ง 2 รันกลายเป็นค่าเริ่มต้นเดียวกัน
+
+2026-09-23 · Low · subagent สืบ fps 12 รันผู้สมัคร A (fps 25) / B (fps 12 + เลื่อน) ด้วย loop ใน zsh — zsh ไม่แยกคำของ `$var` ค่าทั้งก้อนไปอยู่ที่ `TAG` · `FPS`/`SCROLL` ว่าง → `cand_test.js:8` ใช้ `FPS || 12` และเลื่อนปิด ทั้ง 2 รัน `outFps` 12 (10 / 9 moving frames) · agent จับได้เองจาก manifest 17 วินาทีหลังรันที่ 2 ย้ายไป `invalid_zsh_split/` รันใหม่ด้วยค่าชัดเจน (A `outFps` 25 · B 12) · เธรดหลัก verify ซ้ำ B/B2/D ผ่าน A/F ตก
+
+**กฎที่เพิ่ม:** การทดลองเปรียบเทียบต้องพิสูจน์จาก manifest ว่าแต่ละรันใช้ค่าที่ตั้งใจก่อนเทียบผล · สคริปต์ทดลองห้ามมีค่าเริ่มต้นของตัวแปรที่ถูกเปรียบเทียบ · shell ของเครื่องคือ zsh ห้ามพึ่งการแยกคำของ `$var`
+
+**มาตรการ (ชั้นใหม่ ค้าง ต้องถามเจ้าของงาน):** `startRecording(…, { expect: { outFps } })` ใน `qa_recorder.js` ล้มก่อนอัดเมื่อค่าจริงไม่ตรงที่ตั้งใจ + เขียน `requested` ลง `capture.json` + เทสต์คู่ · ตัวตรวจ manifest ก่อนเทียบผล A/B
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0117-zsh-loop-unsplit-var-made-ab-runs-identical.md`](docs/post-mortem/20260923-post-mortem-report-0117-zsh-loop-unsplit-var-made-ab-runs-identical.md)
+
+### Report #0116 — ผิดซ้ำจาก #0051/#0093: อ่านผลว่างของ `find` ที่ `rtk` เขียนใหม่เป็น "ไฟล์ไม่มี"
+
+2026-09-23 · Medium · เธรดหลักบอกเจ้าของงานและเขียนใน prompt ของ agent ว่า `gen_board_data.py` / `add_track_tiles.py` "ไม่พบบนดิสก์ (0 ไฟล์)" ทั้งที่อยู่ที่ `out/lanes-2026-09-19/board/` (`stat`: 24354 / 1814 ไบต์) · ทำซ้ำได้: `find … -not …` ถูกเขียนเป็น `rtk find` ที่ปฏิเสธ predicate แบบผสม — ต่อ `2>/dev/null` แล้ว stdout ว่าง rc=1 · เซสชันเขียนรายงานเจออีก 2 ครั้ง (`rtk grep` กับ `\|` ตอบ 0 ขณะ `command grep -E` เจอ 5 · `ls | awk` ไม่มีเอาต์พุต) จับได้ก่อนพูด
+
+**กฎที่เพิ่ม:** ผลว่างของคำสั่งที่วิ่งผ่าน hook `rtk` = "ตรวจไม่ได้" จนกว่าจะรันซ้ำด้วยคำสั่งที่ไม่ผ่านตัวกรอง (`command find` · `/usr/bin/find` · `rtk proxy` · `stat`) พร้อมตัวควบคุมที่รู้คำตอบ
+
+**มาตรการ (ชั้นใหม่ ค้าง ต้องถามเจ้าของงาน):** สคริปต์ค้นแบบมีตัวควบคุมที่เรียก `/usr/bin/find` ตรง คืน `UNVERIFIABLE` (รหัส 3) เมื่อไม่พบไฟล์ควบคุม + เทสต์คู่ 3 ทาง · ตั้งค่า `rtk` ไม่เขียน `find`/`ls`/`grep` ใหม่ หรือให้ล้มดัง (global config)
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0116-rtk-rewritten-find-read-as-file-absent.md`](docs/post-mortem/20260923-post-mortem-report-0116-rtk-rewritten-find-read-as-file-absent.md)
+
+### Report #0115 — พลิกคลิปเป็นผ่านโดยอ้าง ER จากภาพนิ่งนอกคลิป + `page.evaluate`
+
+2026-09-23 · High · 22/Sep เลนอัดบน training69 เขียนผล "ผ่าน" ให้ `LearningPath_TC_002` (อ้าง `page.evaluate … = true` + `04_toast_error.png`) และ `LiveStream_TC_008` ×2 (อ้างภาพ before_like/after_like/after_reload) — ตรวจ MP4 ทีละเฟรม 23/Sep: คลิป LP 77 เฟรมไม่มีฟอร์ม หน้ายืนยัน หรือข้อความปฏิเสธ · คลิป LiveStream ทั้ง 2 บัญชีเป็นหน้า 404 ไม่มีหน้าไลฟ์/ปุ่มถูกใจ · ต้นเหตุ: ผ่านเข้าที่เก็บได้โดยไม่ต้องอ้างเฟรมในคลิป (`put_verdict.py` ไม่อ่านหมายเหตุ · `gate`/`verify_video.py` ไม่ดูเนื้อหา) · พลิกกลับแล้ว · ชีท `(ALL)`/Drive: ไม่พบร่องรอยการเขียนในไฟล์ท้องถิ่น ยังไม่ได้เปิดชีทยืนยัน
+
+**กฎที่เพิ่ม:** "ผ่าน" ต้องชี้เวลาในคลิปของทุกข้อ ER · ภาพนิ่ง ผล `page.evaluate` assert หรือ log ที่ไม่อยู่ในคลิป ใช้ประกอบการสืบได้ แต่ไม่ใช่หลักฐานตัดสิน
+
+**มาตรการ (ค้าง ต้องถามเจ้าของงาน):** `put_verdict.py` บังคับ `--er-frames` ต่อ ER ทุกข้อ + ปฏิเสธหมายเหตุที่อ้าง `.png`/`page.evaluate` โดยไม่มีเวลาในคลิป · OCR เฟรม MP4 หาข้อความ ER/หน้า 404 ในขั้นตรวจหลังอัด · ตัวอัดทำเครื่องหมายภาพนิ่งว่า `evidence:false`
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0115-passed-verdict-cited-stills-outside-the-clip.md`](docs/post-mortem/20260923-post-mortem-report-0115-passed-verdict-cited-stills-outside-the-clip.md)
+
 ### Report #0114 — ผิดซ้ำจาก #0028: เสนอ "จุดเคอร์เซอร์ + `--strict-motion`" พร้อมกันโดยไม่ไล่ว่าสองข้อขัดกัน
 
 2026-09-23 · Medium · หลัง #0113 เธรดหลักเสนอเจ้าของงาน 3 ข้อพร้อมกัน (เคอร์เซอร์ที่วาดลงหน้า · ตรวจ 4 คลิปทีละเฟรม · `--strict-motion` เป็นค่าเริ่มต้น) เจ้าของงานตอบ "ตามแนะนำ" 11.36 — แต่ผล A/B ของ subagent เองบอกว่าแบบเคอร์เซอร์ผ่าน "with warning 'too little motion (10)'" ซึ่ง strict เปลี่ยนเป็นตก · take 3 บน training69 ตก "too little motion (13 moving frames)" ค้างซ้ำ 0.0% + บันทึกเป้าหมาย st9020 ซ้ำ 1 ครั้ง (ค่าเดิม) · วัดแล้ว: เคอร์เซอร์ diff ≈ 0.02 เกณฑ์เคลื่อนไหว 0.35 (`verify_video.py:186`) · ครบ 3 ทางแก้ → คุยสถาปัตยกรรม → เจ้าของงานเลือกทดสอบ fps 12 บนหน้าในเครื่องก่อน
