@@ -3251,6 +3251,16 @@ node/browser ลูกที่เพิ่งกรอกอีเมลเส�
 
 Full report: [`docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md`](docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md)
 
+### Report #0114 — ผิดซ้ำจาก #0028: เสนอ "จุดเคอร์เซอร์ + `--strict-motion`" พร้อมกันโดยไม่ไล่ว่าสองข้อขัดกัน
+
+2026-09-23 · Medium · หลัง #0113 เธรดหลักเสนอเจ้าของงาน 3 ข้อพร้อมกัน (เคอร์เซอร์ที่วาดลงหน้า · ตรวจ 4 คลิปทีละเฟรม · `--strict-motion` เป็นค่าเริ่มต้น) เจ้าของงานตอบ "ตามแนะนำ" 11.36 — แต่ผล A/B ของ subagent เองบอกว่าแบบเคอร์เซอร์ผ่าน "with warning 'too little motion (10)'" ซึ่ง strict เปลี่ยนเป็นตก · take 3 บน training69 ตก "too little motion (13 moving frames)" ค้างซ้ำ 0.0% + บันทึกเป้าหมาย st9020 ซ้ำ 1 ครั้ง (ค่าเดิม) · วัดแล้ว: เคอร์เซอร์ diff ≈ 0.02 เกณฑ์เคลื่อนไหว 0.35 (`verify_video.py:186`) · ครบ 3 ทางแก้ → คุยสถาปัตยกรรม → เจ้าของงานเลือกทดสอบ fps 12 บนหน้าในเครื่องก่อน
+
+**กฎที่เพิ่ม:** ชุดข้อเสนอต้องไล่ความขัดระหว่างข้อ และเอากฎของแต่ละข้อไปตัดสินหลักฐานของข้ออื่นก่อนเสนอ · ข้อที่ยังไม่ได้ทดสอบในการตั้งค่าเดียวกันเขียนเป็น "สมมติฐาน" · ผลของการตั้งค่าหนึ่งไม่ใช่หลักฐานของอีกการตั้งค่าหนึ่ง
+
+**มาตรการ (ชั้นใหม่ ไม่ใช่คำเตือนซ้ำ):** ก่อนอัดบน env จริง รันชุดค่าจริง (fps · เคอร์เซอร์ · strict) ผ่าน `verify_video.py` บนหน้าทดสอบในเครื่องก่อน — กำลังทำโดยเธรดหลัก · ทำเป็นด่านในตัวอัด — ค้าง ต้องถามเจ้าของงาน
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0114-recommended-cursor-plus-strict-motion-without-cross-check.md`](docs/post-mortem/20260923-post-mortem-report-0114-recommended-cursor-plus-strict-motion-without-cross-check.md)
+
 ### Report #0113 — ผิดซ้ำจาก #0012/#0010/#0006: พลิกคลิปเป็นผ่านจาก "verify ผ่าน" ที่จริงเป็นคำเตือนว่ายังไม่ได้วัดการกระตุก
 
 2026-09-23 · High · 22/Sep พลิกคลิป Integration `Course_TC_012` · `LearningPath_TC_002` · `LiveStream_TC_008` (×2) เป็นผ่าน และ 23/Sep เขียนลงแผนงาน (ols-qa-evidence `cddcda8`, `ec1ca7a`) ว่า "verify+gate ผ่าน" จาก `verified.passed=true` — แต่ `verify_video.py` ผ่านแค่คำเตือน "too little motion to judge stutter" (11 / 20 เฟรมเคลื่อนไหว < เกณฑ์ 25) เพราะ `qa_recorder.js:474` ไม่ใส่ `--strict-motion` · วัดซ้ำค้างซ้ำ 35–60% (เกณฑ์ 5%) · กลไก: screencast fps 3 ส่งเฟรมเฉพาะตอนวาดใหม่ + headless ไม่วาดเคอร์เซอร์ (A/B เคอร์เซอร์ที่วาดลงหน้า = 0.0% PASS)
