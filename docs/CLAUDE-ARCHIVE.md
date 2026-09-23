@@ -3411,6 +3411,24 @@ Full report: [`docs/post-mortem/20260922-post-mortem-report-0108-wrong-premise-i
 
 Full report: [`docs/post-mortem/20260922-post-mortem-report-0107-claimed-tc9021-owns-media-without-checking-api.md`](docs/post-mortem/20260922-post-mortem-report-0107-claimed-tc9021-owns-media-without-checking-api.md)
 
+### Report #0123 — สคริปต์อัดคลิปเขียนโปรไฟล์ tc9021 จริงโดยไม่มีบรรทัด WRITES_LEDGER เลย
+
+**Surface:** OLS QA workspace / training69 VDO recording lanes (`ols-qa-testing-bot` out-of-repo)
+
+เลน T2 รันสคริปต์ `f003_tc9021_t69.js` เขียนเป้าหมาย/เกรดของบัญชีทดสอบ `t69_tc9021_training` จริง (Feed_TC_003
+SETUP) โดยสคริปต์ไม่มีการเรียกฟังก์ชันบันทึก `WRITES_LEDGER.jsonl` เลยสักจุดเดียว ทั้งที่บรีฟบังคับว่าต้อง
+append บรรทัด intent ก่อนคลิกเขียนทุกครั้ง เธรดหลัก grep ชื่อเคสในไฟล์ ledger แล้วพบ 0 บรรทัดหลังเลนรายงานว่า
+เขียนสำเร็จ จับได้ภายใน ~9 นาที แก้ด้วยการเติมบรรทัด `late:true` ย้อนหลัง + เพิ่มฟังก์ชัน `ledger()` เรียกก่อน
+ทุกจุดเขียนใน `f003_tc9021_t69.js` (10 จุด) และ `f001_publish_vote_t69.js` (6 จุด) ยืนยันด้วย `node --check`
+ผ่านทั้งสองไฟล์ สาเหตุรากคือกฎ "ledger ก่อนทุกคลิกเขียน" เป็นข้อความในบรีฟเท่านั้น ไม่มีชั้นโค้ดใดบังคับ/ปฏิเสธ
+การรันถ้าไม่มี ledger call มาก่อน — สคริปต์อัดคลิปแต่ละเคสเป็นไฟล์เฉพาะกิจที่ไม่ได้สืบทอดจาก wrapper กลาง
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎใหม่ใน `CLAUDE.md` (กฎมีอยู่แล้ว) — ช่องว่างจริงคือไม่มีการบังคับระดับโค้ดใน
+`ols-qa-testing-bot/capture/` ซึ่งเป็นเครื่องมือ off-repo ที่ agent ห้ามเขียนใหม่เอง ทิ้งเป็น Action Item ให้
+เจ้าของงานตัดสินใจว่าจะเพิ่มโมดูลกลาง (เช่น `ledgeredWrite()`) หรือไม่
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0123-recorder-script-wrote-profile-with-no-ledger-call.md`](docs/post-mortem/20260923-post-mortem-report-0123-recorder-script-wrote-profile-with-no-ledger-call.md)
+
 ## 🔴 ข้อยกเว้น: เขียนข้อมูลบน production ได้ — เฉพาะรอบ smoke test 2026-09 เท่านั้น
 
 **เจ้าของงานอนุมัติเมื่อ 2026-09-03 ให้ สร้าง · แก้ไข · ลบ ข้อมูลบน production ได้ ตามแผน
