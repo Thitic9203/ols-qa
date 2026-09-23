@@ -3251,6 +3251,16 @@ node/browser ลูกที่เพิ่งกรอกอีเมลเส�
 
 Full report: [`docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md`](docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md)
 
+### Report #0121 — ผิดซ้ำจาก #0095: กติกากลางเลนตก proxy preload ทำให้ `session_verify` 3 เลนได้ `ENOTFOUND`
+
+2026-09-23 · Low · เธรดหลักเขียนรายการตัวแปรการรัน node บน training69 ใน `LANE_BRIEF.md` ด้วยมือ ตก `NODE_OPTIONS="--require …/pw_proxy_preload.js"` ทั้งที่เพิ่งรันคำสั่งที่ถูกเอง · เลน U/F/E ได้ `getaddrinfo ENOTFOUND` ที่ `session_verify.js:112` (07:56:01Z–07:56:24Z) · heartbeat จับได้ เติม UPDATE #2 ทุกเลนผ่านภายใน 07:56:56Z · ไม่มีข้ออ้างผิด ไม่มีการเขียน env
+
+**กฎที่เพิ่ม:** node บน training69 ที่ส่งให้ agent ต้องอ้างคำสั่งเดียว `HANDS_OFF_EXCEPTION="<reason>" bash capture/t69_env.sh <command>` (bot repo) ห้ามเขียนรายการตัวแปรใหม่ด้วยมือ — บังคับด้วยเช็ค `PROXY_PRELOAD_MISSING` (BLOCK) ใน `tools/agent-dispatch-guard/dispatch_rules.js`
+
+**มาตรการ:** `capture/t69_env.sh` ปฏิเสธเมื่อไม่มีเหตุผล / env อื่น / ไม่มี preload / ไม่มี CA / proxy ไม่ฟัง (22/22) ทำแล้ว · เช็คใน guard (30/30) ทำแล้ว · ให้ guard อ่านไฟล์ brief ที่ prompt อ้าง ค้าง ต้องถามเจ้าของงาน
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0121-lane-brief-omitted-proxy-preload-session-verify-enotfound.md`](docs/post-mortem/20260923-post-mortem-report-0121-lane-brief-omitted-proxy-preload-session-verify-enotfound.md)
+
 ### Report #0120 — ผิดซ้ำจาก #0105/#0104: อัด take ที่ load 15.51 เพราะ rehearsal ก่อนหน้าผ่าน
 
 2026-09-23 · Medium · เธรดหลักวัด `vm.loadavg` ได้ 15.51 แล้วยังอัด take จริงของ `Profile_TC_004` (training69) เพราะ rehearsal อ่านอย่างเดียวผ่านที่ 11.89 (rehearsal รอบก่อนหน้านั้นตก 5.7%) · take ตก 5.5% เฟรมค้าง maxGap 507 ms และบันทึกเป้าหมายค่าเดิมซ้ำครั้งที่ 4 · กฎ §3.6 "วัด load ก่อนอัด" ไม่มีตัวเลขและไม่มีด่านในโค้ด

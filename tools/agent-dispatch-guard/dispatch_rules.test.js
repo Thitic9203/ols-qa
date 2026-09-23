@@ -150,6 +150,56 @@ t('the rendered report always states how many checks ran', () => {
   }
 });
 
+// ------------------------------------------- proxy preload (#0121) rules layer
+
+// The incident's env line, placeholders only (repo is public).
+const PERSIST_LINE = 'Append one JSON line per case to out/round-9/laneE.jsonl before calling the next tool.';
+const INCIDENT_BRIEF = [
+  'Env: training69 only (OLS=<T69_OLS>). Every node run needs',
+  'PW_PROXY=http://127.0.0.1:18723 NODE_EXTRA_CA_CERTS=<CA_BUNDLE> HANDS_OFF_EXCEPTION="<reason>" HANDS_OFF_EXCEPTION_TARGET=$OLS.',
+  'Verify with capture/session_verify.js (same env as above).',
+  PERSIST_LINE,
+].join('\n');
+
+t('#0121 incident brief (session_verify + PW_PROXY, no preload) is BLOCKED', () => {
+  const r = rules.assessBrief(INCIDENT_BRIEF);
+  assert.strictEqual(r.ok, false, 'must block');
+  assert.ok(r.findings.some((f) => f.code === 'PROXY_PRELOAD_MISSING' && f.severity === rules.SEVERITY.BLOCK),
+    'expected PROXY_PRELOAD_MISSING BLOCK, got ' + r.findings.map((f) => f.code));
+  assert.ok(r.checks >= 4, 'the preload check must be counted');
+});
+
+t('#0121 same brief WITH NODE_OPTIONS --require pw_proxy_preload.js passes', () => {
+  const text = INCIDENT_BRIEF + '\nNODE_OPTIONS="--require <BOT>/out/round/pw_proxy_preload.js"';
+  const r = rules.assessBrief(text);
+  assert.ok(!r.findings.some((f) => f.code === 'PROXY_PRELOAD_MISSING'), 'must not flag: ' + rules.formatAssessment(r));
+  assert.strictEqual(r.ok, true);
+});
+
+t('#0121 same brief pointing at capture/t69_env.sh passes', () => {
+  const text = INCIDENT_BRIEF + '\nRun it as: HANDS_OFF_EXCEPTION="<reason>" bash capture/t69_env.sh node capture/session_verify.js <tags>';
+  const r = rules.assessBrief(text);
+  assert.ok(!r.findings.some((f) => f.code === 'PROXY_PRELOAD_MISSING'), 'must not flag: ' + rules.formatAssessment(r));
+});
+
+t('#0121 training69 + session_capture.js with no proxy words at all is BLOCKED', () => {
+  const text = 'Re-login tc9021 on training69 with capture/session_capture.js.\n' + PERSIST_LINE;
+  const r = rules.assessBrief(text);
+  assert.ok(r.findings.some((f) => f.code === 'PROXY_PRELOAD_MISSING'), 'expected a block: ' + rules.formatAssessment(r));
+});
+
+t('#0121 session_verify on pre-prod (no training69, no PW_PROXY) is not flagged', () => {
+  const text = 'Verify the 4 pre-prod sessions with capture/session_verify.js.\n' + PERSIST_LINE;
+  const r = rules.assessBrief(text);
+  assert.ok(!r.findings.some((f) => f.code === 'PROXY_PRELOAD_MISSING'), 'false positive: ' + rules.formatAssessment(r));
+});
+
+t('#0121 training69 recording brief without session tools is not flagged', () => {
+  const text = 'Record Profile_TC_004 on training69 with capture/qa_recorder.js, PW_PROXY=http://127.0.0.1:18723.\n' + PERSIST_LINE;
+  const r = rules.assessBrief(text);
+  assert.ok(!r.findings.some((f) => f.code === 'PROXY_PRELOAD_MISSING'), 'false positive: ' + rules.formatAssessment(r));
+});
+
 // ----------------------------------------------------------------- hook layer
 
 t('hook payload: a good brief exits 0', () => {
@@ -164,6 +214,13 @@ t('hook payload: a brief with no contract exits 2 and says why', () => {
   assert.strictEqual(r.code, 2, 'must refuse');
   assert.ok(/NO_PERSIST_CONTRACT/.test(r.err), 'must name the finding: ' + r.err);
   assert.ok(/fix:/.test(r.err), 'a refusal must state the fix');
+});
+
+t('hook payload: #0121 incident brief exits 2 naming PROXY_PRELOAD_MISSING', () => {
+  const payload = JSON.stringify({ tool_name: 'Agent', tool_input: { prompt: INCIDENT_BRIEF } });
+  const r = runCheck(payload);
+  assert.strictEqual(r.code, 2, 'must refuse');
+  assert.ok(/PROXY_PRELOAD_MISSING/.test(r.err), 'must name the finding: ' + r.err);
 });
 
 t('hook payload: a different tool is left alone', () => {

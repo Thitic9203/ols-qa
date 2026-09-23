@@ -107,6 +107,19 @@ const UNBOUNDED_RE = /\b(?:all|every|entire|whole|each of the)\b[^.\n]{0,40}\b(?
 const BOUND_RE = /\b\d{1,5}\s*(?:files?|transcripts?|rows?|records?|cases?|clips?|items?|ไฟล์|เคส|แถว|รายการ)\b|\bbatch(?:es)? of \d+|\bat most \d+|\bno more than \d+|ไม่เกิน\s*\d+|ครั้งละ\s*\d+/i;
 
 /**
+ * Proxy preload (#0121). On training69 the session tools build a Playwright API
+ * context with no proxy option, so they only reach the host when node starts
+ * with `NODE_OPTIONS=--require …/pw_proxy_preload.js` (the preload is what reads
+ * PW_PROXY). A brief that hand-lists PW_PROXY without the preload sends every
+ * lane into `getaddrinfo ENOTFOUND`. Scope is deliberately narrow — only a brief
+ * that runs the session tools AND is on the proxied env — so pre-prod briefs and
+ * recorder briefs are not touched.
+ */
+const SESSION_TOOL_RE = /\bsession_(?:verify|capture)(?:\.js)?\b/i;
+const PROXIED_ENV_RE = /\bPW_PROXY\b|training\s*69|\bt69\b/i;
+const PRELOAD_RE = /pw_proxy_preload(?:\.js)?|\bt69_env\.sh\b/i;
+
+/**
  * Does the brief spell out the persistence contract?
  *
  * Satisfied by the canonical marker, or by naming an output file AND a write
@@ -185,6 +198,24 @@ function assessBrief(text) {
         'the brief asks the agent to work through everything with no stated bound — ' +
         'per-request stall hazard roughly triples past ~300k context, on both sonnet-5 and opus-5',
       fix: 'state how many items this agent handles, and split the rest into another agent',
+    });
+  }
+
+  // Check 4 — proxy preload for the session tools on training69 (#0121).
+  // Blocks: the failure is certain (ENOTFOUND on every lane), and the fix is
+  // one command that the brief can name instead of an env list.
+  checks += 1;
+  if (SESSION_TOOL_RE.test(text) && PROXIED_ENV_RE.test(text) && !PRELOAD_RE.test(text)) {
+    findings.push({
+      code: 'PROXY_PRELOAD_MISSING',
+      severity: SEVERITY.BLOCK,
+      message:
+        'the brief runs session_verify/session_capture on the proxied env (training69 / PW_PROXY) ' +
+        'but never gives the proxy preload — measured 2026-09-23: 3 of 3 lanes got getaddrinfo ENOTFOUND (#0121)',
+      fix:
+        'name the one wrapper instead of an env list: ' +
+        'HANDS_OFF_EXCEPTION="<reason>" bash capture/t69_env.sh node capture/session_verify.js <tags> ' +
+        '(or add NODE_OPTIONS="--require <bot>/capture/pw_proxy_preload.js")',
     });
   }
 

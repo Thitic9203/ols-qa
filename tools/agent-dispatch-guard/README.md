@@ -30,6 +30,7 @@ This directory is the mechanical layer that prose could not be.
 | `NO_PERSIST_CONTRACT` | **BLOCK** | the brief never says to write results to disk as it goes |
 | `SCREENSHOT_INTO_CONTEXT` | NOTE | screenshots requested with nothing said about keeping them out of context |
 | `UNBOUNDED_SCAN` | NOTE | "every file / all cases" with no stated bound |
+| `PROXY_PRELOAD_MISSING` | **BLOCK** | runs `session_verify`/`session_capture` on training69 / `PW_PROXY` but never names `pw_proxy_preload.js` or the `capture/t69_env.sh` wrapper (#0121) |
 
 Only the first blocks. The other two have legitimate uses, and a guard that
 over-blocks is a guard somebody switches off — which then takes the blocking
