@@ -3251,6 +3251,16 @@ node/browser ลูกที่เพิ่งกรอกอีเมลเส�
 
 Full report: [`docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md`](docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md)
 
+### Report #0113 — ผิดซ้ำจาก #0012/#0010/#0006: พลิกคลิปเป็นผ่านจาก "verify ผ่าน" ที่จริงเป็นคำเตือนว่ายังไม่ได้วัดการกระตุก
+
+2026-09-23 · High · 22/Sep พลิกคลิป Integration `Course_TC_012` · `LearningPath_TC_002` · `LiveStream_TC_008` (×2) เป็นผ่าน และ 23/Sep เขียนลงแผนงาน (ols-qa-evidence `cddcda8`, `ec1ca7a`) ว่า "verify+gate ผ่าน" จาก `verified.passed=true` — แต่ `verify_video.py` ผ่านแค่คำเตือน "too little motion to judge stutter" (11 / 20 เฟรมเคลื่อนไหว < เกณฑ์ 25) เพราะ `qa_recorder.js:474` ไม่ใส่ `--strict-motion` · วัดซ้ำค้างซ้ำ 35–60% (เกณฑ์ 5%) · กลไก: screencast fps 3 ส่งเฟรมเฉพาะตอนวาดใหม่ + headless ไม่วาดเคอร์เซอร์ (A/B เคอร์เซอร์ที่วาดลงหน้า = 0.0% PASS)
+
+**กฎที่เพิ่ม:** ผลของด่านที่บอกเองว่ายังไม่ได้พิสูจน์ (too little / skipped / 0 measured) = "ตรวจไม่ได้" ไม่ใช่ "ผ่าน" · ห้ามพลิก verdict หรือเขียน "verify ผ่าน" จากธงบูลีนโดยไม่อ่านจำนวนที่วัด
+
+**มาตรการ (ชั้นใหม่ที่ตัวอัด):** `--strict-motion` เป็นค่าเริ่มต้นใน `qa_recorder.js` + เทสต์คู่ · จุดเคอร์เซอร์ที่วาดลงหน้าในสคริปต์อัด · ตรวจ 4 คลิปทีละเฟรม · แก้ถ้อยคำในแผนงาน — กำลังทำโดยเธรดหลัก
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0113-clips-passed-on-too-little-motion-warning.md`](docs/post-mortem/20260923-post-mortem-report-0113-clips-passed-on-too-little-motion-warning.md)
+
 ### Report #0112 — Stop hook บังคับเรียกสกิลที่ไม่มีในเครื่อง ทางออกเดียวคือธงที่ยืนยันสิ่งที่ไม่จริง
 
 2026-09-23 · Medium · Stop hook (`investigation-gate.sh`) บังคับให้เรียก `superpowers:systematic-debugging` ก่อนจบเทิร์น แต่สกิลไม่ได้ติดตั้งในเครื่องนี้ ยืนยัน 3 ทาง (Skill tool ตอบ `Unknown skill` · `find ~/.claude -type d -name '*systematic-debugging*'` ไม่พบ · `SearchSkills` ผลว่าง) · `tools/investigation-guard/check.js:300-306` มีทางออกช่องเดียวคือ `--not-an-investigation` ซึ่งชื่อธงประกาศว่างานไม่ใช่การตรวจสอบ ทั้งที่เป็น · ต้องใช้ธงนั้น 5 ครั้งในเซสชันเดียว โดยเขียนเหตุผลจริงในช่องข้อความและบอกเจ้าของงานทุกครั้ง · ไฟล์สถานะของ 5 เทิร์นจึงบันทึกสิ่งที่ไม่ตรงความจริง
