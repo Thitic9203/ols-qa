@@ -3269,6 +3269,8 @@ Full report: [`docs/post-mortem/20260923-post-mortem-report-0117-zsh-loop-unspli
 
 **มาตรการ (ชั้นใหม่ ค้าง ต้องถามเจ้าของงาน):** สคริปต์ค้นแบบมีตัวควบคุมที่เรียก `/usr/bin/find` ตรง คืน `UNVERIFIABLE` (รหัส 3) เมื่อไม่พบไฟล์ควบคุม + เทสต์คู่ 3 ทาง · ตั้งค่า `rtk` ไม่เขียน `find`/`ls`/`grep` ใหม่ หรือให้ล้มดัง (global config)
 
+**มาตรการที่ลงแล้ว (เจ้าของงานเคาะ 23/Sep):** ค้นไฟล์เพื่อพูดว่า "ไม่มี" ใช้ `scripts/find-files.sh --control <ไฟล์ที่รู้ว่ามี> <root> -- <predicates>` — ไม่พบตัวควบคุม = `UNVERIFIABLE` รหัส 2 (ตามที่เจ้าของงานกำหนด แทนรหัส 3 ในร่าง) · เทสต์ `tools/find-files/find_files.test.js` · config `rtk` ยกเว้น `find`/`ls`/`grep` จาก hook แล้ว (บนเครื่องเจ้าของงาน ไม่อยู่ใน repo)
+
 Full report: [`docs/post-mortem/20260923-post-mortem-report-0116-rtk-rewritten-find-read-as-file-absent.md`](docs/post-mortem/20260923-post-mortem-report-0116-rtk-rewritten-find-read-as-file-absent.md)
 
 ### Report #0115 — พลิกคลิปเป็นผ่านโดยอ้าง ER จากภาพนิ่งนอกคลิป + `page.evaluate`
