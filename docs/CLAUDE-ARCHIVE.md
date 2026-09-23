@@ -3429,6 +3429,120 @@ append บรรทัด intent ก่อนคลิกเขียนทุ�
 
 Full report: [`docs/post-mortem/20260923-post-mortem-report-0123-recorder-script-wrote-profile-with-no-ledger-call.md`](docs/post-mortem/20260923-post-mortem-report-0123-recorder-script-wrote-profile-with-no-ledger-call.md)
 
+### Report #0124 — ผิดซ้ำจาก #0118: รายชื่อไฟล์ในสตริงเดียว zsh ไม่แยกคำ prettier ไม่ได้ format อะไรเลย
+
+**Surface:** OLS QA workspace / คำสั่งเชลล์ zsh ของเธรดหลักระหว่างแก้ `ols-qa-e2e`
+
+เธรดหลักเก็บรายชื่อไฟล์ 8 ไฟล์ใน `F="a b c"` แล้วสั่ง `npx prettier --write $F` ใน zsh ซึ่งไม่แยกคำของตัวแปร
+prettier จึงได้อาร์กิวเมนต์เดียว ตอบ `No files matching the pattern` ไม่ได้ format ไฟล์ใด จับได้จากบรรทัด error ก่อนสรุปผล
+แก้เป็น array `F=(…)` + `"${F[@]}"` ผ่านครบ 8 ไฟล์ สาเหตุรากคือ `tools/zsh-split-guard/` ของ #0118 ยังไม่ได้ผูกเป็น hook
+จึงไม่อยู่ในเส้นทางบังคับของคำสั่งทุกคำสั่ง
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎข้อความใหม่ (กฎ array มีตั้งแต่ #0117) — เสนอผูก zsh-split-guard เป็น PreToolUse hook ที่ปฏิเสธคำสั่ง (ยังไม่ได้ทำ ต้องขออนุมัติเจ้าของงาน)
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0124-zsh-unsplit-file-list-prettier-formatted-nothing.md`](docs/post-mortem/20260923-post-mortem-report-0124-zsh-unsplit-file-list-prettier-formatted-nothing.md)
+
+### Report #0125 — ผิดซ้ำจาก #0098: `--grep` ไม่กรอง project setup ที่เป็น dependency จึง mint session ด้วยรหัสผ่านจริง
+
+**Surface:** OLS QA workspace / ชุด e2e `ols-qa-e2e` บน OLS dev
+
+เธรดหลักสั่ง `--project=setup --project=learner --grep "auth learner…"` โดยคิดว่าจะไม่เกิดการล็อกอินด้วยรหัสผ่าน แต่ Playwright รัน
+project dependency ทั้งชุดโดยไม่สน `--grep` บัญชีครีเอเตอร์ tag C2 ที่ session หมดอายุจึงถูก mint ด้วยรหัสผ่านจริง 1 ครั้ง
+(ล้มเหลว `__name is not defined`) state ไม่ถูกเขียนทับ trace สแกนแล้ว 0 quarantined สาเหตุรากคือไม่มีด่านในโค้ดที่ปฏิเสธการ mint
+ด้วยรหัสผ่านเมื่อผู้รันเป็น agent (guard ของ #0098 ผูกแค่ env training) แก้ด้วย mint ใน child process + scrub trace บน branch
+
+**กฎที่เพิ่มจากเหตุนี้:** ยังไม่มีกฎที่เขียนลงไฟล์ — เสนอ `mintState` ปฏิเสธทุก env เว้นแต่ผู้รันเป็นคน และบังคับ `--list` ก่อนรันที่อ้างว่าไม่ล็อกอิน (ยังไม่ได้ทำ แตะอีก repo ต้องถามเจ้าของงาน)
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0125-setup-dependency-minted-session-by-password-despite-grep.md`](docs/post-mortem/20260923-post-mortem-report-0125-setup-dependency-minted-session-by-password-despite-grep.md)
+
+### Report #0126 — ผิดซ้ำจาก #0123: เลน R1/R2 อัดด้วย `qa_recorder.js` ทั้งที่เจ้าของงานสั่งใช้สกิล /screen-record
+
+**Surface:** OLS QA workspace / training69 VDO recording lanes R1, R2 (`ols-qa-testing-bot` out-of-repo)
+
+เจ้าของงานสั่ง (19.0x) ให้อัดด้วย `record.js` ของสกิล /screen-record และเธรดหลักใส่ในบรีฟแล้ว แต่สคริปต์เลน R1
+(`lp002_r1.js:18`) และ R2 (4 ไฟล์) ยัง require `capture/qa_recorder.js` R1 อัด 2 take ตก strict-motion 11.2% / 13.1%
+เธรดหลักจับได้หลังเลนรายงาน สั่งหยุดและเปลี่ยน (ต่อมา 20.0x เจ้าของงานเลือกกลับไปใช้ `qa_recorder.js` เอง)
+สาเหตุรากคือคำสั่งเลือกเครื่องมือไม่ได้ถูกแปลงเป็นค่าที่ด่านในเส้นทางรัน (REC.lock) ตรวจได้
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎข้อความใหม่ — เสนอ `RECORDER_POLICY` ของรอบ + `rec_lock.sh` ตรวจ require ของสคริปต์ + `put_verdict.py` ปฏิเสธ take ที่ตัวอัดไม่ตรง (ยังไม่ได้ทำ เครื่องมือ off-repo ต้องถามเจ้าของงาน)
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0126-recording-lanes-used-old-recorder-instead-of-ordered-skill.md`](docs/post-mortem/20260923-post-mortem-report-0126-recording-lanes-used-old-recorder-instead-of-ordered-skill.md)
+
+### Report #0127 — สร้างสื่อฉบับร่างบน training69 ด้วยชื่อมีร่องรอยเลนและคำอธิบาย placeholder
+
+**Surface:** OLS QA workspace / training69 VDO recording lanes T2, R2 (`ols-qa-testing-bot` out-of-repo)
+
+สคริปต์ fixture ของ Feed_TC_001 สร้างสื่อ ARTICLE บน training69 ชื่อ `…(laneT2 Feed_TC_001)` คำอธิบาย placeholder
+เนื้อหาขึ้นต้น "ทดสอบ" ขัด CLAUDE.md §11 สร้างสำเร็จ 201 ส่งตรวจ 400 ค้าง DRAFT เลน R2 พบใน ledger แล้วเธรดหลักสั่งลบ
+(204 · readback 404) ภายใน 10 นาที ไม่ถึงผู้ใช้ สาเหตุรากคือกฎเนื้อหาผูกกับเครื่องมือ ols-data-prep เมื่อสคริปต์เลนเขียนเอง
+ก็ไม่มีด่านตรวจคำต้องห้ามก่อน POST
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎข้อความใหม่ (§11 ครอบอยู่แล้ว) — เสนอฟังก์ชันเขียนกลางในสคริปต์เลนที่ปฏิเสธชื่อ/คำอธิบายที่มีร่องรอยเลน/เคส/QA/ทดสอบ และใช้ id แทนป้ายในชื่อ (ยังไม่ได้ทำ)
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0127-fixture-media-created-with-tool-trace-title-on-training69.md`](docs/post-mortem/20260923-post-mortem-report-0127-fixture-media-created-with-tool-trace-title-on-training69.md)
+
+### Report #0128 — ไลฟ์จริงบน training69 ค้าง 6.6 นาที เพราะ finally ปิดไลฟ์ด้วย sid ที่ยังเป็น null
+
+**Surface:** OLS QA workspace / training69 VDO recording lane R1 (`ols-qa-testing-bot` out-of-repo)
+
+สคริปต์ LiveStream_TC_014 รอบ 3 เปิดไลฟ์จริงบน training69 (ledger `live:true` แต่ `sid:null`) แล้วด่าน `goLive` throw ก่อนตั้ง sid
+ขั้น finally ที่ปิดไลฟ์ด้วย sid จึงไม่ทำงาน ไลฟ์ค้าง ACTIVE 6.6 นาที หน้าเว็บไม่มีทางกลับเข้าควบคุมจาก session ใหม่
+เธรดหลักปิดด้วย `POST /end` จาก session เจ้าของไลฟ์ 204 readback ENDED สาเหตุรากคือการคืนสภาพผูกกับสถานะภายในสคริปต์
+ไม่ใช่สถานะจริงของระบบ และไม่มี watchdog หลังสคริปต์จบ
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎข้อความใหม่ (§9 ครอบการคืนสภาพแล้ว) — เสนอ watchdog แยก process อ่านไลฟ์ ACTIVE หลังสคริปต์จบทุกแบบ + ตัวตรวจ ledger ที่เตือน N1 ไม่มีคู่ N3 (ยังไม่ได้ทำ)
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0128-live-left-active-because-cleanup-keyed-on-unset-sid.md`](docs/post-mortem/20260923-post-mortem-report-0128-live-left-active-because-cleanup-keyed-on-unset-sid.md)
+
+### Report #0129 — อนุมัติเปิดไลฟ์ 1 รอบ แต่เลน retry จนเปิดไลฟ์จริงบน training69 3 ครั้ง
+
+**Surface:** OLS QA workspace / training69 VDO recording lane R1 (`ols-qa-testing-bot` out-of-repo)
+
+เจ้าของงานอนุมัติเปิดไลฟ์ 1 รอบสำหรับ LiveStream_TC_014 เลน R1 retry สคริปต์ทั้งไฟล์หลัง take ล้มด้วยเหตุอื่น ไลฟ์จึงถูกเปิดจริง
+3 ครั้งตาม ledger เธรดหลักจับได้หลังเกิด ทุกไลฟ์ ENDED แล้ว สาเหตุรากคือการอนุมัติแบบนับจำนวนเก็บเป็นข้อความใน
+ROUND_DECISIONS ไม่มีรูปที่ด่านในโค้ดนับเทียบ ledger ได้ ภายหลังมี `countGuard()` ใน `ls014_t2.js` แต่นับเฉพาะบรรทัด result
+และครอบสคริปต์เดียว
+
+**กฎที่เพิ่มจากเหตุนี้:** ยังไม่มีกฎที่เขียนลงไฟล์ — เสนอ `APPROVED_WRITES.json` ของรอบ + โมดูลกลางนับ intent จาก ledger ก่อนเขียนย้อนไม่ได้ + กฎบรีฟ "ล้มหลังเขียนย้อนไม่ได้แล้ว = หยุดถาม ห้าม retry" (ยังไม่ได้ทำ)
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0129-lane-retried-live-beyond-one-approved-run.md`](docs/post-mortem/20260923-post-mortem-report-0129-lane-retried-live-beyond-one-approved-run.md)
+
+### Report #0130 — คลิปรอบแรกของการเขียนย้อนไม่ได้ (Profile_TC_011) ถูก take ถัดไปเขียนทับ
+
+**Surface:** OLS QA workspace / pre-prod VDO recording (lane W + main thread, `ols-qa-testing-bot` out-of-repo)
+
+take 1 ของ Profile_TC_011 ถ่ายตอนเพิ่มช่อง YouTube จริงบน pre-prod (ย้อนไม่ได้) และตกภาพค้าง 7.9% ในตอนนั้น take 2–5 ใช้ชื่อไฟล์
+เดียวกันจึงเขียนทับ พอมติ 20.3x ยกเว้นภาพค้าง คลิปนั้นจะผ่านได้แต่ไม่มีไฟล์เหลือ take 5 แสดงได้แค่ ER2/ER3 ต้องขออนุมัติ
+เพิ่มช่องใหม่ 1 ครั้ง สาเหตุรากคือตัวอัดตั้งชื่อคลิปจากชื่อเคสอย่างเดียวและยอมเขียนทับ ไม่มีการเก็บ take แบบเพิ่มอย่างเดียว
+
+**กฎที่เพิ่มจากเหตุนี้:** ยังไม่มีกฎที่เขียนลงไฟล์ — เสนอให้ตัวอัดตั้งชื่อ take+timestamp ปฏิเสธการเขียนทับ และคัดลอก take ที่มีการเขียนย้อนไม่ได้ไป `keep/` ทันทีไม่ว่าผ่านหรือตก (ยังไม่ได้ทำ)
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0130-irreversible-take-clip-overwritten-by-later-takes.md`](docs/post-mortem/20260923-post-mortem-report-0130-irreversible-take-clip-overwritten-by-later-takes.md)
+
+### Report #0131 — finally บันทึก session ของบัญชีผิดทับไฟล์ session ของบัญชีผู้เรียน
+
+**Surface:** OLS QA workspace / training69 VDO recording lane T69 (`ols-qa-testing-bot` out-of-repo)
+
+สคริปต์ Feed_TC_005 สลับบัญชีในหน้าเดียว ด่านพบว่าสลับไม่สำเร็จและ throw แต่ขั้น finally ยังเขียน storageState ของหน้าที่เป็นบัญชี
+ครีเอเตอร์ลงไฟล์ของบัญชีผู้เรียน ไม่มีการเขียนลงระบบ แต่เจ้าของงานต้องล็อกอินผู้เรียนใหม่ สาเหตุรากคือตัวบันทึก state เชื่อ tag
+ที่ส่งเข้ามาแทนการพิสูจน์ตัวตน ณ วินาทีที่เขียน แก้ด้วย `safeSave()` ที่อ่านผู้ใช้ก่อนและหลัง snapshot ปฏิเสธถ้าไม่ตรง และสำรองไฟล์เดิม
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎข้อความใหม่ — บังคับในโค้ด `safeSave()` ของ lib เลน T69 แล้ว · เสนอย้ายเข้าตัวเขียน state กลางของ `capture/` และสลับบัญชีด้วย context ใหม่ (ยังไม่ได้ทำ)
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0131-finally-saved-wrong-account-session-over-learner-state.md`](docs/post-mortem/20260923-post-mortem-report-0131-finally-saved-wrong-account-session-over-learner-state.md)
+
+### Report #0132 — ผิดซ้ำจาก #0091: ตัวสร้างบอร์ดรอบ 23/Sep เขียนกล่องเกณฑ์ hardcode แทนเช็กลิสต์ 10 บรรทัดที่แช่แข็ง
+
+**Surface:** OLS QA workspace / live board รอบ VDO 23/Sep (`ols-qa-testing-bot` out-of-repo)
+
+กล่องเกณฑ์บนบอร์ด VDO ต้องเป็นเช็กลิสต์ 10 บรรทัดจากต้นฉบับที่เจ้าของงานแช่แข็งเมื่อ 13/Sep แต่ตัวสร้างบอร์ดของรอบ 23/Sep
+เขียนเกณฑ์ hardcode 4 บรรทัด และเธรดหลักลบอีก 1 ตามคำสั่ง 21.0x เหลือ 3 เจ้าของงานจับได้ 22.4x สาเหตุรากคือส่วนที่แช่แข็ง
+ไม่มีแหล่งเดียวที่ตัวสร้างทุกตัวต้องอ่าน มาตรการเดิมเป็น memory แก้ด้วยให้ตัวสร้างอ่าน `ul.crit-list` จากต้นฉบับ ไม่ครบ 10 = REFUSE
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎข้อความใหม่ (memory แช่แข็งมีแล้ว) — ชั้นใหม่คือ REFUSE ในตัวสร้างของรอบ (ทำแล้ว) · เสนอย้ายเข้า `build_board.js` + `check_theme.js` ตรวจ verbatim ทุกรอบ (ยังไม่ได้ทำ)
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0132-board-generator-hardcoded-criteria-instead-of-frozen-checklist.md`](docs/post-mortem/20260923-post-mortem-report-0132-board-generator-hardcoded-criteria-instead-of-frozen-checklist.md)
+
 ## 🔴 ข้อยกเว้น: เขียนข้อมูลบน production ได้ — เฉพาะรอบ smoke test 2026-09 เท่านั้น
 
 **เจ้าของงานอนุมัติเมื่อ 2026-09-03 ให้ สร้าง · แก้ไข · ลบ ข้อมูลบน production ได้ ตามแผน
