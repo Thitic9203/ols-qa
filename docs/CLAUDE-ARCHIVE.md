@@ -3251,6 +3251,16 @@ node/browser ลูกที่เพิ่งกรอกอีเมลเส�
 
 Full report: [`docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md`](docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md)
 
+### Report #0122 — ผิดซ้ำจาก #0121: เธรดหลักจอง `REC.lock` ก่อนรอ load ลด ถือล็อกเปล่าๆ ~4 นาทีขณะเลน U รอ
+
+2026-09-23 · Low · loop background ของเธรดหลัก `mkdir REC.lock` แล้วค่อยวนรอ load < 6 (pid 29690, 15:12:02–15:16:02 ไม่มี node ลูก) · เลน U รอครบ 180 วินาทีแล้วบันทึก `REC.lock still held after 180s` (08:14:11Z) · กติกาเลน (`LANE_BRIEF.md`) แยกเรื่อง load กับล็อกเป็นสองประโยคไม่ผูกลำดับ · kill pid ตัวเองหลังเทียบ owner · loop ใหม่ + UPDATE #5
+
+**กฎที่เพิ่ม:** การอัดที่ใช้ล็อกการอัดกลางต้องรันผ่าน `bash capture/rec_lock.sh --lock <REC.lock> --max-load <N> --owner "<lane case>" -- <command>` (bot repo) ห้าม `mkdir REC.lock`/loop รอด้วยมือ · โปรโตคอลที่เธรดหลักเขียนให้เลนต้องเป็นคำสั่งที่เธรดหลักรันผ่านเองแล้วอย่างน้อย 1 ครั้ง ไม่ใช่ข้อความอธิบาย
+
+**มาตรการ:** `capture/rec_lock.sh` (รอ load ไม่จอง → จองครั้งเดียว → ตรวจซ้ำ → รัน → ปล่อยเมื่อจบ/ล้ม/INT/TERM เฉพาะ owner ตัวเอง · ไม่มีค่าเริ่มต้นเกณฑ์ · ไม่ลบล็อกคนอื่น) 35/35 ทำแล้ว `951fcf1` · ให้ brief + loop เธรดหลักเรียก helper ค้าง · เช็ค BLOCK ใน agent-dispatch-guard รอเจ้าของงาน
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0122-main-thread-held-recording-lock-while-waiting-for-low-load.md`](docs/post-mortem/20260923-post-mortem-report-0122-main-thread-held-recording-lock-while-waiting-for-low-load.md)
+
 ### Report #0121 — ผิดซ้ำจาก #0095: กติกากลางเลนตก proxy preload ทำให้ `session_verify` 3 เลนได้ `ENOTFOUND`
 
 2026-09-23 · Low · เธรดหลักเขียนรายการตัวแปรการรัน node บน training69 ใน `LANE_BRIEF.md` ด้วยมือ ตก `NODE_OPTIONS="--require …/pw_proxy_preload.js"` ทั้งที่เพิ่งรันคำสั่งที่ถูกเอง · เลน U/F/E ได้ `getaddrinfo ENOTFOUND` ที่ `session_verify.js:112` (07:56:01Z–07:56:24Z) · heartbeat จับได้ เติม UPDATE #2 ทุกเลนผ่านภายใน 07:56:56Z · ไม่มีข้ออ้างผิด ไม่มีการเขียน env
