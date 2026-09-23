@@ -3251,6 +3251,36 @@ node/browser ลูกที่เพิ่งกรอกอีเมลเส�
 
 Full report: [`docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md`](docs/post-mortem/20260922-post-mortem-report-0106-double-backgrounded-login-window-killed-early.md)
 
+### Report #0120 — ผิดซ้ำจาก #0105/#0104: อัด take ที่ load 15.51 เพราะ rehearsal ก่อนหน้าผ่าน
+
+2026-09-23 · Medium · เธรดหลักวัด `vm.loadavg` ได้ 15.51 แล้วยังอัด take จริงของ `Profile_TC_004` (training69) เพราะ rehearsal อ่านอย่างเดียวผ่านที่ 11.89 (rehearsal รอบก่อนหน้านั้นตก 5.7%) · take ตก 5.5% เฟรมค้าง maxGap 507 ms และบันทึกเป้าหมายค่าเดิมซ้ำครั้งที่ 4 · กฎ §3.6 "วัด load ก่อนอัด" ไม่มีตัวเลขและไม่มีด่านในโค้ด
+
+**กฎที่เพิ่ม:** ไม่มีกฎข้อความใหม่ (§0 ข้อสุดท้ายครอบแล้ว) — ด่านในโค้ด: `capture/load_gate.js` `checkLoad({ max })` วัดใน process ที่อัด ปฏิเสธเมื่อเกิน/อ่านไม่ได้/ไม่ระบุ max (8/8)
+
+**มาตรการ (ค้าง ต้องถามเจ้าของงาน):** ผูกเข้า `qa_recorder.js` ก่อนเริ่มอัดและก่อนคลิกที่ย้อนไม่ได้ + ตัวเลขเกณฑ์ load ใน §3.6 + เขียน load ณ `rec_started` ลง manifest
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0120-recorded-take-at-high-load-on-earlier-rehearsal-pass.md`](docs/post-mortem/20260923-post-mortem-report-0120-recorded-take-at-high-load-on-earlier-rehearsal-pass.md)
+
+### Report #0119 — ผิดซ้ำจาก #0116: rtk ยังเขียน `diff`/`wc` ใหม่ ตอบ "identical" และ 0 แบบเงียบ
+
+2026-09-23 · Medium · มาตรการ #0116 ยกเว้นเฉพาะ `find`/`ls`/`grep` · subagent พบ `rtk diff` ตอบ `Files are identical` กับไฟล์ที่ต่าง 1 บรรทัด และ `wc -l < file` ได้ 0 จากไฟล์ 20 บรรทัด · เจ้าของงานอนุมัติยกเว้น `diff` `wc` (backup config ทั้ง 2 รอบ) เธรดหลักยืนยันหลังแก้
+
+**กฎที่เพิ่ม:** ปิดคลาส "rtk เปลี่ยนคำตอบ" ด้วย `node tools/rtk-known-answer/known_answer.js` ให้ได้ `OK` ทุกข้อ ไม่ใช่เพิ่มชื่อทีละคำสั่ง · ข้ออ้าง "เหมือนกัน"/"จำนวน N"/"N บรรทัดแรก" ต้องมาจากคำสั่งที่ยืนยันแล้วว่าไม่เสียคำตอบ หรือ path สัมบูรณ์
+
+**มาตรการ:** `tools/rtk-known-answer/` (7/7 ด้วย rtk ปลอม) ทำแล้ว · รันจริง 11/11 วัดได้ 1 เสียคำตอบ: `head -5` → `rtk read --max-lines` ตัดบรรทัด — ยกเว้น `head` และผูกการรันจริงเข้า hook ค้าง ต้องถามเจ้าของงาน
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0119-rtk-diff-wc-rewrites-gave-silent-wrong-answers.md`](docs/post-mortem/20260923-post-mortem-report-0119-rtk-diff-wc-rewrites-gave-silent-wrong-answers.md)
+
+### Report #0118 — ผิดซ้ำจาก #0117: `set -- $V` ใน zsh ไม่แยกคำ probe ได้ viewport NaN
+
+2026-09-23 · Low · 52 นาทีหลังปิด #0117 เธรดหลักรัน `for V in "1920 1080" "1366 768"; do set -- $V; … VW=$1 VH=$2` ใน zsh → `VW="1920 1080"` `VH` ว่าง → `Number()` NaN สคริปต์ล้มหลัง `start` ทั้ง 2 รอบ (rc=1) · จับได้จาก `== 1920 1080x rc=1` ก่อนรายงานตัวเลข รันใหม่แยกคำสั่งได้ viewportH 1080/768
+
+**กฎที่เพิ่ม:** คำสั่ง Bash บนเครื่องนี้รันใน zsh — แยกคำอย่างชัดแจ้ง (`${=V}` / array / ทีละคำสั่ง) · สคริปต์ที่รับตัวเลขจาก env ต้องปฏิเสธค่าที่แปลงไม่ได้
+
+**มาตรการ:** `tools/zsh-split-guard/split_rules.js` (15/15 · มีโหมด `--hook`) ทำแล้ว — ผูกเป็น PreToolUse บน Bash ค้าง ต้องถามเจ้าของงาน · VW/VH ต้องเป็นตัวเลขใน `profile_tc004_t69_full.js` ทำโดยเธรดหลัก · `capture/viewport_env.js` (11/11) ใน bot repo
+
+Full report: [`docs/post-mortem/20260923-post-mortem-report-0118-zsh-set-unsplit-var-nan-viewport-probe-died.md`](docs/post-mortem/20260923-post-mortem-report-0118-zsh-set-unsplit-var-nan-viewport-probe-died.md)
+
 ### Report #0117 — ผิดซ้ำจาก #0097/#0009: รัน A/B ใน zsh ตัวแปรไม่ถูกแยก ทั้ง 2 รันกลายเป็นค่าเริ่มต้นเดียวกัน
 
 2026-09-23 · Low · subagent สืบ fps 12 รันผู้สมัคร A (fps 25) / B (fps 12 + เลื่อน) ด้วย loop ใน zsh — zsh ไม่แยกคำของ `$var` ค่าทั้งก้อนไปอยู่ที่ `TAG` · `FPS`/`SCROLL` ว่าง → `cand_test.js:8` ใช้ `FPS || 12` และเลื่อนปิด ทั้ง 2 รัน `outFps` 12 (10 / 9 moving frames) · agent จับได้เองจาก manifest 17 วินาทีหลังรันที่ 2 ย้ายไป `invalid_zsh_split/` รันใหม่ด้วยค่าชัดเจน (A `outFps` 25 · B 12) · เธรดหลัก verify ซ้ำ B/B2/D ผ่าน A/F ตก
