@@ -3715,6 +3715,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0152-brief-copied-sa
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-take-kept-running-and-wrote-reported-as-not-run.md`](docs/post-mortem/20260924-post-mortem-report-0153-interrupted-take-kept-running-and-wrote-reported-as-not-run.md)
 
+### Report #0154 — take ที่ย้อนไม่ได้โดยไม่ซ้อมก่อน คลิปตก
+
+- กฎ: ก่อนคลิกที่ย้อนไม่ได้ ต้องมีคลิปซ้อม flow เดียวกันที่ผ่าน verify_video --strict-motion และ held share ≤ 25%
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
+
 ### Report #0148 — ผิดซ้ำจาก #0103: keepalive เรียกแค่ get-session ที่ไม่นับเป็นกิจกรรม
 
 - กฎ: keepalive ต้อง touch ด้วย API ที่นับเป็นกิจกรรม (`/api/users/me/profile`) และตรวจผล touch ทุกรอบ · ห้ามบอกว่า "keepalive ทำงาน" จนกว่าจะทดสอบปล่อยว่างเกิน 35 นาทีบน env นั้น
