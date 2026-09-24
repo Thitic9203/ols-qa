@@ -3573,11 +3573,50 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0134-main-thread-dis
 
 take ของ Feed_TC_001 เริ่มอัดโดยไม่ตรวจหน้าต่างทับหน้า และบันทึกว่าช่วง "ก่อน" เสร็จจากเวลาและชื่อจาก API ไม่ได้วัดว่าหน้าเลื่อนหรือการ์ด
 ขึ้นจอ จึงเผยแพร่ไปทั้งที่หน้าต่าง Gold ทับหน้า 3–310 วินาที คลิปส่งไม่ได้และถ่ายช่วง "ก่อน" ใหม่ไม่ได้ สาเหตุรากคือด่านก่อนเขียนตรวจเป้าหมาย
-การเขียน ไม่มีด่านในโค้ดที่พิสูจน์หลักฐานบนจอร่วมเวลา พบเพิ่มว่า take รัน `LOADMAX 999` ขัดมติ 17.4x ที่ให้เคสย้อนไม่ได้ใช้ 8
+การเขียน ไม่มีด่านในโค้ดที่พิสูจน์หลักฐานบนจอร่วมเวลา · take รัน `LOADMAX 999` ซึ่งมติ 21.3x อนุญาต (ยกเลิกเกณฑ์โหลดของรอบ)
+ฉบับแรกเขียนผิดว่าขัดมติ 17.4x — ดู #0136
 
 **กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎข้อความใหม่ (CLAUDE.md §0 ข้อ contemporaneous มีแล้ว) — เสนอด่านหลักฐานบนจอก่อนการเขียนที่ย้อนไม่ได้ + ตรวจหน้าต่างก่อนเริ่มอัด + load gate ผูกมติ + เทสต์ที่รู้คำตอบ (ยังไม่ได้ทำ)
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0135-take-published-irreversibly-without-checking-before-phase-on-screen.md`](docs/post-mortem/20260924-post-mortem-report-0135-take-published-irreversibly-without-checking-before-phase-on-screen.md)
+
+### Report #0136 — ผิดซ้ำจาก #0134 · #0101: เขียนว่า "ขัดมติ · ไม่พบมติยกเว้น" จากการค้นคำละตินคำเดียว พลาดมติภาษาไทย และพลาดการเบี่ยงจริงคือรันเลนขนาน
+
+**Surface:** OLS QA workspace / post-mortem docs (#0135) + main-thread lane dispatch, training69 VDO round (`ols-qa-testing-bot` out-of-repo)
+
+#0135 และแถว PENDING -04 (คอมมิต `c964f71` ขึ้น origin/main) เขียนว่า take `LOADMAX 999` ขัดมติ 17.4x และไม่พบมติยกเว้น จากการค้นไฟล์มติ
+ด้วย `LOADMAX` คำเดียว แต่มติ 21.3x (บรรทัด 81) จดด้วยคำไทยว่ายกเลิกเกณฑ์โหลด 8/16 ของรอบ ไม่มีคำ `LOADMAX` ข้ออ้างจึงผิด มติเดียวกันสั่ง
+"ทีละเคสจากเธรดหลัก ไม่อัดขนานหลายเลน" แต่เลน Badge_TC_001 กับ Feed_TC_001 รันพร้อมกัน นี่คือการเบี่ยงจริง สาเหตุรากคือมติเป็นข้อความอิสระ
+ที่เครื่องอ่านไม่ได้ และไม่มีด่านในโค้ดที่บังคับให้ข้ออ้างเชิงลบเรื่องมติอ่านครบถึงบรรทัดสุดท้าย หรือให้การจ่ายเลนเทียบข้อบังคับของรอบ
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎข้อความใหม่ (CLAUDE.md §0 ข้ออ้างเชิงลบ และ §3 / #0101 อ่านไฟล์มติ มีแล้ว) — ข้อความใน #0135 แถวดัชนี และสรุปนี้แก้แล้วชี้ #0136
+· เสนอส่วนข้อบังคับแบบคีย์=ค่าในไฟล์มติ + `agent-dispatch-guard` อ่านข้อบังคับ + ตัวตรวจข้ออ้างเชิงลบเรื่องมติ + เทสต์ที่รู้คำตอบ (ยังไม่ได้ทำ)
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0136-latin-only-grep-missed-thai-decision-and-lanes-ran-in-parallel.md`](docs/post-mortem/20260924-post-mortem-report-0136-latin-only-grep-missed-thai-decision-and-lanes-ran-in-parallel.md)
+
+### Report #0137 — ผิดซ้ำจาก #0052 · #0048: รายงานส่งมอบ export PDF พิมพ์ตัวเลขและข้อเคลมจากความจำ
+
+**Surface:** OLS QA workspace / งาน export Confluence→PDF→Drive (เครื่องมือนอก repo)
+
+รายงานส่งมอบบอกแนวนอน 5 (จริง 4) · "ดูครบ 134 หน้า" ทั้งที่ดูที่ความละเอียดอ่านได้ 8 หน้า · "เปิดใน Drive แล้ว" ทั้งที่เปิด 1/37 · และป้ายสถานะตั้งตัวพิมพ์ใหญ่จากความจำ
+ต้นเหตุ: ไม่มีชั้นที่บังคับให้ข้อความส่งมอบมาจาก output ของเครื่องมือ
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎตัวหนังสือใหม่ (§0 ครอบแล้ว) — เพิ่มชั้นเครื่องมือ `claims.py` + visual ledger (<80 dpi = layout-only) + selftest
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0137-delivery-report-numbers-typed-from-memory-not-gate-output.md`](docs/post-mortem/20260924-post-mortem-report-0137-delivery-report-numbers-typed-from-memory-not-gate-output.md)
+
+### Report #0138 — ผิดซ้ำจาก #0094 · #0083 · #0060: subagent พิมพ์ค่าเวลา `ts` ในไฟล์ผล jsonl เองโดยไม่ได้วัด
+
+**Surface:** OLS QA workspace / training69 VDO round ticket review `review_0924/` (`ols-qa-testing-bot` out-of-repo)
+
+subagent ชุด D พิมพ์ `ts` ระดับนาที 07:26–08:27 +07 ลงไฟล์ผลเอง ทั้งที่งานจริงอยู่ในช่วง 07:25:36–07:37:04 (15/24 ค่าเกินเวลาเขียนไฟล์) ไฟล์ถูกแก้แล้ว
+(ย้ายค่าไป `ts_handtyped_unmeasured` + `ts=null` + บรรทัด correction) แต่บรรทัด 25–32 ของไฟล์เดียวกันยังเหลือ 8 บรรทัด และไฟล์ A · B ของเลนอื่นมีรูปแบบเดียวกัน
+ส่วนไฟล์ C ที่ใช้เวลาจากนาฬิกาถูกต้อง 66/66 สาเหตุรากคือช่องเวลาในผลเปิดให้ agent พิมพ์เอง ไม่มีคำสั่งเขียนผลที่ประทับเวลาเองและไม่มีตัวตรวจ `ts`
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎข้อความใหม่ (CLAUDE.md §0 เวลาต้องวัด และกฎจาก #0094 มีแล้ว) — เสนอคำสั่งเขียนผลที่ประทับเวลาเอง + `agent-dispatch-guard` บังคับใช้
++ ตัวตรวจ `ts` (ละเอียดถึงวินาที · อยู่ระหว่างเวลาจ่ายงานกับเวลาเขียนไฟล์) ก่อนรับผลเลน + เทสต์ที่รู้คำตอบ (ยังไม่ได้ทำ)
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0138-subagents-hand-typed-unmeasured-timestamps-in-result-jsonl.md`](docs/post-mortem/20260924-post-mortem-report-0138-subagents-hand-typed-unmeasured-timestamps-in-result-jsonl.md)
 
 ## 🔴 ข้อยกเว้น: เขียนข้อมูลบน production ได้ — เฉพาะรอบ smoke test 2026-09 เท่านั้น
 
