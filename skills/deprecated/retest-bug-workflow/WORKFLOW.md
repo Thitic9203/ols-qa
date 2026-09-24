@@ -478,7 +478,7 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 
 *Test Step (from ticket):* …
 *Expected Result (from ticket, verbatim):* …          (Bug)
-*Acceptance Criteria (from ticket, verbatim):* …      (Task / Story)
+(Task / Story: no separate AC line — each AC's text sits verbatim in its table row's Expected Result column)
 
 ||*No.*||*ER*||*Case (Role)*||*Expected Result*||*Actual Result*||*Evidence*||*Status*||
 |1|ER1|• TC_01 {what it verifies} ({role}) \\ • TC_04 {what it verifies} ({role})|{item quoted from the ticket}|• {observed point} \\ • {observed point}|[▶ tc1.mp4|^tc1.mp4] !tc1.png!|✅/❌/⛔|

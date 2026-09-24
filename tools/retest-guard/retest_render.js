@@ -176,8 +176,12 @@ function renderWith(m, fmt) {
   pushAll(L, headerLines(m, bold, bullet).map(txt));
   pushAll(L, ['', ...fmt.rule]);
   if (m.testStep) pushAll(L, fieldLines('Test Step (from ticket)', m.testStep, bold, bullet).map(txt));
-  pushAll(L, fieldLines(contractLabel(m), m.expectedVerbatim || (m.contract || []).map((c) => c.text).join(' / '), bold, bullet)
-    .map(txt));
+  // A Task's AC text already sits verbatim, row by row, in the table's Expected Result column;
+  // repeating all of it as one header line doubled the comment (owner-approved OLS-721 post, 2026-09-24).
+  if (m.ticketType !== 'Task') {
+    pushAll(L, fieldLines(contractLabel(m), m.expectedVerbatim || (m.contract || []).map((c) => c.text).join(' / '), bold, bullet)
+      .map(txt));
+  }
   pushAll(L, ['']);
 
   // ONE table: a row per contract item, its covering cases inside the row (owner, 2026-09-24).

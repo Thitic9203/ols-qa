@@ -143,8 +143,11 @@ check('a Task retest is rendered against Acceptance Criteria, not Expected Resul
   const m = feManifest();
   m.ticketType = 'Task';
   const body = RENDER.render(m);
-  assert.ok(body.includes('*Acceptance Criteria (from ticket, verbatim):*'));
+  // the AC text lives verbatim in the table (column 2 reads AC), not in a repeated header line
+  assert.ok(!body.includes('*Acceptance Criteria (from ticket, verbatim):*'));
   assert.ok(!body.includes('*Expected Result (from ticket, verbatim):*'));
+  assert.ok(body.includes('||*No.*||*AC*||'), 'column 2 of the table reads AC for a Task');
+  m.contract.forEach((c) => assert.ok(body.includes(`|${c.text}|`), 'AC text verbatim in its row: ' + c.id));
 });
 
 
