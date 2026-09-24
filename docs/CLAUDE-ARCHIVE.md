@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0158 — คลิปตัดแก้ที่ผ่านแล้วไม่เคยขึ้น Drive ลิงก์ในชีทชี้ต้นฉบับ
+
+- กฎ: คลิปที่แก้นับว่าเสร็จเมื่อไฟล์ที่ชีทส่งมอบลิงก์ md5 = ไฟล์ที่ตรวจ · อัปเป็นเวอร์ชันใหม่ของไฟล์เดิม ชื่อไฟล์ห้ามเปลี่ยน + อ่าน md5 กลับ
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0158-trimmed-passing-clips-never-uploaded.md`](docs/post-mortem/20260924-post-mortem-report-0158-trimmed-passing-clips-never-uploaded.md)
+
 ### Report #0157 — ด่านหลังลบอ่านรายการว่างว่ายังไม่โหลด คลิป take ขาดช่วงผลคาดหวัง (ผิดซ้ำ #0154)
 
 - กฎ: ด่านหลังกระทำการของ take ที่ย้อนไม่ได้ต้องผ่าน known-answer test ทั้งสภาพ "ยังอยู่" และ "หายแล้ว/รายการว่าง" ก่อนรัน · รายการว่าง ≠ ยังไม่โหลด
