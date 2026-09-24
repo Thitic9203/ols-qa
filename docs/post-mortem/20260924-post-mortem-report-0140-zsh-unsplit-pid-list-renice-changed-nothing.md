@@ -89,7 +89,7 @@
 |---|--------|--------------|-----------|-------|
 | 1 | กฎข้อ 4 + เทสต์ 4 ข้อใน `zsh-split-guard` | Claude | Medium | Done (19/19) |
 | 2 | ผูก `split_rules.js --hook` เป็น PreToolUse ของ Bash | เจ้าของงาน อนุมัติ → Claude | Medium | Open (รออนุมัติ) |
-| 3 | คืนค่า `renice 0` ให้ pid ที่บันทึกไว้หลังอัดเสร็จ | Claude | High | Open |
+| 3 | คืนค่า nice ให้ pid ที่บันทึกไว้หลังอัดเสร็จ — ทำไม่ได้ด้วยสิทธิ์ของ agent (ดู #0142) | เจ้าของงาน (sudo) | High | Open → ย้ายไป #0142 |
 
 ## 10. Technical Appendix
 
