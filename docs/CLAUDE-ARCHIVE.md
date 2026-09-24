@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0159 — พลิก verdict โดยไม่อ่าน note มติเดิม
+
+- กฎ: ก่อนพลิก verdict อ่าน verdict/note เดิม + memory มติที่เกี่ยวก่อนเสมอ · ตัดสินจากไฟล์ที่ตรวจผ่าน ไม่ใช่ไฟล์บน Drive
+
+Full report: [`docs/post-mortem/20260925-post-mortem-report-0159-wrong-verdict-flip-without-reading-prior-note.md`](docs/post-mortem/20260925-post-mortem-report-0159-wrong-verdict-flip-without-reading-prior-note.md)
+
 ### Report #0158 — คลิปตัดแก้ที่ผ่านแล้วไม่เคยขึ้น Drive ลิงก์ในชีทชี้ต้นฉบับ
 
 - กฎ: คลิปที่แก้นับว่าเสร็จเมื่อไฟล์ที่ชีทส่งมอบลิงก์ md5 = ไฟล์ที่ตรวจ · อัปเป็นเวอร์ชันใหม่ของไฟล์เดิม ชื่อไฟล์ห้ามเปลี่ยน + อ่าน md5 กลับ

@@ -180,7 +180,7 @@
 | PM-2026-09-24-24 | 2026-09-24 | รัน `find /` ค้นทั้งดิสก์เพื่อหาไฟล์โค้ดตัวเดียว ขณะที่เครื่องโหลดสูงและเลนอื่นรอ rec_lock · ค้างเกิน 120 วินาทีจนต้องหยุดด้วย pid (exit 144) · ที่ถูกคือค้นใน repo ที่รู้ตำแหน่ง (`git ls-tree`) | /goal ทำเคส VDO ไม่ผ่านให้ผ่าน — ตรวจโค้ดปุ่มลบ NDLP_TC_003 | DONE | 20260924-post-mortem-report-0156-whole-disk-find-under-high-load.md |
 | PM-2026-09-24-25 | 2026-09-24 | NDLP_TC_003 take ลบ 81487 สำเร็จ (DELETE 200) แต่ guard หลังลบอ่านรายการว่างเป็น "list not loaded" แล้วหยุด คลิปขาดช่วง OLS หลังลบ · ซ้อมไม่เคยผ่านสภาพหลังลบ (`scanNdlpJson` ข้าม array ว่าง) · ผิดซ้ำคลาส #0154 | /goal ทำเคส VDO ไม่ผ่านให้ผ่าน — NDLP_TC_003 take | DONE | 20260924-post-mortem-report-0157-post-delete-guard-misread-empty-list.md |
 | PM-2026-09-24-26 | 2026-09-24 | คลิปที่ตัดแก้แล้วและได้ผลตรวจผ่าน 205 คลิป ไม่เคยถูกอัปขึ้น Drive — ลิงก์ในชีท ALL ยังชี้ไฟล์ต้นฉบับที่ยังไม่ตัด (พบจากตรวจชีทตามที่เจ้าของงานสั่ง · Unit Authen_TC_002 19.24 วิ vs ฉบับตัด 13.52 วิ) · workflow ตัดคลิปเฟลเงียบ | ตรวจชีท 3 ไฟล์ตามคำสั่งเจ้าของงาน 24/Sep | DONE | 20260924-post-mortem-report-0158-trimmed-passing-clips-never-uploaded.md |
-| PM-2026-09-25-01 | 2026-09-25 | พลิก verdict Integration LiveStream_TC_011 ผ่าน→ไม่ผ่าน (CAPTION,RAWAPI) โดยไม่อ่าน note เดิมที่อ้างมติ "แคปชันเดี่ยวผ่าน" (16/Sep) · คืนค่าจาก backup ภายใน 1 นาที (diff เฉพาะคีย์นี้) | ตรวจ 27 คลิป Integration ที่ Drive ไม่ตรง | OPEN | — |
+| PM-2026-09-25-01 | 2026-09-25 | พลิก verdict Integration LiveStream_TC_011 ผ่าน→ไม่ผ่าน (CAPTION,RAWAPI) โดยไม่อ่าน note เดิมที่อ้างมติ "แคปชันเดี่ยวผ่าน" (16/Sep) · คืนค่าจาก backup ภายใน 1 นาที (diff เฉพาะคีย์นี้) | ตรวจ 27 คลิป Integration ที่ Drive ไม่ตรง | DONE | 20260925-post-mortem-report-0159-wrong-verdict-flip-without-reading-prior-note.md |
 
 ---
 
