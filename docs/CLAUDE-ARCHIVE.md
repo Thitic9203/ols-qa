@@ -3661,6 +3661,13 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0143-brief-sent-agen
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0144-save-click-hit-bookmark-button-on-course-and-lp.md`](docs/post-mortem/20260924-post-mortem-report-0144-save-click-hit-bookmark-button-on-course-and-lp.md)
 
+### Report #0145 — zsh ไม่แยกคำ ทำให้สคริปต์วัด layout เขียนทับไฟล์ผลของ desktop (ผิดซ้ำ #0140)
+
+- กฎ: เครื่องมือวัดที่เขียนเองต้องไม่มีค่าเริ่มต้นที่เขียนไฟล์ผล อาร์กิวเมนต์ผิด = หยุด (exit 2) · ใน zsh ส่งหลายค่าด้วย array หรือพิมพ์แยกตัว ห้าม `$v` ที่มีช่องว่าง
+- ข้อสรุป "ผ่าน" ต้องอ่านจากไฟล์หลักฐานบนดิสก์ ณ ตอนสรุป ไม่ใช่จาก output ในแชทก่อนหน้า
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0145-zsh-unsplit-args-overwrote-desktop-layout-evidence.md`](docs/post-mortem/20260924-post-mortem-report-0145-zsh-unsplit-args-overwrote-desktop-layout-evidence.md)
+
 ### Report #0141 — ตัวอัปโหลด Drive หาโฟลเดอร์หลักด้วยชื่อ เจ้าของงานเปลี่ยนชื่อแล้วจึงสร้างโฟลเดอร์ซ้ำ
 
 **Surface:** OLS QA workspace / งาน export Confluence→PDF→Drive (เครื่องมือนอก repo)
