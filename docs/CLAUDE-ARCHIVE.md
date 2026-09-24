@@ -3631,6 +3631,15 @@ subagent ชุด B อ่านชีทสดแล้วจับได้ 0
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0139-briefed-er-from-adjacent-cache-row-instead-of-live-sheet.md`](docs/post-mortem/20260924-post-mortem-report-0139-briefed-er-from-adjacent-cache-row-instead-of-live-sheet.md)
 
+### Report #0140 — ผิดซ้ำจาก #0124 · #0118: `renice -p $P` ใน zsh ได้อาร์กิวเมนต์เดียว ไม่เปลี่ยนโปรเซสใด
+
+- เก็บ pid หลายตัวใน scalar `P=$(…)` แล้วใช้ `$P` ไม่ใส่คำพูด → zsh ไม่แยกคำ → `pid argument … is invalid` · จับได้จาก NI=0 ในคำสั่งเดียวกัน · แก้เป็น `P=($(…))` + `"${P[@]}"`
+- ต้นเหตุ: `zsh-split-guard` ไม่ผูก hook และไม่มีกฎ "ตัวแปรหลายคำเป็นอาร์กิวเมนต์" (ก่อนแก้ false ทั้งคำสั่งนี้และของ #0124)
+- กฎ: มาตรการของรายงานต้องทดสอบกับคำสั่งจริงของเหตุการณ์ตัวเอง · ใน zsh รายการหลายค่าใช้ array หรือ `${=V}` เท่านั้น
+- ชั้นใหม่: กฎข้อ 4 + เทสต์ (19/19) · ผูก hook รออนุมัติ
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0140-zsh-unsplit-pid-list-renice-changed-nothing.md`](docs/post-mortem/20260924-post-mortem-report-0140-zsh-unsplit-pid-list-renice-changed-nothing.md)
+
 ## 🔴 ข้อยกเว้น: เขียนข้อมูลบน production ได้ — เฉพาะรอบ smoke test 2026-09 เท่านั้น
 
 **เจ้าของงานอนุมัติเมื่อ 2026-09-03 ให้ สร้าง · แก้ไข · ลบ ข้อมูลบน production ได้ ตามแผน

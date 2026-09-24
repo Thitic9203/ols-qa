@@ -88,6 +88,33 @@ function decideCommand(raw) {
       return { block: true, reason: `loop item for $${name} holds several words ("a b") and the body uses $${name} unquoted — zsh passes it as ONE argument, not several — ${HOW}` };
     }
   }
+
+  // 4. (#0124, PM-2026-09-24-08) a scalar that holds several words, then used unquoted as arguments:
+  //    F="a.js b.js"; prettier --write $F   ·   P=$(pgrep -f x); renice -n 10 -p $P
+  //    A `$(…)` value counts only when the inner command prints a list (pgrep/ls/find/grep/…);
+  //    `echo $V` is exempt (one argument prints the same text).
+  const LISTERS = /\b(pgrep|pidof|ls|find|grep|egrep|awk|cut|xargs|seq|jq|sed|sort|uniq|tr|lsof|ps)\b/;
+  const assign = /(^|[\s;&|(])([A-Za-z_]\w*)=(?!\()/g;
+  let a;
+  while ((a = assign.exec(masked))) {
+    const name = a[2];
+    const valStart = a.index + a[0].length;
+    let multi = false;
+    const region = regions.find((r) => r.start === valStart);
+    if (region && /\s/.test(region.inner)) multi = true;
+    if (!multi && cmd.startsWith('$(', valStart)) {
+      const close = cmd.indexOf(')', valStart);
+      if (LISTERS.test(cmd.slice(valStart + 2, close < 0 ? cmd.length : close))) multi = true;
+    }
+    if (!multi) continue;
+    const rest = masked.slice(valStart);
+    const use = new RegExp(`(^|[^\\w$])(echo\\s+)?\\$(\\{${esc(name)}\\}|${esc(name)}(?![\\w\\[]))`, 'g');
+    let u;
+    while ((u = use.exec(rest))) {
+      if (u[2]) continue;
+      return { block: true, reason: `$${name} holds several words and is used unquoted as arguments — zsh passes it as ONE argument (e.g. renice "pid argument … is invalid") — ${HOW}` };
+    }
+  }
   return { block: false, reason: '' };
 }
 

@@ -53,7 +53,30 @@ check('single-quoted multi-word items count too', () => {
   assert.ok(d("for V in '1920 1080'; do echo $V; done").block);
 });
 
+check('PM-2026-09-24-08 incident: P=$(pgrep …); renice -p $P is refused', () => {
+  const r = d('P=$(pgrep -f "taskfolio|runner"); renice -n 10 -p $P; ps -o pid,nice -p $P');
+  assert.ok(r.block, JSON.stringify(r));
+  assert.match(r.reason, /\$P/);
+});
+
+check('#0124 incident: F="a b"; prettier --write $F is refused', () => {
+  const r = d('F="a.js b.js c.js"; npx prettier --write $F');
+  assert.ok(r.block, JSON.stringify(r));
+  assert.match(r.reason, /\$F/);
+});
+
 // ---- must not find ----
+check('multi-word scalar used quoted, split with ${=V}, or only echoed passes', () => {
+  assert.ok(!d('P=$(pgrep -f x); for p in ${=P}; do renice -n 10 -p "$p"; done').block);
+  assert.ok(!d('F="a b"; echo $F; node x.js "$F"').block);
+  assert.ok(!d('P=($(pgrep -f x)); for p in "${P[@]}"; do renice -n 10 -p $p; done').block);
+});
+
+check('single-word scalars and non-list $(…) pass', () => {
+  assert.ok(!d('W=~/out/lane; cd $W; ls $W').block);
+  assert.ok(!d('TS=$(date -u +%s); node x.js $TS').block);
+});
+
 check('explicit zsh split ${=V} passes', () => {
   assert.ok(!d('for V in "1920 1080" "1366 768"; do set -- ${=V}; VW=$1 VH=$2 node x.js; done').block);
 });
