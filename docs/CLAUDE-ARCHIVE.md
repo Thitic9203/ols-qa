@@ -3709,6 +3709,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0151-claimed-inactiv
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0152-brief-copied-saved-ols-cookie-into-owner-browser-killed-session.md`](docs/post-mortem/20260924-post-mortem-report-0152-brief-copied-saved-ols-cookie-into-owner-browser-killed-session.md)
 
+### Report #0153 — take ที่ถูกยกเลิกยังรันต่อและเขียนข้อมูล แต่รายงานว่าไม่ได้รัน
+
+- กฎ: หลังคำสั่งที่เขียนข้อมูลถูกยกเลิก ต้องเช็ค `pgrep -f` + ledger ทุกบรรทัดของเป้า + สถานะจริง ก่อนพูดว่าไม่ได้รัน
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-take-kept-running-and-wrote-reported-as-not-run.md`](docs/post-mortem/20260924-post-mortem-report-0153-interrupted-take-kept-running-and-wrote-reported-as-not-run.md)
+
 ### Report #0148 — ผิดซ้ำจาก #0103: keepalive เรียกแค่ get-session ที่ไม่นับเป็นกิจกรรม
 
 - กฎ: keepalive ต้อง touch ด้วย API ที่นับเป็นกิจกรรม (`/api/users/me/profile`) และตรวจผล touch ทุกรอบ · ห้ามบอกว่า "keepalive ทำงาน" จนกว่าจะทดสอบปล่อยว่างเกิน 35 นาทีบน env นั้น
