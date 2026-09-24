@@ -41,19 +41,13 @@ block does not fit in a cell.
 **Date:** 2026-05-20
 **Build:** 4f21c0e
 **Fixture:** schedule created via POST, deleted after the run
-**Scope:** FULL
 
-**Test cases run:** 1
-
-| **Case** | **Title** | **Covers** | **Role** | **Status** |
-|---|---|---|---|---|
-| TC_01 | invalid date range is rejected | ER1 | ADMIN | ❌ |
-
-| **No.** | **Expected Result** | **Actual Result** | **Status** |
-|---|---|---|---|
-| 1 | 400 with message "end date must be after start date" | 500, unhandled exception | ❌ |
+| **No.** | **ER** | **Case (Role)** | **Expected Result** | **Actual Result** | **Status** |
+|---|---|---|---|---|---|
+| 1 | ER1 | • TC_01 invalid date range is rejected (ADMIN) | 400 with message "end date must be after start date" | 500, unhandled exception | ❌ |
 
 **Expected-result coverage:** 1 / 1 items met
+**Case coverage:** 1 / 1 cases run — 0 passed / 1 failed / 0 blocked
 
 **Root cause:** the range check runs after the persistence call, so the driver raises before
 validation is reached — Confirmed (response body carries the driver's constraint name; the same
@@ -91,22 +85,18 @@ Output (full comment — this is the entire body, nothing added):
 *Role:* CONTENT_ADMIN
 *Date:* 2026-07-23
 *Build:* 9c3ab77
-*Fixture:* Existing queue item — no new fixture created or modified
-*Scope:* FULL
+*Fixture:*
+* Existing queue item
+* No new fixture created or modified
 
 ----
 
 *Test Step (from ticket):* Admin opens the review action on a flagged item
 *Expected Result (from ticket, verbatim):* Reject button reads "Review Failed" and the queue row keeps its flagged badge
 
-*Test cases run:* 1
-
-||*Case*||*Title*||*Covers*||*Role*||*Status*||
-|TC_01|review modal button labels and queue badge|ER1, ER2|CONTENT_ADMIN|✅|
-
-||*No.*||*Expected Result*||*Actual Result*||*Evidence*||*Status*||
-|1|Reject button reads "Review Failed"|Reads "Review Failed" — char-exact from the DOM|[▶ PROJ-88_TC_01_CONTENT_ADMIN.mp4|^PROJ-88_TC_01_CONTENT_ADMIN.mp4] !TC_01_CONTENT_ADMIN-ER_1.png!|✅|
-|2|queue row keeps its flagged badge|Badge present after the modal closes|[▶ PROJ-88_TC_01_CONTENT_ADMIN.mp4|^PROJ-88_TC_01_CONTENT_ADMIN.mp4] !TC_01_CONTENT_ADMIN-ER_2.png!|✅|
+||*No.*||*ER*||*Case (Role)*||*Expected Result*||*Actual Result*||*Evidence*||*Status*||
+|1|ER1|• TC_01 review modal button labels and queue badge (CONTENT_ADMIN)|Reject button reads "Review Failed"|• Reads "Review Failed" \\ • char-exact from the DOM|[▶ PROJ-88_TC_01_CONTENT_ADMIN.mp4|^PROJ-88_TC_01_CONTENT_ADMIN.mp4] !TC_01_CONTENT_ADMIN-ER_1.png!|✅|
+|2|ER2|• TC_01 review modal button labels and queue badge (CONTENT_ADMIN)|queue row keeps its flagged badge|Badge present after the modal closes|[▶ PROJ-88_TC_01_CONTENT_ADMIN.mp4|^PROJ-88_TC_01_CONTENT_ADMIN.mp4] !TC_01_CONTENT_ADMIN-ER_2.png!|✅|
 
 *Expected-result coverage:* 2 / 2 items met
 *Case coverage:* 1 / 1 cases run — 1 passed / 0 failed / 0 blocked
@@ -115,6 +105,13 @@ Output (full comment — this is the entire body, nothing added):
 ## Lessons (example 2)
 
 - No *API*/*Swagger* lines — FE bug, so they're omitted, not written as "N/A".
+- No *Scope* line — a full round prints none; only a scoped round prints `*Scope:* CASES: <ids>`.
+- **One table.** Each row names the case(s) covering it in `Case (Role)` as `• TC_nn title (role)`,
+  joined by ` \\ ` when there are several; there is no separate case table. The coverage lines follow it.
+- A header value with several points (`Fixture` here) is the label on its own line, one `* ` bullet per
+  point, then one blank line; several points inside a cell are `• point` lines joined by ` \\ `.
+- After posting, the widths and centring are applied to the comment's ADF with
+  `tools/retest-guard/adf_colwidth.js` (see the workflow's post-publish step).
 - **Evidence lives in the row's own `Evidence` cell**, not in a separate section below the table. The
   `Actual Result` cell already says what the image shows, so no caption line is needed.
 - Every embedded still is `!file.png!` — **bare**. Resize to ~600–640 px before upload; a width

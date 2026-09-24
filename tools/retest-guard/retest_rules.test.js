@@ -21,20 +21,14 @@ const GOOD = [
   '*Date:* 2026-09-05',
   '*Build:* abc1234',
   '*Fixture:* seeded course, restored',
-  '*Scope:* FULL',
   '',
   '----',
   '',
   '*Test Step (from ticket):* open the list',
   '*Expected Result (from ticket, verbatim):* the label reads บันทึก',
   '',
-  '*Test cases run:* 1',
-  '',
-  '||*Case*||*Title*||*Covers*||*Role*||*Status*||',
-  '|TC_01|list shows the saved label|ER1|CREATOR|✅|',
-  '',
-  '||*No.*||*Expected Result*||*Actual Result*||*Evidence*||*Status*||',
-  '|1|label reads บันทึก|label reads บันทึก|!tc1.png!|✅|',
+  '||*No.*||*ER*||*Case (Role)*||*Expected Result*||*Actual Result*||*Evidence*||*Status*||',
+  '|1|ER1|• TC_01 list shows the saved label (CREATOR)|label reads บันทึก|label reads บันทึก|!tc1.png!|✅|',
   '',
   '*Expected-result coverage:* 1 / 1 items met',
   '*Case coverage:* 1 / 1 cases run — 1 passed / 0 failed / 0 blocked',
@@ -63,34 +57,118 @@ check('markdown bold posted to the wiki endpoint is refused', () => {
 });
 
 check('a markdown divider row is refused', () => {
-  const fs = R.scanBody(GOOD.replace('|TC_01|', '|---|---|---|---|---|\n|TC_01|'), {});
+  const fs = R.scanBody(GOOD.replace('|1|ER1|', '|---|---|---|---|---|---|---|\n|1|ER1|'), {});
   assert.ok(has(fs, 'md-divider-row'));
 });
 
-check('a missing Scope line is a finding (scope is not optional)', () => {
-  const fs = R.scanBody(GOOD.replace('*Scope:* FULL\n', ''), {});
+check('rule 1: a full round carries no Scope line, and "*Scope:* FULL" is refused', () => {
+  assert.ok(!/Scope:/.test(GOOD), 'the clean body must not carry a Scope line');
+  const fs = R.scanBody(GOOD.replace('*Fixture:* seeded course, restored', '*Fixture:* seeded course, restored\n*Scope:* FULL'), {});
+  assert.ok(has(fs, 'scope-full-line'), 'got ' + JSON.stringify(rules(fs)));
+});
+
+check('rule 1: a scoped round still needs its Scope line (scope is not optional there)', () => {
+  const fs = R.scanBody(GOOD.replace('*Retest Result: PASSED* ✅', '*Retest Result: PASSED (scoped: TC_01)* ✅'), {});
   assert.ok(has(fs, 'header-line-missing'));
 });
 
 check('a malformed Scope line is a finding', () => {
-  const fs = R.scanBody(GOOD.replace('*Scope:* FULL', '*Scope:* some of them'), {});
+  const fs = R.scanBody(GOOD.replace('*Fixture:* seeded course, restored', '*Fixture:* seeded course, restored\n*Scope:* some of them'), {});
   assert.ok(has(fs, 'scope-line-shape'));
 });
 
 check('a scoped verdict summary is accepted', () => {
   const body = GOOD
     .replace('*Retest Result: PASSED* ✅', '*Retest Result: PASSED (scoped: TC_01)* ✅')
-    .replace('*Scope:* FULL', '*Scope:* CASES: TC_01');
+    .replace('*Fixture:* seeded course, restored', '*Fixture:* seeded course, restored\n*Scope:* CASES: TC_01');
   const fs = R.scanBody(body, {});
   assert.deepStrictEqual(fs, [], 'unexpected: ' + JSON.stringify(rules(fs)));
 });
 
-check('a design column in the case table is refused', () => {
+check('a design column in the table is refused', () => {
   const body = GOOD
-    .replace('||*Case*||*Title*||*Covers*||*Role*||*Status*||', '||*Case*||*Title*||*Covers*||*Role*||*Design*||*Status*||')
-    .replace('|TC_01|list shows the saved label|ER1|CREATOR|✅|', '|TC_01|list shows the saved label|ER1|CREATOR|none|✅|');
+    .replace('||*Evidence*||*Status*||', '||*Evidence*||*Design*||*Status*||')
+    .replace('|!tc1.png!|✅|', '|!tc1.png!|none|✅|');
   const fs = R.scanBody(body, {});
   assert.ok(has(fs, 'case-table-design-column'));
+});
+
+check('rule 3: a separate "Test cases run" table is refused (one table only)', () => {
+  const body = GOOD.replace('||*No.*||',
+    '||*Case*||*Title*||*Covers*||*Role*||*Status*||\n|TC_01|list shows the saved label|ER1|CREATOR|✅|\n\n||*No.*||');
+  const fs = R.scanBody(body, {});
+  assert.ok(has(fs, 'separate-case-table'), 'got ' + JSON.stringify(rules(fs)));
+  assert.ok(has(fs, 'more-than-one-table'), 'got ' + JSON.stringify(rules(fs)));
+});
+
+check('rule 3: the retired two-table headers (no ER / Case (Role) column) are refused', () => {
+  const body = GOOD
+    .replace('||*No.*||*ER*||*Case (Role)*||', '||*No.*||')
+    .replace('|1|ER1|• TC_01 list shows the saved label (CREATOR)|', '|1|');
+  const fs = R.scanBody(body, {});
+  assert.ok(has(fs, 'verdict-table-headers'));
+});
+
+check('rule 3: column 2 reads ER on a Bug and AC on a Task', () => {
+  assert.deepStrictEqual(R.scanBody(GOOD, { ticketType: 'Bug' }), []);
+  assert.ok(has(R.scanBody(GOOD, { ticketType: 'Task' }), 'verdict-table-headers'));
+  const task = GOOD.replace('||*ER*||', '||*AC*||');
+  assert.deepStrictEqual(R.scanBody(task, { ticketType: 'Task' }), []);
+  assert.deepStrictEqual(R.scanBody(task, {}), [], 'without a ticket type either ER or AC is accepted');
+});
+
+check('rule 3: a row with no covering case is refused', () => {
+  const fs = R.scanBody(GOOD.replace('|• TC_01 list shows the saved label (CREATOR)|', '||'), {});
+  assert.ok(has(fs, 'row-without-case'));
+});
+
+check('rule 3: several cases in one cell are "• " lines joined by the wiki line break', () => {
+  const two = '• TC_01 list shows the saved label (CREATOR) \\\\ • TC_02 detail shows it too (CREATOR)';
+  assert.deepStrictEqual(R.scanBody(GOOD.replace('• TC_01 list shows the saved label (CREATOR)', two), {}), []);
+  const bare = 'TC_01 list (CREATOR) \\\\ TC_02 detail (CREATOR)';
+  assert.ok(has(R.scanBody(GOOD.replace('• TC_01 list shows the saved label (CREATOR)', bare), {}), 'case-cell-shape'));
+});
+
+check('rule 3: an actual-result cell running points together with " · " is refused', () => {
+  const fs = R.scanBody(GOOD.replace('label reads บันทึก|!tc1.png!', 'label reads บันทึก · count is 1|!tc1.png!'), {});
+  assert.ok(has(fs, 'cell-inline-list'));
+  const ok = R.scanBody(GOOD.replace('label reads บันทึก|!tc1.png!', '• label reads บันทึก \\\\ • count is 1|!tc1.png!'), {});
+  assert.deepStrictEqual(ok, [], 'unexpected: ' + JSON.stringify(rules(ok)));
+});
+
+check('rule 2: a header value with several points on one line is refused', () => {
+  ['seeded course · restored after', 'seeded course — restored after'].forEach((v) => {
+    const fs = R.scanBody(GOOD.replace('*Fixture:* seeded course, restored', '*Fixture:* ' + v), {});
+    assert.ok(has(fs, 'header-inline-list'), v + ' -> ' + JSON.stringify(rules(fs)));
+  });
+});
+
+check('rule 2: label on its own line + one bullet per point + one blank line is accepted', () => {
+  const body = GOOD.replace('*Fixture:* seeded course, restored\n',
+    '*Fixture:*\n* seeded course\n* restored after\n');
+  assert.deepStrictEqual(R.scanBody(body, {}), [], 'unexpected: ' + JSON.stringify(rules(R.scanBody(body, {}))));
+});
+
+check('rule 2: a bullet list followed directly by the next label is refused (the list swallows it)', () => {
+  const body = GOOD.replace('*Build:* abc1234\n*Fixture:* seeded course, restored',
+    '*Build:*\n* abc1234\n* tag v1\n*Fixture:* seeded course, restored');
+  const fs = R.scanBody(body, {});
+  assert.ok(has(fs, 'list-swallows-next-line'), 'got ' + JSON.stringify(rules(fs)));
+});
+
+check('rule 4: the coverage lines come after the table', () => {
+  const lines = GOOD.split('\n');
+  const cov = lines.findIndex((l) => l.startsWith('*Expected-result coverage:*'));
+  const moved = lines.slice();
+  const [line] = moved.splice(cov, 1);
+  moved.splice(moved.findIndex((l) => l.startsWith('||')), 0, line, '');
+  const fs = R.scanBody(moved.join('\n'), {});
+  assert.ok(has(fs, 'coverage-before-table'), 'got ' + JSON.stringify(rules(fs)));
+});
+
+check('rule 5: the column widths are pinned in one place, one per column of the single table', () => {
+  assert.deepStrictEqual(R.TABLE_COLUMN_WIDTHS.slice(), [50, 75, 230, 200, 330, 230, 65]);
+  assert.strictEqual(R.TABLE_COLUMN_WIDTHS.length, R.VERDICT_TABLE_HEADERS.length);
 });
 
 check('a renamed verdict header is refused', () => {
@@ -146,8 +224,8 @@ check('an API bug drops the Evidence column and needs no Design ref', () => {
   const body = GOOD
     .replace('*Design ref:* https://figma.example/file/x?node-id=1-2\n', '')
     .replace('*Env:* pre-prod (https://example.test)', '*Env:* pre-prod (https://example.test)\n*API:* GET /api/media\n*Swagger:* https://example.test/swagger')
-    .replace('||*No.*||*Expected Result*||*Actual Result*||*Evidence*||*Status*||', '||*No.*||*Expected Result*||*Actual Result*||*Status*||')
-    .replace('|1|label reads บันทึก|label reads บันทึก|!tc1.png!|✅|', '|1|200 OK|200 OK|✅|');
+    .replace('||*Evidence*||*Status*||', '||*Status*||')
+    .replace('|label reads บันทึก|label reads บันทึก|!tc1.png!|✅|', '|200 OK|200 OK|✅|');
   const fs = R.scanBody(body, { bugType: 'API' });
   assert.deepStrictEqual(fs, [], 'unexpected: ' + JSON.stringify(rules(fs)));
 });
