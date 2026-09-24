@@ -3696,6 +3696,19 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0149-login-popup-ope
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0150-english-replies-and-asked-instead-of-deciding.md`](docs/post-mortem/20260924-post-mortem-report-0150-english-replies-and-asked-instead-of-deciding.md)
 
+### Report #0151 — สรุปว่าสื่อ NDLP สถานะ INACTIVE แก้ได้ โดยอ่านเงื่อนไขไม่ครบ
+
+- กฎ: ก่อนพูดว่าสถานะ X ทำให้ทำ Y ได้ ต้องแจกแจงทุก `return false` ในเส้นทางนั้น (รวมฟังก์ชันย่อย) พร้อม path:line
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0151-claimed-inactive-makes-ndlp-editable-without-reading-second-check.md`](docs/post-mortem/20260924-post-mortem-report-0151-claimed-inactive-makes-ndlp-editable-without-reading-second-check.md)
+
+### Report #0152 — ใส่คุกกี้ OLS จากไฟล์ state ลงเบราว์เซอร์ NDLP ของเจ้าของงาน จน session ถูกปิด (ผิดซ้ำจาก #0073)
+
+- กฎ: session ที่เซฟไว้ใช้ได้เฉพาะ context ที่สร้างจากไฟล์นั้นเอง (`T.newCtx`) และเซฟกลับด้วย `T.safeSave` · เบราว์เซอร์ของเจ้าของงานเปิด OLS แบบไม่คัดลอกคุกกี้ใดๆ
+- บังคับ: agent-dispatch-guard ข้อ 8 `SESSION_COOKIE_TRANSPLANT`
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0152-brief-copied-saved-ols-cookie-into-owner-browser-killed-session.md`](docs/post-mortem/20260924-post-mortem-report-0152-brief-copied-saved-ols-cookie-into-owner-browser-killed-session.md)
+
 ### Report #0148 — ผิดซ้ำจาก #0103: keepalive เรียกแค่ get-session ที่ไม่นับเป็นกิจกรรม
 
 - กฎ: keepalive ต้อง touch ด้วย API ที่นับเป็นกิจกรรม (`/api/users/me/profile`) และตรวจผล touch ทุกรอบ · ห้ามบอกว่า "keepalive ทำงาน" จนกว่าจะทดสอบปล่อยว่างเกิน 35 นาทีบน env นั้น

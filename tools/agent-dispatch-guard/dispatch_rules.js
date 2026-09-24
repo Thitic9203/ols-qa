@@ -129,6 +129,12 @@ const EMAIL_READBACK_RE = /read[- ]?back[^.\n]{0,40}(?:email|input|value)|inputV
 // real UI must forbid accepting consent, attestation, terms or agreement dialogs on the owner's behalf.
 const CONTENT_WRITE_RE = /\b(?:publish|submit|create)(?:s|es|ing)?\b[^.\n]{0,60}\b(?:media|article|course|content|learning path|LP)\b|กดเผยแพร่|สร้างสื่อ|ส่งอนุมัติ/i;
 const CONSENT_STOP_RE = /(?:never|do not|don't|must not|ห้าม)[^.\n]{0,60}(?:accept|tick|agree|ยอมรับ|ติ๊ก)[^.\n]{0,60}(?:consent|attestation|terms|agreement|ข้อตกลง|รับรอง|ลิขสิทธิ์)/i;
+// Check 8 (PM-2026-09-24-20, repeat class of #0073): a brief that moves saved-session cookies from a
+// state file into another browser/context. OLS saw a different NDLP token, re-linked and rotate() ended
+// the saved session (ols-monorepo session.service.ts:60-68,83-90 · with-ndlp-link.proxy.ts:135-152).
+const COOKIE_TRANSPLANT_RE = /\b(?:addCookies|(?:add|copy|copies|copying|inject|put|transplant)\w*\s+(?:the\s+)?(?:[\w'()-]+\s+){0,4}cookies?|session_token)\b/i;
+const SAVED_STATE_RE = /\bstateOf\b|\bstorageState\b|\bstate[_ ]?file\b|\bstate_t69|\bstate_<|from (?:the )?(?:saved )?state\b/i;
+const NEGATION_RE = /(?:never|do not|don't|must not|ห้าม|no longer)/i;
 
 /**
  * Does the brief spell out the persistence contract?
@@ -275,6 +281,22 @@ function assessBrief(text) {
         'attestation, terms or agreement dialog — on 2026-09-24 an agent ticked 7 copyright attestations for the owner (PM-2026-09-24-15)',
       fix:
         'add: "never accept or tick any consent, attestation, terms or agreement dialog — stop and report it to the main thread"',
+    });
+  }
+
+  // Check 8 — saved-session cookies moved into another browser/context (PM-2026-09-24-20, class of #0073).
+  checks += 1;
+  const transplantLine = text.split(/\n+/).find((l) => COOKIE_TRANSPLANT_RE.test(l) && SAVED_STATE_RE.test(l) && !NEGATION_RE.test(l));
+  if (transplantLine) {
+    findings.push({
+      code: 'SESSION_COOKIE_TRANSPLANT',
+      severity: SEVERITY.BLOCK,
+      message:
+        'the brief moves saved-session cookies from a state file into another browser/context — on 2026-09-24 OLS saw a ' +
+        'different NDLP token, re-linked, and rotate() ended the saved tc9020 session (PM-2026-09-24-20, class of #0073)',
+      fix:
+        'open OLS only in a context created from the state file itself (T.newCtx) and save back with T.safeSave; ' +
+        'in the owner\'s NDLP browser open OLS with NO copied OLS cookies and let it link its own session',
     });
   }
 

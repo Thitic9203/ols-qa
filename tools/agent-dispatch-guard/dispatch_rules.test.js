@@ -354,6 +354,24 @@ t('a read-only brief with no content writes is not flagged for consent', () => {
   assert.ok(!r.findings.some((f) => f.code === 'CONSENT_DIALOG_NOT_FORBIDDEN'));
 });
 
+t('PM-2026-09-24-20 real brief line (add tc9020 OLS cookies from state into CDP browser) is BLOCKED', () => {
+  const text = "Suggested: one recorded tab in the owner's CDP browser — add the tc9020 OLS cookies from T.stateOf('tc9020') to that context, add a new tab.\n" + PERSIST_LINE;
+  const r = rules.assessBrief(text);
+  assert.ok(r.findings.some((f) => f.code === 'SESSION_COOKIE_TRANSPLANT' && f.severity === rules.SEVERITY.BLOCK), 'got ' + r.findings.map((f) => f.code));
+  assert.ok(r.checks >= 8, 'the transplant check must be counted');
+});
+
+t('PM-2026-09-24-20 a brief that forbids copying state cookies is not flagged', () => {
+  const text = "Never add cookies from the state file into the owner's browser; open OLS there with no copied cookies.\n" + PERSIST_LINE;
+  const r = rules.assessBrief(text);
+  assert.ok(!r.findings.some((f) => f.code === 'SESSION_COOKIE_TRANSPLANT'), 'must not flag: ' + rules.formatAssessment(r));
+});
+
+t('a brief that uses the state file through T.newCtx without moving cookies is not flagged', () => {
+  const r = rules.assessBrief("Open OLS with T.newCtx(browser, 'tc9020') from the state file and save back with T.safeSave.\n" + PERSIST_LINE);
+  assert.ok(!r.findings.some((f) => f.code === 'SESSION_COOKIE_TRANSPLANT'));
+});
+
 // ------------------------------------------------------------------- harness
 
 let failed = 0;
