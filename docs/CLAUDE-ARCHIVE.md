@@ -3689,6 +3689,13 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0147-agent-accepted-
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0149-login-popup-opened-for-retired-account.md`](docs/post-mortem/20260924-post-mortem-report-0149-login-popup-opened-for-retired-account.md)
 
+### Report #0150 — ตอบเจ้าของงานเป็นภาษาอังกฤษ และถามเรื่องที่มติของรอบสั่งให้ตัดสินเอง
+
+- กฎ: ทุกข้อความถึงเจ้าของงานเป็นไทยสั้น รวมข้อความระหว่าง tool call · ก่อนร่างคำถามต้องค้น `ROUND_DECISIONS.md` ของรอบหาคำสั่งเรื่องการรอ/การถามก่อน
+- ค้าง: ask-guard ชี้มติของรอบตอนบล็อก · Stop hook ตรวจภาษาไทย (ทั้งคู่รออนุมัติ)
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0150-english-replies-and-asked-instead-of-deciding.md`](docs/post-mortem/20260924-post-mortem-report-0150-english-replies-and-asked-instead-of-deciding.md)
+
 ### Report #0148 — ผิดซ้ำจาก #0103: keepalive เรียกแค่ get-session ที่ไม่นับเป็นกิจกรรม
 
 - กฎ: keepalive ต้อง touch ด้วย API ที่นับเป็นกิจกรรม (`/api/users/me/profile`) และตรวจผล touch ทุกรอบ · ห้ามบอกว่า "keepalive ทำงาน" จนกว่าจะทดสอบปล่อยว่างเกิน 35 นาทีบน env นั้น
