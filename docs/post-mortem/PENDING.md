@@ -178,6 +178,7 @@
 | PM-2026-09-24-22 | 2026-09-24 | NDLP_TC_003 take ที่ย้อนไม่ได้ (ลบ 81467 13:12Z) รันโดยไม่ได้อัดซ้อมและตรวจ verify_video ก่อนคลิกจริง · คลิปตก (9.04 fps · holds 36% · frozen 85%) · สื่อต้นทางหายถาวร ต้องย้อนงานด้วยสื่อใหม่ | /goal ทำเคส VDO ไม่ผ่านให้ผ่าน — NDLP_TC_003 | DONE | 20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md |
 | PM-2026-09-24-23 | 2026-09-24 | อัด NDLP_TC_003/004 ในหน้าต่าง NDLP แบบมีจอ (CDP headed) + สั่ง osascript ดึงหน้าต่างขึ้นหน้าสุด ทั้งที่มี memory no-screen-hijack · เจ้าของงานกำลังใช้จอ ต้องกดยกเลิก และ take ที่ยกเลิกยังรันต่อ (หยุดด้วย pid 56019/56069) | /goal ทำเคส VDO ไม่ผ่านให้ผ่าน — NDLP_TC_003/004 | DONE | 20260924-post-mortem-report-0155-headed-recording-and-raise-window-while-owner-used-screen.md |
 | PM-2026-09-24-24 | 2026-09-24 | รัน `find /` ค้นทั้งดิสก์เพื่อหาไฟล์โค้ดตัวเดียว ขณะที่เครื่องโหลดสูงและเลนอื่นรอ rec_lock · ค้างเกิน 120 วินาทีจนต้องหยุดด้วย pid (exit 144) · ที่ถูกคือค้นใน repo ที่รู้ตำแหน่ง (`git ls-tree`) | /goal ทำเคส VDO ไม่ผ่านให้ผ่าน — ตรวจโค้ดปุ่มลบ NDLP_TC_003 | DONE | 20260924-post-mortem-report-0156-whole-disk-find-under-high-load.md |
+| PM-2026-09-24-25 | 2026-09-24 | NDLP_TC_003 take ลบ 81487 สำเร็จ (DELETE 200) แต่ guard หลังลบอ่านรายการว่างเป็น "list not loaded" แล้วหยุด คลิปขาดช่วง OLS หลังลบ · ซ้อมไม่เคยผ่านสภาพหลังลบ (`scanNdlpJson` ข้าม array ว่าง) · ผิดซ้ำคลาส #0154 | /goal ทำเคส VDO ไม่ผ่านให้ผ่าน — NDLP_TC_003 take | OPEN | — |
 
 ---
 
