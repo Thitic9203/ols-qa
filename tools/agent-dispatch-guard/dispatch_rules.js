@@ -125,6 +125,10 @@ const SECRETS_STORE_RE = /\.ols-qa-secrets\b|\bols-secrets\.md\b/i;
 const EMAIL_PREFILL_RE = /\b(?:pre-?fill|fill)\w*\b[^.\n]{0,60}\bemail\b|\bemail\b[^.\n]{0,60}\bpre-?fill/i;
 // Only an explicit proof demand counts: naming a helper elsewhere in the brief does not prove this window's fill.
 const EMAIL_READBACK_RE = /read[- ]?back[^.\n]{0,40}(?:email|input|value)|inputValue\(|\bEMAIL_READY\b/i;
+// Consent / terms dialogs (PM-2026-09-24-15): a brief whose agent creates, submits or publishes content in a
+// real UI must forbid accepting consent, attestation, terms or agreement dialogs on the owner's behalf.
+const CONTENT_WRITE_RE = /\b(?:publish|submit|create)(?:s|es|ing)?\b[^.\n]{0,60}\b(?:media|article|course|content|learning path|LP)\b|กดเผยแพร่|สร้างสื่อ|ส่งอนุมัติ/i;
+const CONSENT_STOP_RE = /(?:never|do not|don't|must not|ห้าม)[^.\n]{0,60}(?:accept|tick|agree|ยอมรับ|ติ๊ก)[^.\n]{0,60}(?:consent|attestation|terms|agreement|ข้อตกลง|รับรอง|ลิขสิทธิ์)/i;
 
 /**
  * Does the brief spell out the persistence contract?
@@ -256,6 +260,21 @@ function assessBrief(text) {
       fix:
         'require reading the input value back (inputValue) and logging EMAIL_READY only when it matches, ' +
         'or name laneT69/ndlp_owner_window.js / relogin_t69.js which already do it',
+    });
+  }
+
+  // Check 7 — consent dialogs (PM-2026-09-24-15). Blocks: an agent ticked 7 copyright attestations and
+  // clicked ยอมรับ on NDLP for the owner; accepting terms needs the owner's explicit, per-action permission.
+  checks += 1;
+  if (CONTENT_WRITE_RE.test(text) && !CONSENT_STOP_RE.test(text)) {
+    findings.push({
+      code: 'CONSENT_DIALOG_NOT_FORBIDDEN',
+      severity: SEVERITY.BLOCK,
+      message:
+        'the brief has the agent create/submit/publish content in a real UI but never forbids accepting a consent, ' +
+        'attestation, terms or agreement dialog — on 2026-09-24 an agent ticked 7 copyright attestations for the owner (PM-2026-09-24-15)',
+      fix:
+        'add: "never accept or tick any consent, attestation, terms or agreement dialog — stop and report it to the main thread"',
     });
   }
 

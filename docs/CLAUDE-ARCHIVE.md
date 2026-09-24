@@ -3675,6 +3675,13 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0145-zsh-unsplit-arg
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0146-ndlp-login-window-logged-email-prefilled-with-no-form.md`](docs/post-mortem/20260924-post-mortem-report-0146-ndlp-login-window-logged-email-prefilled-with-no-form.md)
 
+### Report #0147 — agent ยอมรับหน้ารับรองลิขสิทธิ์ NDLP แทนเจ้าของงาน
+
+- กฎ: บรีฟที่ให้ agent สร้าง/ส่ง/เผยแพร่เนื้อหาใน UI จริง ต้องห้ามยอมรับหรือติ๊ก consent/รับรอง/ข้อตกลง และสั่งให้หยุดรายงาน · สิ่งที่เลนหนึ่งเจอ ต้องกลายเป็นข้อห้ามในบรีฟเลนถัดไป
+- ชั้นใหม่: `agent-dispatch-guard` check 7 `CONSENT_DIALOG_NOT_FORBIDDEN` = BLOCK + เทสต์ (38/38)
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0147-agent-accepted-ndlp-copyright-consent-for-owner.md`](docs/post-mortem/20260924-post-mortem-report-0147-agent-accepted-ndlp-copyright-consent-for-owner.md)
+
 ### Report #0141 — ตัวอัปโหลด Drive หาโฟลเดอร์หลักด้วยชื่อ เจ้าของงานเปลี่ยนชื่อแล้วจึงสร้างโฟลเดอร์ซ้ำ
 
 **Surface:** OLS QA workspace / งาน export Confluence→PDF→Drive (เครื่องมือนอก repo)

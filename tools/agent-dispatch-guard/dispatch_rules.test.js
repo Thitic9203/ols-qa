@@ -335,6 +335,25 @@ t('PM-2026-09-24-14 real brief shape (prefill + relogin_t69.js named elsewhere) 
   assert.ok(r.findings.some((f) => f.code === 'EMAIL_PREFILL_WITHOUT_READBACK'), 'naming a helper must not excuse the missing proof');
 });
 
+const PM15_BRIEF = require('fs').existsSync(process.env.PM15_BRIEF || '') ? require('fs').readFileSync(process.env.PM15_BRIEF, 'utf8') : null;
+t('PM-2026-09-24-15 incident wording (create + publish on NDLP, consent not forbidden) is BLOCKED', () => {
+  const text = 'Create ONE article media through the normal NDLP creator UI and publish it, with "เลือกนำไปใช้ที่ OLS" ticked.\n' + PERSIST_LINE;
+  const r = rules.assessBrief(text);
+  assert.ok(r.findings.some((f) => f.code === 'CONSENT_DIALOG_NOT_FORBIDDEN'), 'got ' + r.findings.map((f) => f.code));
+  assert.ok(r.checks >= 7, 'the consent check must be counted');
+});
+
+t('PM-2026-09-24-15 same brief forbidding consent acceptance passes that check', () => {
+  const text = 'Create ONE article media and publish it. Never accept or tick any consent, attestation, terms or agreement dialog; stop and report.\n' + PERSIST_LINE;
+  const r = rules.assessBrief(text);
+  assert.ok(!r.findings.some((f) => f.code === 'CONSENT_DIALOG_NOT_FORBIDDEN'), 'must not flag: ' + rules.formatAssessment(r));
+});
+
+t('a read-only brief with no content writes is not flagged for consent', () => {
+  const r = rules.assessBrief('READ-ONLY: list published media counts per grade band.\n' + PERSIST_LINE);
+  assert.ok(!r.findings.some((f) => f.code === 'CONSENT_DIALOG_NOT_FORBIDDEN'));
+});
+
 // ------------------------------------------------------------------- harness
 
 let failed = 0;
