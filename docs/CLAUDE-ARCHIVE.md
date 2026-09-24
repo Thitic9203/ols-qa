@@ -3618,6 +3618,19 @@ subagent ชุด D พิมพ์ `ts` ระดับนาที 07:26–08
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0138-subagents-hand-typed-unmeasured-timestamps-in-result-jsonl.md`](docs/post-mortem/20260924-post-mortem-report-0138-subagents-hand-typed-unmeasured-timestamps-in-result-jsonl.md)
 
+### Report #0139 — ผิดซ้ำจาก #0088 · #0079: ใช้ ER ของ System NDLP_TC_006 เป็นของ Integration NDLP_TC_005 เพราะหยิบแถวถัดไปจากแคชชีท แทนการอ่านชีทสด
+
+**Surface:** OLS QA workspace / รอบอัด VDO training69 — ไฟล์มติของรอบ (23.4x ข้อ b · 06.4x) + บรีฟเลน laneT69 2 รอบ (`ols-qa-testing-bot` out-of-repo)
+
+มติ 23.4x (b) และบรีฟเลนใช้ ER "เข้าหน้ารายละเอียด · ข้อมูลถูกเติม · สถานะแบบร่าง" ของ System NDLP_TC_006 ภายใต้รหัส Integration NDLP_TC_005 ซึ่งชีทสด (แถว 15) คือเคส push ซ้ำ
+ER มาจากสำเนาชีท 13/Sep ที่รหัสเคสอยู่แค่ในชื่อคลิปช่องสุดท้ายของแถว การค้นรหัสจึงได้แถวถัดไป และได้ชีท System ก่อน Integration · ค่าในแคชตรงชีทสด 12/12 แถว NDLP ความผิดจึงอยู่ที่การจับคู่แถว
+subagent ชุด B อ่านชีทสดแล้วจับได้ 07:46:54 · ไม่มีการเขียน (ledger 0/216) · สาเหตุรากคือ ER ในมติ/บรีฟไม่ผูกกับตัวตนของแถวสด และไม่มีตัวตรวจ ER ตอนจ่ายงาน (`dispatch_rules.js` มี `expected|sheet|ชีท` 0 ครั้ง)
+
+**กฎที่เพิ่มจากเหตุนี้:** ยังไม่มีกฎหรือเครื่องมือใหม่ที่ลงมือแล้ว — เสนอบรีฟ/มติต้องอ้าง ER ที่อ่านสดพร้อมชีท + แท็บ + รหัสเคส + แถว + เวลาอ่าน
++ `agent-dispatch-guard` ปฏิเสธบรีฟที่ ER ไม่พบในแถวสด + ตัวหาแถวที่จับคู่ในแถวเดียวกันและปฏิเสธผลที่เจอหลายชีท + เทสต์ที่รู้คำตอบ (ยังไม่ได้ทำ)
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0139-briefed-er-from-adjacent-cache-row-instead-of-live-sheet.md`](docs/post-mortem/20260924-post-mortem-report-0139-briefed-er-from-adjacent-cache-row-instead-of-live-sheet.md)
+
 ## 🔴 ข้อยกเว้น: เขียนข้อมูลบน production ได้ — เฉพาะรอบ smoke test 2026-09 เท่านั้น
 
 **เจ้าของงานอนุมัติเมื่อ 2026-09-03 ให้ สร้าง · แก้ไข · ลบ ข้อมูลบน production ได้ ตามแผน
