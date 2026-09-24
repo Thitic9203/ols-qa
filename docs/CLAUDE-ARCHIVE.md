@@ -3543,6 +3543,42 @@ Full report: [`docs/post-mortem/20260923-post-mortem-report-0131-finally-saved-w
 
 Full report: [`docs/post-mortem/20260923-post-mortem-report-0132-board-generator-hardcoded-criteria-instead-of-frozen-checklist.md`](docs/post-mortem/20260923-post-mortem-report-0132-board-generator-hardcoded-criteria-instead-of-frozen-checklist.md)
 
+### Report #0133 — ผิดซ้ำจาก #0123: เปิดหน้าเรียนในโหมดเตรียมข้อมูล ตัวอ่าน ebook ของแอปบันทึกความคืบหน้าเองก่อนมี intent
+
+**Surface:** OLS QA workspace / training69 VDO recording lane T69 (`ols-qa-testing-bot` out-of-repo)
+
+ขั้น `prep2` ของ Badge_TC_001 เปิดหน้าเรียนด้วย context ที่ไม่บล็อกการเขียน ตัวอ่าน ebook ของแอปบันทึกความคืบหน้า 100% เองก่อนมีบรรทัด
+intent และทำให้เหรียญไต่ระดับเดิมของบัญชีผู้เรียนได้ Gold ขณะอีกเลนอัดด้วยบัญชีเดียวกัน สาเหตุรากคือด่านการเขียนอยู่ที่คำสั่งของสคริปต์
+(มาตรการจาก #0123) ไม่ได้อยู่ที่ network การเขียนที่แอปทำเองจึงหลุดได้ ลง ledger ย้อนหลัง `BI3M_auto` และแก้สคริปต์ของเคสแล้ว
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎข้อความใหม่ — ชั้นใหม่ที่เสนอคือด่าน default-deny ใน `newCtx` ที่ปล่อยเฉพาะ request ที่มี intent แล้ว + เทสต์ที่รู้คำตอบ (ยังไม่ได้ทำ)
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0133-learning-page-open-auto-wrote-ebook-progress-before-ledger-intent.md`](docs/post-mortem/20260924-post-mortem-report-0133-learning-page-open-auto-wrote-ebook-progress-before-ledger-intent.md)
+
+### Report #0134 — ผิดซ้ำจาก #0122: เธรดหลักปล่อย 2 เลนใช้บัญชีผู้เรียนเดียวกันพร้อมกัน หน้าต่างเหรียญไปค้างในคลิปของอีกเลน
+
+**Surface:** OLS QA workspace / main-thread lane dispatch, training69 VDO round 0923 (`ols-qa-testing-bot` out-of-repo)
+
+เธรดหลักจ่ายเลน Badge_TC_001 (เขียนความคืบหน้าและเหรียญ) กับ Feed_TC_001 (อัดหน้าฟีด) ด้วยบัญชีผู้เรียนเดียวกันพร้อมกัน บรีฟกันแค่
+การเขียนของเลน Feed เอง หน้าต่าง Gold จากการเขียนของเลน Badge จึงค้างทับคลิป Feed ช่วง 3–310 วินาที หลังการเผยแพร่ที่ย้อนไม่ได้
+สาเหตุรากคือการจัดสรรบัญชีเป็นข้อความในบรีฟ ไม่มีล็อกบัญชีในโค้ด ด่านร่วมมีแค่ `REC.lock` ที่ล็อกการอัด (มาตรการจาก #0122)
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎข้อความใหม่ (CLAUDE.md §12 ห้ามชนบัญชีอยู่แล้ว) — เสนอล็อกบัญชีต่อ tag ใน `newCtx` + ด่านใน `agent-dispatch-guard` + เทสต์ที่รู้คำตอบ (ยังไม่ได้ทำ)
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0134-main-thread-dispatched-two-lanes-on-same-learner-account.md`](docs/post-mortem/20260924-post-mortem-report-0134-main-thread-dispatched-two-lanes-on-same-learner-account.md)
+
+### Report #0135 — ผิดซ้ำจาก #0120 · #0105: สคริปต์อัด Feed_TC_001 เผยแพร่ (ย้อนไม่ได้) โดยไม่ตรวจว่าช่วง "ก่อนเผยแพร่" ขึ้นจอจริง
+
+**Surface:** OLS QA workspace / training69 VDO recording lane T69 (`ols-qa-testing-bot` out-of-repo)
+
+take ของ Feed_TC_001 เริ่มอัดโดยไม่ตรวจหน้าต่างทับหน้า และบันทึกว่าช่วง "ก่อน" เสร็จจากเวลาและชื่อจาก API ไม่ได้วัดว่าหน้าเลื่อนหรือการ์ด
+ขึ้นจอ จึงเผยแพร่ไปทั้งที่หน้าต่าง Gold ทับหน้า 3–310 วินาที คลิปส่งไม่ได้และถ่ายช่วง "ก่อน" ใหม่ไม่ได้ สาเหตุรากคือด่านก่อนเขียนตรวจเป้าหมาย
+การเขียน ไม่มีด่านในโค้ดที่พิสูจน์หลักฐานบนจอร่วมเวลา พบเพิ่มว่า take รัน `LOADMAX 999` ขัดมติ 17.4x ที่ให้เคสย้อนไม่ได้ใช้ 8
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎข้อความใหม่ (CLAUDE.md §0 ข้อ contemporaneous มีแล้ว) — เสนอด่านหลักฐานบนจอก่อนการเขียนที่ย้อนไม่ได้ + ตรวจหน้าต่างก่อนเริ่มอัด + load gate ผูกมติ + เทสต์ที่รู้คำตอบ (ยังไม่ได้ทำ)
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0135-take-published-irreversibly-without-checking-before-phase-on-screen.md`](docs/post-mortem/20260924-post-mortem-report-0135-take-published-irreversibly-without-checking-before-phase-on-screen.md)
+
 ## 🔴 ข้อยกเว้น: เขียนข้อมูลบน production ได้ — เฉพาะรอบ smoke test 2026-09 เท่านั้น
 
 **เจ้าของงานอนุมัติเมื่อ 2026-09-03 ให้ สร้าง · แก้ไข · ลบ ข้อมูลบน production ได้ ตามแผน
