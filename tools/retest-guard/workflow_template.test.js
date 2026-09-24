@@ -16,7 +16,6 @@ const R = require('./retest_rules');
 
 const ROOT = path.join(__dirname, '..', '..');
 const WF = path.join(ROOT, 'skills', 'deprecated', 'retest-bug-workflow', 'WORKFLOW.md');
-const STUB = path.join(ROOT, 'skills', 'retest-bug-workflow', 'SKILL.md');
 
 const wf = fs.readFileSync(WF, 'utf8');
 
@@ -49,15 +48,31 @@ check('the template also shows the API-only header lines', () => {
   ['API', 'Swagger'].forEach((k) => assert.ok(tpl.includes('*' + k + ':*'), 'template omits ' + k));
 });
 
-check('the template case table matches CASE_TABLE_HEADERS exactly', () => {
-  const line = tpl.split('\n').find((l) => l.startsWith('||') && l.includes('Case'));
-  assert.ok(line, 'no case-table header row in the template');
-  const headers = R.splitWikiCells(line).cells.map(R.bareHeader);
-  assert.deepStrictEqual(headers, R.CASE_TABLE_HEADERS.slice(),
-    'template case table is [' + headers.join(', ') + ']');
+check('the template carries ONE table and no separate case table (owner, 2026-09-24)', () => {
+  const headerRows = tpl.split('\n').filter((l) => l.startsWith('||'));
+  assert.strictEqual(headerRows.length, 1, 'template has ' + headerRows.length + ' table header rows');
+  assert.ok(!/Test cases run/.test(tpl), 'template still prints the "Test cases run" table');
 });
 
-check('the template verdict table matches VERDICT_TABLE_HEADERS exactly', () => {
+check('the template prints no "*Scope:* FULL" line, only the scoped form', () => {
+  assert.ok(!/^\*Scope:\* FULL/m.test(tpl), 'template teaches the Scope: FULL line the owner removed');
+  assert.ok(/^\*Scope:\* CASES:/m.test(tpl), 'template no longer shows the scoped Scope line');
+});
+
+check('the template shows multi-point Build / Fixture as label + bullets + one blank line', () => {
+  const lines = tpl.split('\n');
+  ['Build', 'Fixture'].forEach((k) => {
+    const i = lines.indexOf('*' + k + ':*');
+    assert.ok(i > -1, k + ' label is not on its own line');
+    assert.ok(/^\* /.test(lines[i + 1]), k + ' has no bullet under it');
+    let j = i + 1;
+    while (/^\* /.test(lines[j])) j += 1;
+    assert.strictEqual(lines[j], '', k + ' list is not followed by a blank line');
+    assert.notStrictEqual(lines[j + 1], '', k + ' list is followed by more than one blank line');
+  });
+});
+
+check('the template table matches VERDICT_TABLE_HEADERS exactly', () => {
   const line = tpl.split('\n').find((l) => l.startsWith('||') && l.includes('Expected Result'));
   assert.ok(line, 'no verdict-table header row in the template');
   const headers = R.splitWikiCells(line).cells.map(R.bareHeader);
@@ -74,14 +89,19 @@ check('the template shows the coverage line the gate reconciles', () => {
     'no expected-result / acceptance-criteria coverage line in the template');
 });
 
-check('the prose that names the case columns names all of them, in the workflow and the stub', () => {
-  const stub = fs.readFileSync(STUB, 'utf8');
-  const expected = R.CASE_TABLE_HEADERS.join(' · ');          // "Case · Title · Covers · Role · Status"
-  [['WORKFLOW.md', wf], ['SKILL.md', stub]].forEach(([name, text]) => {
-    const mentions = text.match(/Test cases run` table: ([^—)]+)/);
-    assert.ok(mentions, name + ' no longer describes the case table');
-    assert.strictEqual(mentions[1].trim(), expected, name + ' describes it as "' + mentions[1].trim() + '"');
-  });
+check('the prose that names the table columns names all of them, in the workflow', () => {
+  // The stub (skills/retest-bug-workflow/SKILL.md) is outside this change's paths and still
+  // describes the retired two-table shape; it is reported for a follow-up rather than checked here.
+  const expected = R.VERDICT_TABLE_HEADERS.join(' · ');
+  const mentions = wf.match(/retest comment's one table: (.+?) —/);
+  assert.ok(mentions, 'WORKFLOW.md no longer describes the one table');
+  assert.strictEqual(mentions[1].trim(), expected, 'WORKFLOW.md describes it as "' + mentions[1].trim() + '"');
+});
+
+check('the workflow documents the post-publish width and centring step', () => {
+  assert.ok(/adf_colwidth\.js --in/.test(wf), 'the layout step is not documented');
+  assert.ok(/adf_colwidth\.js --check/.test(wf), 'the readback check is not documented');
+  assert.ok(wf.includes('[' + R.TABLE_COLUMN_WIDTHS.join(', ') + ']'), 'the documented widths drifted from TABLE_COLUMN_WIDTHS');
 });
 
 check('the workflow tells the reader the body is rendered, not typed', () => {

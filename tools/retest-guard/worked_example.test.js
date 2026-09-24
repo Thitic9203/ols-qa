@@ -60,5 +60,11 @@ check('the FE example carries the per-row Evidence column, not a separate eviden
   assert.deepStrictEqual(t.headers, R.VERDICT_TABLE_HEADERS.slice());
 });
 
+check('both examples carry ONE table and no Scope FULL line (owner format, 2026-09-24)', () => {
+  assert.strictEqual(R.findTables(blocks[0].body, R.FORMATS.ADF).length, 1, 'API example');
+  assert.strictEqual(R.findTables(blocks[1].body, R.FORMATS.WIKI).length, 1, 'FE example');
+  blocks.forEach((b, i) => assert.ok(!/Scope:\**\s*FULL/.test(b.body), 'block ' + i + ' prints Scope: FULL'));
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);

@@ -219,7 +219,7 @@ each. Build it here, before testing, so the run has a defined scope instead of a
    created (Step 4c) or recorded BLOCKED with the missing fixture named — never dropped.
 5. **Show the case list to the user with the Step 2b plan block.** It is the scope they are approving.
 
-The same list, with each case's outcome, becomes the `Test cases run` table in the Step 6 comment.
+The same list, with each case's outcome, goes into the `Case (Role)` cell of every row it covers in the Step 6 comment's single table.
 
 ---
 
@@ -464,9 +464,15 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 *Design ref:* {figma node link}   (UI retest — or "none — asked {who} {YYYY-MM-DD}")
 *Role:* {role(s) the cases were run as}
 *Date:* {YYYY-MM-DD}
-*Build:* {build / commit id the fix landed in}
-*Fixture:* {what was used, and whether it was restored}
-*Scope:* FULL   (or "CASES: TC_03, TC_07" when the user asked for particular cases)
+*Build:*
+* {build / tag the fix landed in}
+* {second point, when the value has more than one}
+
+*Fixture:*
+* {what was used}
+* {whether it was restored, and how that was checked}
+
+*Scope:* CASES: TC_03, TC_07   (scoped rounds only — a full round prints NO Scope line)
 
 ----
 
@@ -474,13 +480,8 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 *Expected Result (from ticket, verbatim):* …          (Bug)
 *Acceptance Criteria (from ticket, verbatim):* …      (Task / Story)
 
-*Test cases run:* {n}
-
-||*Case*||*Title*||*Covers*||*Role*||*Status*||
-|TC_01|{what this case verifies}|ER1|{role}|✅/❌/⛔|
-
-||*No.*||*Expected Result*||*Actual Result*||*Evidence*||*Status*||
-|1|{item quoted from the ticket}|{observed}|!tc1.png!|✅/❌|
+||*No.*||*ER*||*Case (Role)*||*Expected Result*||*Actual Result*||*Evidence*||*Status*||
+|1|ER1|• TC_01 {what it verifies} ({role}) \\ • TC_04 {what it verifies} ({role})|{item quoted from the ticket}|• {observed point} \\ • {observed point}|[▶ tc1.mp4|^tc1.mp4] !tc1.png!|✅/❌/⛔|
 
 *Expected-result coverage:* {n} / {total} items met      (a Task reads *Acceptance-criteria coverage:*)
 *Case coverage:* {run} / {total} cases run — {passed} passed / {failed} failed / {blocked} blocked
@@ -492,15 +493,35 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 render it (Step 6·0); the guard rejects a body that drifts from this shape, including one typed from
 this very block.
 
-The **`Test cases run` table is mandatory on every retest — bug and task alike.** It is the Step 2c
-case list with outcomes: one row per case (`Case` · `Title` · `Covers` = the `ER*`/`AC*` ids ·
-`Role` · `Status`), covering the ticket's own contract **and** the surface cases pulled in at Step 2c.
-It is what tells the next reader what was actually exercised, and it is the artifact that outlives the
-ticket — a result that never became a case row does not get re-run
-([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §1). A **Task /
-Story** retest carries this table and the per-`AC*` verdict table below it; it never ships as prose.
+🔴 **ONE table — owner format, 2026-09-24.** The comment carries a single table, heading exactly
+`No.` · `ER` (a Task: `AC`) · `Case (Role)` · `Expected Result` · `Actual Result` · `Evidence` ·
+`Status` (API bug: drop `Evidence`). One row per `ER*`/`AC*` item; its `Case (Role)` cell lists
+**every** Step 2c case covering that item as `• TC_nn title (role)`, joined by the wiki line break
+` \\ `. There is no separate `Test cases run` table any more — the case list with outcomes still
+ships on every retest, bug and task alike, but inside the rows it covers; it is what tells the next
+reader what was actually exercised, and a result that never became a case does not get re-run
+([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §1). The
+coverage lines stay **after** the table. The owner's words: "ทำไมต้องแยกตาราง รวมให้เป็นตารางเดียว".
 
-🔴 **The case table carries NO design-node column — not on any retest, ever.** The design reference is
+🔴 **No `Scope: FULL` line.** A full round prints no Scope line at all ("*Scope:* FULL ตัดทิ้ง");
+only a scoped round prints `*Scope:* CASES: <ids>`.
+
+🔴 **Several points = bullets, never one long line.** A header value with more than one point
+(separated by ` · ` or ` — ` in `run.json`) renders as the label on its own line, one `* ` bullet per
+point, then exactly **one** blank line — without it the wiki list continues into the next label, and
+`Fixture` must sit at the same level as `Build`. Inside a table cell, several points (` · ` in
+`run.json`) render as `• point` lines joined by ` \\ `. Owner: "ให้ทำเป็นบลูเลทๆ เสมอไม่ยาวพืดให้อ่านยาก".
+
+🔴 **After posting: column widths and centring (post-publish step).** The v2 wiki endpoint cannot
+carry widths or alignment, so once the wiki body is posted, GET the comment's v3 ADF, run
+`node tools/retest-guard/adf_colwidth.js --in get.json --out put.json`, PUT `put.json` to the v3
+comment endpoint, GET it again and run `adf_colwidth.js --check readback.json` — exit 0 is required.
+It sets `colwidth` [50, 75, 230, 200, 330, 230, 65] on the single table and centres every clip and
+image in the `No.` / `Evidence` / `Status` columns (each MP4 `mediaGroup` becomes a centred
+`mediaSingle`); owner: "จัดกลางเสมอ อย่าให้ต้องบอกซ้ำ". The readback check is the evidence — not the
+PUT status.
+
+🔴 **The table carries NO design-node column — not on any retest, ever.** The design reference is
 one fact about the round, not a per-row fact, so it belongs on the header's `Design ref:` line and
 nowhere else: the node URL when one exists, or the Step 2d reason when none does. A column repeating
 "no node" down every row tells the reader nothing and was removed on user instruction 2026-08-25 after
@@ -536,8 +557,8 @@ unverified or observed to differ — an **observed-to-differ** item is a FAILED 
 **unverified/unreached** item is a BLOCKED row (a coverage gap, not a product FAILED). Any shortfall ⇒
 the retest is **not complete** — add the row / verify the item / re-status the partial case before drafting further.
 
-**Case-list reconciliation (same pass).** Every case in the Step 2c list appears in the `Test cases
-run` table with a status; every `ER*`/`AC*` id appears in at least one case's `Covers` cell; every UI
+**Case-list reconciliation (same pass).** Every case in the Step 2c list appears in the `Case (Role)`
+cell of the row(s) it covers, with a status in `run.json`; every `ER*`/`AC*` row names at least one case; every UI
 case carries a design node link **or** the BLOCKED-with-reason recorded at Step 2d. A case that was
 planned and not run is a **BLOCKED row with the reason**, never a quietly shortened list. Every row
 with a passing status carries an evidence reference — passed rows included
@@ -569,7 +590,8 @@ node tools/retest-guard/retest_guard.js --manifest run.json --out body.txt --evi
 - **exit 1** — findings; each names the rule and the fix. Close them; do not draft around them.
 - **exit 2** — the guard could not run. That is **not** a pass and never becomes one.
 
-**Scope is a field, not a sentence.** `"scope": {"mode":"FULL"}` for a full retest;
+**Scope is a field, not a sentence.** `"scope": {"mode":"FULL"}` for a full retest (the comment then
+prints no Scope line at all);
 `{"mode":"CASES","cases":["TC_03","TC_07"]}` when the user asked for particular cases. The scoped
 form narrows the coverage denominator to what those cases cover, prints the verdict as
 `PASSED (scoped: TC_03, TC_07)`, and lists every item it did **not** verify in an `Out of scope this
@@ -599,7 +621,7 @@ different deviation is routinely misread as "the fix didn't work".
 
 **Do not add** a separate `Repro matrix` or `Why this item failed` block — the entry point(s) exercised
 go into the `Fixture` line, and the expected-vs-actual comparison is the verdict-table row itself. Keep
-the comment to: header → Env/Role/Date/Fixture → Test Step/Expected → verdict table (with `Evidence`
+the comment to: header → Env/Role/Date/Build/Fixture → Test Step/Expected → the one table (with `Evidence`
 cell) → coverage → symptom-gone line → Root cause → Resolution options. Nothing else.
 
 **Never edit the ticket's expected-result field** to match observed behavior. QA reports the conflict and names
@@ -628,7 +650,7 @@ cause and check each one —
 Any box unchecked → delete the sentence or go back to Step 4h and earn it. Do not soften it into a
 hedge.
 
-**Table headers:** every column MUST carry an explicit, all-English header. The verdict table's header row is fixed and MUST read exactly `No.` · `Expected Result` · `Actual Result` · `Evidence` · `Status` — the middle two mirror the ticket's own field names (**Expected Result** / **Actual Result**) so a reader lines the comment up against the ticket without translating, and `Evidence` (between `Actual Result` and `Status`) holds each row's screenshot in-cell. **API bugs drop the `Evidence` column** (`No.` · `Expected Result` · `Actual Result` · `Status`) and carry cURL/response in a section below. Never `Expected result item`, never a bare `Actual`. A bare `#` for the row-number column renders as a **blank** header cell in Jira. **Headers MUST be bold, in the syntax of the target endpoint** — v2 wiki `||*No.*||*Expected Result*||…` (single asterisk, `||` delimiters, **no divider row**); markdown/ADF `| **No.** | **Expected Result** | …` followed by a `|---|` divider. A `**No.**` in a v2 body renders as literal `*No.*`, and a `|---|` divider row in a v2 body renders as a visible row of dashes.
+**Table headers:** every column MUST carry an explicit, all-English header. The single table's header row is fixed and MUST read exactly `No.` · `ER` (Task: `AC`) · `Case (Role)` · `Expected Result` · `Actual Result` · `Evidence` · `Status` — `Expected Result` / `Actual Result` mirror the ticket's own field names (**Expected Result** / **Actual Result**) so a reader lines the comment up against the ticket without translating, and `Evidence` (between `Actual Result` and `Status`) holds each row's screenshot in-cell. **API bugs drop the `Evidence` column** (`No.` · `ER` · `Case (Role)` · `Expected Result` · `Actual Result` · `Status`) and carry cURL/response in a section below. Never `Expected result item`, never a bare `Actual`. A bare `#` for the row-number column renders as a **blank** header cell in Jira. **Headers MUST be bold, in the syntax of the target endpoint** — v2 wiki `||*No.*||*Expected Result*||…` (single asterisk, `||` delimiters, **no divider row**); markdown/ADF `| **No.** | **Expected Result** | …` followed by a `|---|` divider. A `**No.**` in a v2 body renders as literal `*No.*`, and a `|---|` divider row in a v2 body renders as a visible row of dashes.
 
 Show the full draft in chat and wait.
 
@@ -743,9 +765,9 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌** (not ambiguous text).
 - [ ] **`node tools/retest-guard/retest_guard.js` exited 0** for this round — on the manifest before drafting (Step 6·0) and on the posted body before the transition (Step 8·0). Exit 2 (could not run) is not a pass, and the guard's clean result covers the mechanical rules only.
 - [ ] **Step 6c independent reviewer round returned CLEAN**, every round was reported to the user as it finished, and the reviewer's findings were verified rather than taken on trust.
-- [ ] **Scope is stated in the comment** — `Scope: FULL`, or `CASES: <ids>` with the verdict reading `PASSED (scoped: …)` and an `Out of scope this round:` line naming every item this round did not verify.
+- [ ] **Scope is stated only when partial** — a full round prints no Scope line; a partial one prints `CASES: <ids>` with the verdict reading `PASSED (scoped: …)` and an `Out of scope this round:` line naming every item this round did not verify.
 - [ ] **AC/EC & bug-detail coverage gate (7-layer) PASSED — `enumerated Step 2 ER* ids == rows carrying a status + evidence (or explicit BLOCKED)`** ([qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *AC/EC & bug-detail coverage*): every Expected-Result item + bug-detail bullet was enumerated char-exact at Step 2, mapped 1:1 to a verdict-table row, verified on its real surface, and appears as its **own row** — none parked only in a remark/note/chat, no PASSED over partial coverage, a differing item is a FAILED/BLOCKED row not a footnote. Fail closed: any item unverified/unrowed/status-less ⇒ retest not complete.
-- [ ] **Case list in the posted comment (bug and task alike)** — the Step 2c list appears as the `Test cases run` table with per-case status, `Covers` ids, and design node per UI case; `Case coverage: {n}/{total}` reconciles; the surface's existing cases were pulled in, not just the ticket's own lines ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §1).
+- [ ] **Case list in the posted comment (bug and task alike)** — every Step 2c case appears in the `Case (Role)` cell of each row it covers, in the one table (no separate case table); `Case coverage: {n}/{total}` reconciles; the surface's existing cases were pulled in, not just the ticket's own lines ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §1).
 - [ ] **Design (Figma) comparison ran for every UI case** ([figma-design-comparison.md](../../../references/figma-design-comparison.md)): node link recorded per case, five points compared (present · char-exact text · order/position · states · no overflow/overlap measured); a screen with **no** design reference was reported back to the assigning person/channel and its visual points left **BLOCKED**, never PASSED; a screen this ticket intentionally changed was reported as **design out of date** (owner named) rather than filed as a defect; a mid-test AC revision is spelled out in the verdict line as an accepted limitation.
 - [ ] **Depth gates green** ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md)): values checked against their source (not just present) · every in-scope width run with overflow/overlap **measured** · fixture large enough to overflow/scroll · build id recorded · no `caveat/not verifiable/assumed` row carrying a passing status · anything wrong that was seen is reported even where no expected asked for it.
 - [ ] `Verdict: PASSED` or `Verdict: FAILED` with issue link.
@@ -773,7 +795,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 
 - [ ] **`retest_guard.js` exits 0 for the posted body** (re-run it against what was actually posted, not against the draft). Exit 2 is not a pass.
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌**; env + results table present (bold headers, `No.` column).
-- [ ] **Case list present and reconciled:** the `Test cases run` table carries every Step 2c case with a status, every `ER*`/`AC*` id appears in some case's `Covers` cell, and `Case coverage: {n}/{total}` matches the rows. A planned-but-unrun case is a BLOCKED row with its reason — never a shortened list.
+- [ ] **Case list present and reconciled:** the single table's `Case (Role)` cells carry every Step 2c case, every `ER*`/`AC*` row names at least one case, and `Case coverage: {n}/{total}` matches the rows. A planned-but-unrun case is a BLOCKED row with its reason — never a shortened list.
 - [ ] **Design reference accounted for:** the header's `Design ref:` line carries the node link(s) actually opened, or the Step 2d reason naming who was asked. A UI retest with neither is not verified — do **not** transition ([figma-design-comparison.md](../../../references/figma-design-comparison.md)).
 - [ ] **No passing row whose actual result contains `caveat` / `not verifiable` / `assumed` / `ยืนยันไม่ได้` / `ตรวจไม่ได้`** — such a row is BLOCKED or PWMI, never PASSED ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §3).
 - [ ] **Every passing row carries an evidence reference** — `count(passing rows) == count(evidence links)`.
@@ -946,7 +968,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST use **PASSED ✅** or **FAILED ❌** only in summary line | Scanability for dev/QA |
 | MUST keep a PASSED comment inside the Step 6 template fields only — no narrative padding, one-line evidence captions | A tight comment is scannable in seconds; prose bloat buries the verdict (locked from OLS-251 accepted format 2026-07-23) |
 | MUST give every table column an explicit English header; row-number column = `No.` | bare `#` renders as a blank header cell in Jira |
-| MUST head the FE verdict table exactly `No.` · `Expected Result` · `Actual Result` · `Evidence` · `Status` (API bug: drop `Evidence`) — never `Expected result item`, never a bare `Actual` | the middle columns carry the ticket's own field names so a reader lines the comment up with no translation, and `Evidence` holds each row's screenshot in-cell (user correction 2026-07-24 OLS-250/249; Evidence column added 2026-07-27, OLS-289) |
+| MUST head the single FE table exactly `No.` · `ER` (Task: `AC`) · `Case (Role)` · `Expected Result` · `Actual Result` · `Evidence` · `Status` (API bug: drop `Evidence`) — never `Expected result item`, never a bare `Actual` | the middle columns carry the ticket's own field names so a reader lines the comment up with no translation, and `Evidence` holds each row's screenshot in-cell (user correction 2026-07-24 OLS-250/249; Evidence column added 2026-07-27, OLS-289; one table with `ER` and `Case (Role)` ordered by the owner 2026-09-24) |
 | MUST bold every table header cell (`\| **No.** \| **Test Case** \| …`) | Jira doesn't auto-bold markdown headers; non-bold looks unprofessional |
 | MUST compare actual text against expected (customfield_12116) character-by-character when expected specifies exact wording | Any text difference = FAIL — no "minor wording" or "cosmetic" exceptions |
 | MUST lock v2/v3 at Step 3; FE → v2 + screenshots | Rewrites waste time |
@@ -991,7 +1013,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST run the Step 9 pre-notify review gate (5 checks on dry-run output) before EVERY send, including resends | Catches wrong recipient/link/counts before they go live (user rule 2026-07-15) |
 | MUST embed each FE screenshot in its verdict-table `Evidence` cell as `!file.png!` — pre-resized (~600–640 px), **no `\|width=…`** (the pipe splits the table row) — never leave as filename-only text | Screenshots must render as pictures inside the cell; a `\|width` param breaks the row, and filename text is unreadable evidence (OLS-289, 2026-07-27) |
 | MUST retest a **Task / Story** against its Acceptance Criteria (read where the AC actually lives, usually the description) with the same enumerate→row→reconcile discipline a Bug's Expected Result gets; a ticket stating no verifiable AC is BLOCKED + a question to the owner, never PASSED | A task retest with no written contract is an unverified pass; "nothing to check" is not a check |
-| MUST post a **case list** in the retest comment (`Test cases run` table: Case · Title · Covers · Role · Status — **never a design-node column**; the design reference lives on the header's `Design ref:` line) for **both** bug and task retests, reconciled against the Step 2c list and the `ER*`/`AC*` ids | A result that never becomes a case row is never re-run; three customer escapes came through results that lived only as comment prose |
+| MUST post the **case list** inside the retest comment's one table: No. · ER · Case (Role) · Expected Result · Actual Result · Evidence · Status — **never a separate case table, never a design-node column**; the design reference lives on the header's `Design ref:` line — for **both** bug and task retests, reconciled against the Step 2c list and the `ER*`/`AC*` ids | A result that never becomes a case row is never re-run; three customer escapes came through results that lived only as comment prose |
 | MUST scope the retest to the **whole surface** the fix touched (its existing cases + the states and in-scope widths the design defines), not only the reported line | A component was retested on one screen while the defect sat on another screen reusing it — the customer found it |
 | MUST compare every UI case against its **design node** on all five points and record the node link on the header's `Design ref:` line — never as a per-row column | An all-present, mis-ordered screen passes a "shows A, B, C" expected; `figma` appeared zero times in the set that shipped the escapes |
 | MUST report a missing design reference back to the person/channel that assigned the retest and hold those visual points **BLOCKED** — never assume a label, order, or layout, never PASSED | An assumed expected is not a spec; it produces both phantom bugs and false passes (PM-006) |

@@ -41,7 +41,33 @@ one module with tests do not.
 | `retest_manifest.js` | the run manifest: scope arithmetic, coverage, and the verdict **the rows support** rather than the one that was hoped for |
 | `retest_render.js` | manifest → comment body (v2 wiki / v3 markdown). The markup rules become the only way the text can be produced |
 | `retest_guard.js` | the CLI: validate, render, scan, report, exit |
+| `adf_colwidth.js` | the post-publish layout step: column widths + centred evidence on the posted comment's ADF, and the readback check |
 | `*.test.js` | the cases pinning all of the above — including one that compares the workflow's printed template against these rules. Plain `node`, no framework |
+
+## Comment format — owner order, 2026-09-24
+
+The renderer produces, and the scan enforces, the shape the task owner ordered after the OLS-759 /
+OLS-721 retests ("*Scope:* FULL ตัดทิ้ง" · "ให้ทำเป็นบลูเลทๆ เสมอ" · "รวมให้เป็นตารางเดียว … อย่าผิดอีก" ·
+"จัดกลางเสมอ อย่าให้ต้องบอกซ้ำ"):
+
+1. **No `*Scope:* FULL` line** — a full round prints none (`scope-full-line`); a scoped round still prints `*Scope:* CASES: <ids>`.
+2. **Several points = bullets.** A header value split on ` · ` / ` — ` becomes the label on its own line, one `* ` bullet per point, then one blank line (`header-inline-list`, `list-swallows-next-line`).
+3. **One table** — `No.` · `ER` (Task: `AC`) · `Case (Role)` · `Expected Result` · `Actual Result` · `Evidence` · `Status` (API: no `Evidence`), one row per contract item; the `Case (Role)` cell lists every covering case as `• TC_nn title (role)` joined by ` \\ `, and a multi-point actual result becomes `• point` lines the same way (`more-than-one-table`, `separate-case-table`, `case-cell-shape`, `cell-inline-list`, `row-without-case`).
+4. **Coverage lines after the table** (`coverage-before-table`).
+5. **Column widths** `[50, 75, 230, 200, 330, 230, 65]` (`TABLE_COLUMN_WIDTHS`) and
+6. **centred evidence** — applied after posting, because the v2 wiki endpoint cannot carry either:
+
+```bash
+# 1. post the rendered wiki body (v2) as usual, then GET the comment's v3 ADF into get.json
+node tools/retest-guard/adf_colwidth.js --in get.json --out put.json    # lay out the one table
+# 2. PUT put.json to the v3 comment endpoint, GET it again into readback.json
+node tools/retest-guard/adf_colwidth.js --check readback.json            # exit 0 required
+```
+
+The layout step sets `colwidth` on every cell, turns each MP4 `mediaGroup` in the `No.` / `Evidence` /
+`Status` columns into a `mediaSingle` with layout `center`, sets every `mediaSingle` there to `center`,
+and adds the alignment mark `center` to those columns' paragraphs. `--check` is run on what the tracker
+stored — the PUT status is not evidence. It refuses (exit 2) a body with more or fewer than one table.
 
 ## Scope — a retest of named cases
 

@@ -192,5 +192,78 @@ check('a fully BLOCKED round renders as BLOCKED and still passes the rules', () 
   assert.deepStrictEqual(found, [], JSON.stringify(found.map((f) => f.rule)));
 });
 
+/* ---- Owner format, 2026-09-24 ------------------------------------------------ */
+
+function multiCaseManifest() {
+  const m = feManifest();
+  m.build = 'PR #12 in tag v1 · the env shows no build number';
+  m.fixture = 'queue item created for the run · deleted after, count back to 0';
+  m.cases.push({ id: 'TC_03', title: 'narrow width keeps the label', covers: ['ER1'], role: 'VIEWER', status: 'PASSED' });
+  m.results[0].actual = 'reads "Review Failed" · stays on one line at 390 px';
+  return m;
+}
+
+check('rule 1: a FULL round prints no Scope line; a CASES round still does', () => {
+  const full = RENDER.render(feManifest());
+  assert.ok(!/Scope:/.test(full), 'a full round printed a Scope line');
+  const m = feManifest();
+  m.scope = { mode: 'CASES', cases: ['TC_01'] };
+  assert.ok(RENDER.render(m).includes('*Scope:* CASES: TC_01'));
+});
+
+check('rule 2: a multi-point header field is a label line, one bullet per point, then ONE blank line', () => {
+  const lines = RENDER.render(multiCaseManifest()).split('\n');
+  const b = lines.indexOf('*Build:*');
+  assert.ok(b > -1, 'Build label is not on its own line');
+  assert.deepStrictEqual(lines.slice(b, b + 4),
+    ['*Build:*', '* PR #12 in tag v1', '* the env shows no build number', '']);
+  const f = lines.indexOf('*Fixture:*');
+  assert.strictEqual(f, b + 4, 'Fixture label must follow Build\'s blank line at the same level');
+  assert.deepStrictEqual(lines.slice(f, f + 4),
+    ['*Fixture:*', '* queue item created for the run', '* deleted after, count back to 0', '']);
+  assert.notStrictEqual(lines[f + 4], '', 'more than one blank line after a list');
+  // A single-point field stays inline.
+  assert.ok(lines.includes('*Date:* 2026-07-23'));
+});
+
+check('rule 3: ONE table with the seven columns; no "Test cases run" table', () => {
+  const body = RENDER.render(multiCaseManifest());
+  const headerRows = body.split('\n').filter((l) => l.startsWith('||'));
+  assert.deepStrictEqual(headerRows, ['||*No.*||*ER*||*Case (Role)*||*Expected Result*||*Actual Result*||*Evidence*||*Status*||']);
+  assert.ok(!/Test cases run/.test(body), 'the separate case table is still rendered');
+  const task = multiCaseManifest();
+  task.ticketType = 'Task';
+  assert.ok(RENDER.render(task).includes('||*No.*||*AC*||*Case (Role)*||'), 'a Task table must head column 2 AC');
+});
+
+check('rule 3: the Case cell lists every covering case as "• id title (role)" joined by the wiki line break', () => {
+  const body = RENDER.render(multiCaseManifest());
+  const row = body.split('\n').find((l) => l.startsWith('|1|'));
+  const cells = R.splitWikiCells(row).cells;
+  assert.strictEqual(cells[1], 'ER1');
+  assert.strictEqual(cells[2],
+    '• TC_01 modal button labels (CONTENT_ADMIN) \\\\ • TC_03 narrow width keeps the label (VIEWER)');
+  assert.strictEqual(cells[4], '• reads "Review Failed" \\\\ • stays on one line at 390 px', 'multi-point actual result not bulleted');
+  const row2 = R.splitWikiCells(body.split('\n').find((l) => l.startsWith('|2|'))).cells;
+  assert.strictEqual(row2[2], '• TC_02 queue badge survives the modal (CONTENT_ADMIN)');
+  const found = errorsOnly(R.scanBody(body, { format: R.FORMATS.WIKI, bugType: 'FE', ticketType: 'Bug' }));
+  assert.deepStrictEqual(found, [], JSON.stringify(found.map((f) => f.rule + '@' + f.line)));
+});
+
+check('rule 3: the API (v3) body is one six-column table without Evidence', () => {
+  const body = RENDER.render(apiFailed());
+  const header = body.split('\n').find((l) => l.startsWith('| **No.**'));
+  assert.strictEqual(header, '| **No.** | **ER** | **Case (Role)** | **Expected Result** | **Actual Result** | **Status** |');
+  assert.strictEqual(R.findTables(body, R.FORMATS.ADF).length, 1);
+});
+
+check('rule 4: the coverage lines stay after the table', () => {
+  const lines = RENDER.render(multiCaseManifest()).split('\n');
+  const lastRow = lines.map((l, i) => (l.startsWith('|') ? i : -1)).reduce((a, b) => Math.max(a, b), -1);
+  const cov = lines.findIndex((l) => l.startsWith('*Expected-result coverage:*'));
+  const cc = lines.findIndex((l) => l.startsWith('*Case coverage:*'));
+  assert.ok(cov > lastRow && cc > cov, `coverage at ${cov}/${cc}, last table row at ${lastRow}`);
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);

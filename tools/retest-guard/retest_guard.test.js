@@ -66,7 +66,9 @@ check('--out writes the rendered body', () => {
   assert.strictEqual(r.code, 0, r.out);
   const body = fs.readFileSync(out, 'utf8');
   assert.ok(body.startsWith('*Retest Result: PASSED*'));
-  assert.ok(body.includes('*Scope:* FULL'));
+  // Owner, 2026-09-24: a full round carries no Scope line, and the body has ONE table.
+  assert.ok(!body.includes('*Scope:* FULL'), 'a full round printed "*Scope:* FULL"');
+  assert.strictEqual(body.split('\n').filter((l) => l.startsWith('||')).length, 1, 'expected exactly one table header row');
 });
 
 check('a manifest whose verdict the rows do not support exits 1', () => {

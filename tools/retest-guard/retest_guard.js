@@ -26,7 +26,7 @@ const M = require('./retest_manifest');
 const RENDER = require('./retest_render');
 
 function parseArgs(argv) {
-  const a = { format: null, bugType: null };
+  const a = { format: null, bugType: null, ticketType: null };
   for (let i = 2; i < argv.length; i += 1) {
     const k = argv[i];
     const next = () => argv[(i += 1)];
@@ -35,6 +35,7 @@ function parseArgs(argv) {
     else if (k === '--out') a.out = next();
     else if (k === '--format') a.format = next();
     else if (k === '--bug-type') a.bugType = next();
+    else if (k === '--ticket-type') a.ticketType = next();
     else if (k === '--evidence-dir') a.evidenceDir = next();
     else if (k === '--json') a.json = true;
     else if (k === '--help' || k === '-h') a.help = true;
@@ -51,6 +52,7 @@ const USAGE = `retest-guard — the mechanical gate for a retest comment
   --out <file>          write the rendered body here (with --manifest)
   --format v2|v3        for --body; defaults to v2
   --bug-type FE|API     for --body; defaults to FE
+  --ticket-type Bug|Task  for --body; column 2 must then read ER (Bug) or AC (Task)
   --evidence-dir <dir>  check that every evidence file named in the manifest exists
   --json                machine-readable output
 
@@ -86,6 +88,7 @@ function main() {
   let body = null;
   let format = a.format || R.FORMATS.WIKI;
   let bugType = a.bugType || 'FE';
+  let ticketType = a.ticketType || null;
 
   if (a.manifest) {
     let manifest;
@@ -99,6 +102,7 @@ function main() {
     findings.push(...manifestFindings);
     format = manifest.format || format;
     bugType = manifest.bugType || bugType;
+    ticketType = manifest.ticketType || ticketType;
 
     if (a.evidenceDir) {
       const named = [];
@@ -136,7 +140,7 @@ function main() {
     }
   }
 
-  if (body) findings.push(...R.scanBody(body, { format, bugType }));
+  if (body) findings.push(...R.scanBody(body, { format, bugType, ticketType }));
 
   report(findings, a.json);
   const hasErrors = findings.some((f) => f.severity !== 'warn');
