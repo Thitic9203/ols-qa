@@ -313,6 +313,28 @@ t('PM-2026-09-24-11 brief using the password-free account list passes', () => {
   assert.strictEqual(r.ok, true);
 });
 
+t('PM-2026-09-24-14 incident wording (prefill email, no read-back) is BLOCKED', () => {
+  const text = 'Open a HEADED browser window on the NDLP sign-in page and prefill ONLY the email. Wait for the owner.\n' + PERSIST_LINE;
+  const r = rules.assessBrief(text);
+  assert.strictEqual(r.ok, false, 'must block');
+  assert.ok(r.findings.some((f) => f.code === 'EMAIL_PREFILL_WITHOUT_READBACK'), 'got ' + r.findings.map((f) => f.code));
+  assert.ok(r.checks >= 6, 'the email check must be counted');
+});
+
+t('PM-2026-09-24-14 same brief demanding an inputValue read-back passes', () => {
+  const text = 'Prefill ONLY the email, then read back the input value and log EMAIL_READY only if it matches.\n' + PERSIST_LINE;
+  const r = rules.assessBrief(text);
+  assert.ok(!r.findings.some((f) => f.code === 'EMAIL_PREFILL_WITHOUT_READBACK'), 'must not flag: ' + rules.formatAssessment(r));
+  assert.strictEqual(r.ok, true);
+});
+
+t('PM-2026-09-24-14 real brief shape (prefill + relogin_t69.js named elsewhere) is still BLOCKED', () => {
+  const text = 'Open a HEADED browser window on the NDLP training69 sign-in page with newNdlpCtx/waitOwnerLogin, and prefill ONLY the email.\n' +
+    '4. After saving, check OLS read-only: run relogin_t69.js with TAG=st9020, EMAIL prefilled only.\n' + PERSIST_LINE;
+  const r = rules.assessBrief(text);
+  assert.ok(r.findings.some((f) => f.code === 'EMAIL_PREFILL_WITHOUT_READBACK'), 'naming a helper must not excuse the missing proof');
+});
+
 // ------------------------------------------------------------------- harness
 
 let failed = 0;

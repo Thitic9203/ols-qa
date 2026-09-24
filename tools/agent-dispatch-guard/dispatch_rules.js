@@ -120,6 +120,11 @@ const PROXIED_ENV_RE = /\bPW_PROXY\b|training\s*69|\bt69\b/i;
 const PRELOAD_RE = /pw_proxy_preload(?:\.js)?|\bt69_env\.sh\b/i;
 // The owner's secrets store (PM-2026-09-24-11). Matches the directory and the file name.
 const SECRETS_STORE_RE = /\.ols-qa-secrets\b|\bols-secrets\.md\b/i;
+// Owner-login windows (PM-2026-09-24-14, repeat of #0074): a brief that has the agent prefill the email
+// must also demand a read-back of the input value as proof, or name a script that already does it.
+const EMAIL_PREFILL_RE = /\b(?:pre-?fill|fill)\w*\b[^.\n]{0,60}\bemail\b|\bemail\b[^.\n]{0,60}\bpre-?fill/i;
+// Only an explicit proof demand counts: naming a helper elsewhere in the brief does not prove this window's fill.
+const EMAIL_READBACK_RE = /read[- ]?back[^.\n]{0,40}(?:email|input|value)|inputValue\(|\bEMAIL_READY\b/i;
 
 /**
  * Does the brief spell out the persistence contract?
@@ -235,6 +240,22 @@ function assessBrief(text) {
       fix:
         'give the password-free account list instead: <bot>/capture/accounts_<env>.json ' +
         '(fields email/env/role_ols/row/tag), or name the exact tag the agent should use',
+    });
+  }
+
+  // Check 6 — email prefill without proof (PM-2026-09-24-14). Blocks: the owner was told the email
+  // was in the form while the page sat on the NDLP home page with no form at all.
+  checks += 1;
+  if (EMAIL_PREFILL_RE.test(text) && !EMAIL_READBACK_RE.test(text)) {
+    findings.push({
+      code: 'EMAIL_PREFILL_WITHOUT_READBACK',
+      severity: SEVERITY.BLOCK,
+      message:
+        'the brief has the agent prefill the email for an owner login but never demands proof — ' +
+        'on 2026-09-24 a lane logged "email prefilled" while the page showed no sign-in form (PM-2026-09-24-14, repeat of #0074)',
+      fix:
+        'require reading the input value back (inputValue) and logging EMAIL_READY only when it matches, ' +
+        'or name laneT69/ndlp_owner_window.js / relogin_t69.js which already do it',
     });
   }
 

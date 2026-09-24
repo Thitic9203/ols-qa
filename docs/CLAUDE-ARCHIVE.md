@@ -3668,6 +3668,13 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0144-save-click-hit-
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0145-zsh-unsplit-args-overwrote-desktop-layout-evidence.md`](docs/post-mortem/20260924-post-mortem-report-0145-zsh-unsplit-args-overwrote-desktop-layout-evidence.md)
 
+### Report #0146 — ผิดซ้ำจาก #0074: บันทึก "email prefilled" ทั้งที่หน้าไม่มีฟอร์ม
+
+- กฎ: "ใส่อีเมลแล้ว" พูดได้เมื่อมีบรรทัด `EMAIL_READY` ที่มาจากการอ่านค่าช่องกลับ (inputValue) เท่านั้น · บรีฟที่ให้กรอกอีเมลต้องสั่งอ่านกลับเสมอ
+- ชั้นใหม่: `agent-dispatch-guard` check 6 `EMAIL_PREFILL_WITHOUT_READBACK` = BLOCK (อ้างชื่อสคริปต์ช่วยไม่นับ) + เทสต์ 35/35
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0146-ndlp-login-window-logged-email-prefilled-with-no-form.md`](docs/post-mortem/20260924-post-mortem-report-0146-ndlp-login-window-logged-email-prefilled-with-no-form.md)
+
 ### Report #0141 — ตัวอัปโหลด Drive หาโฟลเดอร์หลักด้วยชื่อ เจ้าของงานเปลี่ยนชื่อแล้วจึงสร้างโฟลเดอร์ซ้ำ
 
 **Surface:** OLS QA workspace / งาน export Confluence→PDF→Drive (เครื่องมือนอก repo)
