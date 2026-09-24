@@ -3682,6 +3682,13 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0146-ndlp-login-wind
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0147-agent-accepted-ndlp-copyright-consent-for-owner.md`](docs/post-mortem/20260924-post-mortem-report-0147-agent-accepted-ndlp-copyright-consent-for-owner.md)
 
+### Report #0149 — เปิดหน้าต่างล็อกอินให้บัญชีที่เจ้าของงานแจ้งว่าเลิกใช้แล้ว
+
+- กฎ: ก่อนเปิดหน้าต่างล็อกอินหรือขอให้เจ้าของงานล็อกอิน ต้องค้น transcript ว่าบัญชีนั้นถูกแจ้งว่าเลิกใช้หรือไม่ · เปิดเฉพาะบัญชีที่ใช้ได้จริง · ล็อกอินไม่ผ่านไม่ได้แปลว่า session หมดอายุเสมอ
+- ค้าง: รายชื่อกลางของบัญชีที่เลิกใช้ ให้ session_capture / e2e ปฏิเสธเอง
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0149-login-popup-opened-for-retired-account.md`](docs/post-mortem/20260924-post-mortem-report-0149-login-popup-opened-for-retired-account.md)
+
 ### Report #0148 — ผิดซ้ำจาก #0103: keepalive เรียกแค่ get-session ที่ไม่นับเป็นกิจกรรม
 
 - กฎ: keepalive ต้อง touch ด้วย API ที่นับเป็นกิจกรรม (`/api/users/me/profile`) และตรวจผล touch ทุกรอบ · ห้ามบอกว่า "keepalive ทำงาน" จนกว่าจะทดสอบปล่อยว่างเกิน 35 นาทีบน env นั้น
