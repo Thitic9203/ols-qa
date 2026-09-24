@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0156 — ค้นไฟล์ทั้งดิสก์ด้วย `find /` ขณะเครื่องโหลดสูง
+
+- กฎ: ห้าม `find /` · หาไฟล์โค้ดด้วย `git ls-tree`/`git show <commit>:<path>` ใน repo ที่รู้ · ดูโหลดก่อนคำสั่งหนักระหว่างมีเลนอัด
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0156-whole-disk-find-under-high-load.md`](docs/post-mortem/20260924-post-mortem-report-0156-whole-disk-find-under-high-load.md)
+
 ### Report #0155 — อัดจากหน้าต่างมีจอและดึงหน้าต่างขึ้นหน้าสุดขณะเจ้าของงานใช้จอ (ผิดซ้ำ no-screen-hijack)
 
 - กฎ: ห้ามอัดจากหน้าต่างมีจอ ห้าม osascript frontmost / bringToFront ขณะเจ้าของงานใช้เครื่อง · หน้าต่างถูกบังทำให้ภาพค้าง
