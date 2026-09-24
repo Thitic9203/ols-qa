@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0155 — อัดจากหน้าต่างมีจอและดึงหน้าต่างขึ้นหน้าสุดขณะเจ้าของงานใช้จอ (ผิดซ้ำ no-screen-hijack)
+
+- กฎ: ห้ามอัดจากหน้าต่างมีจอ ห้าม osascript frontmost / bringToFront ขณะเจ้าของงานใช้เครื่อง · หน้าต่างถูกบังทำให้ภาพค้าง
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0155-headed-recording-and-raise-window-while-owner-used-screen.md`](docs/post-mortem/20260924-post-mortem-report-0155-headed-recording-and-raise-window-while-owner-used-screen.md)
+
 ### Report #0148 — ผิดซ้ำจาก #0103: keepalive เรียกแค่ get-session ที่ไม่นับเป็นกิจกรรม
 
 - กฎ: keepalive ต้อง touch ด้วย API ที่นับเป็นกิจกรรม (`/api/users/me/profile`) และตรวจผล touch ทุกรอบ · ห้ามบอกว่า "keepalive ทำงาน" จนกว่าจะทดสอบปล่อยว่างเกิน 35 นาทีบน env นั้น
