@@ -268,5 +268,22 @@ check('rule 4: the coverage lines stay after the table', () => {
   assert.ok(cov > lastRow && cc > cov, `coverage at ${cov}/${cc}, last table row at ${lastRow}`);
 });
 
+check('verbatim ticket lines are quoted as-is, never split into bullets', () => {
+  const m = feManifest();
+  m.testStep = 'open the page — then press save · then reload';
+  m.expectedVerbatim = 'label reads A — and B · stays';
+  const body = RENDER.render(m);
+  assert.ok(body.includes('*Test Step (from ticket):* open the page — then press save · then reload'), 'test step on one line, separators kept');
+  assert.ok(body.includes('*Expected Result (from ticket, verbatim):* label reads A — and B · stays'), 'ER on one line, separators kept');
+  const found = errorsOnly(R.scanBody(body, { format: R.FORMATS.WIKI, bugType: 'FE' })).filter((f) => f.rule === 'header-inline-list');
+  assert.deepStrictEqual(found, [], 'the guard accepts verbatim lines that contain separators');
+});
+
+check('a non-verbatim multi-point header field is still refused on one line', () => {
+  const found = R.scanBody('*Retest Result: PASSED* ✅\n\n*Fixture:* a · b\n', { format: R.FORMATS.WIKI, bugType: 'FE' })
+    .filter((f) => f.rule === 'header-inline-list');
+  assert.strictEqual(found.length, 1);
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);
