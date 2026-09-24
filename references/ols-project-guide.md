@@ -740,6 +740,15 @@ OLS ไม่มีหน้า login ของตัวเอง — login ผ�
 
 **Headless MP4 + screenshot capture harness:** `~/ols-qa-testing-bot/capture/ols_capture.js` (Playwright + ffmpeg) — the Stage 4.4 MP4 capability. Details: agent memory `reference_ols-mp4-capture`.
 
+## Content-detail click pitfall — two buttons named "บันทึก" (learned OLS-721 retest, 2026-09-24)
+
+On the content-detail pages (`/content/media|course|learning-path/{id}`) the label **"บันทึก"** belongs to **two different buttons**:
+the content **bookmark** toggle (`aria-pressed`, calls `POST|DELETE /api/activities/bookmarks/{type}/{id}`) and the **save** button of an
+open comment edit box (calls `PATCH /api/activities/comments/{id}`). Their document order differs per page type, so a page-wide
+`getByRole('button', {name:'บันทึก'}).first()/.last()` picks the bookmark on course/LP pages even when it happens to work on media.
+Any script that clicks a write button here must scope it to the container of the thing being edited and assert that the request the
+click produced is the intended endpoint — stop on anything else. Post-mortem #0144.
+
 ## Content name guard (ชื่อที่ผู้ใช้จริงเห็น) — pre-prod only, 11:00 + 17:00
 
 Any user-visible name carrying a QA/test trace, gibberish, a ticket key, a status marker in

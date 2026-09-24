@@ -3654,6 +3654,13 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0142-offered-renice-
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0143-brief-sent-agent-to-secrets-store-password-line-printed.md`](docs/post-mortem/20260924-post-mortem-report-0143-brief-sent-agent-to-secrets-store-password-line-printed.md)
 
+### Report #0144 — สคริปต์กด "บันทึก" ผิดปุ่ม ไปโดนบุ๊กมาร์กบนหน้าคอร์ส/เส้นทางการเรียนรู้
+
+- กฎ: ปุ่มที่เขียนข้อมูลต้องหาใน container ของสิ่งที่กำลังแก้ ห้ามเลือกด้วยชื่อทั้งหน้า (`.first()`/`.last()`) · หลังคลิกต้องตรวจว่า request ตรง endpoint ที่ตั้งใจ ไม่ตรง = หยุด
+- หน้ารายละเอียดเนื้อหาของ OLS มีปุ่ม "บันทึก" สองปุ่ม (บุ๊กมาร์ก + บันทึกการแก้ไขความคิดเห็น) — `references/ols-project-guide.md`
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0144-save-click-hit-bookmark-button-on-course-and-lp.md`](docs/post-mortem/20260924-post-mortem-report-0144-save-click-hit-bookmark-button-on-course-and-lp.md)
+
 ### Report #0141 — ตัวอัปโหลด Drive หาโฟลเดอร์หลักด้วยชื่อ เจ้าของงานเปลี่ยนชื่อแล้วจึงสร้างโฟลเดอร์ซ้ำ
 
 **Surface:** OLS QA workspace / งาน export Confluence→PDF→Drive (เครื่องมือนอก repo)
