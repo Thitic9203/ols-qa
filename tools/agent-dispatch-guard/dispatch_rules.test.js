@@ -295,6 +295,24 @@ t('check.js holds no rule of its own — the decision lives in one module', () =
   }
 });
 
+// PM-2026-09-24-11: brief sent the agent to the owner's secrets store; a grep filter slipped
+// and printed a password line into the session.
+t('PM-2026-09-24-11 incident wording (grep the secrets store) is BLOCKED', () => {
+  const text = 'Account list: grep `~/.ols-qa-secrets/ols-secrets.md` for training69; never print passwords.\n' + PERSIST_LINE;
+  const r = rules.assessBrief(text);
+  assert.strictEqual(r.ok, false, 'must block');
+  assert.ok(r.findings.some((f) => f.code === 'SECRETS_STORE_IN_BRIEF' && f.severity === rules.SEVERITY.BLOCK),
+    'expected SECRETS_STORE_IN_BRIEF, got ' + r.findings.map((f) => f.code));
+  assert.ok(r.checks >= 5, 'the secrets check must be counted');
+});
+
+t('PM-2026-09-24-11 brief using the password-free account list passes', () => {
+  const text = 'Accounts: read <BOT>/capture/accounts_training69.json (email/env/role_ols/row/tag).\n' + PERSIST_LINE;
+  const r = rules.assessBrief(text);
+  assert.ok(!r.findings.some((f) => f.code === 'SECRETS_STORE_IN_BRIEF'), 'must not flag: ' + rules.formatAssessment(r));
+  assert.strictEqual(r.ok, true);
+});
+
 // ------------------------------------------------------------------- harness
 
 let failed = 0;

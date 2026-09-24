@@ -118,6 +118,8 @@ const BOUND_RE = /\b\d{1,5}\s*(?:files?|transcripts?|rows?|records?|cases?|clips
 const SESSION_TOOL_RE = /\bsession_(?:verify|capture)(?:\.js)?\b/i;
 const PROXIED_ENV_RE = /\bPW_PROXY\b|training\s*69|\bt69\b/i;
 const PRELOAD_RE = /pw_proxy_preload(?:\.js)?|\bt69_env\.sh\b/i;
+// The owner's secrets store (PM-2026-09-24-11). Matches the directory and the file name.
+const SECRETS_STORE_RE = /\.ols-qa-secrets\b|\bols-secrets\.md\b/i;
 
 /**
  * Does the brief spell out the persistence contract?
@@ -216,6 +218,23 @@ function assessBrief(text) {
         'name the one wrapper instead of an env list: ' +
         'HANDS_OFF_EXCEPTION="<reason>" bash capture/t69_env.sh node capture/session_verify.js <tags> ' +
         '(or add NODE_OPTIONS="--require <bot>/capture/pw_proxy_preload.js")',
+    });
+  }
+
+  // Check 5 — agent told to read the owner's secrets store (PM-2026-09-24-11).
+  // Blocks: a grep over that file returns whole lines, and one filter slip put a
+  // password line into the session. Account lists without passwords already exist.
+  checks += 1;
+  if (SECRETS_STORE_RE.test(text)) {
+    findings.push({
+      code: 'SECRETS_STORE_IN_BRIEF',
+      severity: SEVERITY.BLOCK,
+      message:
+        'the brief points the agent at the secrets store — a read of it prints whole lines, ' +
+        'and on 2026-09-24 a filter slip put one password line into the session (PM-2026-09-24-11)',
+      fix:
+        'give the password-free account list instead: <bot>/capture/accounts_<env>.json ' +
+        '(fields email/env/role_ols/row/tag), or name the exact tag the agent should use',
     });
   }
 

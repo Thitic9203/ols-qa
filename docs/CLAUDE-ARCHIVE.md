@@ -3647,6 +3647,13 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0140-zsh-unsplit-pid
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0142-offered-renice-undo-without-checking-macos-forbids-it.md`](docs/post-mortem/20260924-post-mortem-report-0142-offered-renice-undo-without-checking-macos-forbids-it.md)
 
+### Report #0143 — บรีฟชี้ agent ไปที่ไฟล์เก็บรหัสผ่าน · บรรทัดรหัสผ่านหลุดเข้า transcript
+
+- กฎ: บรีฟ agent ห้ามอ้างที่เก็บ secrets ของเจ้าของงาน ใช้ `capture/accounts_<env>.json` (ไม่มีรหัสผ่าน) หรือระบุ tag ตรงๆ · "never print passwords" เป็นคำเตือน ไม่ใช่ข้อจำกัด
+- ชั้นใหม่: `agent-dispatch-guard` check 5 `SECRETS_STORE_IN_BRIEF` = BLOCK + เทสต์ (32/32)
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0143-brief-sent-agent-to-secrets-store-password-line-printed.md`](docs/post-mortem/20260924-post-mortem-report-0143-brief-sent-agent-to-secrets-store-password-line-printed.md)
+
 ### Report #0141 — ตัวอัปโหลด Drive หาโฟลเดอร์หลักด้วยชื่อ เจ้าของงานเปลี่ยนชื่อแล้วจึงสร้างโฟลเดอร์ซ้ำ
 
 **Surface:** OLS QA workspace / งาน export Confluence→PDF→Drive (เครื่องมือนอก repo)
