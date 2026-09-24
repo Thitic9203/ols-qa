@@ -3682,6 +3682,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0146-ndlp-login-wind
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0147-agent-accepted-ndlp-copyright-consent-for-owner.md`](docs/post-mortem/20260924-post-mortem-report-0147-agent-accepted-ndlp-copyright-consent-for-owner.md)
 
+### Report #0148 — ผิดซ้ำจาก #0103: keepalive เรียกแค่ get-session ที่ไม่นับเป็นกิจกรรม
+
+- กฎ: keepalive ต้อง touch ด้วย API ที่นับเป็นกิจกรรม (`/api/users/me/profile`) และตรวจผล touch ทุกรอบ · ห้ามบอกว่า "keepalive ทำงาน" จนกว่าจะทดสอบปล่อยว่างเกิน 35 นาทีบน env นั้น
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0148-keepalive-only-called-get-session-sessions-idled-out.md`](docs/post-mortem/20260924-post-mortem-report-0148-keepalive-only-called-get-session-sessions-idled-out.md)
+
 ### Report #0141 — ตัวอัปโหลด Drive หาโฟลเดอร์หลักด้วยชื่อ เจ้าของงานเปลี่ยนชื่อแล้วจึงสร้างโฟลเดอร์ซ้ำ
 
 **Surface:** OLS QA workspace / งาน export Confluence→PDF→Drive (เครื่องมือนอก repo)
