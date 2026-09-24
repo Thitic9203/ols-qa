@@ -3640,6 +3640,13 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0139-briefed-er-from
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0140-zsh-unsplit-pid-list-renice-changed-nothing.md`](docs/post-mortem/20260924-post-mortem-report-0140-zsh-unsplit-pid-list-renice-changed-nothing.md)
 
+### Report #0142 — เสนอทางย้อนกลับ (renice 0) ในคำขออนุมัติโดยไม่ได้ทดสอบ · macOS ไม่ให้ผู้ใช้ปกติลด nice
+
+- `renice -n N` บน macOS = บวกเพิ่ม · ลด nice ต้อง root · รหัสจบ 0 ไม่ใช่หลักฐาน ต้องอ่าน NI
+- กฎ: ตัวเลือกที่อ้างว่า "ย้อนกลับได้ด้วย X" ต้องรัน X กับเป้าทดสอบชนิดเดียวกันด้วยสิทธิ์ของ agent ในเทิร์นนั้นก่อนถาม · ถ้าต้องใช้ sudo ของเจ้าของงานให้เขียนไว้ในตัวเลือก
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0142-offered-renice-undo-without-checking-macos-forbids-it.md`](docs/post-mortem/20260924-post-mortem-report-0142-offered-renice-undo-without-checking-macos-forbids-it.md)
+
 ### Report #0141 — ตัวอัปโหลด Drive หาโฟลเดอร์หลักด้วยชื่อ เจ้าของงานเปลี่ยนชื่อแล้วจึงสร้างโฟลเดอร์ซ้ำ
 
 **Surface:** OLS QA workspace / งาน export Confluence→PDF→Drive (เครื่องมือนอก repo)
