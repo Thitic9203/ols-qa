@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0157 — ด่านหลังลบอ่านรายการว่างว่ายังไม่โหลด คลิป take ขาดช่วงผลคาดหวัง (ผิดซ้ำ #0154)
+
+- กฎ: ด่านหลังกระทำการของ take ที่ย้อนไม่ได้ต้องผ่าน known-answer test ทั้งสภาพ "ยังอยู่" และ "หายแล้ว/รายการว่าง" ก่อนรัน · รายการว่าง ≠ ยังไม่โหลด
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0157-post-delete-guard-misread-empty-list.md`](docs/post-mortem/20260924-post-mortem-report-0157-post-delete-guard-misread-empty-list.md)
+
 ### Report #0156 — ค้นไฟล์ทั้งดิสก์ด้วย `find /` ขณะเครื่องโหลดสูง
 
 - กฎ: ห้าม `find /` · หาไฟล์โค้ดด้วย `git ls-tree`/`git show <commit>:<path>` ใน repo ที่รู้ · ดูโหลดก่อนคำสั่งหนักระหว่างมีเลนอัด
