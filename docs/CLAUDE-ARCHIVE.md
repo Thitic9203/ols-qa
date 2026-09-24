@@ -3640,6 +3640,16 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0139-briefed-er-from
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0140-zsh-unsplit-pid-list-renice-changed-nothing.md`](docs/post-mortem/20260924-post-mortem-report-0140-zsh-unsplit-pid-list-renice-changed-nothing.md)
 
+### Report #0141 — ตัวอัปโหลด Drive หาโฟลเดอร์หลักด้วยชื่อ เจ้าของงานเปลี่ยนชื่อแล้วจึงสร้างโฟลเดอร์ซ้ำ
+
+**Surface:** OLS QA workspace / งาน export Confluence→PDF→Drive (เครื่องมือนอก repo)
+
+เครื่องมือที่เขียนลงระบบที่คนอื่นแก้ได้ต้องใช้ id เป็นกุญแจ ไม่ใช่ชื่อ · verify หลังอัปโหลดจับได้ทันที · แก้ด้วย id-first + verify ด้วย id
+
+**กฎที่เพิ่มจากเหตุนี้:** ไม่มีกฎตัวหนังสือใหม่ (§0 ครอบแล้ว) — ชั้นเครื่องมือ P1–P3
+
+Full report: [`docs/post-mortem/20260924-post-mortem-report-0141-uploader-found-drive-root-by-name-and-made-duplicate.md`](docs/post-mortem/20260924-post-mortem-report-0141-uploader-found-drive-root-by-name-and-made-duplicate.md)
+
 ## 🔴 ข้อยกเว้น: เขียนข้อมูลบน production ได้ — เฉพาะรอบ smoke test 2026-09 เท่านั้น
 
 **เจ้าของงานอนุมัติเมื่อ 2026-09-03 ให้ สร้าง · แก้ไข · ลบ ข้อมูลบน production ได้ ตามแผน
