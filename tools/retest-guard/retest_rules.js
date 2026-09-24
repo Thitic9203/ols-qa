@@ -73,6 +73,8 @@ const CENTERED_COLUMNS = Object.freeze(['No.', 'Evidence', 'Status']);
 const MULTIPOINT_SEPARATOR = / · | — /;
 /** Inside a table cell only ` · ` separates points (` — ` is ordinary prose there). */
 const CELL_POINT_SEPARATOR = ' · ';
+/** Header labels whose value is quoted from the ticket — kept on one line, never split into bullets. */
+const VERBATIM_LABEL = /\(from ticket/i;
 /** The wiki line break used between `•` points inside one table cell. */
 const WIKI_CELL_BREAK = ' \\\\ ';
 
@@ -359,7 +361,7 @@ function scanBody(body, opts = {}) {
   lines.forEach((line, i) => {
     if (i + 1 >= firstTableLine) return;
     const m = labelLine.exec(line.trim());
-    if (m && MULTIPOINT_SEPARATOR.test(m[2]) && !/Retest Result/i.test(m[1])) {
+    if (m && MULTIPOINT_SEPARATOR.test(m[2]) && !/Retest Result/i.test(m[1]) && !VERBATIM_LABEL.test(m[1])) {
       out.push(finding('header-inline-list', i + 1,
         `"${m[1]}:" holds several points on one line`,
         'put the label on its own line, then one "* " bullet per point, then one blank line'));
@@ -541,6 +543,7 @@ module.exports = {
   CENTERED_COLUMNS,
   MULTIPOINT_SEPARATOR,
   CELL_POINT_SEPARATOR,
+  VERBATIM_LABEL,
   WIKI_CELL_BREAK,
   SCOPE_FULL_LINE,
   expectedTableHeaders,

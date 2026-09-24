@@ -80,6 +80,8 @@ function evidenceCell(files, format) {
  */
 function fieldLines(label, value, bold, bullet) {
   const text = String(value == null ? '' : value).trim();
+  // Text quoted from the ticket stays exactly as written — splitting it would drop its separators.
+  if (RULES.VERBATIM_LABEL.test(label)) return [`${bold(label + ':')} ${text}`];
   const parts = text.split(RULES.MULTIPOINT_SEPARATOR).map((p) => p.trim()).filter(Boolean);
   if (parts.length > 1) return [bold(label + ':'), ...parts.map((p) => `${bullet} ${p}`), ''];
   return [`${bold(label + ':')} ${text}`];
