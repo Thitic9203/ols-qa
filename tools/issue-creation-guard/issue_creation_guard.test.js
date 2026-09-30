@@ -10,7 +10,14 @@
 const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 const { execFileSync } = require("child_process");
+
+// ใช้โฟลเดอร์สถานะชั่วคราวเสมอ: เดิมเทสต์อ่าน .claude/.issue-creation-guard-state ของ repo จริง
+// จึงเฟลทุกครั้งที่มี armed.json (consumed) ค้างจากการปลดล็อกจริงของเจ้าของงาน (2026-09-30)
+// ต้องตั้งก่อน require เพราะ check.js อ่าน CLAUDE_PROJECT_DIR ตอนโหลด · โปรเซสลูกได้ env นี้ต่อ
+const ISOLATED_ROOT = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "icg-test-")));
+process.env.CLAUDE_PROJECT_DIR = ISOLATED_ROOT;
 
 const G = require("./check.js");
 const CHECK = path.join(__dirname, "check.js");
@@ -115,6 +122,25 @@ t("agent must-pass: เขียนผลลงไฟล์ (ลงไฟล์ 
     false
   )
 );
+// 2026-09-30: brief ของ agent เก็บภาพ Figma ถูกบล็อกผิด — "เปิด" มาจาก "เปิดใช้งาน" และ "สร้าง" มาจาก
+// "สร้าง/แก้ไขเหรียญ" ส่วน "tickets" อยู่ห่างออกไปคนละวลี ในบรรทัดเดียวกัน
+t("agent must-pass: เปิดใช้งาน/สร้างเหรียญ กับ tickets ที่อยู่คนละวลี", () =>
+  assert.strictEqual(
+    G.inspectAgentPrompt(
+      "- OLS-809 (Admin การจัดการผู้ใช้งาน: รายการผู้ใช้งาน, รายละเอียด, dialog ระงับ/เปิดใช้งาน) and OLS-807 (Admin จัดการเหรียญรางวัล: รายการ, เลือก Template, สร้าง/แก้ไขเหรียญ): 14516-375746 (same node shared by several tickets; find the frames for these screens inside it, Mobile and Tablet variants)"
+    ).hit,
+    false
+  )
+);
+t("agent must-pass: เปิดใช้งาน อยู่ติดคำว่า ticket ก็ไม่ใช่การเปิด ticket", () =>
+  assert.strictEqual(G.inspectAgentPrompt("ตรวจปุ่มเปิดใช้งาน ticket นี้ในหน้ารายการ").hit, false)
+);
+t("agent must-catch: เปิด ticket ใหม่ (คำกริยาติดกับกรรม)", () =>
+  assert.strictEqual(G.inspectAgentPrompt("เจอแล้วให้เปิด ticket ใหม่ใน Jira").hit, true)
+);
+t("agent must-catch: กรรมมาก่อนกริยา — bug นี้สร้างให้ด้วย", () =>
+  assert.strictEqual(G.inspectAgentPrompt("bug นี้สร้างให้ด้วยใน Jira").hit, true)
+);
 
 // ---------- อายุของ confirm ----------
 t("isFresh: consumed แล้วใช้ไม่ได้", () =>
@@ -146,6 +172,10 @@ function gate(payload) {
 
 const hadState = fs.existsSync(G.STATE_FILE);
 assert.strictEqual(hadState, false, "เทสต์นี้ต้องเริ่มจากสถานะที่ยังไม่มี confirm");
+assert.ok(
+  G.STATE_DIR.startsWith(ISOLATED_ROOT),
+  "เทสต์ต้องใช้โฟลเดอร์สถานะชั่วคราว ไม่ใช่ของ repo จริง"
+);
 
 t("disk: gate บล็อก gh issue create (exit 2)", () => {
   const r = gate({ tool_name: "Bash", tool_input: { command: "gh issue create -t x" } });

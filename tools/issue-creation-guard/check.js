@@ -47,8 +47,15 @@ const BASH_PATTERNS = [
 ];
 
 /** prompt ของ subagent ที่สั่งให้ "เปิด/สร้าง" bug · issue · ticket · improvement */
-const AGENT_VERB = /(เปิด|สร้าง|ยื่น|แจ้ง|open|create|file|raise|submit)/i;
+// "เปิด" ในคำประสมที่ไม่ได้แปลว่าเปิด ticket (เปิดใช้งาน = enable, เปิด-ปิด, เปิดดู/เปิดหน้า = view)
+// ไม่นับเป็นคำกริยา — บั๊กคลาสเดียวกับ "ลง" ด้านล่าง (bare Thai substring) · 2026-09-30
+const AGENT_VERB = /(เปิด(?!\s*(ใช้งาน|ใช้|-?\s*ปิด|ดู|หน้า|แท็บ|ไฟล์|ลิงก์))|สร้าง|ยื่น|แจ้ง|open|create|file|raise|submit)/i;
 const AGENT_OBJECT = /(บั๊ก|บัค|ticket|issue|bug|defect|improvement)/i;
+// กริยากับกรรมต้องอยู่ใกล้กันในวลีเดียว ไม่ใช่แค่อยู่บรรทัดเดียวกัน — brief ยาวบรรทัดเดียวมี "สร้าง/แก้ไขเหรียญ"
+// กับ "tickets" ห่างกันหลายสิบตัวอักษรแล้วถูกบล็อกผิด (2026-09-30)
+const NEAR_CHARS = 25;
+const VERB_THEN_OBJECT = new RegExp(`${AGENT_VERB.source}[^\\n]{0,${NEAR_CHARS}}?${AGENT_OBJECT.source}`, "i");
+const OBJECT_THEN_VERB = new RegExp(`${AGENT_OBJECT.source}[^\\n]{0,${NEAR_CHARS}}?${AGENT_VERB.source}`, "i");
 // "ลง" (post/file to a tracker — ต้นเหตุจริงคือ #0054 "...ลง Jira") ตัดออกจาก AGENT_VERB
 // เพราะเป็นพยางค์เดี่ยวไม่มีขอบเขตคำในภาษาไทย จับซ้อนเข้าไปใน "หลง"/"ลงมือ"/"ลงไฟล์" ที่ไม่เกี่ยว
 // (post-mortem 2026-09-22: บล็อก Agent dispatch 2 ครั้งผิดจากคำเหล่านี้) — ต้องให้ "ลง" อยู่ติดกับ
@@ -133,7 +140,12 @@ function inspectAgentPrompt(text) {
   for (const raw of text.split(/\n+/)) {
     const line = raw.trim();
     if (!AGENT_OBJECT.test(line)) continue;
-    if (!AGENT_VERB.test(line) && !POST_TO_TRACKER_VERB.test(line)) continue;
+    if (
+      !VERB_THEN_OBJECT.test(line) &&
+      !OBJECT_THEN_VERB.test(line) &&
+      !POST_TO_TRACKER_VERB.test(line)
+    )
+      continue;
     // บรรทัดที่เป็น "ข้อห้าม" ไม่ใช่คำสั่งให้เปิด
     // "อย่า(?!ง)" กันไม่ให้จับคำว่า "อย่าง" (แปลว่า kind/way ไม่ใช่คำห้าม) ที่พบระหว่างเขียนเทสต์
     // ของบั๊ก "ลง" ข้างบนพอดี (2026-09-22) — เป็นบั๊กคนละตัวแต่คลาสเดียวกัน (bare Thai substring)
