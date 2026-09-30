@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0161 — เสนอตัวเลือก verdict ให้เจ้าของงานเลือกแทนที่จะตัดสิน STALE_ER เอง (ผิดซ้ำ #0150)
+
+- กฎ: ticket + โค้ดตรงกันแต่ ER ในชีทต่าง = STALE_ER → แก้ ER ใน (ALL) เองแล้วรัน ห้ามถาม · ก่อนประกาศ "สเปกไม่ชัด" ต้องไล่ทางออก STALE_ER ให้จบ · ถูก guard บล็อกแล้วห้ามย้ายไปถามในแชท · เสนอ ask-guard `verdict-question` + Stop hook + ไฟล์ 3layer (รออนุมัติ)
+
+Full report: [`docs/post-mortem/20260930-post-mortem-report-0161-offered-verdict-options-instead-of-deciding-stale-er.md`](docs/post-mortem/20260930-post-mortem-report-0161-offered-verdict-options-instead-of-deciding-stale-er.md)
+
 ### Report #0160 — บอกว่า smoke watcher ไม่มี DM โดยไม่เปิดดู · watcher เลือกประกาศ deploy ที่ไม่มี tag (ผิดซ้ำ #0076 · #0025)
 
 - กฎ: ข้ออ้างเชิงลบที่เขียนลงคำสั่ง subagent/แถว PENDING ต้องมาจากแหล่งที่บันทึกสิ่งนั้นได้จริง (log ที่ไม่ print DM พิสูจน์ "ไม่มี DM" ไม่ได้ ต้องอ่านช่อง DM) · สรุปผลโปรเซสได้เมื่อยืนยันว่าจบแล้ว (pgrep ว่าง + SFD end_epoch) · watcher: เลือกประกาศที่มี tag ก่อน ตรวจ tag ก่อน claim/รัน และทุกทางออกเขียน log (ข้อเสนอ รออนุมัติ)
