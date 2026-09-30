@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0160 — บอกว่า smoke watcher ไม่มี DM โดยไม่เปิดดู · watcher เลือกประกาศ deploy ที่ไม่มี tag (ผิดซ้ำ #0076 · #0025)
+
+- กฎ: ข้ออ้างเชิงลบที่เขียนลงคำสั่ง subagent/แถว PENDING ต้องมาจากแหล่งที่บันทึกสิ่งนั้นได้จริง (log ที่ไม่ print DM พิสูจน์ "ไม่มี DM" ไม่ได้ ต้องอ่านช่อง DM) · สรุปผลโปรเซสได้เมื่อยืนยันว่าจบแล้ว (pgrep ว่าง + SFD end_epoch) · watcher: เลือกประกาศที่มี tag ก่อน ตรวจ tag ก่อน claim/รัน และทุกทางออกเขียน log (ข้อเสนอ รออนุมัติ)
+
+Full report: [`docs/post-mortem/20260930-post-mortem-report-0160-claimed-no-watcher-dm-without-checking-and-tagless-deploy-picked.md`](docs/post-mortem/20260930-post-mortem-report-0160-claimed-no-watcher-dm-without-checking-and-tagless-deploy-picked.md)
+
 ### Report #0159 — พลิก verdict โดยไม่อ่าน note มติเดิม
 
 - กฎ: ก่อนพลิก verdict อ่าน verdict/note เดิม + memory มติที่เกี่ยวก่อนเสมอ · ตัดสินจากไฟล์ที่ตรวจผ่าน ไม่ใช่ไฟล์บน Drive
