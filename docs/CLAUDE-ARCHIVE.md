@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0162 — ถามเจ้าของงานยืนยันการกด "คัดลอก" ซ้ำทั้งที่มีมติแล้ว · ส่งอำนาจเขียนผ่าน relay จนเลนปฏิเสธ 2 รอบ (ผิดซ้ำ #0161 · #0150)
+
+- กฎ: อำนาจเขียนของรอบต้องอยู่ใน prompt แรกของ agent (บล็อก WRITE AUTHORITY คำต่อคำ + เวลา + บรรทัดใน ROUND_DECISIONS) · relay ล้มครั้งแรก = ยุติเลนแล้ว dispatch ใหม่ ห้าม relay ซ้ำหรือโยนไปถามเจ้าของงาน · เรื่องที่มีมติแล้วห้ามถามซ้ำ · ก่อนจัดขั้นใดว่า "เขียน" ต้องมี path:line mutation หรือ network log (ปุ่มคัดลอกเหรียญ OLS-807 แค่เปิดฟอร์ม) · เสนอ agent-dispatch-guard `write-authority-block` + ปฏิเสธ SendMessage ที่พาอำนาจ + Stop hook (ยังไม่ทำ)
+
+Full report: [`docs/post-mortem/20261001-post-mortem-report-0162-asked-owner-to-reconfirm-write-already-authorised-relay-refused.md`](docs/post-mortem/20261001-post-mortem-report-0162-asked-owner-to-reconfirm-write-already-authorised-relay-refused.md)
+
 ### Report #0161 — เสนอตัวเลือก verdict ให้เจ้าของงานเลือกแทนที่จะตัดสิน STALE_ER เอง (ผิดซ้ำ #0150)
 
 - กฎ: ticket + โค้ดตรงกันแต่ ER ในชีทต่าง = STALE_ER → แก้ ER ใน (ALL) เองแล้วรัน ห้ามถาม · ก่อนประกาศ "สเปกไม่ชัด" ต้องไล่ทางออก STALE_ER ให้จบ · ถูก guard บล็อกแล้วห้ามย้ายไปถามในแชท · เสนอ ask-guard `verdict-question` + Stop hook + ไฟล์ 3layer (รออนุมัติ)
