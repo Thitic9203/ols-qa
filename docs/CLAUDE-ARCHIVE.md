@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0163 — หยุดหน้าต่างล็อกอินด้วย `pkill -f` อีกครั้ง TERM ไม่จบ สองหน้าต่างรอบัญชีเดียวกัน (ผิดซ้ำ #0039)
+
+- กฎ: หยุดโปรเซสด้วย pid ที่รู้ที่มาเท่านั้น (`pgrep -fl` → `kill <pid>` → ยืนยัน → `kill -9 <pid>` → ยืนยัน) ก่อนเปิดงานถัดไปที่ใช้ทรัพยากรเดียวกัน · กลไก: `tools/process-kill-guard/kill_rules.js --hook` (ผูก settings.json รอเจ้าของงานอนุมัติ)
+
+Full report: [`docs/post-mortem/20261001-post-mortem-report-0163-pkill-by-pattern-again-left-two-login-windows-racing.md`](docs/post-mortem/20261001-post-mortem-report-0163-pkill-by-pattern-again-left-two-login-windows-racing.md)
+
 ### Report #0162 — ถามเจ้าของงานยืนยันการกด "คัดลอก" ซ้ำทั้งที่มีมติแล้ว · ส่งอำนาจเขียนผ่าน relay จนเลนปฏิเสธ 2 รอบ (ผิดซ้ำ #0161 · #0150)
 
 - กฎ: อำนาจเขียนของรอบต้องอยู่ใน prompt แรกของ agent (บล็อก WRITE AUTHORITY คำต่อคำ + เวลา + บรรทัดใน ROUND_DECISIONS) · relay ล้มครั้งแรก = ยุติเลนแล้ว dispatch ใหม่ ห้าม relay ซ้ำหรือโยนไปถามเจ้าของงาน · เรื่องที่มีมติแล้วห้ามถามซ้ำ · ก่อนจัดขั้นใดว่า "เขียน" ต้องมี path:line mutation หรือ network log (ปุ่มคัดลอกเหรียญ OLS-807 แค่เปิดฟอร์ม) · เสนอ agent-dispatch-guard `write-authority-block` + ปฏิเสธ SendMessage ที่พาอำนาจ + Stop hook (ยังไม่ทำ)
