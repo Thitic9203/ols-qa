@@ -152,6 +152,13 @@ const TIME_SOURCE_RE = /\bmeasured\b|\bfrom (?:the )?(?:log|stat|date)\b|\bstat\
 // measuring it; withdrawn 1 min 41 s later as CONFLICT pending the Figma node.
 const VERDICT_DECIDE_RE = /\b(?:REAL_FAIL|STALE_ER|HARNESS|non-pass-challenge-gate)\b|\bdecide\b[^.\n]{0,40}\bverdicts?\b|\bre-?check\b[^.\n]{0,40}\bverdicts?\b|ตัดสิน(?:ผล|verdict)/i;
 const DESIGN_FIGMA_RULE_RE = /(?:by design|as designed|ตามดีไซน์|not a defect)[^\n]{0,200}\bfigma\b|\bfigma\b[^\n]{0,200}(?:by design|as designed|ตามดีไซน์|not a defect)/i;
+// Check 11 (PM-2026-10-01-04): a brief that names a known one-way step must demand the ledger line BEFORE
+// the step and say to recognise the step by its write request, not by a button label. A lane completed a
+// Dev learner account's one-time onboarding because step 3's "ถัดไป" was the submit, while its script only
+// treated ยืนยัน/บันทึก… as final; the ledger line was written afterwards.
+const IRREVERSIBLE_STEP_RE = /\birreversible\b|\bone[- ]time\b|\bonboarding\b|\benrol(?:l)?(?:s|ed|ing|ment)?\b|ย้อนไม่ได้|ลงทะเบียนเรียน|ทำได้ครั้งเดียว/i;
+const LEDGER_BEFORE_RE = /ledger(?:\.jsonl)?[^.\n]{0,100}\bbefore\b|\bbefore\b[^.\n]{0,100}ledger|ledger(?:\.jsonl)?[^.\n]{0,100}ก่อน|ก่อน[^.\n]{0,100}ledger/i;
+const BY_REQUEST_RE = /\bpage\.route\b|\bwaitForRequest\b|\b(?:write|network|POST|PUT|PATCH)\s+request\b|\bnot by (?:the )?(?:button )?label\b|จาก request|ไม่ใช่จากชื่อปุ่ม/i;
 
 /**
  * Lines that gate on a file-freshness comparison against a clock time that is
@@ -362,6 +369,32 @@ function assessBrief(text) {
       fix:
         'add: "never call anything by design / not a defect unless you opened the Figma node and it shows it; ' +
         'code and code comments are code intent only — without the node the decision is CONFLICT"',
+    });
+  }
+
+  // Check 11 — known one-way step without ledger-before + request-based detection (PM-2026-10-01-04).
+  checks += 1;
+  // Negation counts only when it sits just before the one-way word ("never complete onboarding"),
+  // not anywhere on the line — the incident line also said "never reuse another lane's account".
+  const oneWayLine = text.split(/\n+/).find((l) => {
+    const re = new RegExp(IRREVERSIBLE_STEP_RE.source, 'gi');
+    let m;
+    while ((m = re.exec(l))) {
+      if (!NEGATION_RE.test(l.slice(Math.max(0, m.index - 40), m.index))) return true;
+    }
+    return false;
+  });
+  if (oneWayLine && !(LEDGER_BEFORE_RE.test(text) && BY_REQUEST_RE.test(text))) {
+    findings.push({
+      code: 'IRREVERSIBLE_STEP_NO_PRELEDGER',
+      severity: SEVERITY.BLOCK,
+      message:
+        'the brief names a one-way step but does not demand the ledger line BEFORE it and detection by the write request — on 2026-10-01 ' +
+        'a lane consumed a Dev learner account\'s one-time onboarding on a "ถัดไป" button its script did not treat as final, and logged it afterwards ' +
+        '(PM-2026-10-01-04). Line: ' + oneWayLine.trim().slice(0, 160),
+      fix:
+        'add: "append the write_ledger.jsonl line BEFORE any click that may send the one-way write; recognise that step by its write request ' +
+        '(page.route / waitForRequest on POST/PUT/PATCH), not by the button label — abort the request when the phase is not the confirm phase"',
     });
   }
 

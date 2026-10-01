@@ -33,6 +33,7 @@ This directory is the mechanical layer that prose could not be.
 | `PROXY_PRELOAD_MISSING` | **BLOCK** | runs `session_verify`/`session_capture` on training69 / `PW_PROXY` but never names `pw_proxy_preload.js` or the `capture/t69_env.sh` wrapper (#0121) |
 | `TIME_GATE_UNSOURCED` | **BLOCK** | gates on a file's mtime/save time against a clock value that is not the measured value — every time on that line must carry seconds AND the line must name its source (`measured` / `SAVED` log line / `stat -` / `date +`); better: gate on `session_verify` alone (PM-2026-10-01-02) |
 | `DESIGN_CLAIM_WITHOUT_FIGMA_RULE` | **BLOCK** | the agent decides verdicts (REAL_FAIL / STALE_ER / HARNESS / challenge gate) but the brief never says "by design" / "not a defect" needs the Figma node opened — code and code comments are code intent only (PM-2026-10-01-03) |
+| `IRREVERSIBLE_STEP_NO_PRELEDGER` | **BLOCK** | names a one-way step (irreversible / one-time / onboarding / enrol) without demanding the ledger line BEFORE it AND recognising the step by its write request (page.route / waitForRequest), not by button label (PM-2026-10-01-04) |
 
 Only the first blocks. The other two have legitimate uses, and a guard that
 over-blocks is a guard somebody switches off — which then takes the blocking
@@ -59,7 +60,7 @@ that never happens.
 | 1 | this rule in `CLAUDE.md` (§ จ่ายงานให้ agent เบื้องหลัง) | loaded every session |
 | 2 | `.claude/hooks/agent-dispatch-guard.sh` — PreToolUse on `Agent` | a dispatch that never got the instruction |
 | 3 | `dispatch_rules.js` — the only place that decides | two runtimes drifting apart (#0003) |
-| 4 | `dispatch_rules.test.js` — 50 cases | the rules eroding, silently |
+| 4 | `dispatch_rules.test.js` — 55 cases | the rules eroding, silently |
 | 5 | `.github/workflows/tests.yml` | layers 3–4 rotting between sessions |
 
 The shell layer **fails closed**: no node, no guard file, or a payload it

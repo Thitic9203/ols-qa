@@ -452,6 +452,49 @@ t('PM-2026-10-01-03 real disk: check.js --file blocks the incident recheck brief
   }
 });
 
+// PM-2026-10-01-04 — a known one-way step needs ledger-before + request-based detection.
+const PM1004_BAD = 'Irreversible writes (TC_93-96 enrol, TC_99-100 onboarding) only on the lane C account; log in write_ledger.jsonl.\n' + PERSIST_LINE;
+const PM1004_GOOD = 'Irreversible writes (TC_99-100 onboarding) only on the lane C account. Append the write_ledger.jsonl line BEFORE any click that may send ' +
+  'the one-way write; recognise that step by its write request (page.route on POST/PUT/PATCH), not by the button label.\n' + PERSIST_LINE;
+
+t('PM-2026-10-01-04 incident lane brief (log in ledger, no "before", label-based) is BLOCKED', () => {
+  const r = rules.assessBrief(PM1004_BAD);
+  assert.ok(r.findings.some((f) => f.code === 'IRREVERSIBLE_STEP_NO_PRELEDGER' && f.severity === rules.SEVERITY.BLOCK), 'got ' + r.findings.map((f) => f.code));
+  assert.ok(r.checks >= 11, 'the one-way-step check must be counted');
+});
+
+t('PM-2026-10-01-04 brief with ledger-before + request-based detection passes that check', () => {
+  const r = rules.assessBrief(PM1004_GOOD);
+  assert.ok(!r.findings.some((f) => f.code === 'IRREVERSIBLE_STEP_NO_PRELEDGER'), 'must not flag: ' + rules.formatAssessment(r));
+});
+
+t('PM-2026-10-01-04 ledger-before alone (still label-based) is BLOCKED', () => {
+  const r = rules.assessBrief('Onboarding TC_99: write the ledger line before tapping ยืนยัน.\n' + PERSIST_LINE);
+  assert.ok(r.findings.some((f) => f.code === 'IRREVERSIBLE_STEP_NO_PRELEDGER'));
+});
+
+t('a brief that only forbids one-way steps is not flagged', () => {
+  const r = rules.assessBrief('READ-ONLY lane: never complete onboarding or enrol on any account.\n' + PERSIST_LINE);
+  assert.ok(!r.findings.some((f) => f.code === 'IRREVERSIBLE_STEP_NO_PRELEDGER'), 'must not flag: ' + rules.formatAssessment(r));
+});
+
+t('PM-2026-10-01-04 real disk: check.js --file blocks the incident lane brief and passes the fixed one', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dispatch-guard-pm1004-'));
+  try {
+    const bad = path.join(dir, 'bad.md');
+    const good = path.join(dir, 'good.md');
+    fs.writeFileSync(bad, PM1004_BAD);
+    fs.writeFileSync(good, PM1004_GOOD);
+    const rb = runCheck(null, ['--file', bad]);
+    assert.strictEqual(rb.code, 2, 'got ' + rb.code);
+    assert.ok((rb.out + rb.err).includes('IRREVERSIBLE_STEP_NO_PRELEDGER'));
+    const rg = runCheck(null, ['--file', good]);
+    assert.strictEqual(rg.code, 0, 'got ' + rg.code + ' ' + rg.out + rg.err);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 // ------------------------------------------------------------------- harness
 
 let failed = 0;
