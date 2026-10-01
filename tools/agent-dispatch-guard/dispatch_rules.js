@@ -135,6 +135,32 @@ const CONSENT_STOP_RE = /(?:never|do not|don't|must not|ห้าม)[^.\n]{0,60
 const COOKIE_TRANSPLANT_RE = /\b(?:addCookies|(?:add|copy|copies|copying|inject|put|transplant)\w*\s+(?:the\s+)?(?:[\w'()-]+\s+){0,4}cookies?|session_token)\b/i;
 const SAVED_STATE_RE = /\bstateOf\b|\bstorageState\b|\bstate[_ ]?file\b|\bstate_t69|\bstate_<|from (?:the )?(?:saved )?state\b/i;
 const NEGATION_RE = /(?:never|do not|don't|must not|ห้าม|no longer)/i;
+// Check 9 (PM-2026-10-01-02, repeat class of #0138 / #0094): a brief that gates the agent on a file's
+// freshness against a wall-clock threshold the main thread typed. Lanes were told to use a session file
+// "only after its mtime is after 07:15" while the measured save time was 07:12:39 — one lane waited 30
+// minutes and skipped 38 logged-in cases. A gate on a clock value must carry the measured value itself
+// (seconds precision) and say where it was measured, on the same line.
+const FRESHNESS_RE = /\bmtime\b|\bmodified\b|\blast[- ]?(?:write|modified)\b|\bsaved\b|\bwritten\b|\bnewer\b|\bolder\b|\bfresher\b|\bstat\b|แก้ไขล่าสุด|เซฟ/i;
+const COMPARATOR_RE = /\b(?:after|before|newer|older|later|earlier|since)\b|[<>]=?|หลัง|ก่อน/i;
+const CLOCK_RE = /(?<![\d.:])\d{1,2}:\d{2}(?::\d{2})?(?![\d:])/g;
+const CLOCK_SECONDS_RE = /^\d{1,2}:\d{2}:\d{2}$/;
+const TIME_SOURCE_RE = /\bmeasured\b|\bfrom (?:the )?(?:log|stat|date)\b|\bstat\s+-|\bdate\s+\+|\bSAVED\b|log line|วัดจาก|วัดได้/i;
+
+/**
+ * Lines that gate on a file-freshness comparison against a clock time that is
+ * not cited as a measured value. Returns the offending lines (empty = clean).
+ * A line is sourced only when every clock time on it has seconds precision AND
+ * the line names where the value was measured.
+ */
+function unsourcedTimeGates(text) {
+  if (typeof text !== 'string') return [];
+  return text.split(/\n+/).filter((line) => {
+    const clocks = line.match(CLOCK_RE);
+    if (!clocks || !FRESHNESS_RE.test(line) || !COMPARATOR_RE.test(line)) return false;
+    const sourced = clocks.every((c) => CLOCK_SECONDS_RE.test(c)) && TIME_SOURCE_RE.test(line);
+    return !sourced;
+  });
+}
 
 /**
  * Does the brief spell out the persistence contract?
@@ -300,6 +326,23 @@ function assessBrief(text) {
     });
   }
 
+  // Check 9 — file-freshness gate on an unmeasured clock threshold (PM-2026-10-01-02).
+  checks += 1;
+  const timeGates = unsourcedTimeGates(text);
+  if (timeGates.length) {
+    findings.push({
+      code: 'TIME_GATE_UNSOURCED',
+      severity: SEVERITY.BLOCK,
+      message:
+        'the brief gates on a file time against a clock value that is not cited as measured — on 2026-10-01 lanes were ' +
+        'told to wait for mtime "after 07:15" while the session was saved at 07:12:39; one lane waited 30 min and skipped ' +
+        '38 cases (PM-2026-10-01-02, class of #0138/#0094). Offending line: ' + timeGates[0].trim().slice(0, 160),
+      fix:
+        'gate on the check itself (session_verify passes) instead of a clock, or quote the measured value with seconds ' +
+        'and its source on the same line, e.g. "mtime newer than 07:12:39 (measured: stat of the state file / SAVED log line)"',
+    });
+  }
+
   if (checks === 0) {
     throw new Error('assessBrief: ran zero checks — refusing rather than reporting clean');
   }
@@ -335,6 +378,7 @@ module.exports = {
   SEVERITY,
   PERSIST_MARKER,
   hasPersistenceContract,
+  unsourcedTimeGates,
   assessBrief,
   formatAssessment,
 };

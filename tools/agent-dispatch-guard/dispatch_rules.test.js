@@ -372,6 +372,49 @@ t('a brief that uses the state file through T.newCtx without moving cookies is n
   assert.ok(!r.findings.some((f) => f.code === 'SESSION_COOKIE_TRANSPLANT'));
 });
 
+const PM1002_BAD = 'Use each session file only after (a) its mtime is after 2026-10-01 07:15 AND (b) session_verify passes. ' +
+  'Report NO_SESSION after 25 min.\n' + PERSIST_LINE;
+const PM1002_GOOD = 'Use each session file only after (a) its mtime is newer than 07:12:39 (measured: SAVED log line of the login tool) ' +
+  'AND (b) session_verify passes.\n' + PERSIST_LINE;
+
+t('PM-2026-10-01-02 incident gate (mtime after a typed 07:15) is BLOCKED', () => {
+  const r = rules.assessBrief(PM1002_BAD);
+  assert.ok(r.findings.some((f) => f.code === 'TIME_GATE_UNSOURCED' && f.severity === rules.SEVERITY.BLOCK), 'got ' + r.findings.map((f) => f.code));
+  assert.ok(r.checks >= 9, 'the time-gate check must be counted');
+});
+
+t('PM-2026-10-01-02 gate citing the measured value with seconds and its source passes', () => {
+  const r = rules.assessBrief(PM1002_GOOD);
+  assert.ok(!r.findings.some((f) => f.code === 'TIME_GATE_UNSOURCED'), 'must not flag: ' + rules.formatAssessment(r));
+});
+
+t('PM-2026-10-01-02 seconds precision without a named source is still BLOCKED', () => {
+  const r = rules.assessBrief('Wait until the state file mtime is after 07:15:00.\n' + PERSIST_LINE);
+  assert.ok(r.findings.some((f) => f.code === 'TIME_GATE_UNSOURCED'));
+});
+
+t('a clock time with no file-freshness comparison is not flagged', () => {
+  const r = rules.assessBrief('Start at 07:15 and stop at 08:00; gate only on session_verify passing.\n' + PERSIST_LINE);
+  assert.ok(!r.findings.some((f) => f.code === 'TIME_GATE_UNSOURCED'), 'must not flag: ' + rules.formatAssessment(r));
+});
+
+t('PM-2026-10-01-02 real disk: check.js --file blocks the incident brief and passes the sourced one', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dispatch-guard-pm1002-'));
+  try {
+    const bad = path.join(dir, 'bad.txt');
+    const good = path.join(dir, 'good.txt');
+    fs.writeFileSync(bad, PM1002_BAD);
+    fs.writeFileSync(good, PM1002_GOOD);
+    const rb = runCheck(null, ['--file', bad]);
+    assert.strictEqual(rb.code, 2, 'incident brief must exit 2, got ' + rb.code);
+    assert.ok((rb.out + rb.err).includes('TIME_GATE_UNSOURCED'), 'must name the rule');
+    const rg = runCheck(null, ['--file', good]);
+    assert.strictEqual(rg.code, 0, 'sourced brief must exit 0, got ' + rg.code + ' ' + rg.out + rg.err);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 // ------------------------------------------------------------------- harness
 
 let failed = 0;

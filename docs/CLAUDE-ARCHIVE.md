@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0164 — สั่งเลนรอ mtime "หลัง 07:15" ที่พิมพ์เอง ทั้งที่ session เซฟ 07:12 เลนจึงไม่ได้รัน 38 เคส (ผิดซ้ำ #0138 · #0094)
+
+- กฎ: เงื่อนไขเวลาในคำสั่งงานต้องเป็นค่าที่วัดได้ (ระดับวินาที + แหล่งที่วัดบนบรรทัดเดียวกัน) หรือดีกว่าคือใช้ `session_verify` ผ่านเป็นเงื่อนไขแทนนาฬิกา · กลไก: agent-dispatch-guard เช็คที่ 9 `TIME_GATE_UNSOURCED` (BLOCK)
+
+Full report: [`docs/post-mortem/20261001-post-mortem-report-0164-lane-gated-on-typed-mtime-threshold-skipped-38-cases.md`](docs/post-mortem/20261001-post-mortem-report-0164-lane-gated-on-typed-mtime-threshold-skipped-38-cases.md)
+
 ### Report #0163 — หยุดหน้าต่างล็อกอินด้วย `pkill -f` อีกครั้ง TERM ไม่จบ สองหน้าต่างรอบัญชีเดียวกัน (ผิดซ้ำ #0039)
 
 - กฎ: หยุดโปรเซสด้วย pid ที่รู้ที่มาเท่านั้น (`pgrep -fl` → `kill <pid>` → ยืนยัน → `kill -9 <pid>` → ยืนยัน) ก่อนเปิดงานถัดไปที่ใช้ทรัพยากรเดียวกัน · กลไก: `tools/process-kill-guard/kill_rules.js --hook` (ผูก settings.json รอเจ้าของงานอนุมัติ)
