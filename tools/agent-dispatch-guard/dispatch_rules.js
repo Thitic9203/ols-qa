@@ -146,6 +146,13 @@ const CLOCK_RE = /(?<![\d.:])\d{1,2}:\d{2}(?::\d{2})?(?![\d:])/g;
 const CLOCK_SECONDS_RE = /^\d{1,2}:\d{2}:\d{2}$/;
 const TIME_SOURCE_RE = /\bmeasured\b|\bfrom (?:the )?(?:log|stat|date)\b|\bstat\s+-|\bdate\s+\+|\bSAVED\b|log line|วัดจาก|วัดได้/i;
 
+// Check 10 (PM-2026-10-01-03): a brief whose agent decides verdicts (recheck / challenge lanes) must say
+// that "by design" / "not a defect" needs the Figma node opened — a recheck lane called a notice pill over a
+// card title "by design" from a code comment (content-status-overlay.tsx) and told a test lane to stop
+// measuring it; withdrawn 1 min 41 s later as CONFLICT pending the Figma node.
+const VERDICT_DECIDE_RE = /\b(?:REAL_FAIL|STALE_ER|HARNESS|non-pass-challenge-gate)\b|\bdecide\b[^.\n]{0,40}\bverdicts?\b|\bre-?check\b[^.\n]{0,40}\bverdicts?\b|ตัดสิน(?:ผล|verdict)/i;
+const DESIGN_FIGMA_RULE_RE = /(?:by design|as designed|ตามดีไซน์|not a defect)[^\n]{0,200}\bfigma\b|\bfigma\b[^\n]{0,200}(?:by design|as designed|ตามดีไซน์|not a defect)/i;
+
 /**
  * Lines that gate on a file-freshness comparison against a clock time that is
  * not cited as a measured value. Returns the offending lines (empty = clean).
@@ -340,6 +347,21 @@ function assessBrief(text) {
       fix:
         'gate on the check itself (session_verify passes) instead of a clock, or quote the measured value with seconds ' +
         'and its source on the same line, e.g. "mtime newer than 07:12:39 (measured: stat of the state file / SAVED log line)"',
+    });
+  }
+
+  // Check 10 — verdict-deciding brief without the "by design needs Figma" rule (PM-2026-10-01-03).
+  checks += 1;
+  if (VERDICT_DECIDE_RE.test(text) && !DESIGN_FIGMA_RULE_RE.test(text)) {
+    findings.push({
+      code: 'DESIGN_CLAIM_WITHOUT_FIGMA_RULE',
+      severity: SEVERITY.BLOCK,
+      message:
+        'the brief has the agent decide verdicts but never says that "by design" / "not a defect" needs the Figma node opened — ' +
+        'on 2026-10-01 a recheck lane called an overlap "by design" from a code comment and told a test lane to stop measuring it (PM-2026-10-01-03)',
+      fix:
+        'add: "never call anything by design / not a defect unless you opened the Figma node and it shows it; ' +
+        'code and code comments are code intent only — without the node the decision is CONFLICT"',
     });
   }
 

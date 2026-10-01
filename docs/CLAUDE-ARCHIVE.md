@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0165 — เลนรีเช็คตัดสินว่าป้ายสถานะทับชื่อสื่อ "ตามดีไซน์" จากคอมเมนต์ในโค้ด โดยไม่ได้เปิด Figma (ผิดซ้ำ #0067)
+
+- กฎ: "ตามดีไซน์ / ไม่ใช่ defect" ต้องมาจาก Figma node ที่เปิดแล้วเท่านั้น โค้ดและคอมเมนต์ในโค้ด = เจตนาของโค้ด ไม่มี node = CONFLICT · กลไก: agent-dispatch-guard เช็คที่ 10 `DESIGN_CLAIM_WITHOUT_FIGMA_RULE` (BLOCK คำสั่งงานที่ให้ตัดสิน verdict แต่ไม่มีข้อนี้)
+
+Full report: [`docs/post-mortem/20261001-post-mortem-report-0165-recheck-called-overlap-by-design-from-code-comment-without-figma.md`](docs/post-mortem/20261001-post-mortem-report-0165-recheck-called-overlap-by-design-from-code-comment-without-figma.md)
+
 ### Report #0164 — สั่งเลนรอ mtime "หลัง 07:15" ที่พิมพ์เอง ทั้งที่ session เซฟ 07:12 เลนจึงไม่ได้รัน 38 เคส (ผิดซ้ำ #0138 · #0094)
 
 - กฎ: เงื่อนไขเวลาในคำสั่งงานต้องเป็นค่าที่วัดได้ (ระดับวินาที + แหล่งที่วัดบนบรรทัดเดียวกัน) หรือดีกว่าคือใช้ `session_verify` ผ่านเป็นเงื่อนไขแทนนาฬิกา · กลไก: agent-dispatch-guard เช็คที่ 9 `TIME_GATE_UNSOURCED` (BLOCK)

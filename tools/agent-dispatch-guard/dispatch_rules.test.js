@@ -415,6 +415,43 @@ t('PM-2026-10-01-02 real disk: check.js --file blocks the incident brief and pas
   }
 });
 
+// PM-2026-10-01-03 — verdict-deciding brief must carry the "by design needs Figma" rule.
+const PM1003_BAD = 'Decide, with evidence: REAL_FAIL / STALE_ER / HARNESS / CONFLICT. Read Figma notes the lane recorded (figma_check).\n' + PERSIST_LINE;
+const PM1003_GOOD = PM1003_BAD + '\nNever call anything by design / not a defect unless you opened the Figma node and it shows it; code comments are code intent only → CONFLICT.';
+
+t('PM-2026-10-01-03 incident recheck brief (no by-design/Figma rule) is BLOCKED', () => {
+  const r = rules.assessBrief(PM1003_BAD);
+  assert.ok(r.findings.some((f) => f.code === 'DESIGN_CLAIM_WITHOUT_FIGMA_RULE' && f.severity === rules.SEVERITY.BLOCK), 'got ' + r.findings.map((f) => f.code));
+  assert.ok(r.checks >= 10, 'the design-claim check must be counted');
+});
+
+t('PM-2026-10-01-03 same brief with the by-design-needs-Figma rule passes that check', () => {
+  const r = rules.assessBrief(PM1003_GOOD);
+  assert.ok(!r.findings.some((f) => f.code === 'DESIGN_CLAIM_WITHOUT_FIGMA_RULE'), 'must not flag: ' + rules.formatAssessment(r));
+});
+
+t('a brief that decides no verdicts is not flagged for the Figma rule', () => {
+  const r = rules.assessBrief('Measure scrollWidth at 375 on /creator/media.\n' + PERSIST_LINE);
+  assert.ok(!r.findings.some((f) => f.code === 'DESIGN_CLAIM_WITHOUT_FIGMA_RULE'));
+});
+
+t('PM-2026-10-01-03 real disk: check.js --file blocks the incident recheck brief and passes the fixed one', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dispatch-guard-pm1003-'));
+  try {
+    const bad = path.join(dir, 'bad.md');
+    const good = path.join(dir, 'good.md');
+    fs.writeFileSync(bad, PM1003_BAD);
+    fs.writeFileSync(good, PM1003_GOOD);
+    const rb = runCheck(null, ['--file', bad]);
+    assert.strictEqual(rb.code, 2, 'got ' + rb.code);
+    assert.ok((rb.out + rb.err).includes('DESIGN_CLAIM_WITHOUT_FIGMA_RULE'));
+    const rg = runCheck(null, ['--file', good]);
+    assert.strictEqual(rg.code, 0, 'got ' + rg.code + ' ' + rg.out + rg.err);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 // ------------------------------------------------------------------- harness
 
 let failed = 0;
