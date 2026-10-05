@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0167 — รีเทส OLS-883 สั่ง request-edit คอร์สโดยไม่ได้พิสูจน์ทางคืนสภาพ คอร์สค้าง "รอแก้ไข" (ผิดซ้ำ #0166)
+
+- กฎ: ทางกลับที่ยังไม่ได้ลองเงื่อนไขกับข้อมูลจริง = ไม่มีทางกลับ · ก่อน request-edit อ่าน use-case ของ publish (สื่อในบทเรียน / คอร์สใน LP ต้อง PUBLISHED) ไม่ใช่แค่ transition map · กลไก: RESTORE PRECHECK + `PRECHECK_ONLY` ในสคริปต์รีเทส
+
+Full report: [`docs/post-mortem/20261005-post-mortem-report-0167-request-edit-without-proving-restore-path-course-stuck.md`](docs/post-mortem/20261005-post-mortem-report-0167-request-edit-without-proving-restore-path-course-stuck.md)
+
 ### Report #0166 — เลนทดสอบทำ onboarding ครั้งเดียวของบัญชีผู้เรียน Dev หมดไปเพราะปุ่ม "ถัดไป" คือปุ่มส่ง โดยไม่ได้ลง ledger ก่อน (ผิดซ้ำ #0123 · #0133)
 
 - กฎ: ขั้นที่ย้อนไม่ได้ต้องลง ledger ก่อนทุกคลิกที่อาจส่งข้อมูล และจับขั้นนั้นจาก write request (page.route / waitForRequest บน POST/PUT/PATCH) ไม่ใช่จากชื่อปุ่ม · กลไก: agent-dispatch-guard เช็คที่ 11 `IRREVERSIBLE_STEP_NO_PRELEDGER` (BLOCK)
