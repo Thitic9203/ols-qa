@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0168 — เทสต์เดิมเขียนการ์ดปลอมลงคิว DM จริง แล้ว heartbeat ส่งเข้า DM เจ้าของงาน
+
+- กฎ: ไฟล์ผลข้างเคียงใหม่ของโมดูลที่มีเทสต์อยู่แล้ว ต้อง derive จากค่าที่เทสต์เดิมย้ายอยู่แล้ว (เช่นโฟลเดอร์ของ `LEDGER`) ไม่ใช่ค่าคงที่แยก · รันชุดเทสต์บนเครื่องที่มี job จริงทำงาน ต้องตรวจไฟล์จริงที่ job อ่านก่อนและหลัง
+
+Full report: [`docs/post-mortem/20261005-post-mortem-report-0168-test-wrote-real-dm-outbox-fake-card-sent.md`](docs/post-mortem/20261005-post-mortem-report-0168-test-wrote-real-dm-outbox-fake-card-sent.md)
+
 ### Report #0167 — รีเทส OLS-883 สั่ง request-edit คอร์สโดยไม่ได้พิสูจน์ทางคืนสภาพ คอร์สค้าง "รอแก้ไข" (ผิดซ้ำ #0166)
 
 - กฎ: ทางกลับที่ยังไม่ได้ลองเงื่อนไขกับข้อมูลจริง = ไม่มีทางกลับ · ก่อน request-edit อ่าน use-case ของ publish (สื่อในบทเรียน / คอร์สใน LP ต้อง PUBLISHED) ไม่ใช่แค่ transition map · กลไก: RESTORE PRECHECK + `PRECHECK_ONLY` ในสคริปต์รีเทส
