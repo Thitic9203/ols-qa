@@ -238,11 +238,19 @@ Run the checks:
 node tools/name-guard/write_guard.test.js
 ```
 
-## Schedule — pre-prod only, and scan-only
+## Schedule — retired 2026-10-05, nothing runs
+
+> **The scheduled job is permanently retired (owner's decision, 2026-10-05).** No environment is
+> scanned or alerted on any more. The `launchd` job was unloaded and its plist renamed
+> `*.disabled-2026-10-05`, its SFD label removed, its off-repo env file renamed `DISABLED-*`, and the
+> off-repo `run_guard.sh` now exits 0 with `RETIRED` for every label, with no override flag.
+> `namecheck/test_name_guard_retired.js` (off-repo, next to the runner) checks all five against the
+> real disk. Re-enabling needs a new decision from the owner. The table below records how it ran
+> before retirement.
 
 | environment | runs on | cadence | what it does |
 |---|---|---|---|
-| pre-prod (org VPN only) | local `launchd` job on the QA machine | twice daily, 11:00 and 17:00 | `run_guard.sh` → **scan + alert only.** It never invoked a fixer, and since 2026-08-17 no fixer can write anywhere anyway |
+| pre-prod (org VPN only) | ~~local `launchd` job on the QA machine~~ **retired 2026-10-05** | ~~twice daily, 11:00 and 17:00~~ never | `run_guard.sh` → was **scan + alert only.** It never invoked a fixer, and since 2026-08-17 no fixer can write anywhere anyway |
 | training | **nothing. hands-off.** | never | refused by the runner *and* by `scan.js` itself |
 
 No scheduled job has ever changed pre-prod data: the fixers are run by hand through
