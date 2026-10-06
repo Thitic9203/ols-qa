@@ -62,6 +62,7 @@ fails if a value like this reappears under `skills/` or `commands/`.
 |------|---------|
 | MUST use the two-step transition for READY TO TEST → Done: `121` then `41` | Single `151` fails; READY TO TEST cannot jump directly to Done |
 | MUST transition a FAILED retest to In Progress (`21`), NEVER to BLOCKED | OLS workflow: BLOCKED = external block, In Progress = needs a dev fix |
+| EXCEPTION — AI auto-test of READY TO TEST Bug/Task (`OLS_MODE=autotest`): a non-pass goes to **BLOCKED** with the comment "AI ทดสอบไม่ผ่าน รอ QA reproduce" — never FAILED, never In Progress, never a new bug | Owner decision 2026-10-05: an AI non-pass is unconfirmed until a QA reproduces it; the QA then moves it on. A harness failure (session/VPN/tool) leaves Jira untouched |
 | MUST set `--pass-count N` + `--summary "Retest of dev fix"` + `--owner-label "QA Owner"` on every Discord retest notify | Defaults produce wrong output (0/0/0 + wrong label); learned from a 3-resend incident |
 | MUST NOT use `await` in superpowers-chrome eval — use setTimeout + `window.__var` | `await` returns undefined; the callback pattern is required |
 | MUST use a `mousedown` event (not `click`) for MUI Select / combobox elements | MUI Select ignores regular click events |
