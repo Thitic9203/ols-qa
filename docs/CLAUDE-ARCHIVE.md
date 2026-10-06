@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0171 — บรรทัด FAIL ของบอทเองทำให้การแจ้งเตือนความล้มเหลวเงียบ
+
+- กฎ: ตัวกันแจ้งเตือนเท็จต้องมีเทสต์ฝั่ง "ต้องแจ้ง" ผ่านเส้นทางจริงของโค้ด (ดึงฟังก์ชันจริงมารัน) ไม่ใช่แค่ฝั่ง "ต้องระงับ"
+
+Full report: [`docs/post-mortem/20261007-post-mortem-report-0171-bot-own-fail-line-suppressed-its-failure-alarm.md`](docs/post-mortem/20261007-post-mortem-report-0171-bot-own-fail-line-suppressed-its-failure-alarm.md)
+
 ### Report #0170 — อ่าน keepalive รอบเก่าเป็นจำนวน session สด แล้วสั่งรัน shadow ที่ไม่ได้ทดสอบเลย
 
 - กฎ: จำนวน session ที่บอกเจ้าของงานต้องมาจากการวัดในเทิร์นนั้น (`session_verify.js` / `shadow.py live_gate()`) พร้อมเวลาที่วัด ห้ามอ่านจาก log ของงานตามตาราง · shadow ตรวจ VPN+session สดก่อนทุก ticket ไม่ผ่าน = deferred + DM
