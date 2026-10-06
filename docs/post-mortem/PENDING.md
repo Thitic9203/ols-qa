@@ -191,6 +191,7 @@
 | PM-2026-10-05-01 | 2026-10-05 | รีเทส OLS-883 บน Dev สั่ง request-edit คอร์สที่เผยแพร่อยู่ของบัญชีครีเอเตอร์ทดสอบ โดยไม่ได้ตรวจก่อนว่าคืนสถานะได้ — POST publish ตอบ 400 `lesson.media_not_published` (สื่อในบทเรียนไม่ได้เผยแพร่) คอร์สค้าง PENDING_EDIT | retest-bug Dev 5/Oct | DONE | 20261005-post-mortem-report-0167-request-edit-without-proving-restore-path-course-stuck.md |
 | PM-2026-10-05-02 | 2026-10-05 | เพิ่มคิวส่ง DM ซ้ำใน SFD โดยตั้งที่อยู่คิวเป็นค่าคงที่ใต้ logs จริง — รันเทสต์ dedup เดิมแล้วการ์ดทดสอบ `job-h` ตกลงคิวจริง heartbeat ส่งเข้า DM เจ้าของงาน 1 ใบ | SFD DM outbox 5/Oct | DONE | 20261005-post-mortem-report-0168-test-wrote-real-dm-outbox-fake-card-sent.md |
 | PM-2026-10-06-01 | 2026-10-06 | เด้งหน้าต่างล็อกอิน dev ตามไฟล์ roster 15 บัญชีแทนการอ่านชีทบัญชีสด (ขัด memory ที่มีอยู่แล้ว) — เจ้าของงานพิมพ์รหัสให้บัญชีที่ไม่อยู่ในชีท และพิมพ์ซ้ำเมื่อเครื่องมือล้มกลางรอบโดยไม่สรุปว่าบัญชีไหนไม่ได้บันทึก · รวมถึงไม่ได้ตรวจว่า token Claude ของบอทยังใช้ได้ก่อนวางแผนรันขั้น 3–7 (ตายตั้งแต่ 21/Sep) | RTT auto-test ขั้น 7 / ล็อกอิน dev | DONE | 20261006-post-mortem-report-0169-dev-login-popups-from-roster-not-sheet-and-dead-bot-token.md |
+| PM-2026-10-06-02 | 2026-10-06 | บอกเจ้าของงานว่า dev มี session ใช้ได้ 7/16 โดยอ่านจากรอบ keepalive 16:40 ซึ่งเก่า ทั้งที่รอบสด 18:29 คือ 0/16 (VPN ไม่ต่อระหว่างรอบ 16:40:59 ถึง 18:29:56 เกิน idle 30 นาที) แล้วสั่งรัน shadow 4 ใบบนข้ออ้างนั้น — ผลทั้ง 4 ใบไม่ได้ทดสอบจริง | RTT auto-test ขั้น 7 shadow | OPEN | — |
 
 ---
 
