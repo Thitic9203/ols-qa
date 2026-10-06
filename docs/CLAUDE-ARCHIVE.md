@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0170 — อ่าน keepalive รอบเก่าเป็นจำนวน session สด แล้วสั่งรัน shadow ที่ไม่ได้ทดสอบเลย
+
+- กฎ: จำนวน session ที่บอกเจ้าของงานต้องมาจากการวัดในเทิร์นนั้น (`session_verify.js` / `shadow.py live_gate()`) พร้อมเวลาที่วัด ห้ามอ่านจาก log ของงานตามตาราง · shadow ตรวจ VPN+session สดก่อนทุก ticket ไม่ผ่าน = deferred + DM
+
+Full report: [`docs/post-mortem/20261006-post-mortem-report-0170-stale-keepalive-read-as-live-session-count-shadow-round-untested.md`](docs/post-mortem/20261006-post-mortem-report-0170-stale-keepalive-read-as-live-session-count-shadow-round-untested.md)
+
 ### Report #0169 — เด้งหน้าต่างล็อกอิน dev ตาม roster แทนชีทบัญชี และไม่ได้ตรวจ token บอท (ผิดซ้ำ #0088)
 
 - กฎ: เด้งหน้าต่างล็อกอินผ่าน `capture/login_from_sheet.py` เท่านั้น — รายชื่อมาจากชีทบัญชีสด · `session_capture.js` ปฏิเสธเมื่อไม่มีแผนจากชีทที่สด · บัญชีที่ล้มไม่พาทั้งรอบล้มและต้องมีบรรทัดสรุป · ทรัพยากรที่งานพึ่ง (token) ต้องเรียกจริงหนึ่งครั้งก่อนสร้างงานบนมัน
