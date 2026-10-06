@@ -11,7 +11,7 @@
 
 ## สรุปสั้น (Executive Summary)
 
-หลังเจ้าของงานแจ้งว่าต่อ VPN แล้ว Claude ตรวจ VPN สดผ่าน แต่จำนวน session dev กลับอ่านจาก log keepalive ด้วยคำสั่งที่หยิบ "บรรทัด verified ล่าสุด" แล้วพลาดไปได้รอบ 16:40 (7/16) แทนรอบสด 18:29 (0/16) จึงบอกเจ้าของงานว่ามี session ใช้ได้ 7 บัญชี แล้วสั่งรัน shadow 4 ticket ระหว่างรอบ VPN หลุดอีกครั้ง การเรียก Claude ถูกตัด ทั้ง 4 ticket ไม่ได้ทดสอบเลย (ถูกบันทึกเป็น runner-error / ECONNRESET) แก้แล้วด้วยด่านสดใน `shadow.py` ที่วัด VPN + session ก่อนทุก ticket
+หลังเจ้าของงานแจ้งว่าต่อ VPN แล้ว Claude ตรวจ VPN สดผ่าน แต่จำนวน session dev กลับอ่านจาก log keepalive ด้วยคำสั่งที่หยิบ "บรรทัด verified ล่าสุด" แล้วพลาดไปได้รอบ 16:40 (7/16) แทนรอบสด 18:29 (0/16) จึงบอกเจ้าของงานว่ามี session ใช้ได้ 7 บัญชี แล้วสั่งรัน shadow 4 ticket ระหว่างรอบ Wi-Fi ของเครื่องหลุด (VPN หลุดตาม) การเรียก Claude จึงไม่มีเน็ต ทั้ง 4 ticket ไม่ได้ทดสอบเลย (ถูกบันทึกเป็น runner-error / ECONNRESET) แก้แล้วด้วยด่านสดใน `shadow.py` ที่วัด VPN + session ก่อนทุก ticket
 
 ## 1. ปัญหา (Problem Statement)
 
@@ -30,9 +30,11 @@
 | 18:26:42–18:27:15 | Claude อ่าน log keepalive ด้วยคำสั่งที่หยิบช่วงก่อนบรรทัด `verified` ตัวท้าย ได้รอบ 16:40 แล้วรายงาน 7/16 |
 | 18:27:15 | เริ่ม shadow 4 ticket |
 | 18:29:56 | keepalive สด: 0/16 verified |
-| 18:39:59 | keepalive: VPN ไม่ต่ออีกครั้ง |
+| 18:36:02 | Wi-Fi ของเครื่องหลุด (`en0 link INACTIVE` · IP ถูกถอด) — ไม่มีเน็ตจนถึง 22:19:38 |
+| 18:37:22 | L2TP หลุดตาม (`L2TP has detected change in the network`) |
+| 18:39:59 | keepalive: VPN ไม่ต่อ |
 | 18:48:06 | OLS-843 จบด้วย ECONNRESET x3 ไม่มีผล |
-| 18:48–18:57 | 3 ticket ที่เหลือ ConnectionRefused ตอนจัดประเภท |
+| 18:48–18:57 | 3 ticket ที่เหลือ ConnectionRefused ตอนจัดประเภท — CLI ของ Claude รายงาน DNS lookup ล้มเหลวเป็นข้อความนี้ (ทำซ้ำได้ด้วย host ที่ resolve ไม่ได้) |
 | 23:38 | สืบด้วย systematic-debugging: เรียก Claude ซ้ำได้ปกติ · พบ 0/16 ที่ 18:29 |
 
 ## 3. สาเหตุโดยละเอียด (Root Cause Analysis)
