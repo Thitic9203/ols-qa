@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0169 — เด้งหน้าต่างล็อกอิน dev ตาม roster แทนชีทบัญชี และไม่ได้ตรวจ token บอท (ผิดซ้ำ #0088)
+
+- กฎ: เด้งหน้าต่างล็อกอินผ่าน `capture/login_from_sheet.py` เท่านั้น — รายชื่อมาจากชีทบัญชีสด · `session_capture.js` ปฏิเสธเมื่อไม่มีแผนจากชีทที่สด · บัญชีที่ล้มไม่พาทั้งรอบล้มและต้องมีบรรทัดสรุป · ทรัพยากรที่งานพึ่ง (token) ต้องเรียกจริงหนึ่งครั้งก่อนสร้างงานบนมัน
+
+Full report: [`docs/post-mortem/20261006-post-mortem-report-0169-dev-login-popups-from-roster-not-sheet-and-dead-bot-token.md`](docs/post-mortem/20261006-post-mortem-report-0169-dev-login-popups-from-roster-not-sheet-and-dead-bot-token.md)
+
 ### Report #0168 — เทสต์เดิมเขียนการ์ดปลอมลงคิว DM จริง แล้ว heartbeat ส่งเข้า DM เจ้าของงาน
 
 - กฎ: ไฟล์ผลข้างเคียงใหม่ของโมดูลที่มีเทสต์อยู่แล้ว ต้อง derive จากค่าที่เทสต์เดิมย้ายอยู่แล้ว (เช่นโฟลเดอร์ของ `LEDGER`) ไม่ใช่ค่าคงที่แยก · รันชุดเทสต์บนเครื่องที่มี job จริงทำงาน ต้องตรวจไฟล์จริงที่ job อ่านก่อนและหลัง
