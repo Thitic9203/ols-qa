@@ -6,7 +6,7 @@ Apply [qa-evidence-gates.md](qa-evidence-gates.md) before any pass/post/done cla
 
 ## All workflows
 
-- [ ] English only in user-facing messages ([user-communication.md](user-communication.md))
+- [ ] User-facing messages follow the user's language ([user-communication.md](user-communication.md))
 - [ ] No success claim without tool output **and** destination re-read where applicable ([qa-evidence-gates.md](qa-evidence-gates.md))
 - [ ] Approval gates were not skipped
 - [ ] Artifact index posted

@@ -49,7 +49,7 @@ Then ask to use skill `helix`, or a workflow stub by name (e.g. `tc-fe-prep-work
 Enable skills in settings; skills under `~/.cline/skills/` or `.cline/skills/`.
 
 ```text
-Use the helix skill — show the Helix QA menu in English and wait for my workflow choice.
+Use the helix skill — show the Helix QA menu and wait for my workflow choice.
 ```
 
 ## Codex CLI

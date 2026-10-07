@@ -10,7 +10,7 @@ Every time Step 5 is reached — always generate the HTML file and open it in Ch
 
 `references/{ISSUE_KEY}_FE_TC_draft.html` in the workspace root.
 
-Open with: `mcp__Control_Chrome__open_url` → `file:///absolute/path/to/references/{ISSUE_KEY}_FE_TC_draft.html`
+Open with the agent's browser tool (`open_url` / `navigate`) → `file:///absolute/path/to/references/{ISSUE_KEY}_FE_TC_draft.html`
 
 ## HTML template
 
@@ -352,7 +352,7 @@ Include only when at least one Type has no TCs OR when Figma/PRD links were miss
 After writing the file:
 
 ```
-mcp__Control_Chrome__open_url → file:///absolute/path/to/references/{ISSUE_KEY}_FE_TC_draft.html
+<browser tool> open_url → file:///absolute/path/to/references/{ISSUE_KEY}_FE_TC_draft.html
 ```
 
 Post in chat (one line):

@@ -18,7 +18,7 @@ Show the menu and route to the correct workflow skill. Full text: [commands/heli
 
 ## Opening (always, unless the user already chose a mode)
 
-Respond in **English only** — never Thai in menus, questions, or replies, even if the user writes Thai. Be concise.
+Respond in **the user's language** (see [user-communication.md](../../references/user-communication.md)) — menus, questions, and replies follow the language the user writes in; keep technical terms, file names, and ticket keys as written. Be concise.
 
 Show the menu from [menu-text.md](../../references/menu-text.md) (Opening block — copy verbatim).
 
@@ -38,7 +38,7 @@ If the user’s goal is already clear (e.g. “write FE TC for PROJ-123”), **s
 
 ## Intent shortcuts (Thai / mixed input)
 
-When the user writes Thai or informal English, map intent using [intent-shortcuts.md](../../references/intent-shortcuts.md). Still respond in **English only**. Extract issue keys from the same message when present.
+When the user writes Thai or informal English, map intent using [intent-shortcuts.md](../../references/intent-shortcuts.md). Respond in the language the user wrote in. Extract issue keys from the same message when present.
 
 ## Proactive suggestion (suggest-only, opt-out)
 

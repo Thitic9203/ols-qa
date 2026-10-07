@@ -175,7 +175,7 @@ Compare against the story's AC/EC and description across these areas:
 
 1. **Generate** `references/{ISSUE_KEY}_FE_pre_draft_review.html` following [html-pre-draft-review-template.md](references/html-pre-draft-review-template.md) — includes Step 2a consistency check + Step 2.5 conflict/recency/scope-gap sections.
 2. **Write** the file to the workspace using the Write tool.
-3. **Open** in Chrome: `mcp__Control_Chrome__open_url` → `file:///absolute/path/to/references/{ISSUE_KEY}_FE_pre_draft_review.html`
+3. **Open** in the browser (the agent's browser tool, `open_url` / `navigate`) → `file:///absolute/path/to/references/{ISSUE_KEY}_FE_pre_draft_review.html`
 4. **Post in chat** (short — all detail is in Chrome):
 
 > Pre-draft review เปิดใน Chrome แล้ว — ตรวจสอบผลการเช็ค AC/EC consistency + PRD/Figma conflict ได้เลยครับ
@@ -544,7 +544,7 @@ Do NOT post the TC table as markdown in chat. Instead:
 
 1. **Generate** `references/{ISSUE_KEY}_FE_TC_draft.html` following [html-draft-template.md](references/html-draft-template.md) exactly — full-width table, Type-grouped rows (Unit → Integration → System), `<br>` between numbered steps, Remark block if needed.
 2. **Write** the file to the workspace using the Write tool.
-3. **Open** in Chrome: `mcp__Control_Chrome__open_url` → `file:///absolute/path/to/references/{ISSUE_KEY}_FE_TC_draft.html`
+3. **Open** in the browser (the agent's browser tool, `open_url` / `navigate`) → `file:///absolute/path/to/references/{ISSUE_KEY}_FE_TC_draft.html`
 4. **Post in chat** (short):
 
 > Draft TC เปิดใน Chrome แล้ว — ตรวจสอบ แล้ว approve หรือแจ้ง edit ได้เลยครับ **Not posted to Jira yet.**

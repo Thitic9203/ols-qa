@@ -10,7 +10,7 @@ Every time Step 2.5 completes (or Step 2a completes when Step 2.5 is skipped bec
 
 `references/{ISSUE_KEY}_FE_pre_draft_review.html` in the workspace root.
 
-Open with: `mcp__Control_Chrome__open_url` → `file:///absolute/path/to/references/{ISSUE_KEY}_FE_pre_draft_review.html`
+Open with the agent's browser tool (`open_url` / `navigate`) → `file:///absolute/path/to/references/{ISSUE_KEY}_FE_pre_draft_review.html`
 
 ## HTML template
 
@@ -457,7 +457,7 @@ Same structure as Step 2a recommendation card. Omit when no conflicts and no gap
 After writing the file:
 
 ```
-mcp__Control_Chrome__open_url → file:///absolute/path/to/references/{ISSUE_KEY}_FE_pre_draft_review.html
+<browser tool> open_url → file:///absolute/path/to/references/{ISSUE_KEY}_FE_pre_draft_review.html
 ```
 
 Post in chat (short — details are in the HTML page):

@@ -8,7 +8,7 @@ say so and ask rather than assume.
 ## Source of truth
 
 Source of truth: Bug Priority & Severity Matrix — Confluence (space `<CONFLUENCE_SPACE>`, page id in
-`~/.ols-qa-secrets/ols-secrets.md` § Confluence). This file is a verbatim transcription of that page's
+the operator's local secrets file, § Confluence — never committed). This file is a verbatim transcription of that page's
 table. If the two ever disagree, Confluence wins — re-sync this file, don't patch around the gap.
 
 ## How to read the matrix

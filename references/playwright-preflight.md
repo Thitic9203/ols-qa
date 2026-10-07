@@ -16,7 +16,7 @@ Complete **every** item before starting Phase E. Stop on first hard failure and 
 ## 3 — Playwright readiness (user project)
 
 - [ ] `playwright` dependency present in user repo **or** user confirmed how to run tests
-- [ ] Config file identified (`playwright.config.ts`, `playwright.e2e.config.ts`, or user path)
+- [ ] Config file identified (`playwright.config.ts`, a project-specific config, or user path)
 - [ ] `npx playwright test --list` (or project equivalent) succeeds **or** user waived with reason
 
 ## 4 — Ticket scope

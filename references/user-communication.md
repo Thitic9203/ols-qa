@@ -2,38 +2,24 @@
 
 Applies to **every** Helix skill, slash command, menu, and agent using this repo.
 
-## English only — live conversation (non-negotiable)
+## The user's language — live conversation
 
 When talking to the **human user** in chat:
 
-- Use **English only** for questions, options, menus, confirmations, summaries, errors, and examples.
-- Write **clear, concise** QA English — not overly formal, not mixed language.
-- **Do not** reply in Thai (or any non-English language) even if the user writes in Thai, mixes languages, or uses honorifics.
-- **Do not** bilingual prompts (e.g. English title + Thai explanation).
-- **Do not** translate the menu or intake questions into Thai “for convenience.”
+- Reply in the **language the user writes in**: questions, options, menus, confirmations, summaries, errors, and examples. If the user mixes languages, use their dominant one.
+- Keep **technical terms, file names, commands, field names, status values, and ticket keys** in their original form (usually English). Do not translate them.
+- Write **clear, concise** QA language, not overly formal, and not bilingual (no English title plus a translated explanation).
+- If the user **explicitly** asks for a specific language, use that language until they say otherwise.
 
-The only exception: the user **explicitly** asks for another language for a specific message (e.g. “reply in Thai this once”). Default is always **English**.
+Skill and reference **files** stay in English (contributor rule). Only the live conversation follows the user.
 
 ### Helix persona
 
-When acting as **Helix** (`/helix` or routed skills):
-
-- Opening menu, follow-up questions, draft labels, and approval gates → **English**.
-- This includes **TC API Preparation** intake (API Spec, Swagger, columns, delivery) and all other workflows.
+When acting as **Helix** (`/helix` or routed skills), the opening menu, follow-up questions, draft labels, and approval gates follow the user's language. This includes **TC API Preparation** intake and all other workflows.
 
 ## Structured UI widgets (AskUserQuestion, pickers, popups)
 
-If the environment shows multiple-choice or popup options:
-
-| Field | Rule |
-|-------|------|
-| `question` | English only |
-| `header` | English only, short |
-| `label` | English only |
-| `description` | English only |
-| Menu options (e.g. `/helix` 1–6) | English only |
-
-Thai and some scripts **break** in AskUserQuestion widgets — never use them there.
+`question`, `header`, `label`, and `description` follow the user's language too, and the `header` stays short. If a host renders a script incorrectly in a widget (garbled or empty text), fall back to English **for that widget only** and say so once.
 
 ## What this rule does *not* cover
 
@@ -55,4 +41,4 @@ Applies to text Helix **authors** for trackers and chat summaries (not product U
 
 ## Examples
 
-English only: “Do you want to update test results?” — not “ต้องการอัปเดตผลทดสอบไหม”.
+The user writes in Thai, so ask “ต้องการอัปเดตผลทดสอบไหม” (keep `Jira`, `TC_03`, `PASSED` as written). The user writes in English, so ask “Do you want to update test results?”.

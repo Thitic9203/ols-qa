@@ -13,7 +13,7 @@ Follow [skill-rules-style.md — doubt and fix-verify](skill-rules-style.md#qa-c
 
 ## Shared checklist
 
-- [ ] User-facing text is **English only**.
+- [ ] User-facing text follows **the user's language** ([user-communication.md](user-communication.md)).
 - [ ] No success claim without **tool output** and **destination verification**.
 - [ ] Gates were not skipped (approval / confirm / refuse when inputs missing).
 - [ ] If Jira comment posted: **post-publish review passed** ([jira-comment-post-review.md](jira-comment-post-review.md)) — no literal `<br>`/HTML tags, numbered items on separate lines, CSV/Excel attached.

@@ -1,6 +1,6 @@
 # Coverage delta summary (after review, before full draft)
 
-Post this block in chat **immediately after** the coverage review block and **before** the full TC table. English only.
+Post this block in chat **immediately after** the coverage review block and **before** the full TC table. Write it in the user's language.
 
 ## FE (AC/EC)
 

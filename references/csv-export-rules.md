@@ -87,7 +87,7 @@ python3 "{HELIX_INSTALL_ROOT}/scripts/export-markdown-table-to-csv.py" \
 ```
 
 - `{HELIX_INSTALL_ROOT}` = path **the user provided** in this session.
-- NEVER assume `~/.helix`, the agent home directory, or `scripts/` relative to the project under test.
+- NEVER assume the Helix install directory, the agent home directory, or `scripts/` relative to the project under test.
 
 If the script is missing or fails, fall back to in-agent CSV export — do not block delivery.
 

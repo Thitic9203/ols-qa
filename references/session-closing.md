@@ -1,6 +1,6 @@
 # Session closing (all workflows)
 
-Apply at **end of every workflow** (success, partial, or blocked). English only.
+Apply at **end of every workflow** (success, partial, or blocked). Write it in the user's language.
 
 ## 1 — Unified verification
 

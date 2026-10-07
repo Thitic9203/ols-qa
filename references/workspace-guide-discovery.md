@@ -28,7 +28,7 @@ Also read any file the user names explicitly.
 ## When a guide is found
 
 1. Read the full file.
-2. Post a **Config loaded** block (English only):
+2. Post a **Config loaded** block (in the user's language):
 
 ```text
 ━━━ Project config loaded ━━━
@@ -54,5 +54,5 @@ Skipped questions: {list fields you will not re-ask}
 | Rule | Because |
 |------|---------|
 | MUST search workspace `references/` first | Repeatable team defaults |
-| MUST NOT read `~/.helix` or Helix repo guides as project config | Wrong project |
+| MUST NOT read the Helix install directory or Helix repo guides as project config | Wrong project |
 | MUST NOT store production passwords in committed guides | Security |

@@ -1,6 +1,6 @@
 # Helix session constraints (recite once)
 
-Use at the **start of the first response** in a Helix workflow (or when `/helix` routes to a skill). English only.
+Use at the **start of the first response** in a Helix workflow (or when `/helix` routes to a skill). Write it in the user's language.
 
 ## All Helix workflows
 

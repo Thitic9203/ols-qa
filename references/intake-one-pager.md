@@ -1,6 +1,6 @@
 # Intake one-pager (long workflows)
 
-Show **once** at the start of intake (before detailed questions). English only. Adjust the checklist to the workflow.
+Show **once** at the start of intake (before detailed questions). Write it in the user's language. Adjust the checklist to the workflow.
 
 ## TC API prep
 

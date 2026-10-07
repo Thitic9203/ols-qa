@@ -1,6 +1,6 @@
 # Retest — fix claim vs verification plan
 
-Run **after Step 2 (fetch ticket)**, **before Step 3 (test execution)**. English only.
+Run **after Step 2 (fetch ticket)**, **before Step 3 (test execution)**. Write it in the user's language.
 
 ## Collect from Jira
 
