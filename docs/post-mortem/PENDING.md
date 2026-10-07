@@ -198,6 +198,8 @@
 | PM-2026-10-07-04 | 2026-10-07 | บอทเทสรัน Story (OLS-829, OLS-778) ด้วย `prompt.md` ที่สั่งให้อ่าน SOP ที่ path ใน ols-qa ซึ่งไม่มีไฟล์อยู่ จึงไม่ได้ใช้สกิล `testing-ticket-workflow` ของ repo · prompt 2 ไฟล์ยังชี้ runbook ที่ไม่มีจริง · ไม่มีชั้นไหนตรวจว่าหยิบสกิลถูกตัว | สร้างแนวป้องกัน 12 ชั้นตามที่เจ้าของงานสั่ง | DONE | 20261007-post-mortem-report-0174-testing-bot-story-runs-without-repo-skill.md |
 | PM-2026-10-07-05 | 2026-10-07 | run.sh นับ `000000` เป็นเข้าได้ ทั้งที่ VPN หลุด · OLS-829/778 เริ่ม session แล้ว SKIPPED | เจ้าของงานสั่งรันใหม่ด้วยสกิล repo | DONE | 20261007-post-mortem-report-0175-runsh-probe-000000-passed-as-reachable.md |
 | PM-2026-10-07-06 | 2026-10-07 | สั่งรัน OLS-829 ผ่าน Bash background ของเซสชัน รอบหายพร้อมเซสชันไม่มีบันทึก | เจ้าของงานสั่งรันใหม่ | DONE | 20261007-post-mortem-report-0176-rerun-launched-from-session-shell-died-with-session.md |
+| PM-2026-10-07-07 | 2026-10-07 | รันยืนยัน e2e บน dev ด้วย `E2E_SKIP_FIXTURE_OWNERS=1` ที่ commit นั้นไม่รองรับ และไม่ได้ `--list` ก่อน · setup เรียก mintState ส่งล็อกอินด้วยสคริปต์ 1 ครั้งให้บัญชี owner ที่เลิกใช้ (HTTP 400) · 95 เทสต์ไม่ได้รัน · log บันทึก `rc=0` ผิดเพราะอ่าน `$?` หลัง `$(date)` | MLV-109 รันทั้งชุดยืนยันตัวดัก | DONE | 20261007-post-mortem-report-0177-verify-run-env-switch-unsupported-minted-retired-owner.md |
+| PM-2026-10-07-08 | 2026-10-07 | รายงานว่า `rtk npx tsx` ใช้ได้จากเลข 11.13.0 ซึ่งเป็นเวอร์ชันของ npm · rtk 0.36.0 รัน `npx <tool>` เป็น `npm <tool>` จึงเปิดหน้าต่างล็อกอินรอบแรกไม่ขึ้น | MLV-109 เปิดหน้าต่างล็อกอิน | DONE | 20261007-post-mortem-report-0178-rtk-npx-runs-npm-version-read-as-tsx-works.md |
 
 ---
 

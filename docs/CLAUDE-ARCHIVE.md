@@ -3721,6 +3721,18 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0178 — รายงานว่า `rtk npx tsx` ใช้ได้จากเลขเวอร์ชันของ npm
+
+- กฎ: ทดสอบเครื่องมือด้วยงานจริงที่รู้ผลลัพธ์ ไม่ใช่ `--version` · rtk 0.36.0 รัน `npx <tool>` เป็น `npm <tool>` — เรียก `./node_modules/.bin/<tool>` หรือ `rtk proxy npx`
+
+Full report: [`docs/post-mortem/20261007-post-mortem-report-0178-rtk-npx-runs-npm-version-read-as-tsx-works.md`](docs/post-mortem/20261007-post-mortem-report-0178-rtk-npx-runs-npm-version-read-as-tsx-works.md)
+
+### Report #0177 — รันยืนยันด้วยสวิตช์ที่ commit นั้นไม่รองรับ setup ส่งล็อกอินให้บัญชีที่เลิกใช้
+
+- กฎ: ก่อนสั่ง `playwright test` ด้วยมือ `--list` ด้วย argv เดียวกัน แนบจำนวนเทสต์ ยืนยันว่าไม่มี `setup` และเคส owner · env switch ต้อง grep ยืนยันว่าอยู่ใน commit ที่รัน · เก็บ `rc=$?` ทันทีหลังคำสั่ง ตัดสินจาก `run.json`
+
+Full report: [`docs/post-mortem/20261007-post-mortem-report-0177-verify-run-env-switch-unsupported-minted-retired-owner.md`](docs/post-mortem/20261007-post-mortem-report-0177-verify-run-env-switch-unsupported-minted-retired-owner.md)
+
 ### Report #0176 — สั่งรันเทสใหม่จาก shell ที่ผูกกับเซสชัน รอบหายไปพร้อมเซสชัน
 
 - กฎ: งานที่ต้องอยู่รอดหลังเซสชันจบ ปล่อยแบบแยก session (`setsid` / `spawn` detached) พร้อม log เริ่ม/จบของตัวเอง · `nohup &` ใน Bash background ของเซสชันไม่พอ · ก่อนพูดว่า "รันอยู่/ตั้งไว้แล้ว" แนบ pid + บรรทัด log ที่เห็นจริง

@@ -12,3 +12,5 @@
 - ข้อยกเว้นเขียน production: เฉพาะแผน smoke test 2026-09 (อนุมัติ 2026-09-03) — ไม่รวม env อื่น/RGS/ค่าใช้จ่าย · ลบข้อมูลที่สร้างให้หมด (LP→course→media ขณะ DRAFT) · ห้ามร่องรอย QA ในชื่อ · destructive fixture มีคู่คืนสภาพใน ledger · หมดอายุเมื่อรอบปิด · `write_guard.js` ยัง deny ทุก env
 
 - probe เครือข่าย/env ทุกตัวตัดสินจากรหัสจบของ curl ห้ามเทียบสตริง `-w %{http_code}` กับ `"000"` (timeout ให้ `000000`) · gate ทุกตัวต้องมีเทส known-negative (#0175)
+- สั่ง `playwright test` ด้วยมือ: รัน `--list --reporter=json` ด้วย argv เดียวกันก่อน แนบจำนวนเทสต์ ยืนยันว่าไม่มี project `setup` และไม่มีเคสบัญชีที่เลิกใช้ (session ที่คนล็อกอินให้ใช้ `--no-deps`) · env switch ต้อง grep ยืนยันว่าอยู่ใน commit ที่รัน · เก็บ `rc=$?` ทันทีหลังคำสั่ง ตัดสินจาก `run.json` (#0177)
+- เครื่องมือ/ตัวรันทดสอบด้วยงานจริงที่รู้ผล ไม่ใช่ `--version` · rtk 0.36.0 รัน `npx <tool>` เป็น `npm <tool>` — ใช้ `./node_modules/.bin/<tool>` หรือ `rtk proxy npx` (#0178)
