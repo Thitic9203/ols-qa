@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0172 — สำเร็จ 1 ครั้งแล้วรายงานว่าเจอต้นเหตุที่ classify ค้าง (ผิดซ้ำ #0067)
+
+- กฎ: อาการที่เป็นๆ หายๆ (ใบเดียวกันเคยผ่าน) จะเขียน "ต้นเหตุ"/"แก้แล้ว" ได้ต้องมีผลทำซ้ำก่อนแก้ ≥ 3/3 และผ่านหลังแก้ ≥ 5/5 พร้อมแนบ x/N ในแชท commit และแผน ไม่ครบ = "สมมติฐาน: … (จะตรวจด้วย …)" · ข้อความแก้คำรายงานใช้เกณฑ์เดียวกัน · หลักฐานเชิงลบ ("ไม่มีการหลุด") ตัดสาเหตุทิ้งไม่ได้ถ้าไม่ได้วัดกลไกที่ทำให้ค้าง · ledger ต้องบันทึกเวลาที่ใช้ของทุกการเรียก (ค้างอยู่ที่ repo บอท)
+
+Full report: [`docs/post-mortem/20261007-post-mortem-report-0172-single-isolated-run-reported-as-classify-hang-root-cause.md`](docs/post-mortem/20261007-post-mortem-report-0172-single-isolated-run-reported-as-classify-hang-root-cause.md)
+
 ### Report #0171 — บรรทัด FAIL ของบอทเองทำให้การแจ้งเตือนความล้มเหลวเงียบ
 
 - กฎ: ตัวกันแจ้งเตือนเท็จต้องมีเทสต์ฝั่ง "ต้องแจ้ง" ผ่านเส้นทางจริงของโค้ด (ดึงฟังก์ชันจริงมารัน) ไม่ใช่แค่ฝั่ง "ต้องระงับ"
