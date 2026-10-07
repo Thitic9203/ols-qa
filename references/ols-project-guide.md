@@ -694,6 +694,29 @@ Re-fetch and confirm with the user **before every TC design run** — see [tc-gl
 | Staging | *(not configured — ask user and update this table)* |
 | Production | *(not configured — ask user and update this table)* |
 
+### Account pool (counts only, for parallel lanes)
+
+Source: tab `Account_Test` of the `Test Cases - OLS QA` sheet, read 2026-10-07. Emails and passwords stay in that sheet and in local agent memory — **never in this repo**. One account = one lane (`references/parallel-test-lanes.md` §3), so the count per role is the lane ceiling for that role.
+
+| Env | NDLP68 user → OLS role | Unique accounts |
+|-----|------------------------|:---------------:|
+| Dev / Pre-prod | Central Admin → User Admin | 1 |
+| Dev / Pre-prod | School Admin → Content Admin | 4 (one notes its highest NDLP role is system admin) |
+| Dev / Pre-prod | Teacher → Learner, Creator | 3 (the sheet lists 4 rows; one account is listed twice) |
+| Dev / Pre-prod | Student → Learner, Creator | 4 |
+| Dev / Pre-prod | OBEC Admin, Region Admin | **0**: none listed for this env |
+| obectraining69 | OBEC Admin → System Admin | 2 |
+| obectraining69 | Region Admin / PEO → Content Admin | 3 (2 Region, 1 PEO) |
+| obectraining69 | School Admin → Content Admin | 1 (plus 1 Teacher-labelled account provisioned as Content Admin) |
+| obectraining69 | Teacher → Learner, Creator | 1 |
+| obectraining69 | Student → Learner, Creator | 2 |
+| Production | one per role (OBEC, Region, School Admin, Teacher, Student) | 1 each; smoke only, never parallel |
+| ndlp68-test | (listed) | **env disabled**; do not use |
+
+Learner (general public) and Guest need no account. The sheet labels accounts "Dev / Pre-prod", but the Pre-prod row above records one account whose role did not carry over: confirm the role per env in the pre-flight login before leasing.
+
+**Per-account limits: not yet verified.** The sheet does not record whether login needs OTP, whether accounts share one OTP inbox, whether the app ends an older session when the same account logs in again, or any rate limit. Some accounts are `yopmail.com` addresses, which are public disposable inboxes. Until these are confirmed with the team, treat every account as single-session and pre-login lanes one at a time (`references/parallel-test-lanes.md` §3, shared-inbox row).
+
 ### Auth / login flow
 
 > **🛑 Pre-flight login smoke gate — ก่อนเริ่มเทส/รีเทสทุกครั้ง (บังคับ, user 2026-07-21; scope แก้ 2026-08-02).**
