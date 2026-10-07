@@ -42,12 +42,13 @@ AI reads this file before asking any OLS-related questions.
 |-----------|-----------|
 | pick up by QA | READY TO TEST → TESTING |
 | approve by QA | TESTING → Done |
-| block | any → BLOCKED |
+| block | → BLOCKED — **not** offered from Done or BLOCKED (read via `GET /rest/api/3/issue/{ISSUE_KEY}/transitions` on 2026-10-07: 2 Done + 2 BLOCKED tickets, none listed `block`) |
 | Deploy done | DEPLOYING → READY TO TEST |
 
-Transition ids (global, usable from any status): `11` To Do · `21` In Progress · `31` REVIEWING ·
+Transition ids (global ids — availability depends on the current status, see below): `11` To Do · `21` In Progress · `31` REVIEWING ·
 `41` Done · `51` DEPLOYING · **`61` READY TO TEST** · `71` TESTING · `81`/`141` BLOCKED ·
 `151` approve by QA (→ Done). From READY TO TEST to Done use `121` then `41`.
+Measured 2026-10-07 (`GET .../transitions`): from Done and from BLOCKED only `11` `21` `31` `41` `51` `61` `71` `81` are offered — `121`, `141` and `151` are not. Read the ticket's transitions before writing; never assume one is available.
 
 ### Retest-bug rules that belong to OLS, not to the skill (moved here 2026-09-05)
 
