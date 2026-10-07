@@ -124,6 +124,37 @@ if ! ./scripts/check-no-secrets.sh "${FILES[@]}"; then
   exit 1
 fi
 
+# --- register any new top-level skill in plugin.json (helix CI fails on an unregistered skill;
+#     tc-review-workflow left helix main red 2026-09-15 → 2026-10-06 this way) ---
+NEW_SKILLS=()
+for f in "${FILES[@]}"; do
+  case "$f" in
+    skills/deprecated/*|skills/in-progress/*) ;;
+    skills/*/SKILL.md)
+      n="${f#skills/}"; n="${n%/SKILL.md}"
+      case "$n" in */*) ;; *) NEW_SKILLS+=("$n") ;; esac ;;
+  esac
+done
+if [ "${#NEW_SKILLS[@]}" -gt 0 ]; then
+  if ! python3 - "${NEW_SKILLS[@]}" <<'PY'
+import json, pathlib, sys
+p = pathlib.Path(".claude-plugin/plugin.json")
+data = json.loads(p.read_text())
+skills = data.setdefault("skills", [])
+added = [f"./skills/{n}" for n in sys.argv[1:] if f"./skills/{n}" not in skills]
+skills.extend(added)
+if added:
+    p.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+    print("sync: registered in plugin.json: " + ", ".join(added))
+PY
+  then
+    echo "sync: ❌ could not register new skill(s) in plugin.json — reverting copies, NOTHING deployed."
+    git checkout -- "${FILES[@]}" .claude-plugin/plugin.json 2>/dev/null || true
+    exit 1
+  fi
+  git add -- .claude-plugin/plugin.json
+fi
+
 # --- stage + commit in helix (pre-commit hook re-guards on staged blobs + auto-bumps) ---
 git add -- "${FILES[@]}"
 if git diff --cached --quiet; then
@@ -137,6 +168,26 @@ $COMMIT_BODY
 
 Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"; then
   echo "sync: committed to helix (version auto-bumped by pre-commit)."
+  # --- helix's own CI gate, BEFORE deploying: sync commits go straight to main, so helix's
+  #     pr-check never sees them (helix main stayed red 21 days, 2026-09). Red = drop the commit. ---
+  GATE_FAILED=""
+  for g in "sync-version.sh --check" "ci-check-portable-skills.sh" "ci-check-skill-structure.sh"; do
+    script="${g%% *}"; arg=""; [ "$g" = "$script" ] || arg="${g#* }"
+    if [ ! -f "scripts/$script" ]; then
+      GATE_FAILED="helix gate script missing: scripts/$script"; break
+    fi
+    if ! gate_out="$(bash "scripts/$script" $arg 2>&1)"; then
+      GATE_FAILED="helix gate failed: scripts/$script"
+      printf '%s\n' "$gate_out" | tail -20
+      break
+    fi
+  done
+  if [ -n "$GATE_FAILED" ]; then
+    echo "sync: ❌ $GATE_FAILED — dropping the sync commit, NOTHING deployed."
+    git reset --quiet --keep HEAD~1 || echo "sync: ⚠️ could not drop the local sync commit — remove it by hand before the next push."
+    exit 1
+  fi
+  echo "sync: helix gate green (sync-version, portable content, skill structure)."
   if [ "$PUSH" = "1" ]; then
     git push --quiet origin main && echo "sync: ✅ pushed helix (deployed)." || echo "sync: ⚠️ push failed — commit is local; push helix manually."
   else

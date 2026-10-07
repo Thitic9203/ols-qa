@@ -52,7 +52,18 @@ function identity(repo) {
   git(repo, 'config', 'user.email', 'sync-test@example.invalid');
 }
 
-function fixture() {
+// helix's own CI gate, as stubs: the skill-structure stub fails when a top-level skill is not
+// listed in plugin.json (what the real ci-check-skill-structure.sh enforces).
+const STRUCTURE_STUB = `#!/bin/sh
+cd "$(dirname "$0")/.." || exit 2
+for d in skills/*/; do
+  n=$(basename "$d"); [ -f "skills/$n/SKILL.md" ] || continue
+  grep -q "\\"./skills/$n\\"" .claude-plugin/plugin.json || { echo "skills/$n is not in plugin.json"; exit 1; }
+done
+exit 0
+`;
+
+function fixture({ gate = true } = {}) {
   const base = fs.mkdtempSync(path.join(os.tmpdir(), 'helix-sync-'));
   tmpDirs.push(base);
   const noHooks = path.join(base, 'no-hooks');
@@ -68,6 +79,15 @@ function fixture() {
   fs.mkdirSync(path.join(helix, 'scripts'));
   fs.writeFileSync(path.join(helix, SHARED), 'old\n');
   fs.writeFileSync(path.join(helix, 'scripts', 'check-no-secrets.sh'), '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+  fs.mkdirSync(path.join(helix, '.claude-plugin'));
+  fs.writeFileSync(path.join(helix, '.claude-plugin', 'plugin.json'), JSON.stringify({ name: 'helix', skills: ['./skills/helix'] }, null, 2) + '\n');
+  fs.mkdirSync(path.join(helix, 'skills', 'helix'), { recursive: true });
+  fs.writeFileSync(path.join(helix, 'skills', 'helix', 'SKILL.md'), 'helix\n');
+  if (gate) {
+    fs.writeFileSync(path.join(helix, 'scripts', 'sync-version.sh'), '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+    fs.writeFileSync(path.join(helix, 'scripts', 'ci-check-portable-skills.sh'), '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+    fs.writeFileSync(path.join(helix, 'scripts', 'ci-check-skill-structure.sh'), STRUCTURE_STUB, { mode: 0o755 });
+  }
   git(helix, 'add', '-A');
   git(helix, 'commit', '-qm', 'init');
   git(helix, 'remote', 'add', 'origin', helixOrigin);
@@ -133,6 +153,41 @@ check('a helix that cannot be read is reported as unreadable, never as uncommitt
   assert.ok(/cannot check helix/.test(out), `the refusal does not say helix could not be checked:\n${out}`);
   assert.ok(!/pushed helix/.test(out), 'sync deployed without being able to check helix');
   assert.strictEqual(git(fx.helixOrigin, 'show', `main:${SHARED}`), 'old', 'helix origin changed');
+});
+
+check('a red helix gate blocks the deploy and leaves helix as it was', () => {
+  const fx = fixture();
+  fs.writeFileSync(path.join(fx.helix, 'scripts', 'ci-check-portable-skills.sh'), '#!/bin/sh\necho portable-violation\nexit 1\n', { mode: 0o755 });
+  git(fx.helix, 'commit', '-qam', 'make the portable gate red');
+  git(fx.helix, 'push', '-q', 'origin', 'main');
+  const headBefore = git(fx.helix, 'rev-parse', 'HEAD');
+  const out = commitShared(fx, fx.olsqa, 'gate-red\n');
+  assert.ok(/helix gate failed/.test(out), `the refusal does not name the failed gate:\n${out}`);
+  assert.ok(!/pushed helix/.test(out), `sync deployed over a red gate:\n${out}`);
+  assert.strictEqual(git(fx.helix, 'rev-parse', 'HEAD'), headBefore, 'helix kept the blocked sync commit');
+  assert.strictEqual(git(fx.helixOrigin, 'show', `main:${SHARED}`), 'old', 'helix origin changed');
+  assert.strictEqual(git(fx.helix, 'status', '--porcelain'), '', 'helix was left dirty');
+});
+
+check('a missing helix gate script refuses to deploy', () => {
+  const fx = fixture({ gate: false });
+  const out = commitShared(fx, fx.olsqa, 'no-gate\n');
+  assert.ok(/helix gate (script )?missing/.test(out), `the refusal does not say the gate is missing:\n${out}`);
+  assert.ok(!/pushed helix/.test(out), `sync deployed without a gate:\n${out}`);
+  assert.strictEqual(git(fx.helixOrigin, 'show', `main:${SHARED}`), 'old', 'helix origin changed');
+});
+
+check('a new skill synced with HELIX_SYNC_NEW=1 is registered in plugin.json before the gate runs', () => {
+  const fx = fixture();
+  fs.mkdirSync(path.join(fx.olsqa, 'skills', 'new-skill'), { recursive: true });
+  fs.writeFileSync(path.join(fx.olsqa, 'skills', 'new-skill', 'SKILL.md'), 'new\n');
+  git(fx.olsqa, 'add', 'skills/new-skill/SKILL.md');
+  const r = run('git', ['commit', '-qm', 'add new-skill'], { cwd: fx.olsqa, env: { ...CLEAN_ENV, HELIX_REPO: fx.helix, HELIX_SYNC_NEW: '1' } });
+  const out = `${r.stdout}${r.stderr}`;
+  assert.ok(/pushed helix/.test(out), `the new skill did not deploy:\n${out}`);
+  const skills = JSON.parse(git(fx.helixOrigin, 'show', 'main:.claude-plugin/plugin.json')).skills;
+  assert.ok(skills.includes('./skills/new-skill'), `plugin.json on helix origin does not list the new skill: ${skills}`);
+  assert.strictEqual(git(fx.helix, 'status', '--porcelain'), '', 'helix was left dirty');
 });
 
 check('the cleaner removes git\'s local variables and refuses when git is unavailable', () => {
