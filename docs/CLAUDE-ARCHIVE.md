@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0174 — บอทเทส Story โดยไม่ได้ใช้สกิลใน repo เพราะ prompt ชี้ SOP ที่ไม่มีอยู่จริง
+
+- กฎ: การรันแบบไม่มีคนต้องใช้สกิลของ repo ตาม `references/skill-routing.md` § Jira issue type → skill (Story → testing-ticket · Bug → retest-bug) · ก่อนเริ่มต้องผ่าน preflight (WORKFLOW.md มีจริง · prompt ชี้มัน · path ทุกตัวใน prompt มีจริง · ประเภท ticket ใน Jira ตรง mode) · session พิสูจน์ด้วย `SKILL_LOADED: <path> <sha256>` · ไม่ตรง = HARNESS_FAIL ไม่ใช่ผลของ ticket · ย้ายเอกสารข้าม repo ต้องไล่ผู้ใช้ทุกตัว
+
+Full report: [`docs/post-mortem/20261007-post-mortem-report-0174-testing-bot-story-runs-without-repo-skill.md`](docs/post-mortem/20261007-post-mortem-report-0174-testing-bot-story-runs-without-repo-skill.md)
+
 ### Report #0173 — สั่งรอบ shadow ทับ run.sh ที่กำลังรัน แล้ว L5 ฆ่า session สด (ผิดซ้ำ #0170 · #0171)
 
 - กฎ: ก่อนสั่งงานที่เรียก run.sh (shadow / ON-DEMAND / รันมือ) ต้องตรวจ `.run.lock` + PID เจ้าของในเทิร์นเดียวกับที่สั่ง ถืออยู่ = รอ ห้ามสั่งทับ (บังคับในโค้ดแล้วที่ shadow.py `2d81761`) · ด่านสดต้องครอบทรัพยากรที่ใช้ร่วมกันทุกตัว (ล็อก ไฟล์ผล บัญชี) · ผลตัดสินต้องผูกกับ run id ของ run ตัวเอง ห้ามนับบรรทัดในไฟล์ที่ใช้ร่วมกัน (patch run.sh ค้าง)

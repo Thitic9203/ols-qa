@@ -17,6 +17,17 @@ Canonical map for `/helix`, [commands/helix.md](../commands/helix.md), and [AGEN
 | Audit finished work against its governing sources | `catch-ai-workflow` | `/catch-ai` |
 | Unsure / multi-step | `helix` skill or `/helix` (Claude Code) | `/helix` or `@helix` |
 
+## Jira issue type → skill (unattended and bot runs)
+
+When a runner tests a ticket without a human picking the workflow, the ticket's Jira issue type picks the skill. Owner-confirmed mapping:
+
+| Issue type | Skill |
+|------------|-------|
+| Story | `testing-ticket-workflow` |
+| Bug | `retest-bug-workflow` |
+
+Other issue types (Task, Epic, Sub-task) have no confirmed mapping yet: a runner keeps its current routing, records which skill it used, and never invents a mapping. The two skill files must stay at `skills/deprecated/testing-ticket-workflow/WORKFLOW.md` and `skills/deprecated/retest-bug-workflow/WORKFLOW.md`; `tools/skill-routing-guard/skill_routing_map.test.js` fails the suite if either moves or this table changes.
+
 ## Proactive suggestion (suggest-only)
 
 From context (branch, linked ticket, defects in chat) the router MAY **suggest** one workflow instead of showing the full menu — rules in [proactive-qa-triggers.md](proactive-qa-triggers.md). Suggestion only, never auto-run (Rule #5); honor `HELIX_PROACTIVE=0`.
