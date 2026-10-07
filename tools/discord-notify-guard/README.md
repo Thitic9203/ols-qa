@@ -27,6 +27,22 @@ the owner's approval itself.
 The scheduled watcher follows the same path: it DMs the draft and sends it on a later tick only once
 the owner's approval exists.
 
+## Release summary (#ols-release)
+
+Owner order 2026-10-07: the QA bot may post release summaries, but only into `#ols-release` and
+only after the owner approves. The sender is off-repo, `release/release_notify.py`:
+
+1. `python3 release/release_notify.py build <dir>` — reads `<dir>/draft.md`, checks the header,
+   ≤ 2000 chars and no mentions, writes `release-draft.json`, prints the approval code.
+2. The owner types `อนุมัติ <code>`.
+3. `python3 release/release_notify.py send <dir> --approve <code>` — re-checks the hash and the
+   ledger approval (24h, single use), confirms the bot identity, posts only to
+   `<OLS_RELEASE_CHANNEL_ID>` from the secrets store with no mentions, then reads the message back.
+
+`release_notify.py deploys` lists prod release announcements (read-only) to confirm the tag. This
+guard blocks inline code driving `release_notify` and any write to `release-draft.json`; reading
+the bot token directly stays blocked.
+
 Exit contract: 0 allow · 2 block · anything else = could not decide (wrapper lets it through
 loudly). Unreadable input on `--gate` blocks (report #0005). `--record` never blocks a prompt.
 

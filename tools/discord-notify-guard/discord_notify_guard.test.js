@@ -41,6 +41,10 @@ const MUST_CATCH_BASH = [
   `python3 -c "open('/x/smoke/state/approvals.jsonl','a').write('{}')"`,
   `sed -i '' 's/"code": ".*"/"code": "00000000"/' out/dev-smoke-x/notify-draft.json`,
   `node -e "require('https').request({hostname:'discord.com',path:'/api/v10/channels/1/messages',method:'POST',headers:{Authorization:'Bot '+t}})"`,
+  // release summary sender (2026-10-07): only as a file — inline driving and hand-written drafts are blocked
+  `python3 -c "import release_notify as rn; rn.send(p, 'abcd1234')"`,
+  `python3 - <<'EOF'\nimport release_notify as rn\nrn.sw._req('POST', '/channels/1/messages', {'content': 'x'})\nEOF`,
+  `sed -i '' 's/"code": ".*"/"code": "00000000"/' out/release-notify-2026-10-07/release-draft.json`,
 ];
 MUST_CATCH_BASH.forEach((cmd, i) =>
   t(`bash must-catch #${i + 1}`, () => assert.strictEqual(G.inspectBash(cmd).hit, true, cmd))
@@ -50,6 +54,10 @@ const MUST_PASS_BASH = [
   "python3 smoke/passed_report.py out/dev-smoke-2026-09-21-1550 --version v2026.09.21.1",
   "python3 smoke/notify_guard.py out/dev-smoke-2026-09-21-1550 --approve abcd1234",
   "python3 smoke/test_notify_guard.py",
+  "python3 release/release_notify.py build out/release-notify-2026-10-07",
+  "python3 release/release_notify.py send out/release-notify-2026-10-07 --approve abcd1234",
+  "python3 release/release_notify.py deploys --limit 50",
+  "cat out/release-notify-2026-10-07/release-draft.json",
   `python3 -c "import smoke_watch as sw; print(sw._req('GET', '/channels/1/messages/2')['content'])"`,
   // check-no-secrets.sh rejects the literal webhook-URL shape anywhere in this public repo, so the
   // fixture is assembled here from placeholders — it never carries a real id or token.
@@ -68,6 +76,10 @@ t("Write to the ledger is blocked", () =>
   assert.strictEqual(G.decide({ tool_name: "Write", tool_input: { file_path: "/h/ols-qa-testing-bot/smoke/state/approvals.jsonl" } }).block, true));
 t("Edit of a draft is blocked", () =>
   assert.strictEqual(G.decide({ tool_name: "Edit", tool_input: { file_path: "/h/out/r/notify-draft.json" } }).block, true));
+t("Write of a release draft json is blocked", () =>
+  assert.strictEqual(G.decide({ tool_name: "Write", tool_input: { file_path: "/h/out/release-notify-x/release-draft.json" } }).block, true));
+t("Edit of a release draft.md passes (build re-hashes it; send refuses a changed one)", () =>
+  assert.strictEqual(G.decide({ tool_name: "Edit", tool_input: { file_path: "/h/out/release-notify-x/draft.md" } }).block, false));
 t("Desktop Commander start_process is inspected like Bash", () =>
   assert.strictEqual(G.decide({ tool_name: "mcp__Desktop_Commander__start_process", tool_input: { command: "cat ~/ols-qa-testing-bot/.discord_bot_token" } }).block, true));
 t("an ordinary Write passes", () =>
@@ -86,6 +98,10 @@ t("disk: --gate blocks a direct bot post (exit 2)", () =>
   assert.strictEqual(run("--gate", JSON.stringify({ tool_name: "Bash", tool_input: { command: MUST_CATCH_BASH[0] } })).code, 2));
 t("disk: --gate allows the sanctioned sender (exit 0)", () =>
   assert.strictEqual(run("--gate", JSON.stringify({ tool_name: "Bash", tool_input: { command: MUST_PASS_BASH[1] } })).code, 0));
+t("disk: --gate allows the release sender run as a file (exit 0)", () =>
+  assert.strictEqual(run("--gate", JSON.stringify({ tool_name: "Bash", tool_input: { command: "python3 release/release_notify.py send out/r --approve abcd1234" } })).code, 0));
+t("disk: --gate blocks the release sender driven inline (exit 2)", () =>
+  assert.strictEqual(run("--gate", JSON.stringify({ tool_name: "Bash", tool_input: { command: `python3 -c "import release_notify as rn; rn.send(p, 'abcd1234')"` } })).code, 2));
 t("disk: --gate blocks unreadable input (report #0005)", () => assert.strictEqual(run("--gate", "{not json").code, 2));
 
 t("disk: --record writes the owner's approval to the ledger", () => {
@@ -112,5 +128,5 @@ if (fails.length) {
   process.exit(1);
 }
 console.log(
-  `discord-notify-guard: ผ่านครบ ${pass} ข้อ (must-catch ${MUST_CATCH_BASH.length + 3} · must-pass ${MUST_PASS_BASH.length + 1} · แตะดิสก์จริง 6)`
+  `discord-notify-guard: ผ่านครบ ${pass} ข้อ (must-catch ${MUST_CATCH_BASH.length + 4} · must-pass ${MUST_PASS_BASH.length + 2} · แตะดิสก์จริง 8)`
 );

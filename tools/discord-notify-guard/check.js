@@ -15,7 +15,12 @@
  *             any write to the approval ledger or to a notify draft
  *             allows:  webhook posts (other workflows), Discord GETs, and running
  *                      `notify_guard.py <round> --approve <code>` as a file — that path
- *                      re-checks every layer and the owner's approval itself
+ *                      re-checks every layer and the owner's approval itself. The release
+ *                      summary sender `release/release_notify.py send <dir> --approve <code>`
+ *                      (owner order 2026-10-07) is allowed the same way: it posts only to the
+ *                      #ols-release channel id from the secrets store and needs the same ledger
+ *                      approval; inline code driving it and writes to its release-draft.json are
+ *                      blocked like the smoke ones
  *   --record  UserPromptSubmit: when the OWNER's own prompt says `อนุมัติ <code>` or
  *             `approve <code>`, append that code to the ledger. The prompt text reaches this hook
  *             from the harness, so an agent cannot forge it — that is what makes it approval.
@@ -39,12 +44,12 @@ const WEBHOOK = /\bdiscord(?:app)?\.com\/api\/(?:v\d+\/)?webhooks\//i;
 const WRITE_VERB = /(-X\s*|--request\s+|method\s*[:=]\s*["']?)(POST|PATCH|PUT|DELETE)\b|\s(-d|--data(?:-\w+)?|-F|--form)\s|\.(post|patch|put|delete)\(/i;
 const BOT_AUTH = /Authorization["']?\s*[:=,]?\s*["']?\s*Bot\b|["']Bot\s+["']?\s*\+|f["']Bot \{/i;
 const TOKEN_FILE = /\.discord_bot_token\b/;
-const SENDER_MODULE = /\b(smoke_watch|notify_guard|passed_report)\b/;
+const SENDER_MODULE = /\b(smoke_watch|notify_guard|passed_report|release_notify)\b/;
 const SENDER_CALL =
   /(\.post\(|\.edit\(|\.dm\(|_req\(\s*["'](POST|PATCH|PUT|DELETE)|\.send\(|send_start\(|send_approved_pending\(|write_draft\(|build_draft\(|_guard\s*=\s*True|\._token\(|APPROVALS\s*=)/;
 const INLINE_CODE = /\b(python3?|node|ruby|perl)\b[^\n|;&]*\s(-c|-e|--eval)\s|<<\s*['"]?[A-Z_]+|\bpython3?\s*-\s*$|\bpython3?\s+-\s/m;
 const LEDGER_NAME = /approvals\.jsonl\b/;
-const DRAFT_NAME = /notify-draft\.json\b/;
+const DRAFT_NAME = /notify-draft\.json\b|release-draft\.json\b/;
 const MUTATE = /(>{1,2}|\btee\b|\bcp\b|\bmv\b|\brm\b|\bsed\s+-i|\btruncate\b|\btouch\b|\bln\b|open\([^)]*["'][wa]|write_text|write\(|\bdd\b)/;
 
 function inspectBash(cmd) {
@@ -53,7 +58,7 @@ function inspectBash(cmd) {
   if (DISCORD_API.test(c) && !WEBHOOK.test(c) && WRITE_VERB.test(c) && BOT_AUTH.test(c))
     return { hit: true, why: "writes to the Discord API with bot auth, bypassing notify_guard" };
   if (SENDER_MODULE.test(c) && INLINE_CODE.test(c) && SENDER_CALL.test(c))
-    return { hit: true, why: "inline code drives the smoke senders instead of running notify_guard.py" };
+    return { hit: true, why: "inline code drives the notify senders instead of running notify_guard.py / release_notify.py as a file" };
   if ((LEDGER_NAME.test(c) || DRAFT_NAME.test(c)) && MUTATE.test(c))
     return { hit: true, why: "writes the approval ledger or a notify draft — only the owner's prompt may approve" };
   return { hit: false };
@@ -62,7 +67,7 @@ function inspectBash(cmd) {
 function inspectPath(p) {
   const s = String(p || "");
   if (LEDGER_NAME.test(s)) return { hit: true, why: "the approval ledger is written only by the owner's prompt hook" };
-  if (DRAFT_NAME.test(s)) return { hit: true, why: "notify drafts are built by passed_report.py, never edited by hand" };
+  if (DRAFT_NAME.test(s)) return { hit: true, why: "notify drafts are built by passed_report.py / release_notify.py build, never edited by hand" };
   if (TOKEN_FILE.test(s)) return { hit: true, why: "the smoke bot token is not for direct use" };
   return { hit: false };
 }
@@ -97,7 +102,8 @@ function gate(raw) {
     `[discord-notify-guard] บล็อก ${d.tool}: ${d.why}\n` +
       "โนติ smoke เข้าช่อง QA release ต้องผ่าน notify_guard 10 ชั้น + ได้รับอนุมัติจากเจ้าของงานก่อนทุกครั้ง\n" +
       "ทางที่ถูก: python3 smoke/passed_report.py <round> --version <tag>  → แสดงร่างและรหัสให้เจ้าของงาน\n" +
-      "  → เจ้าของงานพิมพ์ `อนุมัติ <รหัส>` เอง → python3 smoke/notify_guard.py <round> --approve <รหัส>"
+      "  → เจ้าของงานพิมพ์ `อนุมัติ <รหัส>` เอง → python3 smoke/notify_guard.py <round> --approve <รหัส>\n" +
+      "สรุป release เข้า #ols-release: python3 release/release_notify.py build <dir> → `อนุมัติ <รหัส>` → python3 release/release_notify.py send <dir> --approve <รหัส>"
   );
   return 2;
 }

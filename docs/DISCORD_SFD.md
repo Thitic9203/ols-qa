@@ -2,6 +2,7 @@
 
 - โนติ QA: ฟอร์แมต canonical (`🔔 **QA Review Requested**` + count line ตัวหนา + bullet + link + owner) ผ่าน `discord_qa_notify.py` เท่านั้น ห้ามปรับ/เติมบรรทัดเอง · escape `_ * ~~ \` |` · `--dry-run` + เทียบข้อความล่าสุดในช่องทีละบรรทัด · owner จาก Jira `customfield_12120` สดด้วย accountId ห้าม Reporter · `--registry` · แก้ผิดด้วย PATCH ไม่ลบโพสต์
 - ทางสำรองห้ามเปลี่ยน "ใครพูด/ที่ไหน" · ไบนารีภายนอกหาด้วย path สัมบูรณ์
+- สรุป release เข้า #ols-release: `release/release_notify.py` ในบอทเท่านั้น — `deploys` ยืนยัน tag จากประกาศ Prod release (ไม่ใช่ tag ล่าสุดใน repo) → `build <dir>` → เจ้าของงานพิมพ์ `อนุมัติ <รหัส>` → `send <dir> --approve <รหัส>` · ห้ามอ่าน token บอทตรง (discord-notify-guard) · ขั้นตอนเต็ม: `tools/discord-notify-guard/README.md`
 - โนติ `Needs fix` = แก้เองจนจบบน pre-prod (reversible ก่อน ลบเมื่อทางเดียว) แล้ว PATCH `Fixed` เมื่อสแกนสดยืนยัน · แก้ไม่ได้ใส่ FYI · ไม่รวม RGS/training
 - SFD: ทุก workflow ห้ามเฟลเงียบ · job ใหม่ลง `sfd/workflows.json` (+`trap_wired`, `max_stale_s`) · plist `StandardErrorPath` = `StandardOutPath` · watchdog > timeout+retry · network token retry 4 ครั้ง · ห้าม `|| true` · เลิก job ต้องถอด label · แตะ plist: backup + `plistlib` ห้าม `plutil -extract` ไม่มี `-o -` · ได้ alert = root cause → fix → rerun → บันทึก · แจ้งทาง DM user คนเดียว · รายละเอียดระดับ: archive
 - job ตามตารางต้องพิสูจน์ว่าล้มแล้วดังจริง รหัสจบต้องเป็นของงานจริง · `log_file` ชี้ไฟล์ที่มีไบต์จริง · alert ต้องบอกผลกระทบ ไม่ใช่ exit code
