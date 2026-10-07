@@ -200,6 +200,8 @@
 | PM-2026-10-07-06 | 2026-10-07 | สั่งรัน OLS-829 ผ่าน Bash background ของเซสชัน รอบหายพร้อมเซสชันไม่มีบันทึก | เจ้าของงานสั่งรันใหม่ | DONE | 20261007-post-mortem-report-0176-rerun-launched-from-session-shell-died-with-session.md |
 | PM-2026-10-07-07 | 2026-10-07 | รันยืนยัน e2e บน dev ด้วย `E2E_SKIP_FIXTURE_OWNERS=1` ที่ commit นั้นไม่รองรับ และไม่ได้ `--list` ก่อน · setup เรียก mintState ส่งล็อกอินด้วยสคริปต์ 1 ครั้งให้บัญชี owner ที่เลิกใช้ (HTTP 400) · 95 เทสต์ไม่ได้รัน · log บันทึก `rc=0` ผิดเพราะอ่าน `$?` หลัง `$(date)` | MLV-109 รันทั้งชุดยืนยันตัวดัก | DONE | 20261007-post-mortem-report-0177-verify-run-env-switch-unsupported-minted-retired-owner.md |
 | PM-2026-10-07-08 | 2026-10-07 | รายงานว่า `rtk npx tsx` ใช้ได้จากเลข 11.13.0 ซึ่งเป็นเวอร์ชันของ npm · rtk 0.36.0 รัน `npx <tool>` เป็น `npm <tool>` จึงเปิดหน้าต่างล็อกอินรอบแรกไม่ขึ้น | MLV-109 เปิดหน้าต่างล็อกอิน | DONE | 20261007-post-mortem-report-0178-rtk-npx-runs-npm-version-read-as-tsx-works.md |
+| PM-2026-10-07-09 | 2026-10-07 | run_seq.sh เขียน `done rc=0` ให้ OLS-829/778 ทั้งที่ results.log เป็น SKIPPED ทั้งคู่ (`$?` หลัง `$(date)` + ไม่อ่านผลจริง) | เธรดหลักเปิด results.log เองตอนตรวจ "อย่าเฟลเงียบ" | DONE | 20261007-post-mortem-report-0179-requeue-log-said-done-rc0-for-skipped-runs.md |
+| PM-2026-10-07-10 | 2026-10-07 | รายงานเจ้าของงานว่า route ผ่าน ppp0 คือสาเหตุจริงของ session ค้าง ทั้งที่ทุกโปรเซส Claude ใช้ ppp0 และ API ตอบเร็ว | เจ้าของงานสั่งตรวจละเอียดที่สุด | DONE | 20261007-post-mortem-report-0180-stall-root-cause-claimed-from-route-correlation.md |
 
 ---
 

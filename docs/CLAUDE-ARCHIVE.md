@@ -3721,6 +3721,18 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0180 — รายงานว่า route ผ่าน VPN คือ "สาเหตุจริง" ของ session ค้าง จากแค่ข้อมูลที่เกิดพร้อมกัน
+
+- กฎ: หัวข้อ "สาเหตุจริง" ต้องแนบตัวเปรียบเทียบที่ทำงานปกติ (ต่างกันตรงไหน) หรือการทดลองที่เปลี่ยนตัวแปรเดียว · ไม่มี = เขียน "สมมติฐาน: … (จะตรวจด้วย …)" · บันทึกรอบก่อนที่สรุปสาเหตุไว้ต้อง VERIFY แยกก่อนอ้าง
+
+Full report: [`docs/post-mortem/20261007-post-mortem-report-0180-stall-root-cause-claimed-from-route-correlation.md`](docs/post-mortem/20261007-post-mortem-report-0180-stall-root-cause-claimed-from-route-correlation.md)
+
+### Report #0179 — คิวรันซ้ำเขียน `done rc=0` ทั้งที่ทั้งสองใบจบแบบ SKIPPED
+
+- กฎ: ตัวรันงานเฉพาะกิจทุกตัวตัดสินผลจากบันทึกผลจริง (`results.log`) ไม่ใช่รหัสจบ และต้องผ่านเทสบอทจำลองที่มีเคสต้องไม่ผ่าน ≥1 ก่อนปล่อย · ผลไม่ผ่านต้องแจ้งเองได้แม้โนติหลักถูกพัก · ห้ามเขียน `$?` ในประโยคเดียวกับ `$(...)` — เก็บใส่ตัวแปรทันที
+
+Full report: [`docs/post-mortem/20261007-post-mortem-report-0179-requeue-log-said-done-rc0-for-skipped-runs.md`](docs/post-mortem/20261007-post-mortem-report-0179-requeue-log-said-done-rc0-for-skipped-runs.md)
+
 ### Report #0178 — รายงานว่า `rtk npx tsx` ใช้ได้จากเลขเวอร์ชันของ npm
 
 - กฎ: ทดสอบเครื่องมือด้วยงานจริงที่รู้ผลลัพธ์ ไม่ใช่ `--version` · rtk 0.36.0 รัน `npx <tool>` เป็น `npm <tool>` — เรียก `./node_modules/.bin/<tool>` หรือ `rtk proxy npx`
