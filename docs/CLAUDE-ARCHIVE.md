@@ -3721,6 +3721,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0173 — สั่งรอบ shadow ทับ run.sh ที่กำลังรัน แล้ว L5 ฆ่า session สด (ผิดซ้ำ #0170 · #0171)
+
+- กฎ: ก่อนสั่งงานที่เรียก run.sh (shadow / ON-DEMAND / รันมือ) ต้องตรวจ `.run.lock` + PID เจ้าของในเทิร์นเดียวกับที่สั่ง ถืออยู่ = รอ ห้ามสั่งทับ (บังคับในโค้ดแล้วที่ shadow.py `2d81761`) · ด่านสดต้องครอบทรัพยากรที่ใช้ร่วมกันทุกตัว (ล็อก ไฟล์ผล บัญชี) · ผลตัดสินต้องผูกกับ run id ของ run ตัวเอง ห้ามนับบรรทัดในไฟล์ที่ใช้ร่วมกัน (patch run.sh ค้าง)
+
+Full report: [`docs/post-mortem/20261007-post-mortem-report-0173-shadow-round-launched-over-live-run-lock-reaped-session.md`](docs/post-mortem/20261007-post-mortem-report-0173-shadow-round-launched-over-live-run-lock-reaped-session.md)
+
 ### Report #0172 — สำเร็จ 1 ครั้งแล้วรายงานว่าเจอต้นเหตุที่ classify ค้าง (ผิดซ้ำ #0067)
 
 - กฎ: อาการที่เป็นๆ หายๆ (ใบเดียวกันเคยผ่าน) จะเขียน "ต้นเหตุ"/"แก้แล้ว" ได้ต้องมีผลทำซ้ำก่อนแก้ ≥ 3/3 และผ่านหลังแก้ ≥ 5/5 พร้อมแนบ x/N ในแชท commit และแผน ไม่ครบ = "สมมติฐาน: … (จะตรวจด้วย …)" · ข้อความแก้คำรายงานใช้เกณฑ์เดียวกัน · หลักฐานเชิงลบ ("ไม่มีการหลุด") ตัดสาเหตุทิ้งไม่ได้ถ้าไม่ได้วัดกลไกที่ทำให้ค้าง · ledger ต้องบันทึกเวลาที่ใช้ของทุกการเรียก (ค้างอยู่ที่ repo บอท)
