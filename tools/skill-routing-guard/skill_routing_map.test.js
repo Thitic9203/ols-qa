@@ -58,8 +58,8 @@ check('references/skill-routing.md maps Story -> testing-ticket-workflow', () =>
 check('references/skill-routing.md maps Bug -> retest-bug-workflow', () => assert.strictEqual(real.Bug, EXPECTED.Bug));
 check('mapping table names exactly the 2 owner-confirmed types', () => assert.deepStrictEqual(Object.keys(real).sort(), ['Bug', 'Story']));
 for (const skill of Object.values(EXPECTED)) {
-  const wf = path.join(ROOT, 'skills', 'deprecated', skill, 'WORKFLOW.md');
-  check(`skills/deprecated/${skill}/WORKFLOW.md exists and is non-empty`, () => {
+  const wf = path.join(ROOT, 'skills', 'procedures', skill, 'WORKFLOW.md');
+  check(`skills/procedures/${skill}/WORKFLOW.md exists and is non-empty`, () => {
     assert.ok(fs.existsSync(wf), 'missing: ' + path.relative(ROOT, wf));
     assert.ok(fs.statSync(wf).size > 0, 'empty: ' + path.relative(ROOT, wf));
   });

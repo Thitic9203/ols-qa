@@ -18,7 +18,7 @@ proactive_triggers:
      workspace-only references. -->
 # Content takedown (discovery stub)
 
-**Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../deprecated/content-takedown-workflow/WORKFLOW.md).
+**Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../procedures/content-takedown-workflow/WORKFLOW.md).
 
 When invoked:
 
@@ -31,7 +31,7 @@ When invoked:
    proves available: owner unpublish → platform team → administrative action → user report at a
    hiding severity. The last rung writes a permanent accusation against a named person and needs the
    user's informed approval, restated after hearing what it says about them.
-5. Read and follow [WORKFLOW.md](../deprecated/content-takedown-workflow/WORKFLOW.md) **end-to-end** —
+5. Read and follow [WORKFLOW.md](../procedures/content-takedown-workflow/WORKFLOW.md) **end-to-end** —
    every step, gate and trap.
 
 Claude Code shortcut: `/content-takedown` → [commands/content-takedown.md](../../commands/content-takedown.md).

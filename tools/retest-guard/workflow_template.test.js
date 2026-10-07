@@ -15,7 +15,7 @@ const path = require('path');
 const R = require('./retest_rules');
 
 const ROOT = path.join(__dirname, '..', '..');
-const WF = path.join(ROOT, 'skills', 'deprecated', 'retest-bug-workflow', 'WORKFLOW.md');
+const WF = path.join(ROOT, 'skills', 'procedures', 'retest-bug-workflow', 'WORKFLOW.md');
 
 const wf = fs.readFileSync(WF, 'utf8');
 

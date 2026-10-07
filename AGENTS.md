@@ -31,11 +31,11 @@ Full routing and handoffs: [references/skill-routing.md](references/skill-routin
 | Skill | When |
 |-------|------|
 | [helix](skills/helix/SKILL.md) | Menu / routing (no `/helix` slash command) |
-| [tc-fe-prep-workflow](skills/deprecated/tc-fe-prep-workflow/WORKFLOW.md) | FE manual TC from a Jira **story** |
-| [tc-api-prep-workflow](skills/deprecated/tc-api-prep-workflow/WORKFLOW.md) | API manual TC from spec + **Swagger** |
-| [retest-bug-workflow](skills/deprecated/retest-bug-workflow/WORKFLOW.md) | Retest a **bug** fix |
-| [testing-ticket-workflow](skills/deprecated/testing-ticket-workflow/WORKFLOW.md) | Playwright test for a ticket |
-| [create-bug-workflow](skills/deprecated/create-bug-workflow/WORKFLOW.md) | Open bug(s) on Jira/GitHub |
+| [tc-fe-prep-workflow](skills/procedures/tc-fe-prep-workflow/WORKFLOW.md) | FE manual TC from a Jira **story** |
+| [tc-api-prep-workflow](skills/procedures/tc-api-prep-workflow/WORKFLOW.md) | API manual TC from spec + **Swagger** |
+| [retest-bug-workflow](skills/procedures/retest-bug-workflow/WORKFLOW.md) | Retest a **bug** fix |
+| [testing-ticket-workflow](skills/procedures/testing-ticket-workflow/WORKFLOW.md) | Playwright test for a ticket |
+| [create-bug-workflow](skills/procedures/create-bug-workflow/WORKFLOW.md) | Open bug(s) on Jira/GitHub |
 
 ## Rules
 

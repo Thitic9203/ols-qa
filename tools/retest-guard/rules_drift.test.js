@@ -80,7 +80,7 @@ check('the canonical rules module is the only place the rule tables live', () =>
   const offenders = [];
   for (const f of files) {
     const rel = path.relative(ROOT, f);
-    if (rel.startsWith('skills/deprecated/retest-bug-workflow/')) continue; // the workflow documents it for humans
+    if (rel.startsWith('skills/procedures/retest-bug-workflow/')) continue; // the workflow documents it for humans
     const text = fs.readFileSync(f, 'utf8');
     if (/No\.\s*·\s*Expected Result\s*·\s*Actual Result\s*·\s*Evidence\s*·\s*Status/.test(text)) offenders.push(rel);
   }

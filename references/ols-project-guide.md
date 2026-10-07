@@ -109,7 +109,7 @@ blockers that this retest never touched are not missed.
 | Project | `OLS` |
 | Project URL | https://app.qase.io/project/OLS |
 | FE TC Jira-format file | `Draft_Jira_{ISSUE_KEY}.csv` — 10-column Jira table schema; attached to story comment |
-| FE TC Qase import file | `Import_Qase_{ISSUE_KEY}.csv` — Qase schema; attached to story comment alongside Draft_Jira (schema: `skills/deprecated/tc-fe-prep-workflow/references/qase-import-format.md`) |
+| FE TC Qase import file | `Import_Qase_{ISSUE_KEY}.csv` — Qase schema; attached to story comment alongside Draft_Jira (schema: `skills/procedures/tc-fe-prep-workflow/references/qase-import-format.md`) |
 | Type values | `System Test` · `Unit Test` · `Integration Test` *(verify these exist as OLS custom Type values before import)* |
 | Status value | `Done` *(verify exists as OLS custom Status value before import)* |
 | Suite | reuse existing OLS suite; new suite only with user approval, never a duplicate |

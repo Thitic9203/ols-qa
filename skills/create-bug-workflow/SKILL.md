@@ -14,12 +14,12 @@ proactive_triggers:
 
 # Create Bug (discovery stub)
 
-**Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../deprecated/create-bug-workflow/WORKFLOW.md).
+**Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../procedures/create-bug-workflow/WORKFLOW.md).
 
 When invoked:
 
 1. Announce once: `Using **create-bug-workflow** to file the bug report.`
-2. Read and follow [WORKFLOW.md](../deprecated/create-bug-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
+2. Read and follow [WORKFLOW.md](../procedures/create-bug-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
 
 Claude Code shortcut: `/create-bug` → [commands/create-bug.md](../../commands/create-bug.md).
 

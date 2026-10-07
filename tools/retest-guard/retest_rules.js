@@ -507,11 +507,11 @@ function scanBody(body, opts = {}) {
  */
 const DRIFT_ALLOWLIST = Object.freeze([
   // The workflow states the rule for a human reader, always negatively.
-  Object.freeze({ file: 'skills/deprecated/retest-bug-workflow/WORKFLOW.md', needle: '|width=' }),
+  Object.freeze({ file: 'skills/procedures/retest-bug-workflow/WORKFLOW.md', needle: '|width=' }),
   // The syntax map has to name the wrong form to rule it out.
   Object.freeze({ file: 'references/jira-wiki-vs-markdown.md', needle: '|width=' }),
   // The worked example explains, in prose, why it no longer carries it.
-  Object.freeze({ file: 'skills/deprecated/retest-bug-workflow/references/worked-example.md', needle: '|width=' }),
+  Object.freeze({ file: 'skills/procedures/retest-bug-workflow/references/worked-example.md', needle: '|width=' }),
 ]);
 
 /**

@@ -14,12 +14,12 @@ proactive_triggers:
 
 # TC FE Prep (discovery stub)
 
-**Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../deprecated/tc-fe-prep-workflow/WORKFLOW.md).
+**Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../procedures/tc-fe-prep-workflow/WORKFLOW.md).
 
 When invoked:
 
 1. Announce once: `Using **tc-fe-prep-workflow** to prepare FE manual test cases.`
-2. Read and follow [WORKFLOW.md](../deprecated/tc-fe-prep-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
+2. Read and follow [WORKFLOW.md](../procedures/tc-fe-prep-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
 
 Claude Code shortcut: `/tc-fe-prep` → [commands/tc-fe-prep.md](../../commands/tc-fe-prep.md).
 
@@ -29,4 +29,4 @@ All preconditions and refusal rules are in WORKFLOW.md. MUST NOT start until the
 
 ## QA closing (mandatory before "done")
 
-All close-out gates are in WORKFLOW.md, [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (TC FE section), and [tc-final-review-report.md](../deprecated/tc-fe-prep-workflow/references/tc-final-review-report.md). MUST NOT report done until they pass.
+All close-out gates are in WORKFLOW.md, [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (TC FE section), and [tc-final-review-report.md](../procedures/tc-fe-prep-workflow/references/tc-final-review-report.md). MUST NOT report done until they pass.

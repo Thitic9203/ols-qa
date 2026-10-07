@@ -129,7 +129,7 @@ fi
 NEW_SKILLS=()
 for f in "${FILES[@]}"; do
   case "$f" in
-    skills/deprecated/*|skills/in-progress/*) ;;
+    skills/procedures/*|skills/in-progress/*) ;;
     skills/*/SKILL.md)
       n="${f#skills/}"; n="${n%/SKILL.md}"
       case "$n" in */*) ;; *) NEW_SKILLS+=("$n") ;; esac ;;

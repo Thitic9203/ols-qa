@@ -74,7 +74,7 @@ Rule of thumb: **workaround exists · cosmetic · optional · "several"** → �
 ## Used by
 
 - [CLAUDE.md](../CLAUDE.md) § Bug priority = the matrix, never invented
-- [testing-ticket-workflow/WORKFLOW.md](../skills/deprecated/testing-ticket-workflow/WORKFLOW.md) Phase F3
-- [retest-bug-workflow/WORKFLOW.md](../skills/deprecated/retest-bug-workflow/WORKFLOW.md) Step 2
+- [testing-ticket-workflow/WORKFLOW.md](../skills/procedures/testing-ticket-workflow/WORKFLOW.md) Phase F3
+- [retest-bug-workflow/WORKFLOW.md](../skills/procedures/retest-bug-workflow/WORKFLOW.md) Step 2
 - [qa-evidence-gates.md](qa-evidence-gates.md) § Story-testing evidence-completeness gate, step 4
 - Local agent memory `feedback_verdict-rubric`

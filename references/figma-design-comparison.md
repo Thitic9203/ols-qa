@@ -1,8 +1,8 @@
 # Figma comparison gate — every UI test is judged against the design, or it is not judged
 
 Applies to **every** UI/visual verification in
-[testing-ticket-workflow](../skills/deprecated/testing-ticket-workflow/WORKFLOW.md) and
-[retest-bug-workflow](../skills/deprecated/retest-bug-workflow/WORKFLOW.md) — a story run, a bug
+[testing-ticket-workflow](../skills/procedures/testing-ticket-workflow/WORKFLOW.md) and
+[retest-bug-workflow](../skills/procedures/retest-bug-workflow/WORKFLOW.md) — a story run, a bug
 retest, a task retest, a regression case, any per-case verdict written to a comment, sheet, or notify.
 
 ```

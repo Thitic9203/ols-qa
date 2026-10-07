@@ -99,7 +99,7 @@ bash scripts/run-test-suites.sh
 - skill/command files ภาษาอังกฤษ · link references แบบ relative ตามความลึกไฟล์ (WORKFLOW.md ใต้ deprecated ใช้ `../../../references/`)
 
 ## Architecture (ย่อ)
-- `skills/helix/SKILL.md` router → `skills/<name>/SKILL.md` stub → `skills/deprecated/<name>/WORKFLOW.md` (ใช้งานจริง) · `commands/` · `references/` (routing: `skill-routing.md`; preamble; must-never; evidence gates; bug matrix)
+- `skills/helix/SKILL.md` router → `skills/<name>/SKILL.md` stub → `skills/procedures/<name>/WORKFLOW.md` (ใช้งานจริง) · `commands/` · `references/` (routing: `skill-routing.md`; preamble; must-never; evidence gates; bug matrix)
 - โค้ด: `tools/name-guard/` (scan อ่านอย่างเดียว exit 0/1/2 · write_guard · alert dedup) · `tools/retest-guard/` (กฎคอมเมนต์รีเทสอยู่ที่ `retest_rules.js` ที่เดียว) · `tools/portability/` · `scripts/check-no-secrets.sh` · CI `.github/workflows/tests.yml` · ไม่มี build, Node ≥18
 - Hooks: SessionStart `inject-context.sh` · PreCompact `pre-compact.sh` · guards ใน `.claude/settings.json`
 

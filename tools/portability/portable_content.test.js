@@ -94,7 +94,7 @@ for (const rule of RULES) {
 }
 
 check('the retest skill still points the reader at the project guide for those values', () => {
-  const wf = path.join(ROOT, 'skills', 'deprecated', 'retest-bug-workflow', 'WORKFLOW.md');
+  const wf = path.join(ROOT, 'skills', 'procedures', 'retest-bug-workflow', 'WORKFLOW.md');
   const text = fs.readFileSync(wf, 'utf8');
   assert.ok(/take transition names\/ids, notify-helper flags, app URL shapes and UI-automation quirks from the workspace's project guide/.test(text),
     'removing the project values without leaving a pointer just loses them');
@@ -106,7 +106,7 @@ check('a synced skill never orders an unconditional run of a workspace-local too
   // unconditional `node tools/...` there fails, and a failing gate command reads as
   // "could not run" — which the same workflow says is not a pass. So it would block
   // a retest in every project that has not adopted the tool.
-  const wf = fs.readFileSync(path.join(ROOT, 'skills', 'deprecated', 'retest-bug-workflow', 'WORKFLOW.md'), 'utf8');
+  const wf = fs.readFileSync(path.join(ROOT, 'skills', 'procedures', 'retest-bug-workflow', 'WORKFLOW.md'), 'utf8');
   assert.ok(/When the workspace provides `tools\/retest-guard\/` — run it;\s+it is not optional there/.test(wf),
     'the guard step is not stated as conditional on the workspace providing it');
   assert.ok(/a missing tool is not a lighter\s+standard/.test(wf),

@@ -15,7 +15,7 @@ proactive_triggers:
 
 # Test data prep (discovery stub)
 
-**Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../deprecated/test-data-prep-workflow/WORKFLOW.md).
+**Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../procedures/test-data-prep-workflow/WORKFLOW.md).
 
 > **Maintainer note (user directive 2026-08-08):** when editing THIS skill, invoke **superpowers:writing-skills** first — match the guidance form to the failure and craft precise, well-fitted wording. Sharpness and completeness checks stay strict per [ols-data-prep.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ols-data-prep.md); cover titles must never overflow the frame, break lines badly, or split a compound word (พรากคำ).
 
@@ -23,7 +23,7 @@ When invoked:
 
 1. Announce once: `Using **test-data-prep-workflow** to build OLS test data per ols-data-prep.md.`
 2. **Read the source first** — [ols-data-prep.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ols-data-prep.md) (private) + this repo's `CLAUDE.md` data-prep rules (the 🔴 test-data rules + the **Cover corrections 2026-08-08** 10-rule block). Never invent a recipe, tool, or cover style.
-3. Read and follow [WORKFLOW.md](../deprecated/test-data-prep-workflow/WORKFLOW.md) **end-to-end** — every step and gate.
+3. Read and follow [WORKFLOW.md](../procedures/test-data-prep-workflow/WORKFLOW.md) **end-to-end** — every step and gate.
 
 Claude Code shortcut: `/test-data-prep` → [commands/test-data-prep.md](../../commands/test-data-prep.md).
 

@@ -14,7 +14,7 @@ proactive_triggers:
 
 # Testing Ticket (discovery stub)
 
-**Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../deprecated/testing-ticket-workflow/WORKFLOW.md).
+**Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../procedures/testing-ticket-workflow/WORKFLOW.md).
 
 When invoked:
 
@@ -23,7 +23,7 @@ When invoked:
 3. **Design (Figma) comparison is mandatory on every UI scenario** — [figma-design-comparison.md](../../references/figma-design-comparison.md). A screen with no design reference is **reported back to the person or channel that assigned the run** and its visual points stay BLOCKED; never assume a label, order, or layout.
 4. **Test deeply** — [customer-escape-prevention.md](../../references/customer-escape-prevention.md): cover the whole surface, run every in-scope width with overflow/overlap **measured**, use fixtures big enough to fail, evidence on passed rows too, and never PASSED over a "cannot verify" note.
 5. **Run in parallel lanes by default** — [parallel-test-lanes.md](../../references/parallel-test-lanes.md): split the confirmed plan across subagents, **one leased account per lane** (never two lanes on one login), barrier for anything every lane sees; serial only with a named predicate.
-6. Read and follow [WORKFLOW.md](../deprecated/testing-ticket-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
+6. Read and follow [WORKFLOW.md](../procedures/testing-ticket-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
 
 Claude Code shortcut: `/testing-ticket` → [commands/testing-ticket.md](../../commands/testing-ticket.md).
 

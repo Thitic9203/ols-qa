@@ -14,7 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const R = require('./retest_rules');
 
-const FILE = path.join(__dirname, '..', '..', 'skills', 'deprecated', 'retest-bug-workflow', 'references', 'worked-example.md');
+const FILE = path.join(__dirname, '..', '..', 'skills', 'procedures', 'retest-bug-workflow', 'references', 'worked-example.md');
 const md = fs.readFileSync(FILE, 'utf8');
 
 /** Every fenced block, with its info string. */

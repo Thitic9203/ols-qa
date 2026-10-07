@@ -24,17 +24,17 @@ A skill is **shipped** only when all are true:
 - [ ] Listed in [README.md](../README.md)
 - [ ] Registered in [.claude-plugin/plugin.json](../.claude-plugin/plugin.json) `skills` array
 - [ ] Has a `commands/<workflow>.md` entry (except router-only `helix.md`)
-- [ ] `scripts/link-skills.sh` will link it (not under `in-progress/` or `deprecated/`)
+- [ ] `scripts/link-skills.sh` will link it (not under `in-progress/` or `procedures/`)
 
 ## File layout
 
 | Path | Purpose |
 |------|---------|
 | `skills/<name>/SKILL.md` | Discovery stub (linked by `link-skills.sh`) or full skill for router |
-| `skills/deprecated/<name>/WORKFLOW.md` | Canonical workflow procedure (loaded by stub) |
-| `skills/deprecated/<name>/references/` | Templates, gotchas, worked examples |
+| `skills/procedures/<name>/WORKFLOW.md` | Canonical workflow procedure (loaded by stub) |
+| `skills/procedures/<name>/references/` | Templates, gotchas, worked examples |
 | `skills/in-progress/` | WIP — excluded from `link-skills.sh` |
 
-**Workflow pattern:** Ship a thin stub at `skills/{name}-workflow/SKILL.md` that points to `skills/deprecated/{name}-workflow/WORKFLOW.md`. Register both stub path in `plugin.json`.
+**Workflow pattern:** Ship a thin stub at `skills/{name}-workflow/SKILL.md` that points to `skills/procedures/{name}-workflow/WORKFLOW.md`. Register both stub path in `plugin.json`.
 
 New skills: start from [docs/new-skill-template.md](new-skill-template.md).

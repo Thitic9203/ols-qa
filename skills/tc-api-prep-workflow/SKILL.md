@@ -14,12 +14,12 @@ proactive_triggers:
 
 # TC API Prep (discovery stub)
 
-**Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../deprecated/tc-api-prep-workflow/WORKFLOW.md).
+**Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../procedures/tc-api-prep-workflow/WORKFLOW.md).
 
 When invoked:
 
 1. Announce once: `Using **tc-api-prep-workflow** to prepare API manual test cases.`
-2. Read and follow [WORKFLOW.md](../deprecated/tc-api-prep-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
+2. Read and follow [WORKFLOW.md](../procedures/tc-api-prep-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
 
 Claude Code shortcut: `/tc-api-prep` → [commands/tc-api-prep.md](../../commands/tc-api-prep.md).
 
