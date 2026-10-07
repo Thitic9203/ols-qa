@@ -3721,6 +3721,18 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0153-interrupted-tak
 
 Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md`](docs/post-mortem/20260924-post-mortem-report-0154-irreversible-take-without-rehearsal-clip-failed.md)
 
+### Report #0176 — สั่งรันเทสใหม่จาก shell ที่ผูกกับเซสชัน รอบหายไปพร้อมเซสชัน
+
+- กฎ: งานที่ต้องอยู่รอดหลังเซสชันจบ ปล่อยแบบแยก session (`setsid` / `spawn` detached) พร้อม log เริ่ม/จบของตัวเอง · `nohup &` ใน Bash background ของเซสชันไม่พอ · ก่อนพูดว่า "รันอยู่/ตั้งไว้แล้ว" แนบ pid + บรรทัด log ที่เห็นจริง
+
+Full report: [`docs/post-mortem/20261007-post-mortem-report-0176-rerun-launched-from-session-shell-died-with-session.md`](docs/post-mortem/20261007-post-mortem-report-0176-rerun-launched-from-session-shell-died-with-session.md)
+
+### Report #0175 — ตัวเช็คใน run.sh นับ `000000` เป็น "เข้าได้" ทั้งที่ VPN หลุด
+
+- กฎ: probe เครือข่ายทุกตัวตัดสินจากรหัสจบของ curl ห้ามเทียบสตริงของ `-w '%{http_code}'` กับ `"000"` (timeout พิมพ์ 000 แล้ว `|| echo 000` ต่อเป็น 000000) · gate ทุกตัวต้องมีเทส known-negative
+
+Full report: [`docs/post-mortem/20261007-post-mortem-report-0175-runsh-probe-000000-passed-as-reachable.md`](docs/post-mortem/20261007-post-mortem-report-0175-runsh-probe-000000-passed-as-reachable.md)
+
 ### Report #0174 — บอทเทส Story โดยไม่ได้ใช้สกิลใน repo เพราะ prompt ชี้ SOP ที่ไม่มีอยู่จริง
 
 - กฎ: การรันแบบไม่มีคนต้องใช้สกิลของ repo ตาม `references/skill-routing.md` § Jira issue type → skill (Story → testing-ticket · Bug → retest-bug) · ก่อนเริ่มต้องผ่าน preflight (WORKFLOW.md มีจริง · prompt ชี้มัน · path ทุกตัวใน prompt มีจริง · ประเภท ticket ใน Jira ตรง mode) · session พิสูจน์ด้วย `SKILL_LOADED: <path> <sha256>` · ไม่ตรง = HARNESS_FAIL ไม่ใช่ผลของ ticket · ย้ายเอกสารข้าม repo ต้องไล่ผู้ใช้ทุกตัว
