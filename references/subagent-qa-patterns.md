@@ -10,6 +10,7 @@ Helix stays **portable** — no mandatory subagent framework. Use these patterns
 | Compare Swagger vs draft TC table | Gap list by operationId | Coverage review gate |
 | Search workspace for spec paths | Candidate file list | Final path choice with user |
 | Parallel doc fetch (Confluence + Jira) | Raw excerpts | Synthesis and AC mapping |
+| Execute a confirmed test plan / retest case list | One lane of scenarios, one leased account — [parallel-test-lanes.md](parallel-test-lanes.md) | Lane plan, merge, non-PASS re-check, every external write |
 
 ## Bad uses
 
@@ -17,7 +18,8 @@ Helix stays **portable** — no mandatory subagent framework. Use these patterns
 |------|---------|
 | Post Jira comment | Side effect — parent only after approval |
 | Transition issue | Same |
-| Run Playwright without user-approved plan | Execution belongs in testing-ticket workflow |
+| Run Playwright without user-approved plan | Execution starts only after the confirm gate, as lanes per [parallel-test-lanes.md](parallel-test-lanes.md) |
+| Two lanes on one account | Shared login ends sessions and shares state — false defects |
 | “Fix the test until green” | Violates debug discipline — report root cause |
 
 ## Two-stage review (optional)

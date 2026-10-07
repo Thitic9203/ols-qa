@@ -217,7 +217,12 @@ each. Build it here, before testing, so the run has a defined scope instead of a
 4. **Give every case a stable id** (`TC_01`, `TC_02`, …) plus: title · which `ER*`/`AC*` it covers ·
    its design node link (UI cases) · the fixture it needs. A case whose fixture does not exist yet is
    created (Step 4c) or recorded BLOCKED with the missing fixture named — never dropped.
-5. **Show the case list to the user with the Step 2b plan block.** It is the scope they are approving.
+5. **Build the lane plan** ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §2–§4).
+   Read the account pool from the project config, group the cases into units (shared record ·
+   multi-role · one screen's widths/states · chained precondition · barrier for anything every lane
+   sees), and lease **one account per lane**. Parallel is the default — serial needs a named §4
+   predicate (e.g. ≤ 2 cases, or one account in total).
+6. **Show the case list and the lane plan to the user with the Step 2b plan block.** It is the scope they are approving.
 
 The same list, with each case's outcome, goes into the `Case (Role)` cell of every row it covers in the Step 6 comment's single table.
 
@@ -267,6 +272,14 @@ Set flag `COMMENT_FORMAT=v2` or `v3` here. **Do not change later** — rewriting
 still open** — a screen not compared while it was open cannot be compared later, and a boundary
 not captured during the run cannot be reconstructed afterwards. 4e–4f are the API legs. 4g–4i are
 the gates that follow a case that did not pass. Nothing in 4d is deferred to drafting time.
+
+**Parallel lanes (default).** Dispatch the approved lanes at once — after any parent pre-login for
+accounts sharing one OTP inbox (§3), one subagent per lane, all in a single message, each with the lane prompt from
+[parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §5. Each lane runs 4a–4h on its
+own cases with **only its leased account** and records the authenticated user id at login; barrier
+cases run alone after the lanes return. The parent then runs the §6 merge (isolation · coverage ·
+evidence) and does 4i on every non-PASS itself before Step 5. Lanes never post, transition, assign,
+or notify.
 
 ### 4a. Environment
 
@@ -942,6 +955,7 @@ A follow-up question is a **defect in the comment**, not a normal step. Handle i
 |-----------|-----|
 | Design comparison / no Figma for a screen | [figma-design-comparison.md](../../../references/figma-design-comparison.md) |
 | Depth gates from the shipped-defect review | [customer-escape-prevention.md](../../../references/customer-escape-prevention.md) |
+| Default parallel execution — lanes, one account per lane, merge | [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) |
 | Still failing | `references/debug-discipline.md` |
 | Encoding / v2 issues | `references/gotchas.md` |
 | Session handoff | `references/handoff-template.md` |
@@ -963,6 +977,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | Rule | Because |
 |------|---------|
 | MUST read project config before testing | No hardcoded env URLs |
+| MUST run the case list in parallel lanes, one leased account per lane, unless a [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §4 predicate is named | Shortest retest time with no shared login — a shared account ends sessions and shares state, producing false defects |
 | MUST include full cURL/response per API case | Evidence must stand alone |
 | MUST treat Swagger (+ error docs) over stale ticket text | Ticket may be wrong |
 | MUST use **PASSED ✅** or **FAILED ❌** only in summary line | Scanability for dev/QA |

@@ -23,7 +23,8 @@ When invoked:
 2. **Settle and strategize first** — before any tool call, follow [settle-and-strategize.md](../../references/settle-and-strategize.md): invoke **`engineering:testing-strategy`** to plan the retest approach, no guessing an expected/spec, no blind retry loops.
 3. **Design (Figma) comparison is mandatory on every UI retest** — [figma-design-comparison.md](../../references/figma-design-comparison.md). A screen with no design reference is **reported back to the person or channel that assigned the retest** and its visual points stay BLOCKED; never assume a label, order, or layout.
 4. **Retest deeply** — [customer-escape-prevention.md](../../references/customer-escape-prevention.md): cover the whole surface the fix touched, measure overflow/overlap at every in-scope width, evidence on passed rows too, and never PASSED over a "cannot verify" actual result.
-5. Read and follow [WORKFLOW.md](../deprecated/retest-bug-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
+5. **Run in parallel lanes by default** — [parallel-test-lanes.md](../../references/parallel-test-lanes.md): split the case list across subagents, **one leased account per lane** (never two lanes on one login), barrier for anything every lane sees; serial only with a named predicate.
+6. Read and follow [WORKFLOW.md](../deprecated/retest-bug-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
 
 Claude Code shortcut: `/retest-bug` → [commands/retest-bug.md](../../commands/retest-bug.md).
 

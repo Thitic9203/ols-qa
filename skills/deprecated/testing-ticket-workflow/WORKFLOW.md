@@ -123,6 +123,8 @@ Collect these **seven** items (one grouped message when possible; skip fields al
 
 **Environment + account are a hard intake item — always settle them, never assume.** Confirm both *which environment* and *which account/role* this run uses before any login or Playwright. If the user has **not** stated them yet, ask (one grouped message) and wait — never pick an environment yourself, even if one is more convenient. If they were **already** given (earlier this session, the one-pager, or the project guide), do **not** re-ask: state the values back in chat (`environment=<X> · account=<role/user>`) and let the user confirm with a short yes (or correct them) — they should not have to re-answer from scratch.
 
+**Account pool.** Execution runs in parallel lanes by default ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md)), one account per lane. Read every test account the project guide lists for the environment (role + shared constraints: one OTP inbox, single-session app, rate limit). If the guide lists only the one account the user gave, the lane plan says so — ask for more accounts only when it would change the lane count.
+
 ---
 
 ## Phase B — Load context
@@ -160,6 +162,10 @@ Use [parallel-prep.md](../../../references/parallel-prep.md) when Jira fetch and
    name the **fixture** each scenario needs and confirm it is big enough to fail — long titles, lists
    past their visible slots, populated accounts (§5) · record the **build/commit id** under test (§6).
 6. Fill [test-execution-plan-template.md](../../../references/test-execution-plan-template.md) in chat (environment, auth, in-scope table, pass criteria, risks). Include the **AC/EC → scenario coverage matrix** so the confirm gate shows every AC/EC is covered, plus the design node per screen, the widths in scope, and the build id.
+7. **Build the lane plan** ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §2–§4):
+   group the scenarios into units (shared record · multi-role · one screen's widths/states · chained
+   precondition · barrier for anything every lane sees), lease **one account per lane**, and
+   write the lease table. Parallel is the default — serial needs a named §4 predicate.
 
 ---
 
@@ -180,6 +186,11 @@ Widths:      {in scope} — out of scope: {widths not delivered this round}
 Test plan ({N} scenarios):
   1. ...
 Out of scope: ...
+
+Execution:   parallel — {N} lanes   (or: serial — reason: {§4 predicate})
+Lanes:       L1 · {account} ({role}) · scenarios {ids} · data prefix QA-L1
+             ...
+Barrier:     {scenario ids run alone after lanes — or none}
 
 Execution plan: see filled template (preflight, evidence, pass criteria).
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -204,11 +215,22 @@ defects found". Log the environment, the build id, and the authenticated user id
 result line. Any of these missing = stop and report; results recorded after a failed preflight are not
 results.
 
+**In a parallel run the session preflight runs per lane**, inside each lane, and records the
+authenticated user id — the parent accepts a lane's results only when that id matches the lane's
+leased account ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3).
+
 ---
 
 ## Phase E — Execute tests (Playwright)
 
 Run confirmed scenarios; record **PASSED** / **FAILED** / **BLOCKED** / **NOT TESTED** with evidence (screenshots, console, network).
+
+**Dispatch the confirmed lanes at once** — after any parent pre-login for accounts sharing one OTP
+inbox (§3), one subagent per lane, all in a single message, each
+with the lane prompt from [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §5.
+Every lane runs E0–E2 on its own scenarios; barrier units run alone after the lanes return. The
+parent then runs the §6 merge (isolation · coverage · evidence) and does E3 on every non-PASS itself
+before Phase F. Lanes never post or update anything outside the run.
 
 Drive every scenario through its **real surface** — a UI scenario through the UI (Playwright clicks the
 button / submits the form), following the case's steps completely. The API is for test-data /
@@ -636,6 +658,7 @@ See [skill-routing.md](../../../references/skill-routing.md) — **Handoffs** af
 |------|-----|
 | [session-intake.md](references/session-intake.md) | Intake fields |
 | [playwright-discipline.md](references/playwright-discipline.md) | Playwright rules |
+| [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) | Default parallel execution — lanes, one account per lane, merge |
 | [root-cause-investigation.md](../../../references/root-cause-investigation.md) | E2 — mandatory cause investigation, evidence-only |
 | [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md) | E3 — challenge every non-PASS: re-verify expected vs related tickets' AC/EC, surface to user |
 | [figma-design-comparison.md](../../../references/figma-design-comparison.md) | Phase B · E0 — compare every screen against its design node; no design ⇒ report back to the assigner, visual points BLOCKED |
@@ -654,6 +677,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | Rule | Because |
 |------|---------|
 | MUST NOT open Jira/GitHub bugs in this workflow | Use create-bug-workflow |
+| MUST run the confirmed plan in parallel lanes, one leased account per lane, unless a [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §4 predicate is named | Shortest run time with no shared login — a shared account ends sessions and shares state, producing false defects |
 | MUST enumerate **every** AC/EC line char-exact in Phase B, map each id 1:1 to a scenario, and reconcile `enumerated ids == rowed-and-verdicted rows` before Phase F ends (7-layer coverage gate in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md)) | The run's scope is the ticket's AC/EC contract; an unenumerated or unmapped AC is silently untested |
 | MUST record **every** AC/EC result as its own row in F2 — NEVER park an untested/failing AC/EC point in a remark, Notes cell, note under the table, or chat while the case reads PASSED | A card was passed on partial AC/EC coverage with the gap footnoted in a remark; coverage is proven by rows, not prose beside them |
 | MUST NOT mark a case PASSED on partial coverage — an AC/EC id **observed to differ** is a FAILED/PWMI row (severity per the matrix); an **unrun/unreachable** id is a BLOCKED row (a coverage gap, never a product FAILED); neither is a PASS and neither is dropped | "Works except one point" hidden as a caveat reads as a clean pass to everyone downstream; and calling a merely-untested item FAILED contradicts "a coverage gap is not a defect" |

@@ -39,6 +39,7 @@ Use this map to avoid duplicating content across markdown files.
 | Test execution plan | [references/test-execution-plan-template.md](../references/test-execution-plan-template.md) | testing-ticket Phase B |
 | Subagent QA patterns | [references/subagent-qa-patterns.md](../references/subagent-qa-patterns.md) | — |
 | Parallel prep | [references/parallel-prep.md](../references/parallel-prep.md) | — |
+| Parallel test execution (lanes, account lease) | [references/parallel-test-lanes.md](../references/parallel-test-lanes.md) | testing-ticket Phase E, retest Step 4 |
 | Copilot / Codex tool maps | [references/copilot-tools.md](../references/copilot-tools.md), [codex-tools.md](../references/codex-tools.md) | agent-entry |
 | Long workflow todos | [references/long-workflow-todos.md](../references/long-workflow-todos.md) | — |
 | SessionStart hooks | [hooks/hooks.json](../hooks/hooks.json), [hooks/hooks-cursor.json](../hooks/hooks-cursor.json) | — |
