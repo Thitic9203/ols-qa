@@ -88,6 +88,16 @@ if [ "$(cd "$TOP" && pwd -P)" != "$(pwd -P)" ]; then
   exit 1
 fi
 
+# --- helix must be on main: the sync commits to whatever is checked out and pushes main.
+#     2026-10-07 it committed onto another session's feature branch, then `git push origin main`
+#     printed "pushed" while main never moved. ---
+BRANCH="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || echo "(detached)")"
+if [ "$BRANCH" != "main" ]; then
+  echo "sync: ❌ helix checkout at $HELIX is not on main (it is on $BRANCH) — refusing to commit there. NOTHING deployed."
+  echo "sync:    Run the sync again from a helix checkout on main (HELIX_REPO=<path>), or switch that checkout back to main."
+  exit 1
+fi
+
 # --- fail-closed: refuse to sync onto a dirty helix worktree (don't clobber WIP) ---
 # exit 1 = differs, anything above 1 = git could not answer; the second is never reported as the first
 DIRTY=0
@@ -189,7 +199,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"; then
   fi
   echo "sync: helix gate green (sync-version, portable content, skill structure)."
   if [ "$PUSH" = "1" ]; then
-    git push --quiet origin main && echo "sync: ✅ pushed helix (deployed)." || echo "sync: ⚠️ push failed — commit is local; push helix manually."
+    git push --quiet origin HEAD:main && echo "sync: ✅ pushed helix (deployed)." || echo "sync: ⚠️ push failed — commit is local; push helix manually."
   else
     echo "sync: HELIX_SYNC_PUSH=0 — committed but not pushed."
   fi

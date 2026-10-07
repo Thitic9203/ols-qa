@@ -155,6 +155,20 @@ check('a helix that cannot be read is reported as unreadable, never as uncommitt
   assert.strictEqual(git(fx.helixOrigin, 'show', `main:${SHARED}`), 'old', 'helix origin changed');
 });
 
+check('a helix checkout that is not on main refuses to sync and commits nothing', () => {
+  // 2026-10-07: helix was checked out on another session's feature branch; the sync committed
+  // onto that branch and then `git push origin main` reported "pushed" while main never moved.
+  const fx = fixture();
+  git(fx.helix, 'checkout', '-q', '-b', 'someone-elses-branch');
+  const headBefore = git(fx.helix, 'rev-parse', 'HEAD');
+  const out = commitShared(fx, fx.olsqa, 'off-main\n');
+  assert.ok(/not on main/.test(out), `the refusal does not say helix is not on main:\n${out}`);
+  assert.ok(!/pushed helix/.test(out), `sync claimed a deploy from a non-main checkout:\n${out}`);
+  assert.strictEqual(git(fx.helix, 'rev-parse', 'HEAD'), headBefore, 'sync committed onto the other branch');
+  assert.strictEqual(git(fx.helix, 'rev-parse', '--abbrev-ref', 'HEAD'), 'someone-elses-branch', 'sync switched the branch');
+  assert.strictEqual(git(fx.helixOrigin, 'show', `main:${SHARED}`), 'old', 'helix origin changed');
+});
+
 check('a red helix gate blocks the deploy and leaves helix as it was', () => {
   const fx = fixture();
   fs.writeFileSync(path.join(fx.helix, 'scripts', 'ci-check-portable-skills.sh'), '#!/bin/sh\necho portable-violation\nexit 1\n', { mode: 0o755 });
