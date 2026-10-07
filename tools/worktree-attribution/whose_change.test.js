@@ -22,17 +22,21 @@ const { execFileSync, spawnSync } = require('child_process');
 const ROOT = path.join(__dirname, '..', '..');
 const SCRIPT = path.join(ROOT, 'scripts', 'whose-change.sh');
 
+// This suite may itself run under a hook; its fixtures must never inherit that repository
+// (GIT_DIR from a hook made `git config user.*` below write into ols-qa — tools/test-isolation).
+const CLEAN_ENV = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_')));
+
 let failed = 0;
 function check(name, fn) {
   try { fn(); console.log('PASS  ' + name); } catch (e) { failed += 1; console.log('FAIL  ' + name + ' -> ' + e.message); }
 }
 
 function git(cwd, ...args) {
-  return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: CLEAN_ENV });
 }
 
 function run(cwd, ...files) {
-  const r = spawnSync('bash', [SCRIPT, ...files], { cwd, encoding: 'utf8' });
+  const r = spawnSync('bash', [SCRIPT, ...files], { cwd, encoding: 'utf8', env: CLEAN_ENV });
   return { code: r.status, out: (r.stdout || '') + (r.stderr || '') };
 }
 
@@ -154,7 +158,7 @@ check('when git itself cannot answer, it REFUSES instead of saying there is noth
   const { dir } = makeRepo();
   try {
     const r = spawnSync('bash', [SCRIPT], {
-      cwd: dir, encoding: 'utf8', env: { ...process.env, GIT_INDEX_FILE: '/dev/null' },
+      cwd: dir, encoding: 'utf8', env: { ...CLEAN_ENV, GIT_INDEX_FILE: '/dev/null' },
     });
     assert.strictEqual(r.status, 2,
       'a broken index was reported as "nothing modified":\n' + (r.stdout || '') + (r.stderr || ''));

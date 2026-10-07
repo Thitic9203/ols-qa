@@ -23,13 +23,17 @@ const { execFileSync, spawnSync } = require('child_process');
 const ROOT = path.join(__dirname, '..', '..');
 const HOOK = path.join(ROOT, 'scripts', 'hooks', 'pre-commit');
 
+// This suite may itself run under a hook; its fixtures must never inherit that repository
+// (GIT_DIR from a hook made `git config user.*` below write into ols-qa — tools/test-isolation).
+const CLEAN_ENV = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_')));
+
 let failed = 0;
 function check(name, fn) {
   try { fn(); console.log('PASS  ' + name); } catch (e) { failed += 1; console.log('FAIL  ' + name + ' -> ' + e.message); }
 }
 
 function git(cwd, ...args) {
-  return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+  return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: CLEAN_ENV });
 }
 
 /** A PATH with every directory that holds a `node` removed, so `command -v node` fails. */
@@ -106,7 +110,7 @@ function sandbox({ debt }) {
 /** Run the hook in that repo. Returns {code, out}. */
 function run(dir, env) {
   const r = spawnSync('bash', [path.join(dir, 'scripts/hooks/pre-commit')], {
-    cwd: dir, encoding: 'utf8', env: { ...process.env, ...(env || {}) },
+    cwd: dir, encoding: 'utf8', env: { ...CLEAN_ENV, ...(env || {}) },
   });
   return { code: r.status, out: (r.stdout || '') + (r.stderr || '') };
 }

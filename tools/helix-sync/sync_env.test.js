@@ -146,6 +146,15 @@ check('the cleaner removes git\'s local variables and refuses when git is unavai
   assert.ok(!/rc=0/.test(noGit.stdout), 'the cleaner reported success without git to ask');
 });
 
+check('the cleaner also removes the author and committer identity a hook inherits', () => {
+  // git exports GIT_AUTHOR_* to hooks; `git rev-parse --local-env-vars` does not list them, so a
+  // sync commit made from ols-qa's post-commit hook was authored as the ols-qa committer.
+  const dirty = { ...CLEAN_ENV };
+  for (const k of ['GIT_AUTHOR_NAME', 'GIT_AUTHOR_EMAIL', 'GIT_AUTHOR_DATE', 'GIT_COMMITTER_NAME', 'GIT_COMMITTER_EMAIL', 'GIT_COMMITTER_DATE']) dirty[k] = 'leaked';
+  const r = run('/bin/bash', ['-c', `. "${HELPER}" && git_env_clean && env | grep -cE '^GIT_(AUTHOR|COMMITTER)_'`], { env: dirty });
+  assert.strictEqual(r.stdout.trim(), '0', `an identity variable survived the cleaner: ${r.stdout}${r.stderr}`);
+});
+
 check('the post-commit sync and the pre-push suite runner clear git through the same helper', () => {
   const sync = fs.readFileSync(SYNC, 'utf8').split('\n');
   const source = sync.findIndex((l) => /\bgit-env-clean\.sh\b/.test(l));
