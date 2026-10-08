@@ -10,6 +10,23 @@ Helix skills embedded directly — no separate install needed.
 
 Open this folder in **Claude Code** and trust the project. The SessionStart hook injects OLS context automatically.
 
+## Auto-update
+
+Skills update themselves at session start — to the newest **release**, never to an unreleased `main`:
+
+- A release tag `vX.Y.Z` is created by `auto-version.yml` only after the `tests` workflow passed on that commit.
+- Each session `scripts/ols-qa-auto-update.sh` asks origin for its release tags (one cheap `git ls-remote`); it fetches and fast-forwards only when a newer release exists (or every 4 h as a fallback). It prints `=== ols-qa skills updated to vX.Y.Z ===` when the clone moved.
+- It never moves a clone backwards, and never touches a clone that is on another branch, has modified tracked files, or has local commits on `main` — the last two are reported once at session start (log: `~/.ols-qa/auto-update.log`).
+
+Sessions opened inside this folder update automatically. To also update in sessions opened anywhere else, add a user-level hook (needs `jq`; backs up `~/.claude/settings.json` first, safe to re-run):
+
+```bash
+bash scripts/install-auto-update.sh              # install
+bash scripts/install-auto-update.sh --uninstall  # remove
+```
+
+Opt out for a session or machine: `export OLS_QA_AUTO_UPDATE=0`.
+
 ## What this workspace can do
 
 Three ways of working, all pointed at the OLS project:

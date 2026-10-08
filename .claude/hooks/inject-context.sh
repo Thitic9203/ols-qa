@@ -9,12 +9,13 @@ cd "$CLAUDE_PROJECT_DIR" 2>/dev/null || exit 0
 # there is no debt, and can never fail the hook.
 bash "$CLAUDE_PROJECT_DIR/.claude/hooks/postmortem-debt.sh" 2>/dev/null || true
 
-# Auto-update skills from remote
-BEFORE=$(git rev-parse HEAD 2>/dev/null)
-git pull --ff-only origin main --quiet 2>/dev/null
-AFTER=$(git rev-parse HEAD 2>/dev/null)
-if [ "$BEFORE" != "$AFTER" ]; then
-  echo "=== Skills updated ($(git log --oneline "$BEFORE".."$AFTER" 2>/dev/null | wc -l | tr -d ' ') new commit(s)) ==="
+# Auto-update skills to the newest RELEASE tag (tests passed), never to an unreleased main.
+# Prints "=== ols-qa skills updated to vX.Y.Z ===" when it moved the clone; silent otherwise.
+# Opt out with OLS_QA_AUTO_UPDATE=0. Details: scripts/ols-qa-auto-update.sh
+bash "$CLAUDE_PROJECT_DIR/scripts/ols-qa-auto-update.sh" 2>/dev/null || true
+AU_ERR="${OLS_QA_STATE_DIR:-$HOME/.ols-qa}/last-update-error"
+if [ -s "$AU_ERR" ]; then
+  echo "!!  ols-qa auto-update problem: $(tail -1 "$AU_ERR")"
 fi
 
 echo "=== OLS QA Workspace ==="
