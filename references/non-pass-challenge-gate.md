@@ -127,7 +127,8 @@ The recommendation is exactly one of:
 
 For A and B, **wait for the user's decision** — the whole point is that adjusting a spec or re-testing
 is the user's call, not QA's. For a clearly-confirmed C you may continue, but never silently: the flag
-still goes to chat.
+still goes to chat. **Exception — attended retest / testing-ticket / smoke rounds:** do not wait
+mid-run; see "Attended rounds" below.
 
 ### Unattended / bot mode — resolve the gate, never halt, never phantom-file
 
@@ -142,6 +143,22 @@ A headless bot has no user to ask and must not stall the run. It resolves §4 de
 This is the same rule the bots already follow for a failed login preflight or an unclear spec: record
 and continue, never a phantom bug and never a stalled queue.
 
+### Attended rounds of retest / testing ticket / smoke — default now, ask at the end
+
+Even with a user present, these rounds never wait mid-run
+([round-time-contract.md §2](round-time-contract.md#2-no-mid-run-waits)):
+
+1. Apply the **unattended default** from the table above (BLOCKED + remark, re-run a test-side cause,
+   or record a confirmed defect) and continue the run.
+2. **Queue the A/B/C question** — the same flag block as §4 — for the **end decisions popup**
+   ([round-time-contract.md §3](round-time-contract.md#3-end-of-round-fixed-order)), not a mid-run
+   chat wait.
+3. Apply the answer before the approval popup: **A** updates the case per the spec owner, **C**
+   commits the verdict / bug write-up, and **B re-test** starts a **new round** with its own time
+   budget ([round-time-contract.md §1](round-time-contract.md#1-time-budget-and-the-round-report)).
+
+The verdict for that case is not posted before the user answers in the decisions popup.
+
 ---
 
 ## MUST / NEVER
@@ -154,6 +171,6 @@ and continue, never a phantom bug and never a stalled queue.
 | MUST NOT treat a transliteration, an English feature/button name, prose/verb usage, or your own assumption as "the spec" | `Bookmark` ≠ label "บุ๊กมาร์ก"; the design said "บันทึก" (PM-006, phantom bug) |
 | MUST treat a hedge in the expected value ("confirm with PO/Figma", "น่าจะ", "TBD") as an **unverified spec** → a question, not a defect | An unconfirmed expected is not a contract to fail the app against |
 | MUST set the case **BLOCKED with an actionable remark naming who to ask** when the spec is genuinely unclear or conflicting — never a bug ticket | Unclear spec is a question for the spec owner, not a product defect |
-| MUST surface a non-PASS to the user in chat (expected vs observed + AC/EC finding + a recommendation) **before** committing the verdict or filing, in interactive sessions | Adjusting a spec or re-testing is the user's decision; QA flags, the user steers |
+| MUST surface a non-PASS to the user in chat (expected vs observed + AC/EC finding + a recommendation) **before** committing the verdict or filing, in interactive sessions — in attended retest / testing / smoke rounds, via the end decisions popup after applying the unattended default | Adjusting a spec or re-testing is the user's decision; QA flags, the user steers |
 | MUST NOT rewrite the ticket's expected/AC text to match the app on QA's own initiative | The spec owner decides; QA reports the conflict and names them |
 | MUST, in unattended/bot mode, resolve the gate (BLOCKED+remark / re-run / record) and continue — never halt the run and never file a phantom bug | Bots cannot ask; stalling or phantom-filing are both failures |

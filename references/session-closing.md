@@ -39,9 +39,13 @@ Offer **exactly one** logical next step from [skill-routing.md](skill-routing.md
 
 Do not auto-start the next workflow without user consent.
 
-## 4 — Handoff file (long or interrupted sessions)
+## 4 — Handoff file (every retest / testing round; long or interrupted sessions otherwise)
 
-Write when **any** applies:
+**Retest and testing ticket (and smoke): write it at the close of every round** — not only long or
+blocked runs — with the per-round state and source fingerprints the next round compares against
+([round-time-contract.md §10](round-time-contract.md#10-per-ticket-state-and-fingerprints)).
+
+Other workflows: write when **any** applies:
 
 - User may continue in a **new chat**
 - Workflow ran **> 30 minutes** or **> 15 TC rows**

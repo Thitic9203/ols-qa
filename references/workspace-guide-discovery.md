@@ -42,12 +42,19 @@ Skipped questions: {list fields you will not re-ask}
 ```
 
 3. Use guide values for URLs, Jira format (v2/v3), transitions, default columns, VPN notes.
+4. A value the guide lacks (env, account pool, Jira post format v2/v3, transition names, notify
+   recipient field, results destination, auth dir) → ask **once**, then save it to the guide
+   immediately (see below).
 
 ## When no guide is found
 
 1. Say no workspace guide was found for this workflow.
 2. Use the workflow’s `references/project-config-template.md` (or Phase A intake) — **one question at a time**.
-3. Offer to save answers to `references/{PROJECT}-{workflow}-guide.md` in the user’s repo.
+3. **Save each answer immediately** to `references/{PROJECT}-{workflow}-guide.md` in the user’s repo
+   (create the file if needed) — no second "save this?" question; the answer is the consent
+   ([round-time-contract.md §2](round-time-contract.md#2-no-mid-run-waits)). Never write production
+   passwords or other secrets into the guide — store only where the credential lives (env var name,
+   vault entry).
 
 ## MUST / NEVER
 
@@ -55,4 +62,5 @@ Skipped questions: {list fields you will not re-ask}
 |------|---------|
 | MUST search workspace `references/` first | Repeatable team defaults |
 | MUST NOT read the Helix install directory or Helix repo guides as project config | Wrong project |
+| MUST save an answered value to the guide immediately, without a second "save this?" question | One question per value, ever ([round-time-contract.md §2](round-time-contract.md#2-no-mid-run-waits)) |
 | MUST NOT store production passwords in committed guides | Security |

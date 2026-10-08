@@ -23,8 +23,10 @@ Follow [skill-rules-style.md — doubt and fix-verify](skill-rules-style.md#qa-c
 
 **Applies to testing-ticket and retest-bug only** — every run, whatever the verdict (PASSED included)
 and whatever the tested ticket's type (story, task, improvement, bug). Run it at the workflow's QA
-closing: after every verdict is final, before any remaining close-out action (retest-bug: before the
-Step 8 transition and the Step 9 notify).
+closing: after every verdict is final, before the **approval popup** and any remaining close-out
+action (retest-bug: before the Step 8 transition and the Step 9 notify). Its step 4 question goes into
+the **end decisions popup**, not a separate wait
+([round-time-contract.md §3](round-time-contract.md#3-end-of-round-fixed-order)).
 
 **Read-only.** This step never comments, links, transitions, edits, or creates a ticket. A conflict
 that deserves a new ticket is proposed in chat and waits for an explicit go-ahead.
@@ -61,7 +63,10 @@ that deserves a new ticket is proposed in chat and waits for an explicit go-ahea
    its query and hit count, plus how many candidates were opened. A "no conflict" line without counts
    is not allowed.
 4. **Ask, then wait.** One question, through the host's question UI when it has one: **Investigate
-   further** or **Close out now**. Put the recommended option first — *Investigate further* when any
+   further** or **Close out now**. In attended retest / testing-ticket rounds, apply the step 5
+   default first and **queue this question in the end decisions popup** (batched with the other
+   queued questions), shown before the approval popup
+   ([round-time-contract.md §2–§3](round-time-contract.md#2-no-mid-run-waits)). Put the recommended option first — *Investigate further* when any
    conflict row exists, otherwise *Close out now*. Nothing after this step runs before the answer.
    - *Investigate further* → resolve each row (the ticket and all its comments, the prior regression
      result, the code when available), correct any already-published result in place through the

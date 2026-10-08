@@ -20,15 +20,17 @@ A **lane** = one subagent that owns:
 | Owns | Rule |
 |------|------|
 | **Scenarios** | A disjoint subset of the confirmed plan — every scenario is in exactly one lane |
+| **Unit work, end to end** | Execution, the Figma compare, recording during execution, the non-PASS root-cause investigation, and the repro shape ([round-time-contract.md §4](round-time-contract.md#4-fan-out-lanes-own-their-unit)) |
 | **Account(s)** | An exclusive lease on the account(s) its scenarios need — no other lane uses them during the run |
-| **Browser context** | Its own browser context / `storageState` file, named by lane id — never a shared profile |
+| **Browser context** | Its own browser context, started from its leased account's saved login file `{auth dir from guide}/{env}-{role}-{alias}.json` — named by account, not by lane, gitignored; never a shared profile. Session check before any result counts; fresh login on failure ([round-time-contract.md §5](round-time-contract.md#5-login-reuse-per-operator-across-runs)) |
 | **Test data** | Records it creates carry the lane id in their name (`QA-L2-…`) and are recorded in its report |
 | **Evidence dir** | Its own output folder (`…/lane-L2/`) — no two lanes write the same path |
 
-The **parent** (main thread) keeps everything that is not scenario execution: intake, plan, confirm
-gate, design-node collection, lane plan, merge, the root-cause challenge of every non-PASS, the
-summary, and every external write (Jira comment, transition, notify, results sheet). **A lane never
-posts, transitions, assigns, or notifies.**
+The **parent** (main thread) keeps everything that is not unit work: intake, plan (shown, then run —
+no mid-run confirm gate in these rounds), design-node collection, lane plan, merge (one report and one bundle from the lanes, including
+the evidence re-check of every non-PASS in §6), queuing each non-PASS challenge for the end decisions
+popup, the summary, and every external write (Jira comment, transition, notify, results sheet).
+**A lane never posts, transitions, assigns, or notifies.**
 
 ---
 
@@ -52,6 +54,9 @@ posts, transitions, assigns, or notifies.**
 3. **Assign units to lanes.** Lane count =
    `min(units, accounts that can be leased without collision, lane cap)`.
    Default lane cap is **4** (each lane holds a live browser); the user may raise or lower it.
+   **Exception — retest, testing-ticket, and smoke rounds have no fixed cap:** lane count =
+   `min(units, accounts leasable without collision)`, and any round with 2 or more units fans out
+   ([round-time-contract.md §4](round-time-contract.md#4-fan-out-lanes-own-their-unit)).
    Balance lanes by expected duration, not by scenario count.
 4. **Lease accounts** — write the lease table. One account appears in **one lane only**.
 5. Put the lane plan in the confirm block of the calling workflow:
@@ -85,7 +90,8 @@ shared, a rate limit trips, a one-time code is consumed by the other lane.
 |-----------|----|
 | Two units need the same role, pool has two accounts of that role | Two lanes, one account each |
 | Two units need the same role, pool has **one** account | Both units go in **one** lane, run in order |
-| Accounts share one OTP inbox / phone | **Parent pre-login:** before dispatch, the parent logs each of those leased accounts in one at a time (reading only the code issued after that request), saves `storageState-{Lx}.json` per lane, then dispatches all lanes at once — each lane starts from its saved state |
+| Accounts share one OTP inbox / phone | **Parent pre-login:** before dispatch, the parent logs each of those leased accounts in one at a time (reading only the code issued after that request), saves each account's login file `{env}-{role}-{alias}.json` in the guide's auth dir (named by account, not by lane), then dispatches all lanes at once — each lane points at its leased account's file |
+| Saved login file exists from an earlier run | Load it, call the session endpoint, expect the leased user id. On 401/403, a redirect to login, or a different user → log in fresh and overwrite the file ([round-time-contract.md §5](round-time-contract.md#5-login-reuse-per-operator-across-runs)) |
 | App is single-session per account | Already covered by the lease — never re-use a leased account in a second context |
 | Scenario needs a fresh / pre-first-use account | That account is leased to that lane only and is consumed — record it in the lease table |
 | Pool too small for the plan | Fewer lanes, never shared accounts. Ask the user for more accounts only if it changes the lane count |
@@ -132,8 +138,13 @@ transition, assign, or notify.
 Environment: {env} · base URL {url} · build {build id}
 Account lease: {account(s) + role} — credentials from {guide path / env var name}. Use ONLY
 these accounts. Do not log in with any other.
-Browser context: own context, storageState file {path}-{Lx}.json (pre-logged-in by the parent when
-the account shares an OTP inbox — start from it, do not request a new code)
+Browser context: own context, started from the leased account's login file
+{auth dir}/{env}-{role}-{alias}.json (pre-logged-in by the parent when the account shares an OTP
+inbox — start from it, do not request a new code). Before any result counts, call the session
+endpoint and expect {user id}; on 401/403, a login redirect, or another user, log in fresh and
+overwrite the file.
+You own your units end to end: execution, Figma compare (one per screen × width), recording during
+execution, non-PASS root-cause investigation, and the repro shape.
 Scenarios (run in this order): {ids, steps, expected, design node per screen, widths, fixture}
 Test data: prefix every record you create with QA-{Lx}-; list every id you create.
 Evidence dir: {path}/lane-{Lx}/

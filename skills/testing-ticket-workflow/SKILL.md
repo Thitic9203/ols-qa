@@ -1,7 +1,7 @@
 ---
 name: testing-ticket-workflow
 description: |
-  Test one Jira ticket with Playwright after intake and confirmation — compare every screen against the design (Figma), summarize results in chat, then optionally update an external results destination.
+  Test one Jira ticket with Playwright after intake (plan shown, then run) — compare every screen against the design (Figma), summarize results in chat, then optionally update an external results destination.
   Use for Testing ticket from Helix, /testing-ticket, or when the user wants automated UI/API checks for a single ticket.
   Do NOT use for opening bug tickets (create-bug-workflow), retest-after-fix on a bug (retest-bug-workflow), or drafting manual TC tables (tc-fe-prep / tc-api-prep). Does not run full-app regression.
 proactive_triggers:
@@ -22,14 +22,14 @@ When invoked:
 2. **Settle and strategize first** — before any tool call, follow [settle-and-strategize.md](../../references/settle-and-strategize.md): invoke **`engineering:testing-strategy`** to plan the approach, no guessing an expected/spec, no blind retry loops.
 3. **Design (Figma) comparison is mandatory on every UI scenario** — [figma-design-comparison.md](../../references/figma-design-comparison.md). A screen with no design reference is **reported back to the person or channel that assigned the run** and its visual points stay BLOCKED; never assume a label, order, or layout.
 4. **Test deeply** — [customer-escape-prevention.md](../../references/customer-escape-prevention.md): cover the whole surface, run every in-scope width with overflow/overlap **measured**, use fixtures big enough to fail, evidence on passed rows too, and never PASSED over a "cannot verify" note.
-5. **Run in parallel lanes by default** — [parallel-test-lanes.md](../../references/parallel-test-lanes.md): split the confirmed plan across subagents, **one leased account per lane** (never two lanes on one login), barrier for anything every lane sees; serial only with a named predicate.
+5. **Run in parallel lanes by default** — [parallel-test-lanes.md](../../references/parallel-test-lanes.md): split the plan across subagents, **one leased account per lane** (never two lanes on one login), barrier for anything every lane sees; serial only with a named predicate.
 6. Read and follow [WORKFLOW.md](../procedures/testing-ticket-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
 
 Claude Code shortcut: `/testing-ticket` → [commands/testing-ticket.md](../../commands/testing-ticket.md).
 
 ## Refusal-first (precondition gate)
 
-All preconditions and refusal rules are in WORKFLOW.md. MUST NOT run Playwright until intake is complete and the user confirms the test plan.
+All preconditions and refusal rules are in WORKFLOW.md. MUST NOT run Playwright until intake is complete; the plan is then printed and run without waiting (round-time contract §2), and corrections land in the end decisions popup.
 
 ## QA closing (mandatory before "done")
 

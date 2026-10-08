@@ -13,6 +13,19 @@ Post comment → Review on Jira UI → Pass all checks?
 
 **MUST NOT say "commented", "posted", "done", or any success phrase until all checks pass.**
 
+## Pre-post render + media check (before the approval popup)
+
+Run both checks on the **final** draft body, before the approval popup is shown
+([round-time-contract.md §6](round-time-contract.md#6-comment-render-and-media-check-before-the-approval-popup)):
+
+1. **Render the body locally** in the format the guide sets (ADF for v3, wiki markup for v2). Confirm
+   tables, line breaks, numbered items, and formatting render as intended.
+2. **Resolve every referenced image or clip** — the attachment exists, and its id or filename matches
+   the reference in the body.
+
+A failure blocks the approval popup until it is fixed. This check does not replace the post-publish
+review below — the re-read on Jira UI remains the proof of what was posted.
+
 ## Review checklist (all items must pass)
 
 ### 1. Content completeness

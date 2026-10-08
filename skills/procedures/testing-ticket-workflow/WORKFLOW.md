@@ -1,14 +1,14 @@
 ---
 name: testing-ticket-workflow
 description: |
-  Test one Jira ticket with Playwright after intake and confirmation — compare every screen against the design (Figma), summarize results in chat, then optionally update an external results destination.
+  Test one Jira ticket with Playwright after intake (plan shown, then run) — compare every screen against the design (Figma), summarize results in chat, then optionally update an external results destination.
   Use for Testing ticket from Helix, /testing-ticket, or when the user wants automated UI/API checks for a single ticket.
   Do NOT use for opening bug tickets (create-bug-workflow), retest-after-fix on a bug (retest-bug-workflow), or drafting manual TC tables (tc-fe-prep / tc-api-prep). Does not run full-app regression.
 ---
 
 # Testing ticket workflow
 
-Run **Playwright-based** testing for a **single ticket** after intake and confirmation. **Self-contained in Helix** — do not invoke `full-test-plugin`.
+Run **Playwright-based** testing for a **single ticket** after intake (the plan is shown, then run). **Self-contained in Helix** — do not invoke `full-test-plugin`.
 
 **This workflow does not open bug reports.** If the user wants bugs filed → route to **`create-bug-workflow`** (`/helix` → Create bug).
 
@@ -21,7 +21,15 @@ no guessing an expected/spec, and no blind retry loops (a repeat failure = stop 
 
 Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
-**Gates:** MUST NOT start Playwright until Phase C confirm; MUST NOT update external results until Phase G confirm — because runs and writes are costly to undo. Credentials are session-only.
+**Round-time contract.** A round has a cap of **15 minutes of AGENT + EXEC** time; human wait is not
+counted and is reported on its own line. The cap is soft — print the ~12-minute line, finish the round,
+never cut cases. The Phase F report ends with the `Round time:` line. Full rules:
+[round-time-contract.md §1](../../../references/round-time-contract.md).
+
+**Gates:** Phase C shows the plan, then runs — no mid-run waits
+([round-time-contract.md §2](../../../references/round-time-contract.md)). Nothing is written outside the
+run (Jira comment, results destination, notify) until the **single end-of-round approval popup**
+([§3](../../../references/round-time-contract.md)) — because writes are costly to undo. Credentials are session-only.
 
 **Test through the real steps.** Drive every scenario through its own surface, following the case's
 steps completely — a UI scenario through the UI (Playwright clicks, not a direct submit call); the API
@@ -45,8 +53,9 @@ carried into Phase F as a defect — re-verify the **expected** side against an 
 **including the AC/EC of related / linked tickets** (parent story, linked issues, sibling tickets on
 the same surface, the test case's own source), read character-exact. A stale or superseded expected,
 a transliteration mistaken for a label, or an unconfirmed-spec hedge makes a phantom defect out of a
-correct app. Run this at **E3**, then **surface it to the user in chat** so they can decide whether to
-adjust the test case, re-test, or confirm the defect. Full gate:
+correct app. Run this at **E3**, apply the documented default, and **queue the question** (adjust the
+test case, re-test, or confirm the defect) for the end decisions popup — no mid-run wait
+([round-time-contract.md §2](../../../references/round-time-contract.md)). Full gate:
 [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md).
 
 **Test every AC/EC — completeness is a hard gate, not a best-effort.** The scope of what must be
@@ -87,7 +96,7 @@ verdict (§8); preflight the session before believing any result (§9).
 
 MUST refuse to reach Phase B until **Ticket** and **URL** are provided — because the test plan has no target.
 
-**Pre-flight login smoke gate (mandatory before Phase B).** Before running any scenario, verify that login **actually succeeds** for **only the role(s)/credential set(s) this run's scenarios will actually use** — not every role the project has. Read the run's scenarios to determine which roles are in scope; a single-role run logs in that one role, a multi-role run logs in each role it uses, nothing more. Drive the real login (headless where supported) per in-scope role and confirm an authenticated signal (redirect to an authed area, a session/`me` endpoint, or a logged-in UI marker). Produce a pass/fail table for the in-scope roles.
+**Pre-flight login smoke gate (mandatory before Phase B).** Before running any scenario, verify that login **actually succeeds** for **only the role(s)/credential set(s) this run's scenarios will actually use** — not every role the project has. Read the run's scenarios to determine which roles are in scope; a single-role run logs in that one role, a multi-role run logs in each role it uses, nothing more. Reuse the saved login file per role first ([round-time-contract.md §5](../../../references/round-time-contract.md)); drive the real login (headless where supported) only when the file is missing or fails the session check, and confirm an authenticated signal (redirect to an authed area, a session/`me` endpoint, or a logged-in UI marker). Produce a pass/fail table for the in-scope roles.
 - **All in-scope roles pass →** proceed to Phase B.
 - **Any in-scope role fails →** 🛑 stop, report which role failed and why (backend error, VPN, bad creds), and do **not** start testing until it is cleared or the user explicitly says to skip the failing role. Never mark scenarios PASSED when auth was never verified.
 
@@ -121,9 +130,21 @@ Collect these **seven** items (one grouped message when possible; skip fields al
 
 **Wait** until required fields are answered before Phase B.
 
-**Environment + account are a hard intake item — always settle them, never assume.** Confirm both *which environment* and *which account/role* this run uses before any login or Playwright. If the user has **not** stated them yet, ask (one grouped message) and wait — never pick an environment yourself, even if one is more convenient. If they were **already** given (earlier this session, the one-pager, or the project guide), do **not** re-ask: state the values back in chat (`environment=<X> · account=<role/user>`) and let the user confirm with a short yes (or correct them) — they should not have to re-answer from scratch.
+**Workspace-guide values are not asked again** ([round-time-contract.md §2](../../../references/round-time-contract.md)).
+Environment, account pool, auth directory, Jira post format, results destination and similar per-project
+values are read from the workspace guide. A value that is missing is asked **once** and **saved to the
+guide immediately** — no second "save this?" question
+([workspace-guide-discovery.md](../../../references/workspace-guide-discovery.md)). Never store
+production passwords in a committed guide.
 
-**Account pool.** Execution runs in parallel lanes by default ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md)), one account per lane. Read every test account the project guide lists for the environment (role + shared constraints: one OTP inbox, single-session app, rate limit). If the guide lists only the one account the user gave, the lane plan says so — ask for more accounts only when it would change the lane count.
+**Environment + account are a hard intake item — always settle them, never assume.** Settle both *which environment* and *which account/role* this run uses before any login or Playwright. If neither the user nor the guide has stated them, ask (one grouped message) and wait — never pick an environment yourself, even if one is more convenient. If they were **already** given (earlier this session, the one-pager, or the project guide), do **not** re-ask: state the values back in chat (`environment=<X> · account=<role/user>`) and continue; a correction lands in the end decisions popup and starts a new round.
+
+**Fingerprint check at round start** ([round-time-contract.md §10](../../../references/round-time-contract.md)).
+If `references/helix-handoff-{KEY}.md` exists, fetch each fingerprint fresh (ticket `updated` + comment
+count · Figma `lastModified` · Swagger spec hash · build version where exposed). A matching source is not
+re-read in full; a changed or missing fingerprint re-reads that source only.
+
+**Account pool.** Execution runs in parallel lanes by default ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md)), one account per lane. Read every test account the project guide lists for the environment (role + shared constraints: one OTP inbox, single-session app, rate limit). Lane count = min(units, accounts leasable without collision) — **no fixed lane cap** for this flow ([round-time-contract.md §4](../../../references/round-time-contract.md)). If the guide lists only the one account the user gave, the lane plan says so — ask for more accounts only when it would change the lane count.
 
 ---
 
@@ -161,7 +182,7 @@ Use [parallel-prep.md](../../../references/parallel-prep.md) when Jira fetch and
    list the **states** each screen must be seen in (empty · loading · error · over-limit · disabled) ·
    name the **fixture** each scenario needs and confirm it is big enough to fail — long titles, lists
    past their visible slots, populated accounts (§5) · record the **build/commit id** under test (§6).
-6. Fill [test-execution-plan-template.md](../../../references/test-execution-plan-template.md) in chat (environment, auth, in-scope table, pass criteria, risks). Include the **AC/EC → scenario coverage matrix** so the confirm gate shows every AC/EC is covered, plus the design node per screen, the widths in scope, and the build id.
+6. Fill [test-execution-plan-template.md](../../../references/test-execution-plan-template.md) in chat (environment, auth, in-scope table, pass criteria, risks). Include the **AC/EC → scenario coverage matrix** so the Phase C plan shows every AC/EC is covered, plus the design node per screen, the widths in scope, and the build id.
 7. **Build the lane plan** ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §2–§4):
    group the scenarios into units (shared record · multi-role · one screen's widths/states · chained
    precondition · barrier for anything every lane sees), lease **one account per lane**, and
@@ -169,10 +190,14 @@ Use [parallel-prep.md](../../../references/parallel-prep.md) when Jira fetch and
 
 ---
 
-## Phase C — Confirm before Playwright (hard gate)
+## Phase C — Show the plan, then run
+
+Print the plan below, then start Phase D **without waiting**
+([round-time-contract.md §2](../../../references/round-time-contract.md)). The plan rides again in the
+end decisions popup, where the user can correct it; a correction there starts a new round.
 
 ```text
-━━━ Testing ticket — confirm before run ━━━
+━━━ Testing ticket — plan (running now) ━━━
 Ticket:      {KEY} — {one-line summary}
 URL:         {url}
 Login:       {user} / password provided (not shown)
@@ -194,10 +219,8 @@ Barrier:     {scenario ids run alone after lanes — or none}
 
 Execution plan: see filled template (preflight, evidence, pass criteria).
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Reply **confirm** to start Playwright, or tell me what to change.
+Plan printed — starting Phase D now. It appears again in the end decisions popup.
 ```
-
-**Do not start Phase D until confirmed.**
 
 If results contradict expectations or tests are flaky, follow [qa-debug-discipline.md](../../../references/qa-debug-discipline.md) before changing pass/fail wording. "Flaky" is a hypothesis, not a
 conclusion — it needs the E2 investigation and an artifact like any other cause.
@@ -215,6 +238,12 @@ defects found". Log the environment, the build id, and the authenticated user id
 result line. Any of these missing = stop and report; results recorded after a failed preflight are not
 results.
 
+**Login reuse** ([round-time-contract.md §5](../../../references/round-time-contract.md)): load the saved
+login file for the account (`{auth dir from guide}/{env}-{role}-{alias}.json`, named by account, not by
+lane, gitignored), then call the session endpoint and expect the account's user id. On 401/403, a
+redirect to login, or a different user → log in fresh and overwrite the file. One account belongs to
+one lane and is never shared across concurrent sessions.
+
 **In a parallel run the session preflight runs per lane**, inside each lane, and records the
 authenticated user id — the parent accepts a lane's results only when that id matches the lane's
 leased account ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3).
@@ -223,14 +252,20 @@ leased account ([parallel-test-lanes.md](../../../references/parallel-test-lanes
 
 ## Phase E — Execute tests (Playwright)
 
-Run confirmed scenarios; record **PASSED** / **FAILED** / **BLOCKED** / **NOT TESTED** with evidence (screenshots, console, network).
+Run the planned scenarios; record **PASSED** / **FAILED** / **BLOCKED** / **NOT TESTED** with evidence (screenshots, console, network).
 
-**Dispatch the confirmed lanes at once** — after any parent pre-login for accounts sharing one OTP
+**Fan out whenever the plan has 2 or more units** ([round-time-contract.md §4](../../../references/round-time-contract.md)) —
+dispatch the planned lanes at once, after any parent pre-login for accounts sharing one OTP
 inbox (§3), one subagent per lane, all in a single message, each
 with the lane prompt from [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §5.
-Every lane runs E0–E2 on its own scenarios; barrier units run alone after the lanes return. The
-parent then runs the §6 merge (isolation · coverage · evidence) and does E3 on every non-PASS itself
-before Phase F. Lanes never post or update anything outside the run.
+Lane count = min(units, accounts leasable without collision); **no fixed lane cap** for this flow.
+**Each lane owns its unit end to end:** execution, the E0 Figma compare, recording during execution
+([round-time-contract.md §8](../../../references/round-time-contract.md) — the run that executes the
+case is the recording; every clip still passes all 7 layers), the E1 repro shape, and the E2 root
+cause. Barrier units run alone after the lanes return. The **main thread only merges** — it runs the
+§6 merge (isolation · coverage · evidence) into one report and one bundle, and applies E3 (default +
+queue) on every non-PASS before Phase F. Execution stays agent-driven, step by step. Lanes never post
+or update anything outside the run.
 
 Drive every scenario through its **real surface** — a UI scenario through the UI (Playwright clicks the
 button / submits the form), following the case's steps completely. The API is for test-data /
@@ -253,7 +288,11 @@ Run this **as each scenario executes**, not while writing Phase F.
 1. **Compare the screen against its design node** on all five points — elements present · text
    char-exact · order/position · the states the node defines · no overflow and no overlap
    ([figma-design-comparison.md](../../../references/figma-design-comparison.md) §3). Record the node
-   link on the scenario's row.
+   link on the scenario's row. **Dedupe, never shorten** ([round-time-contract.md §7](../../../references/round-time-contract.md)):
+   one compare per screen × width per round — cases on the same screen share one fresh app capture and
+   one design read; cache the design-side export (node screenshot + metadata) keyed by the Figma file's
+   `lastModified` and re-fetch only when it changes. The app-side capture is always fresh, and the
+   compare still covers all five points.
 2. **Measure the layout checks, do not eyeball them** — overflow is `rect.right > window.innerWidth` or
    `document.documentElement.scrollWidth > window.innerWidth`; overlap is two text rectangles
    intersecting by more than ~3 px. Run them at **every in-scope width**, and on both sides of any
@@ -321,7 +360,7 @@ product bug is never filed away as "flaky".
 **BLOCKED is not an escape.** A BLOCKED scenario still records the sweep up to the boundary that
 blocked it and names the access/person needed to continue.
 
-### E3 — Challenge the non-PASS + surface it to the user (mandatory for every non-PASSED scenario)
+### E3 — Challenge the non-PASS + queue it for the user (mandatory for every non-PASSED scenario)
 
 Follow [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md) end to end, **before
 the scenario is written into Phase F as a defect.** A non-PASS is a hypothesis until it survives this:
@@ -336,13 +375,14 @@ the scenario is written into Phase F as a defect.** A non-PASS is a hypothesis u
    - Expected wrong / superseded → **not a defect** → recommend adjusting the test case.
    - Expected unclear / conflicting / hedged → **BLOCKED + a remark naming who to ask**, never a defect.
    - Expected confirmed authoritative and the app still differs → it survived; carry it to Phase F.
-3. **Surface to the user in chat and let them steer** — post `expected (+source) · observed · AC/EC
-   finding · recommendation (A adjust the TC · B re-test · C confirm defect)`. For A/B **wait for the
-   user's decision**; for a clearly-confirmed C you may continue, but never silently. Never rewrite the
-   ticket's expected text to match the app on your own.
-
-**Unattended / bot mode:** resolve the gate instead of asking — expected wrong/unclear → BLOCKED +
-remark (no bug, no halt); test-side cause → fix and re-run; confirmed defect → record as normal.
+3. **Apply the default, queue the question — no mid-run wait**
+   ([round-time-contract.md §2](../../../references/round-time-contract.md)). Resolve with the gate's
+   documented default — expected wrong/unclear → BLOCKED + remark (no bug, no halt); test-side cause →
+   fix and re-run; confirmed defect → record as normal — and continue the run. Then queue `expected
+   (+source) · observed · AC/EC finding · recommendation (A adjust the TC · B re-test · C confirm
+   defect)` for the end decisions popup. A **B re-test** answer there starts a new round
+   ([§1](../../../references/round-time-contract.md)). Never rewrite the ticket's expected text to match
+   the app on your own.
 
 ---
 
@@ -427,7 +467,7 @@ name the decision-maker.
 
 **Every defect row must have passed the E3 challenge gate** — its expected side re-verified against an
 authoritative source (this ticket's AC/EC **and** related/linked tickets), and the discrepancy already
-surfaced to the user. A row whose expected turned out wrong / superseded / unclear does **not** belong
+queued for the end decisions popup. A row whose expected turned out wrong / superseded / unclear does **not** belong
 here — it is a test-case adjustment or a BLOCKED question, not a defect.
 
 ### F4 — Reader gate (MUST pass before Phase G)
@@ -478,50 +518,79 @@ If the user wants these logged as bugs:
 
 > Say **Create bug** from `/helix`, or ask me to switch to the **create-bug-workflow**.
 
+**The report ends with the round-time line** ([round-time-contract.md §1](../../../references/round-time-contract.md)),
+measured from the session's own timestamps, never estimated:
+
+```text
+Round time: AGENT+EXEC {n} min · human wait {h} min · overrun {max(0, n-15)} min
+```
+
 **Do not proceed to Phase G until F1–F4 are posted.**
+
+### F5 — End of round (fixed order)
+
+Follow [round-time-contract.md §3](../../../references/round-time-contract.md):
+
+1. **Reviewer and bundle in parallel.** If the project names an independent reviewer subagent, start it
+   in the background; meanwhile build the bundle — the render and media check
+   ([§6](../../../references/round-time-contract.md)) when a comment will be posted, and the popups. The
+   reviewer must return CLEAN before step 4.
+2. **Decisions popup** — only when questions are queued. One `AskUserQuestion`, batched 4 at a time:
+   the scope plan from Phase C, each queued E3 non-PASS (A/B/C), missing design, and cross-ticket
+   conflicts (*Investigate further* / *Close out now*).
+3. **Apply the answers** — re-render the draft and re-run the guard.
+4. **Approval popup** — one approval for the whole bundle, naming every concrete action: the comment
+   (target ticket + endpoint), each external result update (destination + rows), and any notify
+   (channel + resolved recipient).
+5. **Execute** — Phase G4–G7 with no second approval.
+
+No queued decisions → step 2 is skipped and the round has a single human touch.
+Write `references/helix-handoff-{KEY}.md` at the close of every round with the fingerprints
+([§10](../../../references/round-time-contract.md)).
 
 ---
 
 ## Phase G — Optional: update results elsewhere
 
-### G1 — Ask (single question)
+G1–G3 collapse into the F5 end-of-round bundle
+([round-time-contract.md §2–§3](../../../references/round-time-contract.md)) — no separate questions
+and no separate confirm.
 
-> **Do you want me to update the test results somewhere else** (Jira comment, Google Sheet, Confluence table, CSV file, etc.)?
+### G1 — Destination wanted? (from the guide)
 
-- **No** / **skip** / **done** → Reply: *Testing ticket session complete.* **Stop here.**
-- **Yes** → Go to G2.
+Whether results go somewhere else (Jira comment, Google Sheet, Confluence table, CSV file, etc.) is read
+from the workspace guide's results destination. If the guide has no entry, ask **once** — in the
+Phase A grouped intake or the F5 decisions popup — and save the answer to the guide immediately.
 
-### G2 — Collect destination details
+- **None** → Reply: *Testing ticket session complete.* **Stop here.**
+- **A destination** → G2.
 
-Ask the user to provide:
+### G2 — Destination details (from the guide)
+
+Read from the guide; ask once and save immediately only for what is missing:
 
 1. **Link** — full URL to the destination (Jira issue, Sheet, Confluence page, file path in repo if applicable).
 2. **Columns** — which columns or fields to update (names or letters, e.g. `Result`, `Tester`, `Date`, `Notes`).
 3. **Formats** — per-column rules if specific (e.g. `Result` = `PASSED`/`FAILED` only; `Date` = `YYYY-MM-DD`; language; no bare ticket keys in Jira wiki).
 
-If anything is unclear, ask follow-ups **before** accessing the destination.
+### G3 — Update plan (a line item in the single approval popup)
 
-### G3 — Confirm update plan (hard gate)
+The update plan is listed in the F5 approval popup next to every other action — not a separate gate:
 
 ```text
-━━━ Confirm result update ━━━
-Destination: {link}
-Columns:
-  - {Column A}: {format rule}
-  - {Column B}: {format rule}
-Rows to update: {count} — mapped from scenarios 1..N
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Reply **confirm** to apply updates, or correct the mapping.
+Result update — destination: {link}
+  Columns: {Column A}: {format rule} · {Column B}: {format rule}
+  Rows to update: {count} — mapped from scenarios 1..N
 ```
 
-**Wait for explicit confirm.**
+Approval of that popup covers G4–G7; there is no second approval.
 
 ### G4 — Access and read first
 
 - Open or fetch the destination (browser, API, MCP, or file read).
 - **Match existing layout** — headers, row order, language, status vocabulary already in use.
 - For Google Sheets: read headers and sample rows before writing. **Detect the result columns from the header row — never assume fixed column letters**, and confirm the tab name and tab id refer to the same tab.
-- For Jira comments: draft in chat; use v2 wiki vs v3 ADF per project guide if present. **The chat draft's markdown is not the posted body** — on the v2 path rewrite it as wiki markup and run both gates in [jira-wiki-vs-markdown.md](../../../references/jira-wiki-vs-markdown.md); markdown posts with HTTP 200 and renders wrong.
+- For Jira comments: draft in chat; use v2 wiki vs v3 ADF per project guide if present. **The chat draft's markdown is not the posted body** — on the v2 path rewrite it as wiki markup and run both gates in [jira-wiki-vs-markdown.md](../../../references/jira-wiki-vs-markdown.md); markdown posts with HTTP 200 and renders wrong. The render and media check on the **final** body (render locally in the guide's format; every referenced image/clip resolves to an existing attachment) runs in F5 **before** the approval popup — a failure blocks the popup until fixed ([round-time-contract.md §6](../../../references/round-time-contract.md)).
 - If access fails (auth, 403, VPN) → report exactly what failed; **do not claim success.**
 
 **Claim the scope (layer 1 — hard gate).** Snapshot the destination, then classify every target
@@ -617,7 +686,7 @@ A follow-up question is a **defect in the write-up**, not a normal step
 
 ## QA closing (mandatory before session end)
 
-Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific. **Run its [cross-ticket conflict check](../../../references/qa-closing-shared.md#cross-ticket-conflict-check) first** — the session is not done until the user has answered it:
+Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific. **Run its [cross-ticket conflict check](../../../references/qa-closing-shared.md#cross-ticket-conflict-check) first** — apply its unattended default (step 5) and queue *Investigate further* / *Close out now* into the F5 end decisions popup, before the approval popup ([round-time-contract.md §3](../../../references/round-time-contract.md)); the session is not done until the user has answered it there:
 
 - [ ] F1–F4 posted before any external update.
 - [ ] **AC/EC coverage gate (7-layer) PASSED — `enumerated AC*/EC* ids == rows carrying a verdict + evidence (or explicit BLOCKED)`** ([qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *AC/EC & bug-detail coverage*): every Acceptance Criteria / Expected-Condition line was enumerated char-exact in Phase B, mapped 1:1 to a scenario, executed on its real surface, and appears as its **own row** in F2 — none parked only in a remark/Notes/chat, no case PASSED on partial coverage; a differing item is a FAILED/PWMI row (per matrix), an unreached item a BLOCKED row (a coverage gap, not a product FAILED) — neither a footnote. Fail closed: any id unrun/unrowed/verdict-less ⇒ story not complete.
@@ -628,15 +697,16 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] **Pre-delivery completeness gate (7-layer) PASSED before ANY external write — Phase G, the Jira post, the sheet, the notify, or telling the requester "done".** Per [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *Pre-delivery completeness*: scope re-counted from the ticket **this round** (not from the earlier plan) · role × case matrix full with no inherited cells · **every** evidence file opened this round (not sampled) and shown to contain its ER · every claim points at a row · verdict↔bug↔priority↔remark agree · nothing recorded only in prose/หมายเหตุ/chat · **the 4-question adversarial pass answered with a pointer for every question** (judge the deliverable as a second QA/another AI told to "find where this was cut short") · handover states cases run/total, roles covered/named, files verified, and every BLOCKED with its reason. Fail closed: any layer red ⇒ nothing is delivered until it is fixed and the gate re-run.
 - [ ] Every FAILED/BLOCKED defect has its repro matrix (one row per entry point, untried paths `not tested`), expected-line-verbatim vs actual, **root cause**, and — where the deviation is from the written expectation — resolution options with a named owner.
 - [ ] **E2 root-cause investigation ran for every FAILED and BLOCKED scenario** (during the run, not in Phase F): debugging skill invoked and named, 8-boundary sweep complete with `not checked` written where it applies, hypotheses ruled out recorded, cause labelled `Confirmed` / `Suspected` (+ the confirming check) / `Unknown — not investigated` (+ what is needed).
-- [ ] **E3 challenge gate ran for every non-PASSED scenario** ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)): expected side re-verified char-exact against an authoritative source **including related/linked tickets' AC/EC**; a wrong/superseded expected became a TC-adjustment (not a defect), an unclear/hedged spec became BLOCKED + a who-to-ask remark (not a bug), and every surviving non-PASS was surfaced to the user in chat (recommendation A/B/C) before it was recorded.
+- [ ] **E3 challenge gate ran for every non-PASSED scenario** ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)): expected side re-verified char-exact against an authoritative source **including related/linked tickets' AC/EC**; a wrong/superseded expected became a TC-adjustment (not a defect), an unclear/hedged spec became BLOCKED + a who-to-ask remark (not a bug), and every surviving non-PASS was queued (recommendation A/B/C) for the end decisions popup — no mid-run wait.
 - [ ] **F4 reader gate + cause gate passed before Phase G**; every scope word traces to a matrix row; every cause sentence cites an artifact and carries a label; no hedge word used as a cause; no unresolved contradiction between your own observations.
 - [ ] If Phase G ran: destination re-read matches agreed column formats.
 - [ ] Close-out includes `Verified:` (or partial-failure honesty per Phase F).
 - [ ] Phase G6 fix-verify completed when Phase G ran.
-- [ ] **Cross-ticket conflict check ran** ([qa-closing-shared.md](../../../references/qa-closing-shared.md#cross-ticket-conflict-check)): the whole project searched with every layer's query + hit count recorded, candidates opened (fields + every comment), the table posted in chat with a clickable link per ticket, and the user answered *Investigate further* / *Close out now* before the session was called done.
+- [ ] **Cross-ticket conflict check ran** ([qa-closing-shared.md](../../../references/qa-closing-shared.md#cross-ticket-conflict-check)): the whole project searched with every layer's query + hit count recorded, candidates opened (fields + every comment), the table posted in chat with a clickable link per ticket, and the user answered *Investigate further* / *Close out now* in the end decisions popup (before the approval popup) before the session was called done.
+- [ ] **Round-time contract** ([round-time-contract.md](../../../references/round-time-contract.md)): no mid-run waits; one approval popup listed every concrete action; the report ended with the measured `Round time:` line; `references/helix-handoff-{KEY}.md` written with fingerprints.
 - [ ] **Fresh-eyes:** re-read F2 before Phase G when **> 15 scenarios**.
 - [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (Testing ticket section).
-- [ ] Suggest **create-bug** if F3 has defects; handoff if long run.
+- [ ] Suggest **create-bug** if F3 has defects; handoff file written every round (§10).
 
 ---
 
@@ -660,7 +730,8 @@ See [skill-routing.md](../../../references/skill-routing.md) — **Handoffs** af
 | [playwright-discipline.md](references/playwright-discipline.md) | Playwright rules |
 | [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) | Default parallel execution — lanes, one account per lane, merge |
 | [root-cause-investigation.md](../../../references/root-cause-investigation.md) | E2 — mandatory cause investigation, evidence-only |
-| [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md) | E3 — challenge every non-PASS: re-verify expected vs related tickets' AC/EC, surface to user |
+| [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md) | E3 — challenge every non-PASS: re-verify expected vs related tickets' AC/EC, default + queue for the end decisions popup |
+| [round-time-contract.md](../../../references/round-time-contract.md) | 15-min AGENT+EXEC round · no mid-run waits · end-of-round order and single approval · fan-out · login reuse · render/media check · Figma dedupe · fingerprints |
 | [figma-design-comparison.md](../../../references/figma-design-comparison.md) | Phase B · E0 — compare every screen against its design node; no design ⇒ report back to the assigner, visual points BLOCKED |
 | [customer-escape-prevention.md](../../../references/customer-escape-prevention.md) | Depth gates from the shipped-defect review — surface sweep, ER quality, widths measured, fixtures, build id, evidence on passed rows |
 | [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) | AC/EC 7-layer coverage gate (every AC/EC is a row, not a remark) · capture scope (a set per named role · every step on screen · scroll to the target) · story 5-step evidence gate · MP4 7-layer gate · pre-delivery 7-layer gate before handing results over |
@@ -677,12 +748,15 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | Rule | Because |
 |------|---------|
 | MUST NOT open Jira/GitHub bugs in this workflow | Use create-bug-workflow |
-| MUST run the confirmed plan in parallel lanes, one leased account per lane, unless a [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §4 predicate is named | Shortest run time with no shared login — a shared account ends sessions and shares state, producing false defects |
+| MUST run the plan in parallel lanes whenever it has 2+ units, one leased account per lane, lane count = min(units, leasable accounts) with no fixed cap, unless a [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §4 predicate is named | Shortest run time with no shared login — a shared account ends sessions and shares state, producing false defects |
 | MUST enumerate **every** AC/EC line char-exact in Phase B, map each id 1:1 to a scenario, and reconcile `enumerated ids == rowed-and-verdicted rows` before Phase F ends (7-layer coverage gate in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md)) | The run's scope is the ticket's AC/EC contract; an unenumerated or unmapped AC is silently untested |
 | MUST record **every** AC/EC result as its own row in F2 — NEVER park an untested/failing AC/EC point in a remark, Notes cell, note under the table, or chat while the case reads PASSED | A card was passed on partial AC/EC coverage with the gap footnoted in a remark; coverage is proven by rows, not prose beside them |
 | MUST NOT mark a case PASSED on partial coverage — an AC/EC id **observed to differ** is a FAILED/PWMI row (severity per the matrix); an **unrun/unreachable** id is a BLOCKED row (a coverage gap, never a product FAILED); neither is a PASS and neither is dropped | "Works except one point" hidden as a caveat reads as a clean pass to everyone downstream; and calling a merely-untested item FAILED contradicts "a coverage gap is not a defect" |
 | MUST NOT report "100%/complete", proceed to Phase G, or close the session while any AC/EC id lacks a rowed verdict (coverage gate fail-closed) | Partial AC/EC coverage is a stop condition; a green summary over an incomplete table looks finished but is not |
-| MUST NOT run Playwright before Phase C confirm | Wrong scope/credentials |
+| MUST print the Phase C plan before Playwright, then run without waiting; the plan rides in the end decisions popup ([round-time-contract.md §2](../../../references/round-time-contract.md)) | The user still sees and can correct scope/credentials, without a mid-run wait |
+| NEVER wait mid-run for a user answer — apply the documented default and queue the question for the end decisions popup ([§2](../../../references/round-time-contract.md)) | Human wait blocks the round; the default keeps the run moving and the question still reaches the user |
+| MUST execute every external write (comment, result update, notify) under **one** approval popup that names each concrete action, with no second approval ([§3](../../../references/round-time-contract.md)) | One human touch per round; every action is still approved by name |
+| MUST end every round report with the measured `Round time: AGENT+EXEC {n} min · human wait {h} min · overrun {…} min` line — never estimated ([§1](../../../references/round-time-contract.md)) | The 15-minute cap is only real if it is measured |
 | MUST drive each scenario through its real surface (UI scenario → Playwright through the UI, every step); API only for test-data/precondition prep; an API scenario is driven at the API | [test-through-real-steps.md](../../../references/test-through-real-steps.md) — an API shortcut for a UI action tests the wrong layer and can pass while the screen is broken |
 | MUST attach complete evidence to every case **and every role the case names** before the story is "done" — a **whole-flow MP4 + one screenshot per Expected-Result item, per role**, for each non-BLOCKED story case (retest-bug re-verify = MP4 per case + screenshot on text-verification cases, attached to Jira) — and pass the 5-step gate in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) | A story reported "100% passed" while cases have no MP4 (or a minor-issue verdict with no bug) looks finished but is unverified; the pass-rate counts minor-issue as passed and hides the gap |
 | MUST judge defect Priority/Severity ONLY from the [Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md) — never invent a severity notion; PASSED WITH MINOR ISSUE needs a Lowest/Low/Medium bug, FAILED needs High/Highest | Guessing severity produces inconsistent verdicts across testers and tickets |
@@ -693,7 +767,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST resolve any disagreement between your own observations with one clean re-run before writing F2/F3; unresolvable → BLOCKED, not FAILED | Resolving it in favour of the result you already wrote is how a wrong repro path ships |
 | MUST give every FAILED/BLOCKED defect the F3 blocks — repro matrix, expected line quoted verbatim vs actual, **root cause**, resolution options with a named owner | These are the questions the reader asks next; answering them in chat leaves the record incomplete |
 | MUST run the E2 root-cause investigation for EVERY FAILED and BLOCKED scenario, during the run, starting by invoking `superpowers:systematic-debugging` (Phases 1–3) and naming it in the write-up | The session state is open only during the run; improvised reasoning afterwards is where guessing enters |
-| MUST run the E3 challenge gate for EVERY non-PASSED scenario — re-verify the expected side char-exact against an authoritative source **including related/linked tickets' AC/EC**, then surface expected-vs-observed + the AC/EC finding + a recommendation (adjust TC / re-test / confirm defect) to the user in chat before recording the verdict or listing it as a defect ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)) | A non-PASS against a stale, superseded, or misread expected is a phantom defect; the expected side is the one that must be earned, and adjusting a spec or re-testing is the user's call (PM-006) |
+| MUST run the E3 challenge gate for EVERY non-PASSED scenario — re-verify the expected side char-exact against an authoritative source **including related/linked tickets' AC/EC**, then apply the documented default and queue expected-vs-observed + the AC/EC finding + a recommendation (adjust TC / re-test / confirm defect) for the end decisions popup before listing it as a defect ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)) | A non-PASS against a stale, superseded, or misread expected is a phantom defect; the expected side is the one that must be earned, and adjusting a spec or re-testing is the user's call (PM-006) |
 | MUST NOT file / list a defect whose expected turned out wrong, superseded, or unclear — that is a test-case adjustment or a BLOCKED question, never a defect; unattended bots resolve it as BLOCKED + remark, never a phantom bug and never a halt | Filing the app against an unverified expected is exactly how a phantom bug ships (PM-006) |
 | MUST complete the 8-boundary sweep and write `not checked` where a boundary was not reached | A boundary not captured during the run cannot be reconstructed later — reconstruction is fabrication |
 | MUST attach a captured artifact to every cause statement and label it `Confirmed` / `Suspected` / `Unknown — not investigated`, carrying the label into every destination the sentence is copied to | A `Suspected` cause read as `Confirmed` sends a developer to the wrong layer |
@@ -718,4 +792,4 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST report anything wrong observed during a run even when no AC asked for it | "Badges render correctly" was written while the badge-overflow defect was on screen |
 | MUST preflight the authenticated session (see the user in the session response) and confirm a toggle's starting state before pressing it | A dead session reported "no defects" for a whole set; a two-way button measured the opposite direction |
 | MUST open the trace (changelog / comments / logs) before claiming an action never happened | An empty tracking field was read as "never tested" and became a wrong number-one root cause |
-| MUST run the cross-ticket conflict check ([qa-closing-shared.md](../../../references/qa-closing-shared.md#cross-ticket-conflict-check)) before calling the session done — whole project, every type and status (Done included), a chat table with a clickable link per ticket, then ask *Investigate further* / *Close out now* and wait | Another ticket in the same project can contradict, supersede, or duplicate what was just verified; a check limited to the tested ticket never sees it |
+| MUST run the cross-ticket conflict check ([qa-closing-shared.md](../../../references/qa-closing-shared.md#cross-ticket-conflict-check)) before calling the session done — whole project, every type and status (Done included), a chat table with a clickable link per ticket, then queue *Investigate further* / *Close out now* into the end decisions popup before the approval popup | Another ticket in the same project can contradict, supersede, or duplicate what was just verified; a check limited to the tested ticket never sees it |

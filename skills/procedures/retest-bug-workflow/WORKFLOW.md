@@ -88,6 +88,13 @@ use fixtures big enough to fail (§5); note the **build id** the fix landed in (
 **passed** rows too (§7); unspecified behaviour is a question, never a verdict (§8); preflight the
 session before believing any result (§9).
 
+**Round-time contract.** Every retest round follows
+[round-time-contract.md](../../../references/round-time-contract.md): a **15-minute cap on AGENT + EXEC
+time** per round, human wait reported on its own line and never counted, and a **soft cap** — at about
+12 minutes print one line and finish the round; never cut cases to stay under it (§1). No step waits
+mid-run: decisions are queued for the end-of-round popups at Step 6d (§2–§3). The round report (Step 8e)
+**ends with the `Round time:` line**, measured from session timestamps, never estimated (§1).
+
 Use plain chat for URLs/credentials; AskUserQuestion only for choices (e.g. approve comment).
 
 ## Refusal-first (precondition gate)
@@ -127,6 +134,9 @@ Ask **one question at a time** using `references/project-config-template.md` sec
 - Optional error docs, transitions, gotchas
 
 Write `references/{project}-retest-guide.md` in the user's repo and tell them where it was saved.
+Each answered value is saved to the guide **immediately** — no second "save this?" question; a value
+missing later in a run is asked once and saved the same way. Never store production passwords in a
+committed guide ([round-time-contract.md](../../../references/round-time-contract.md) §2).
 
 ### 1c. Use config only
 
@@ -135,6 +145,13 @@ All URLs, credentials, transition names, and Swagger URLs come from config — *
 ---
 
 ## Step 2 — Fetch Jira ticket
+
+**Round N (a ticket retested before) — fingerprint check first.** Read
+`references/helix-handoff-{KEY}.md` and fetch each source's fingerprint fresh: ticket `updated` +
+comment count · Figma `lastModified` · Swagger spec hash · build version where exposed. A matching
+fingerprint skips the full re-read of that source; a changed or missing one re-reads that source only
+([round-time-contract.md](../../../references/round-time-contract.md) §10). The bug's contract is
+still re-counted fresh at Step 2c.
 
 Use Atlassian integration (`getJiraIssue` or equivalent):
 
@@ -195,6 +212,9 @@ severity/priority notion. Cheat-sheet (full matrix + hard rule at the link):
 ## Step 2b — Fix claim vs verification plan (mandatory)
 
 Follow [retest-fix-intake.md](../../../references/retest-fix-intake.md). Post the retest plan block before executing tests.
+**Show the plan, then run** — print it and start execution without waiting for an approval; the plan
+rides again in the Step 6d decisions popup, where a correction starts a new round
+([round-time-contract.md](../../../references/round-time-contract.md) §2).
 
 ---
 
@@ -222,7 +242,16 @@ each. Build it here, before testing, so the run has a defined scope instead of a
    multi-role · one screen's widths/states · chained precondition · barrier for anything every lane
    sees), and lease **one account per lane**. Parallel is the default — serial needs a named §4
    predicate (e.g. ≤ 2 cases, or one account in total).
-6. **Show the case list and the lane plan to the user with the Step 2b plan block.** It is the scope they are approving.
+6. **Show the case list and the lane plan to the user with the Step 2b plan block, then run** — no
+   approval wait. The plan is re-shown in the Step 6d decisions popup, where the user can correct it;
+   a correction there starts a new round ([round-time-contract.md](../../../references/round-time-contract.md) §2).
+
+**Round N — scoped round** ([round-time-contract.md](../../../references/round-time-contract.md) §11).
+When the ticket was retested before, the agent **proposes** the scope from the fix description: re-run
+the cases the fix touches plus every case that failed before, and list every other case under
+`Out of scope this round`. The user confirms or corrects that scope in the Step 6d decisions popup.
+The case list is still **re-counted against the bug fresh** (Step 2 enumeration), and PASSED evidence
+from an earlier round is **never carried forward** — every in-scope case is run and captured again.
 
 The same list, with each case's outcome, goes into the `Case (Role)` cell of every row it covers in the Step 6 comment's single table.
 
@@ -243,6 +272,9 @@ Follow [figma-design-comparison.md](../../../references/figma-design-comparison.
 - **Unattended / bot mode:** send the same request to the triggering channel with the project's
   @mention, mark the visual points BLOCKED + remark, and carry on — never halt the whole retest, never
   guess.
+- **Attended runs apply the same default** — mark the visual points BLOCKED + remark and carry on, and
+  **queue the design question** for the Step 6d decisions popup instead of waiting for a reply mid-run
+  ([round-time-contract.md](../../../references/round-time-contract.md) §2).
 
 ---
 
@@ -273,13 +305,20 @@ still open** — a screen not compared while it was open cannot be compared late
 not captured during the run cannot be reconstructed afterwards. 4e–4f are the API legs. 4g–4i are
 the gates that follow a case that did not pass. Nothing in 4d is deferred to drafting time.
 
-**Parallel lanes (default).** Dispatch the approved lanes at once — after any parent pre-login for
+**Parallel lanes (default).** Dispatch the planned lanes at once — after any parent pre-login for
 accounts sharing one OTP inbox (§3), one subagent per lane, all in a single message, each with the lane prompt from
 [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §5. Each lane runs 4a–4h on its
 own cases with **only its leased account** and records the authenticated user id at login; barrier
 cases run alone after the lanes return. The parent then runs the §6 merge (isolation · coverage ·
 evidence) and does 4i on every non-PASS itself before Step 5. Lanes never post, transition, assign,
 or notify.
+
+**Fan-out rule** ([round-time-contract.md](../../../references/round-time-contract.md) §4): fan out
+whenever the round has **2 or more units**; a barrier unit still runs alone. Lane count =
+min(units, accounts leasable without collision) — **no fixed cap** for this flow. Each lane **owns its
+unit end to end**: execution, the 4d Figma compare, recording during execution (Step 5), the 4h
+root-cause investigation and the repro shape. The main thread only merges into one report and one
+bundle. Execution stays agent-driven step by step — never replaced by a scripted run.
 
 ### 4a. Environment
 
@@ -288,6 +327,12 @@ From config: base URL, portal, login URL for the env on the ticket.
 ### 4b. Login
 
 Use browser automation: navigate to login URL, fill credentials from config (or env vars the user provides). OTP/SSO per config. If blocked → ask user for a bearer token.
+
+**Login reuse** ([round-time-contract.md](../../../references/round-time-contract.md) §5): first load
+the saved login file `{auth dir from guide}/{env}-{role}-{alias}.json` — named by account, not by lane,
+gitignored — and call the session endpoint **before any result counts**; it must return the expected
+user id. On 401/403, a redirect to login, or a different user → log in fresh as above and overwrite the
+file. One account belongs to one lane, never shared across concurrent sessions.
 
 ### 4c. Test data
 
@@ -308,6 +353,12 @@ step. See [test-through-real-steps.md](../../../references/test-through-real-ste
 ### 4d. Design comparison + depth sweep (mandatory for every UI case, PASSED ones included)
 
 Run this **as each case is executed**, not while drafting.
+
+**Dedupe, never thin** ([round-time-contract.md](../../../references/round-time-contract.md) §7): one
+compare per **screen × width** per round — cases landing on the same screen share one fresh app capture
+and one design read. The design-side export (node screenshot + metadata) is cached keyed by the Figma
+file's `lastModified` and re-fetched only when it changes; the app-side capture is always fresh. The
+compare itself stays full — all five points below.
 
 1. **Compare the captured screen against its design node** on all five points —
    elements present · text char-exact · order/position · the states the node defines · no overflow and
@@ -397,13 +448,17 @@ the draft exists.** A non-PASS is a hypothesis until it survives this:
    - Expected wrong / superseded → **not a FAILED** → recommend adjusting the expected/TC, cite the ticket.
    - Expected unclear / conflicting / hedged → **BLOCKED + a remark naming who to ask**, never a FAILED.
    - Expected confirmed authoritative and the app still differs → it survived; carry it to Step 6.
-3. **Surface to the user in chat and let them steer** — post `expected (+source) · observed · AC/EC
-   finding · recommendation (A adjust the expected/TC · B re-test · C confirm defect)`. For A/B **wait for
-   the user's decision**; for a clearly-confirmed C you may continue, but never silently. Never edit the
-   ticket's expected-result field to match the app on your own — QA reports the conflict and names the owner.
+3. **Surface to the user and let them steer — at the end, not mid-run** — record `expected (+source) ·
+   observed · AC/EC finding · recommendation (A adjust the expected/TC · B re-test · C confirm defect)`,
+   apply the default below, and **queue it for the Step 6d decisions popup** instead of waiting
+   ([round-time-contract.md](../../../references/round-time-contract.md) §2); never silently. Picking
+   **B re-test** there starts a new round (§1). Never edit the ticket's expected-result field to match
+   the app on your own — QA reports the conflict and names the owner.
 
-**Unattended / bot mode:** resolve the gate instead of asking — expected wrong/unclear → BLOCKED +
-remark (no bug, no halt); test-side cause → fix and re-run; confirmed defect → draft the comment as normal.
+**Default while the question is queued (attended and unattended / bot mode alike):** resolve the gate
+instead of waiting — expected wrong/unclear → BLOCKED + remark (no bug, no halt); test-side cause → fix
+and re-run; confirmed defect → draft the comment as normal. Unattended runs have no popup: the queued
+items go into the run's report.
 
 ---
 
@@ -419,6 +474,11 @@ remark (no bug, no halt); test-side cause → fix and re-run; confirmed defect �
 ### FE bugs
 
 **Whole-flow MP4 per case — same capture format as the story-testing flow — attached to the Jira issue and referenced in the comment (NOT Google Drive).**
+
+**Record during execution** ([round-time-contract.md](../../../references/round-time-contract.md) §8):
+the lane run that executes the case **is** the recording — there is no separate capture pass after the
+run. The 7 layers below are unchanged: every clip still clears all 7, and a red layer still means
+re-capture and re-run all 7.
 
 - **Record a whole-flow MP4 for every executed case, and for every role the case or the bug detail names** (drive the case's real steps end-to-end, same capture the story-testing flow uses). 5 roles named = 5 clips, named `{KEY}_TC_{nn}_{ROLE}.mp4`; a role you could not exercise is a **BLOCKED row naming that role and the blocker**, never "same as the other role". The MP4 is the retest evidence — it replaces the former screenshot-only rule. Record with the QA toolkit's `capture/qa_recorder.js` (never Playwright `recordVideo`) — it writes the provenance manifest and runs `capture/verify_video.py` on the clip before it returns. Every clip MUST clear the **[MP4 7-layer quality + correctness gate](../../../references/qa-evidence-gates.md)** (the capture spec — 1920×1080, dsf 2, CRF 18 preset slow, yuv420p limited-range, steady picture, provenance manifest; **never Playwright `recordVideo`**, whose 1 Mbps VP8 cap makes the picture pump and whose fixed-grid padding makes it judder; the flow reaches the stated target — "scroll to menu XX" must actually arrive, never cut early; the Expected Result is visible on screen) — fail-closed: a blurry / skipped / early-cut clip = re-capture, the case is not done.
 - **Text-verification case → screenshot AS WELL as the MP4.** When a case verifies exact wording / label / message / count / displayed values (anything judged char-exact against the bug's Expected Result), also embed a still screenshot inline so the exact text is legible in a frame — the row then carries **both** the MP4 link and the `!png!` image. A non-text case carries the MP4 only.
@@ -458,7 +518,8 @@ never a row quietly dropped.
 
 ## Step 6 — Draft Jira comment
 
-**Do not post until the user approves** (unless they explicitly waive approval).
+**Do not post until the user approves** (unless they explicitly waive approval) — through the single
+Step 6d approval popup.
 
 **Draft in the syntax of the endpoint chosen at Step 3 — never in markdown "and convert later".**
 Markdown and Jira wiki markup are different languages that share characters, so a markdown draft
@@ -605,7 +666,8 @@ node tools/retest-guard/retest_guard.js --manifest run.json --out body.txt --evi
 
 **Scope is a field, not a sentence.** `"scope": {"mode":"FULL"}` for a full retest (the comment then
 prints no Scope line at all);
-`{"mode":"CASES","cases":["TC_03","TC_07"]}` when the user asked for particular cases. The scoped
+`{"mode":"CASES","cases":["TC_03","TC_07"]}` when the user asked for particular cases, or for a
+round-N scoped round the agent proposed (Step 2c, confirmed in the Step 6d popup). The scoped
 form narrows the coverage denominator to what those cases cover, prints the verdict as
 `PASSED (scoped: TC_03, TC_07)`, and lists every item it did **not** verify in an `Out of scope this
 round:` line — so a partial retest is honest instead of either breaking the coverage gate or quietly
@@ -665,7 +727,8 @@ hedge.
 
 **Table headers:** every column MUST carry an explicit, all-English header. The single table's header row is fixed and MUST read exactly `No.` · `ER` (Task: `AC`) · `Case (Role)` · `Expected Result` · `Actual Result` · `Evidence` · `Status` — `Expected Result` / `Actual Result` mirror the ticket's own field names (**Expected Result** / **Actual Result**) so a reader lines the comment up against the ticket without translating, and `Evidence` (between `Actual Result` and `Status`) holds each row's screenshot in-cell. **API bugs drop the `Evidence` column** (`No.` · `ER` · `Case (Role)` · `Expected Result` · `Actual Result` · `Status`) and carry cURL/response in a section below. Never `Expected result item`, never a bare `Actual`. A bare `#` for the row-number column renders as a **blank** header cell in Jira. **Headers MUST be bold, in the syntax of the target endpoint** — v2 wiki `||*No.*||*Expected Result*||…` (single asterisk, `||` delimiters, **no divider row**); markdown/ADF `| **No.** | **Expected Result** | …` followed by a `|---|` divider. A `**No.**` in a v2 body renders as literal `*No.*`, and a `|---|` divider row in a v2 body renders as a visible row of dashes.
 
-Show the full draft in chat and wait.
+Show the full draft in chat; the user's approval is the single Step 6d approval popup — no separate
+wait here.
 
 ---
 
@@ -675,8 +738,10 @@ Show the full draft in chat and wait.
 [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) sets the real bar itself: *a second
 QA — or another agent given the ticket, the deliverable and nothing else*. Make that literal.
 
-1. **Dispatch a reviewer subagent** (Agent/Task tool) with **only**: the ticket, the rendered body,
-   and the evidence files. Not the session, not the reasoning, not what you meant.
+1. **Dispatch a reviewer subagent in the background** (Agent/Task tool) with **only**: the ticket, the
+   rendered body, and the evidence files. Not the session, not the reasoning, not what you meant. While
+   it runs, build the Step 6d bundle in parallel; the reviewer must return **CLEAN before the approval
+   popup** ([round-time-contract.md](../../../references/round-time-contract.md) §3 step 1).
 2. **It answers the four adversarial questions** from the pre-delivery gate, each **by pointing at a
    row or a file** — the least-certain row, the shortest clip, the hardest-to-read value, and what
    was not tested and where the deliverable says so.
@@ -691,6 +756,29 @@ QA — or another agent given the ticket, the deliverable and nothing else*. Mak
 **Unattended / bot mode:** run one reviewer round, fold its findings in, and record any it could not
 resolve as BLOCKED rows with reasons — never halt the queue, never post over an unanswered finding.
 
+### 6d. End of round — decisions popup, then one approval bundle (mandatory, fixed order)
+
+Follow [round-time-contract.md](../../../references/round-time-contract.md) §3 in this order:
+
+1. **Reviewer and bundle in parallel** — the 6c reviewer runs in the background while you build the
+   bundle: run the cross-ticket conflict check (QA closing) and queue its result, then run the
+   **render + media check** on the **final** body (§6) — render the body locally in the format locked
+   at Step 3 (v2 wiki or ADF) and confirm tables, line breaks and formatting; resolve every referenced
+   image or clip (the attachment exists, its id or filename matches the reference). A render or media
+   failure blocks the approval popup until fixed. The reviewer must return CLEAN before item 4.
+2. **Decisions popup — only when something is queued.** One `AskUserQuestion`, batched 4 questions at a
+   time: the scope plan (Step 2b/2c, and the round-N scope), each queued non-PASS (A/B/C, Step 4i),
+   each missing design (Step 2d), and each cross-ticket conflict (*Investigate further* / *Close out
+   now*). Nothing queued → skip this item; the round then has a single human touch.
+3. **Apply the answers** — re-render the draft and re-run the Step 6·0 guard (and the §6 check). A
+   scope correction or **B re-test** starts a new round.
+4. **One approval popup for the whole bundle**, listing every concrete action by name: the comment
+   (target ticket + endpoint) · each transition (ticket, from → to, Step 8a) · each assign (ticket +
+   person, Step 8c) · each linked story to unblock (Step 8d) · each notify (channel + resolved
+   recipient, Step 9) · each external result update (destination + rows).
+5. **Execute** — post (Step 7), then the 7d post-publish re-read, then transition, assign, unblock,
+   notify and update results under that same approval. **No second approval.**
+
 ---
 
 ## Step 7 — Post comment
@@ -701,6 +789,7 @@ resolve as BLOCKED rows with reasons — never halt the queue, never post over a
 - [ ] Issue keys in body wrapped or avoided if auto-link is unwanted
 - [ ] ASCII-safe JS if using JXA (`/[^\x00-\x7F]/.test(js)` false)
 - [ ] v2 vs v3 endpoint matches format
+- [ ] Step 6d render + media check green on the **final** body, and the post is covered by the Step 6d approval bundle ([round-time-contract.md](../../../references/round-time-contract.md) §3, §6)
 
 #### Syntax gate — scan the body string before the request (mandatory)
 
@@ -773,10 +862,10 @@ MUST NOT transition, assign, or report "done" until 7d passes — because stakeh
 
 ## QA closing (mandatory before "done")
 
-Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific. **Run its [cross-ticket conflict check](../../../references/qa-closing-shared.md#cross-ticket-conflict-check) first** — a conflict found there can change the verdict, so no Step 8 transition and no Step 9 notify goes out until the user has answered it:
+Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific. **Run its [cross-ticket conflict check](../../../references/qa-closing-shared.md#cross-ticket-conflict-check) before the Step 6d approval popup** — a conflict found there can change the verdict, so its table is reported in chat and its *Investigate further* / *Close out now* question is **queued into the Step 6d decisions popup** rather than asked after posting ([round-time-contract.md](../../../references/round-time-contract.md) §2–§3); apply its unattended default (step 5) meanwhile. No post, Step 8 transition, or Step 9 notify goes out until that answer is in:
 
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌** (not ambiguous text).
-- [ ] **`node tools/retest-guard/retest_guard.js` exited 0** for this round — on the manifest before drafting (Step 6·0) and on the posted body before the transition (Step 8·0). Exit 2 (could not run) is not a pass, and the guard's clean result covers the mechanical rules only.
+- [ ] **`node tools/retest-guard/retest_guard.js` exited 0** for this round — on the manifest before drafting (Step 6·0) and on the posted body before the transition (Step 8·0; skipped only when a fresh hash compare shows the posted body byte-identical to the guarded draft). Exit 2 (could not run) is not a pass, and the guard's clean result covers the mechanical rules only.
 - [ ] **Step 6c independent reviewer round returned CLEAN**, every round was reported to the user as it finished, and the reviewer's findings were verified rather than taken on trust.
 - [ ] **Scope is stated only when partial** — a full round prints no Scope line; a partial one prints `CASES: <ids>` with the verdict reading `PASSED (scoped: …)` and an `Out of scope this round:` line naming every item this round did not verify.
 - [ ] **AC/EC & bug-detail coverage gate (7-layer) PASSED — `enumerated Step 2 ER* ids == rows carrying a status + evidence (or explicit BLOCKED)`** ([qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *AC/EC & bug-detail coverage*): every Expected-Result item + bug-detail bullet was enumerated char-exact at Step 2, mapped 1:1 to a verdict-table row, verified on its real surface, and appears as its **own row** — none parked only in a remark/note/chat, no PASSED over partial coverage, a differing item is a FAILED/BLOCKED row not a footnote. Fail closed: any item unverified/unrowed/status-less ⇒ retest not complete.
@@ -792,7 +881,8 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] API cases: full cURL + response per row (no "same as above").
 - [ ] Jira issue re-opened after post: comment visible, not truncated.
 - [ ] Step 7d fix-verify completed.
-- [ ] **Cross-ticket conflict check ran before Step 8** ([qa-closing-shared.md](../../../references/qa-closing-shared.md#cross-ticket-conflict-check)): the whole project searched with every layer's query + hit count recorded, candidates opened (fields + every comment), the table posted in chat with a clickable link per ticket, and the user answered *Investigate further* / *Close out now* before any transition or notify.
+- [ ] **Cross-ticket conflict check ran before the Step 6d approval popup** ([qa-closing-shared.md](../../../references/qa-closing-shared.md#cross-ticket-conflict-check)): the whole project searched with every layer's query + hit count recorded, candidates opened (fields + every comment), the table posted in chat with a clickable link per ticket, and the user answered *Investigate further* / *Close out now* in the Step 6d decisions popup before the post, any transition, or notify.
+- [ ] **Round report ends with the `Round time:` line** (Step 8e), measured from session timestamps ([round-time-contract.md](../../../references/round-time-contract.md) §1), and `references/helix-handoff-{KEY}.md` written for this round (§10).
 - [ ] **Step 8·0 format-completeness gate passed BEFORE any transition** — FE bug: screenshots embedded inline + render-verified; API bug: full cURL/response per row.
 - [ ] Bug landed in Done → **Step 8d** run: stories it blocked either moved to ready-for-QA or left with their remaining blockers reported.
 - [ ] Step 9 QA notify sent if the project configures a channel (retest verdict + Jira comment link + @mention) — **sent regardless of who invoked the retest** (owner, another QA, slash command, bot/trigger) and regardless of whether they asked for one.
@@ -802,11 +892,15 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 
 ## Step 8 — Close out (after successful post; no second approval unless user asked)
 
+Every action here — each 8a transition, 8c assign and 8d unblock — runs under the single Step 6d
+approval bundle, which listed it by name ([round-time-contract.md](../../../references/round-time-contract.md) §3).
+An action that was not listed in that bundle is not run without asking.
+
 ### 8·0 — Format-completeness gate (MUST pass before ANY transition)
 
 **Hard gate — do NOT run 8a until the posted comment is complete per the Step 6 / Step 7c format:**
 
-- [ ] **`retest_guard.js` exits 0 for the posted body** (re-run it against what was actually posted, not against the draft). Exit 2 is not a pass.
+- [ ] **`retest_guard.js` exits 0 for the posted body** (re-run it against what was actually posted, not against the draft). Exit 2 is not a pass. **Skip only** when a fresh hash compare shows the posted body byte-identical to the draft that passed the guard; any difference → run the guard ([round-time-contract.md](../../../references/round-time-contract.md) §9).
 - [ ] Summary line is exactly **PASSED ✅** or **FAILED ❌**; env + results table present (bold headers, `No.` column).
 - [ ] **Case list present and reconciled:** the single table's `Case (Role)` cells carry every Step 2c case, every `ER*`/`AC*` row names at least one case, and `Case coverage: {n}/{total}` matches the rows. A planned-but-unrun case is a BLOCKED row with its reason — never a shortened list.
 - [ ] **Design reference accounted for:** the header's `Design ref:` line carries the node link(s) actually opened, or the Step 2d reason naming who was asked. A UI retest with neither is not verified — do **not** transition ([figma-design-comparison.md](../../../references/figma-design-comparison.md)).
@@ -822,7 +916,7 @@ If any item fails — including when evidence **cannot** be embedded (e.g. no Ji
 
 ### 8a. Transition
 
-Read transition names from the workspace `*-retest-guide.md` (see [project-config-template.md](references/project-config-template.md)). If missing, ask the user for **PASSED** and **FAILED** transition names before calling the API.
+Read transition names from the workspace `*-retest-guide.md` (see [project-config-template.md](references/project-config-template.md)). If missing, ask once for the **PASSED** and **FAILED** transition names in the 6d decisions popup (before approval) and save them to the guide immediately ([round-time-contract.md §2](../../../references/round-time-contract.md)); never ask after the bundle was approved.
 
 NEVER hardcode transition names in the skill — Jira workflows differ per project.
 
@@ -890,17 +984,26 @@ when **nothing else** still blocks it.
 
 Include the 8d outcome: which stories were moved, and which stayed blocked and by what.
 
+Write `references/helix-handoff-{KEY}.md` for this round ([handoff-file-template.md](../../../references/handoff-file-template.md)) —
+case list, AC/EC list, Figma node refs, Swagger version, last-round results, one fingerprint per source
+([round-time-contract.md](../../../references/round-time-contract.md) §10).
+
+**The round report ends with this line** (§1), numbers measured from the session's own timestamps,
+never estimated:
+
+`Round time: AGENT+EXEC {n} min · human wait {h} min · overrun {max(0, n-15)} min`
+
 ---
 
 ## Step 9 — QA result notify (if the project configures a channel)
 
-After the transition, if the project defines a **QA notify channel** (Discord/Slack/chat), post a **retest-result** notification so the reporter / QA owner sees the outcome.
+After the transition, if the project defines a **QA notify channel** (Discord/Slack/chat), post a **retest-result** notification so the reporter / QA owner sees the outcome. It runs under the Step 6d approval bundle, which named the channel and the resolved recipient — no second approval.
 
 **Who invoked the retest never changes this.** The notify is part of closing a retest, not a favour to the person who asked for one. It is sent the same way whether the workflow was started by the repo owner, by another QA, by a teammate in the channel, by a slash command, or by an unattended bot/trigger — and whether or not that person mentioned a notification. The **only** condition is the one above: the project configures a channel. A retest whose comment is posted and whose ticket is transitioned but whose notify was skipped is **not closed**.
 
 - Load channel, format, recipient, and any helper from the workspace `*-retest-guide.md` / project guide. **Never hardcode webhook URLs, tokens, machine paths, or user IDs in this skill** ([portable-content.md](../../../references/portable-content.md)) — they live in project config or local agent memory.
 - Message = the single **retest verdict** (PASSED ✅ / FAILED ❌), a short bullet of what was checked, a link to the Jira retest comment, and an @mention of the recipient.
-- **Recipient resolution (mandatory):** read the recipient from the ticket field the project guide names (e.g. a "QA Owner" custom field) — fetch that field's value from the bug itself for **every** notify; do not reuse a name from an earlier ticket, and do not default to the Reporter. The label printed next to the mention MUST match the field the value came from (label "QA Owner" ⇒ value from the QA Owner field). If the field is empty or the guide names no field, ask the user before sending.
+- **Recipient resolution (mandatory):** read the recipient from the ticket field the project guide names (e.g. a "QA Owner" custom field) — fetch that field's value from the bug itself for **every** notify; do not reuse a name from an earlier ticket, and do not default to the Reporter. The label printed next to the mention MUST match the field the value came from (label "QA Owner" ⇒ value from the QA Owner field). Resolve it before the 6d approval popup; if the field is empty or the guide names no field, queue the recipient question in the 6d decisions popup — never ask after approval.
 - This is a **result FYI**, not a "please review" request (the retest is already closed) — do not reuse the full-test-run "QA Review Requested / pending review" wording.
 - If the project provides a notify helper, **use it** (it gets @mention + headers right) instead of hand-assembling the payload.
 
@@ -913,7 +1016,7 @@ Run this checklist on the **dry-run output** before every real send — no excep
 3. **Body bullets** describe what was actually tested against the **bug's own expected results** — no copy-paste from another ticket.
 4. **Result link** opens the correct issue and `focusedCommentId` = the retest comment ID just posted.
 5. **Recipient**: re-read the QA Owner field value fetched in this session for THIS ticket; confirm the resolved `<@id>` maps to that name in the roster, and the label matches the field source.
-6. Only after all 5 pass → send. Any doubt → show the dry-run to the user first.
+6. Only after all 5 pass → send. The dry-run text and resolved recipient are already listed in the 6d approval popup; any doubt found here → stop and report it, never send a message the user did not see in that bundle.
 
 Skip if the project has no notify channel configured.
 
@@ -1038,4 +1141,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST measure overflow (`rect.right > innerWidth`, `scrollWidth > innerWidth`) and overlap (>3 px intersection) at every in-scope width rather than judging by eye | Seven escapes were on widths nobody ran; the measurements caught them the moment they were run |
 | MUST verify each displayed value against its source and report anything wrong that is seen, even when no expected asked for it | "Elements render correctly" was written while the defect was on screen and unremarked |
 | MUST retest on a fixture able to fail (long titles, lists past their visible slots, populated accounts) and record the **build id** the fix landed in | One course with one media item can never overflow, wrap, or scroll; and a pass against a build nobody ships is not a pass |
-| MUST run the cross-ticket conflict check ([qa-closing-shared.md](../../../references/qa-closing-shared.md#cross-ticket-conflict-check)) before any Step 8 transition or Step 9 notify — whole project, every type and status (Done included), a chat table with a clickable link per ticket, then ask *Investigate further* / *Close out now* and wait | Another ticket in the same project can contradict, supersede, or duplicate what was just verified; a check limited to the tested ticket never sees it |
+| MUST run the cross-ticket conflict check ([qa-closing-shared.md](../../../references/qa-closing-shared.md#cross-ticket-conflict-check)) before the Step 6d approval popup — whole project, every type and status (Done included), a chat table with a clickable link per ticket, then queue *Investigate further* / *Close out now* into the Step 6d decisions popup; no post, transition, or notify before the answer | Another ticket in the same project can contradict, supersede, or duplicate what was just verified; a check limited to the tested ticket never sees it |
+| MUST NOT wait mid-run — the scope plan is shown then run, and every non-PASS (A/B/C), missing design, and cross-ticket conflict gets its documented default and is **queued** for the Step 6d decisions popup ([round-time-contract.md](../../../references/round-time-contract.md) §2) | Each mid-run wait stalls the whole round on a human; the defaults keep evidence honest while the question waits |
+| MUST ask for every outward action through **one** Step 6d approval popup that lists each by name — comment, each transition, each assign, each linked story to unblock, each notify, each external result update — then execute with no second approval (§3) | One human touch per round; an action not named in the bundle was never approved |
+| MUST end every round report with `Round time: AGENT+EXEC {n} min · human wait {h} min · overrun {max(0, n-15)} min`, measured from session timestamps, never estimated (§1) | The 15-minute cap is only real if each round is measured against it |

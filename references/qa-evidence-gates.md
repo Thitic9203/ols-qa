@@ -132,6 +132,8 @@ Measured by **`capture/verify_shot.py`** (same toolkit as the recorder): `python
 
 Every MP4 (story test **and** retest) MUST clear all 7 layers before the case counts as done. **Miss any layer and the job cannot be finished — no posting, no transition, no "done".** A clip that looks like a recording but skips a step, cuts off before the target, or is too blurry to read is worse than none — it fakes proof. Re-capture; never wave it through.
 
+The run that executes the case may be the recording — no separate capture pass is needed; the clip still clears all 7 layers below unchanged ([round-time-contract.md §8](round-time-contract.md#8-mp4-record-during-execution)).
+
 | # | Layer | Passes only when |
 |:--:|---|---|
 | **1** | **Max quality** | Recorded to the **capture spec below** — viewport ≥ 1920×1080, `deviceScaleFactor` 2, H.264 **CRF 18 preset slow**, `yuv420p` limited-range, `+faststart`, **no downscale that blurs text**. On-screen labels legible at 100%. |
@@ -380,6 +382,7 @@ Do not use without fresh evidence in the **same** turn:
 | Retest | Plan posted before execute; v2/v3 format locked; **pre-delivery 7-layer gate green before the comment goes out** |
 | Create bug | Phase C confirm before create; URL verify after |
 | Re-record delivered evidence | **R1–R6 above**: read the old run's own result, prove the ER is demonstrable before the take, budget single-use fixtures, assert in the recorder, replace by file id, read back and compare |
+| Catch AI (audit) | Coverage reconciliation (enumerated == classified) before drafting; **pre-delivery 7-layer gate green — read as a second QA or another AI with only the report — before the audit is shown**; every root cause carries a [root-cause-investigation.md](root-cause-investigation.md) confidence label |
 
 ## Evidence must be a real FE screen — a raw-data page is never evidence
 

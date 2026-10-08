@@ -49,6 +49,14 @@ transliteration of an English feature name is **never** the design source of rec
 Record in the run: the **node link actually opened** and how it was opened. "Compared against Figma"
 with no node link is not evidence that a comparison happened.
 
+**Dedupe per round** ([round-time-contract.md §7](round-time-contract.md#7-figma-compare-keep-it-full-dedupe)):
+
+- **One compare per screen × width per round.** Cases that land on the same screen at the same width
+  share one fresh app capture and one design read; each case still records the node link.
+- **Cache the design-side export** (node screenshot and metadata), keyed by the Figma file's
+  `lastModified`. Re-fetch only when `lastModified` changes.
+- **The app-side capture is always fresh** — never reused from an earlier round or run.
+
 ---
 
 ## 3. What to compare — five points, every UI case

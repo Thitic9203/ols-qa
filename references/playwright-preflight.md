@@ -11,7 +11,8 @@ Complete **every** item before starting Phase E. Stop on first hard failure and 
 
 - [ ] `URL` loads (HTTP 200 or expected redirect — not CF challenge / login wall unless expected)
 - [ ] VPN: if **Required**, user confirmed tunnel active or runner can reach PD3/private network
-- [ ] Login: storage state / `.auth` path exists **or** credentials ready for headed login flow
+- [ ] Login: saved login file `{auth dir from guide}/{env}-{role}-{alias}.json` (named by account, not by lane; gitignored) exists **or** credentials ready for headed login flow
+- [ ] Saved login checked: load the file, call the session endpoint, expected user id returned. On 401/403, a redirect to login, or a different user → log in fresh and overwrite the file ([round-time-contract.md §5](round-time-contract.md#5-login-reuse-per-operator-across-runs))
 
 ## 3 — Playwright readiness (user project)
 
@@ -45,7 +46,7 @@ Per [resilient-selectors.md](resilient-selectors.md) — verify **before** runni
 URL: reachable | blocked ({reason})
 VPN: OK | N/A | FAIL
 Playwright: OK ({config}) | FAIL ({reason})
-Auth: storageState | login each run | guest
+Auth: saved login ({env}-{role}-{alias}.json, session OK) | fresh login (file refreshed) | guest
 Selectors: resilient (tier 1–3) | risky ({reason})
 Ready to run: YES | NO
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
