@@ -779,6 +779,24 @@ open comment edit box (calls `PATCH /api/activities/comments/{id}`). Their docum
 Any script that clicks a write button here must scope it to the container of the thing being edited and assert that the request the
 click produced is the intended endpoint — stop on anything else. Post-mortem #0144.
 
+## Comment list and replies — facts for test scripts (learned OLS-829, 2026-10-08)
+
+| Action | Endpoint (media / course / learning-path ใช้รูปเดียวกัน) |
+|--------|-----------------------------------------------------------|
+| list | `GET /api/activities/{media\|course\|learning-path}/{id}/comments?limit=20&sort=createdAt:desc&cursor=<createdAt>\|<id>` → `{data,total,nextCursor,hasMore}` |
+| new comment | `POST` path เดียวกัน body `{text}` → 204 ไม่มี body |
+| replies | `GET\|POST /api/activities/comments/{id}/replies?limit=20&cursor=…` |
+| delete | `DELETE /api/activities/comments/{id}` |
+
+- **ทุกการเขียนต้องส่ง header `x-ols-csrf: 1`** · POST ตอบ 204 ไม่มี id กลับมา ต้อง GET อ่าน id เอง
+- **ใต้ comment หนึ่งรายการมีปุ่มที่มีคำว่า "ตอบกลับ" 3 ปุ่ม:** "ตอบกลับ" (เปิดช่องตอบ) · "แสดงอีก N ตอบกลับ" (โหลด Reply เพิ่ม) · "ซ่อนตอบกลับ" (หุบ Reply) — กับดักแบบเดียวกับ "บันทึก" ด้านบน · ถ้าเลือกแบบ substring เช่น `getByRole('button',{name:'ตอบกลับ'}).last()` จะไปโดน "ซ่อนตอบกลับ" แล้ว Reply หุบ ดูเหมือนบัคของแอป · ต้องเลือกด้วยชื่อตรงตัวเสมอ (`exact:true`, `/^แสดงอีก/`)
+- **ช่องพิมพ์ไม่มีปุ่มส่ง** พิมพ์แล้วกด Enter
+- **Media:** comment อยู่ในแผงด้านข้าง (`[data-panel=comments]` เปิดด้วยปุ่ม "ความคิดเห็น") ช่องพิมพ์อยู่ล่าง · หน้าหลังเป็นฟีดวิดีโอแนวตั้ง ให้เลื่อน scroll container ของรายการ comment เอง ห้ามเลือก scroller ที่ใหญ่ที่สุด (จะเลื่อนฟีดไปวิดีโออื่น)
+- **Course / Learning Path:** comment อยู่ในการ์ดหรือแท็บ "ความคิดเห็น (N)" ช่องพิมพ์อยู่บน
+- **ตัวเลขบนแท็บความคิดเห็นนับ comment รวม Reply** ส่วนดีไซน์นับเฉพาะ comment หลัก — ยังรอ PO ตัดสิน
+- **ถ่ายภาพแท็บเบื้องหลัง:** `Page.captureScreenshot` ใช้ได้บนแท็บเบื้องหลังของ Chrome แยกโปรไฟล์ · มีเลนหนึ่งเจอ timeout แล้วใช้ MHTML (`Page.captureSnapshot`) แทน · ห้ามดึงแท็บขึ้นมาข้างหน้าเพื่อเอาภาพ เพราะจะแย่งหน้าจอผู้ใช้
+- **session หลุดโดยไม่รู้สาเหตุ (2026-10-08):** account Teacher หนึ่งตัวบน Dev ได้ `get-session` = 200 แต่ body ว่าง ประมาณ 90 นาทีหลัง login ทั้งที่ cookie ยังไม่หมดอายุ ขณะที่อีก account ที่ login นาทีเดียวกันยังใช้ได้ · ยังไม่รู้สาเหตุ · ทุกเลนต้องเช็ค `get-session` ก่อนนับผลทุกครั้ง
+
 ## Content name guard (ชื่อที่ผู้ใช้จริงเห็น) — pre-prod only, 11:00 + 17:00
 
 Any user-visible name carrying a QA/test trace, gibberish, a ticket key, a status marker in
