@@ -718,7 +718,8 @@ Learner (general public) and Guest need no account. The sheet labels accounts "D
 **Per-account limits (measured on Dev, 2026-10-08, Teacher account, Chrome):**
 - **OTP: none.** A username and password sign straight in through the NDLP68 SSO drawer, with no one-time code. That means there is no shared OTP inbox to coordinate between lanes. The other roles use the same SSO, but they were not each tried.
 - **Rate limit: 600 requests per user per 60 s window.** The OLS API returns `x-ratelimit-limit-user: 600`, `x-ratelimit-remaining-user` and `x-ratelimit-reset-user` (≤ 60 s). The limit is counted per user, so lanes on different accounts do not share it.
-- **Single-session: not verified.** Testing it needs a second, isolated sign-in of the same account, such as an Incognito window. Until it is checked, treat each account as single-session. The lane lease (one account per lane, `references/parallel-test-lanes.md` §3) already prevents reusing an account in two lanes. This question only matters for reusing a saved login.
+- **Not single-session (measured 2026-10-08).** The same Teacher account was signed in from two isolated browsers at once, the main Chrome profile and a separate-profile Chrome. Both kept answering `200` on `/api/me/achievements`, so a new sign-in does not end the older session. The lane lease still applies (one account per lane), because two lanes on one account would still share data and the per-user rate limit.
+- **Second sign-in for checks:** `node tools/iso-login/iso-login.mjs <username> https://<DEV_HOST>/?signIn=1` opens a separate-profile Chrome at the sign-in drawer with the username already filled and the cursor in the password field. The person types only the password. `node tools/iso-login/wait-logged-in.mjs` waits until that window is signed in.
 - Some accounts are `yopmail.com` addresses, which are public inboxes. That matters only if OTP or email flows are added later.
 
 ### Auth / login flow
