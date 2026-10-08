@@ -37,7 +37,7 @@ one module with tests do not.
 
 | file | what it is |
 |---|---|
-| `retest_rules.js` | **the rules** — required header lines, table headers, banned constructs per endpoint, caveat and hedge vocabulary, scope and coverage line shapes, plus `scanBody()`. Markdown links here; it does not restate a rule |
+| `retest_rules.js` | **the rules** — required header lines, table headers, banned constructs per endpoint, caveat and hedge vocabulary, scope and coverage line shapes, the usage marker (`markerLine()`, rule `marker-missing`), plus `scanBody()`. Markdown links here; it does not restate a rule |
 | `retest_manifest.js` | the run manifest: scope arithmetic, coverage, and the verdict **the rows support** rather than the one that was hoped for |
 | `retest_render.js` | manifest → comment body (v2 wiki / v3 markdown). The markup rules become the only way the text can be produced |
 | `retest_guard.js` | the CLI: validate, render, scan, report, exit |

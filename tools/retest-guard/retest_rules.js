@@ -161,6 +161,24 @@ const SUMMARY_LINE = new RegExp(
  */
 const ITEM_COVERAGE_LINE = /(expected-result|acceptance-criteria|item)[ -]*coverage:?\**\s*(\d+)\s*\/\s*(\d+)/i;
 
+/**
+ * The usage marker — the last line of every posted retest result, so a JQL/text search
+ * for `retestskillmarker` counts how often the skill was used, from where, and by which
+ * agent. Italic (`_…_`) reads the same in wiki and markdown.
+ */
+const MARKER_ANCHOR = 'retestskillmarker';
+const MARKER_SKILL = 'retest-bug-workflow';
+const MARKER_SRC = Object.freeze(['ols-qa', 'helix']);
+const MARKER_VIA = Object.freeze(['retest-bug', 'retest-bug-workflow', 'helix-menu']);
+const MARKER_AGENT = Object.freeze(['claude-code', 'cursor', 'codex', 'copilot', 'other', 'unknown']);
+const MARKER_DEFAULTS = Object.freeze({ src: 'ols-qa', via: 'retest-bug-workflow', agent: 'unknown' });
+
+/** `_retestskillmarker · skill=retest-bug-workflow · src=… · via=… · agent=…_` — missing keys take the defaults. */
+function markerLine(marker = {}) {
+  const k = { ...MARKER_DEFAULTS, ...(marker || {}) };
+  return `_${MARKER_ANCHOR} · skill=${MARKER_SKILL} · src=${k.src} · via=${k.via} · agent=${k.agent}_`;
+}
+
 /* ------------------------------------------------------------------ *
  * Parsing helpers — pure, no I/O.
  * ------------------------------------------------------------------ */
@@ -327,6 +345,15 @@ function scanBody(body, opts = {}) {
     out.push(finding('summary-line-shape', summaryIdx + 1,
       'summary line is not exactly one of ' + SUMMARY_VERDICTS.join(' / ') + ' (optionally "(scoped: …)")',
       'e.g. *Retest Result: PASSED* ✅ — a round that nobody could reach says BLOCKED, not FAILED'));
+  }
+
+  let lastIdx = lines.length - 1;
+  while (lastIdx >= 0 && lines[lastIdx].trim() === '') lastIdx -= 1;
+  const lastLine = lastIdx >= 0 ? lines[lastIdx] : '';
+  if (!lastLine.includes(MARKER_ANCHOR) || !lastLine.includes(`skill=${MARKER_SKILL}`)) {
+    out.push(finding('marker-missing', lastIdx + 1,
+      'the last line is not the usage marker',
+      `end the body with one blank line, then ${markerLine()} (src/via/agent filled in)`));
   }
 
   const isScoped = summaryIdx >= 0 && /\(scoped:/i.test(lines[summaryIdx]);
@@ -560,6 +587,13 @@ module.exports = {
   SUMMARY_LINE,
   SUMMARY_VERDICTS,
   ITEM_COVERAGE_LINE,
+  MARKER_ANCHOR,
+  MARKER_SKILL,
+  MARKER_SRC,
+  MARKER_VIA,
+  MARKER_AGENT,
+  MARKER_DEFAULTS,
+  markerLine,
   DRIFT_ALLOWLIST,
   OPEN_QUESTIONS,
   MD_DIVIDER_ROW,

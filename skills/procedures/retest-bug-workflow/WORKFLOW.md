@@ -544,7 +544,14 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 *Case coverage:* {run} / {total} cases run — {passed} passed / {failed} failed / {blocked} blocked
 
 *Out of scope this round:* {ids} — not covered by the scoped cases, not verified   (scoped rounds only)
+
+_retestskillmarker · skill=retest-bug-workflow · src={ols-qa|helix} · via={retest-bug|retest-bug-workflow|helix-menu} · agent={claude-code|cursor|codex|copilot|other}_
 ```
+
+🔴 **Last line = the usage marker, after one blank line — every retest result, every format.** Fill it
+from the run, never guess: `src=helix` when running from the Helix plugin, `src=ols-qa` from this repo;
+`via` = the command or skill the user invoked; `agent` = the AI tool doing the run. In `run.json` set
+`marker: {src, via, agent}` and the renderer prints it; `retest_guard.js` refuses a body without it (`marker-missing`).
 
 **This block is the shape the renderer produces, not something to hand-type.** Build `run.json` and
 render it (Step 6·0); the guard rejects a body that drifts from this shape, including one typed from
@@ -601,7 +608,8 @@ for PASSED and FAILED alike. **API bugs have no screenshots** → drop the `Evid
 case in a separate `*Evidence*` section below the table instead (a cURL block does not fit in a cell).
 
 **Template core — markdown/ADF** (MCP `addCommentToJiraIssue` or `/rest/api/3/…`): identical
-content, but `**bold**`, `---`, and a `| col | col |` table with a `|---|` divider row.
+content, but `**bold**`, `---`, and a `| col | col |` table with a `|---|` divider row. It ends with the same
+marker line (`_…_` is italic in both syntaxes), after one blank line.
 
 Never mix the two in one body.
 
@@ -1009,7 +1017,7 @@ If a verdict changes after the notification was sent (e.g. PASSED→FAILED on re
 
 1. **PATCH the existing Discord message** — do not repost. Use `PATCH /webhooks/{wid}/{wtok}/messages/{mid}?thread_id={thread}` with the corrected content.
 2. To find the message ID: use webhook GET `GET /webhooks/{wid}/{wtok}/messages/{mid}?thread_id={thread}` (bot token GET returns empty `content` without MESSAGE_CONTENT intent).
-3. Update the Jira comment in place (`addCommentToJiraIssue` with `commentId` parameter).
+3. Update the Jira comment in place (`addCommentToJiraIssue` with `commentId` parameter) — keep the usage marker as the body's last line, unchanged.
 4. Transition the ticket to the correct status.
 
 ---
@@ -1027,7 +1035,7 @@ A follow-up question is a **defect in the comment**, not a normal step. Handle i
 3. **Answer in the shape asked** (§7): direct answer first, then at most one line of why. If the user
    says it is too long, shorten the same answer — do not re-emit it at the same length.
 4. **Fold the answer into the original comment** (edit in place, same comment id) so the next reader
-   never needs the chat thread. Re-run Step 7d after the edit.
+   never needs the chat thread; the usage marker stays the last line. Re-run Step 7d after the edit.
 5. **If an earlier statement was wrong**, correct it **visibly in both places**: the in-place comment edit
    states which claim is being corrected, **and** a follow-up message goes into the thread where the wrong
    answer was given. Never a silent edit — people have already replied to the wrong version.

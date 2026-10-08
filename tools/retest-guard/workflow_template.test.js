@@ -109,5 +109,20 @@ check('the workflow tells the reader the body is rendered, not typed', () => {
   assert.ok(/retest_guard\.js/.test(wf), 'the workflow never runs the guard');
 });
 
+check('the template ends with the usage marker, after one blank line', () => {
+  const lines = tpl.replace(/\n+$/, '').split('\n');
+  const last = lines[lines.length - 1];
+  assert.ok(last.includes(R.MARKER_ANCHOR), 'the template does not end with the usage marker');
+  assert.ok(last.includes('skill=' + R.MARKER_SKILL), 'the marker does not name the skill');
+  assert.ok(/^_.*_$/.test(last), 'the marker is not italic');
+  assert.strictEqual(lines[lines.length - 2], '', 'no blank line before the marker');
+  ['src=', 'via=', 'agent='].forEach((k) => assert.ok(last.includes(k), 'the marker omits ' + k));
+});
+
+check('the workflow tells the reader how to fill the marker and to keep it on an in-place edit', () => {
+  assert.ok(/src=helix/.test(wf) && /src=ols-qa/.test(wf), 'src values are not explained');
+  assert.ok(/commentId[^\n]*usage marker/.test(wf), 'the commentId in-place edit does not say to keep the marker');
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);

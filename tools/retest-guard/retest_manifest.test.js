@@ -261,5 +261,28 @@ check('a destination that cannot hold the real status produces a question, never
   assert.strictEqual(M.destinationMismatch(['PASSED'], ['PASSED', 'FAILED']), null);
 });
 
+check('the usage marker is optional — a manifest without it still validates', () => {
+  const m = base();
+  assert.strictEqual(m.marker, undefined);
+  assert.deepStrictEqual(M.validate(m), []);
+});
+
+check('a known marker validates; a partial one takes the defaults for the rest', () => {
+  const m = base();
+  m.marker = { src: 'helix', via: 'helix-menu', agent: 'claude-code' };
+  assert.deepStrictEqual(M.validate(m), []);
+  m.marker = { agent: 'unknown' };
+  assert.deepStrictEqual(M.validate(m), []);
+});
+
+check('an unknown marker value is refused, field by field', () => {
+  const m = base();
+  m.marker = { src: 'somewhere', via: 'chat', agent: 'gpt' };
+  const fields = M.validate(m).map((f) => f.field).sort();
+  assert.deepStrictEqual(fields, ['marker.agent', 'marker.src', 'marker.via']);
+  m.marker = 'helix';
+  assert.deepStrictEqual(M.validate(m).map((f) => f.field), ['marker']);
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);

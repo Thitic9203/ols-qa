@@ -32,6 +32,8 @@ const GOOD = [
   '',
   '*Expected-result coverage:* 1 / 1 items met',
   '*Case coverage:* 1 / 1 cases run — 1 passed / 0 failed / 0 blocked',
+  '',
+  R.markerLine({ src: 'ols-qa', via: 'retest-bug', agent: 'claude-code' }),
 ].join('\n');
 
 let failed = 0;
@@ -228,6 +230,39 @@ check('an API bug drops the Evidence column and needs no Design ref', () => {
     .replace('|label reads บันทึก|label reads บันทึก|!tc1.png!|✅|', '|200 OK|200 OK|✅|');
   const fs = R.scanBody(body, { bugType: 'API' });
   assert.deepStrictEqual(fs, [], 'unexpected: ' + JSON.stringify(rules(fs)));
+});
+
+check('marker-missing: a body whose last line is not the usage marker is refused', () => {
+  const lines = GOOD.split('\n');
+  const without = lines.slice(0, -2).join('\n');
+  const fs = R.scanBody(without, {});
+  assert.ok(has(fs, 'marker-missing'), 'got ' + JSON.stringify(rules(fs)));
+  assert.strictEqual(fs.find((f) => f.rule === 'marker-missing').severity, 'error');
+});
+
+check('marker-missing: the marker must be the LAST non-empty line, not somewhere above it', () => {
+  const lines = GOOD.split('\n');
+  const marker = lines[lines.length - 1];
+  const moved = [lines[0], marker, ...lines.slice(1, -2)].join('\n');
+  assert.ok(has(R.scanBody(moved, {}), 'marker-missing'));
+});
+
+check('marker-missing: does not fire on a body ending in the marker (trailing blank lines allowed)', () => {
+  assert.ok(!has(R.scanBody(GOOD, {}), 'marker-missing'));
+  assert.ok(!has(R.scanBody(GOOD + '\n\n', {}), 'marker-missing'));
+  assert.ok(GOOD.split('\n').pop().includes(R.MARKER_ANCHOR));
+});
+
+check('marker-missing: an anchor without skill=retest-bug-workflow is refused', () => {
+  const body = GOOD.replace('skill=retest-bug-workflow', 'skill=something-else');
+  assert.ok(has(R.scanBody(body, {}), 'marker-missing'));
+});
+
+check('markerLine fills defaults and prints the exact shape', () => {
+  assert.strictEqual(R.markerLine(),
+    '_retestskillmarker · skill=retest-bug-workflow · src=ols-qa · via=retest-bug-workflow · agent=unknown_');
+  assert.strictEqual(R.markerLine({ src: 'helix', via: 'helix-menu', agent: 'cursor' }),
+    '_retestskillmarker · skill=retest-bug-workflow · src=helix · via=helix-menu · agent=cursor_');
 });
 
 check('a wiki header row posted to the ADF endpoint is refused', () => {

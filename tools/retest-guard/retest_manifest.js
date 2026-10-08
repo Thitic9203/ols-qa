@@ -17,6 +17,8 @@
  * Node >= 18, no dependencies.
  */
 
+const RULES = require('./retest_rules');
+
 const STATUSES = Object.freeze(['PASSED', 'FAILED', 'PWMI', 'BLOCKED']);
 const PASSING = Object.freeze(['PASSED']);
 const SCOPE_MODES = Object.freeze(['FULL', 'CASES']);
@@ -123,6 +125,19 @@ function validate(m) {
   if (!['FE', 'API'].includes(m.bugType)) out.push(err('bugType', 'must be "FE" or "API"', 'it decides the comment format and the evidence rules'));
   if (!['v2', 'v3'].includes(m.format)) out.push(err('format', 'must be "v2" (wiki) or "v3" (ADF)', 'locked at Step 3, never switched later'));
   if (!SCOPE_MODES.includes((m.scope || {}).mode)) out.push(err('scope.mode', `must be one of ${SCOPE_MODES.join(' | ')}`, 'FULL, or CASES with the ids the user named'));
+
+  // The usage marker is optional; an absent key takes its default, a present one must be known.
+  if (m.marker !== undefined) {
+    if (!m.marker || typeof m.marker !== 'object' || Array.isArray(m.marker)) {
+      out.push(err('marker', 'marker must be an object {src, via, agent}', 'omit it to take the defaults'));
+    } else {
+      [['src', RULES.MARKER_SRC], ['via', RULES.MARKER_VIA], ['agent', RULES.MARKER_AGENT]].forEach(([k, allowed]) => {
+        if (m.marker[k] !== undefined && !allowed.includes(m.marker[k])) {
+          out.push(err(`marker.${k}`, `"${m.marker[k]}" is not one of ${allowed.join(' | ')}`, 'name where the run came from, not a guess'));
+        }
+      });
+    }
+  }
 
   if (m.bugType === 'FE' && !isNonEmptyString(m.designRef)) {
     out.push(err('designRef', 'a UI retest carries the design node, or the reason there is none',

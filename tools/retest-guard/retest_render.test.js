@@ -285,5 +285,35 @@ check('a non-verbatim multi-point header field is still refused on one line', ()
   assert.strictEqual(found.length, 1);
 });
 
+check('every rendered body ends with one blank line and the default usage marker', () => {
+  [RENDER.render(feManifest()), RENDER.render(apiFailed())].forEach((body) => {
+    const lines = body.split('\n');
+    assert.strictEqual(lines[lines.length - 1], R.markerLine());
+    assert.strictEqual(lines[lines.length - 1],
+      '_retestskillmarker · skill=retest-bug-workflow · src=ols-qa · via=retest-bug-workflow · agent=unknown_');
+    assert.strictEqual(lines[lines.length - 2], '');
+    assert.notStrictEqual(lines[lines.length - 3], '', 'exactly one blank line before the marker');
+    assert.ok(lines[0].includes('Retest Result:'), 'the first line is still the verdict');
+  });
+  assert.strictEqual(RENDER.markerLine, R.markerLine);
+  assert.strictEqual(RENDER.MARKER_ANCHOR, 'retestskillmarker');
+});
+
+check('a manifest marker is rendered as given, in both formats', () => {
+  const marker = { src: 'helix', via: 'helix-menu', agent: 'cursor' };
+  const fe = feManifest();
+  fe.marker = marker;
+  const api = apiFailed();
+  api.marker = marker;
+  const want = '_retestskillmarker · skill=retest-bug-workflow · src=helix · via=helix-menu · agent=cursor_';
+  [[fe, R.FORMATS.WIKI, 'FE'], [api, R.FORMATS.ADF, 'API']].forEach(([m, format, bugType]) => {
+    assert.deepStrictEqual(M.validate(m), []);
+    const body = RENDER.render(m);
+    assert.strictEqual(body.split('\n').pop(), want);
+    const found = errorsOnly(R.scanBody(body, { format, bugType }));
+    assert.deepStrictEqual(found, [], JSON.stringify(found.map((f) => f.rule + '@' + f.line)));
+  });
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);
