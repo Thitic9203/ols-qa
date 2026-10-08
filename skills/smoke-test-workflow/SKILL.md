@@ -16,7 +16,16 @@ public: never write a resolved host, id, account or channel into any file here.
 
 ---
 
+## Round-time contract
+
+This workflow follows the Helix round-time contract (Helix `references/round-time-contract.md`). The cap is **15 minutes of AGENT + EXEC time** per round. Human wait is not counted, and is reported on its own line.
+
+- **Soft cap:** at about 12 minutes, print `Round time: ~12 min of 15 used — finishing.`, then finish the round. Never drop cases to stay under the cap.
+- **The chat report ends with:** `Round time: AGENT+EXEC {n} min · human wait {h} min · overrun {max(0, n-15)} min`. Measure it from the session's timestamps.
+- **No mid-run waits.** Ask only at intake (Stage 0) and at the end-of-round bundle (Stage 8).
+
 ## Stage 0 — Intake (blocking)
+
 
 1. **Confirm the environment with the owner and wait.** Never default, never pick the one that is
    easier to reach. If the owner already named it this session, state what you will use and carry
@@ -69,7 +78,9 @@ zero skipped, in 4.9 minutes.** Re-derive the list when the environment changes;
 permanent, and never let it grow just to make a run look green.
 
 **Decide the pass-only policy with the owner BEFORE the first run**, not after seeing the numbers.
-Ask once: *report every case and its verdict, or only the cases that pass clean?* Chasing a green
+Ask once: *report every case and its verdict, or only the cases that pass clean?* Save the answer
+to the workspace guide straight away, without a second "save this?" question. Later rounds read it
+from the guide and do not ask again. Chasing a green
 report by excluding whatever went yellow this round does not converge — measured four rounds in a
 row, a different one or two cases went flaky or skipped each time, never the same ones. Excluding
 them one round at a time only shrinks the suite.
@@ -113,6 +124,11 @@ E2E_JSON_OUT=<WORKDIR>/run.json TARGET_ENV=<env> rtk proxy npx playwright test \
 the first run's artefacts survive. A case that passes on the rerun is unstable, not a defect.
 
 ## Stage 4 — Triage every non-passing case
+
+**Fan out at 2 or more flagged cases.** Each subagent owns one case end to end: the rerun, the error
+context, the spec lookup, and the verdict with its evidence. The main thread only merges the verdicts.
+A question about any verdict (for example, a spec that needs the PO) goes into the end-of-round
+decisions popup, and the case stays BLOCKED until then. Never wait mid-run.
 
 No case may be left as "a limitation". Each one ends in exactly one of these, with evidence:
 
@@ -206,6 +222,14 @@ Post to the QA release channel `<QA_RELEASE_CHANNEL_ID>` as bot `<QA_BOT_ID>` (t
 1. **Verify the bot first** — `GET /users/@me` must return the expected id. Never send as a different
    bot because the expected one did not resolve.
 2. **Draft the message and get the owner's approval before sending.** Sending is outward-facing.
+   Use the end-of-round bundle, in this order:
+   1. **Pre-checks.** Confirm the message renders: mentions, bold, and line breaks. Confirm both
+      attachment files exist and their names match the message.
+   2. **Decisions popup.** Shown only when questions are queued, such as a BLOCKED verdict or a spec
+      to confirm.
+   3. **One approval popup.** It lists the channel, the bot id, the resolved mention, the full
+      message text, and both file names.
+   4. **Send.** No second approval.
 3. English, concise. One fact per line. Times as `9 Sep 2026, 3:14 PM`.
 4. To make a mention ping, use `<@id>` **and** `allowed_mentions.users`. Look an id up with
    `GET /guilds/<GUILD_ID>/members/search?query=<name>`.
@@ -270,6 +294,8 @@ grep -E '^\s+[0-9]+ (passed|failed|flaky|skipped)' <WORKDIR>/run.log   # what th
 - **MUST** re-run the whole suite after any fix.
 - **MUST** look at the rendered PDF before sending it.
 - **NEVER** report a harness or VPN failure as a product verdict.
+- **MUST** end the chat report with the measured `Round time:` line.
+- **NEVER** wait for the owner mid-run. Queue the question for the end decisions popup, then send under one approval.
 - **NEVER** run this against training — real people work there.
 - **NEVER** touch anything whose title or description contains `RGS`; that is the customer's data.
 - **NEVER** publish the Playwright report publicly without the owner's explicit decision.
