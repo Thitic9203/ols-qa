@@ -406,54 +406,37 @@ Follow [defect-report-completeness.md](../../../references/defect-report-complet
 
 ### 4h. Root-cause investigation (mandatory for every non-PASSED item — run it before Step 6)
 
-Follow [root-cause-investigation.md](../../../references/root-cause-investigation.md) end to end.
-The whole investigation happens **while the environment is still open** — a boundary you did not
-capture during the run cannot be reconstructed while drafting, and reconstructing it is guessing.
+Follow [root-cause-investigation.md](../../../references/root-cause-investigation.md) end to end — the
+debugging skill (§0), the 8-boundary evidence sweep (§1), compare against something that works (§2),
+one falsifiable hypothesis at a time (§3), and a confidence label (§4). The reference is the single
+source for those steps; do not paraphrase them here.
 
-1. **Invoke the debugging skill and announce it** — `superpowers:systematic-debugging` first
-   (fallbacks in §0 of the reference). Follow its Phases 1–3; skip Phase 4 (QA does not patch
-   product code). Record the skill name in the investigation block.
-2. **Complete the 8-boundary evidence sweep** (§1): surface · console · network request+response ·
-   auth/session/role · server-side truth via a direct API call · **is the behaviour even in the
-   deployed build** (grep the bundle for the feature's own strings/route/param; probe the endpoint)
-   · fixture state read back from the API · environment (env, build id, flag, VPN). Every boundary
-   ends as an artifact or the literal words `not checked` — never blank, never a guess. Do not stop
-   at the first anomaly; it is often downstream of the real one.
-3. **Compare against something that works** (§2) — the same action on another record, role, entry
-   point, environment, or a sibling feature that shares the endpoint. List every difference.
-4. **One falsifiable hypothesis at a time** (§3), each killed or confirmed by the single smallest
-   check. Keep falsified hypotheses in the record with their artifacts.
-5. **Label the result** (§4): `Confirmed` · `Suspected` (+ the exact check that would confirm it and
-   why it was not run) · `Unknown — not investigated` (+ what is needed and from whom). A hedge word
-   (`probably`, `น่าจะ`, `flaky`, `cache issue`, `environment issue`) is never a cause.
+What is specific to retest:
 
-The investigation block goes **into the comment** at Step 6a — not only into chat.
-
-**BLOCKED is not an escape from this step.** A BLOCKED item still records the sweep up to the
-boundary that blocked it, and names the access/person needed to continue.
+- **Run it while the environment is still open.** A boundary you did not capture during the run
+  cannot be reconstructed while drafting; reconstructing it is guessing.
+- **Skip Phase 4 of the debugging skill** — QA does not patch product code.
+- **The investigation block goes into the comment** at Step 6a, not only into chat.
+- **BLOCKED is not an escape from this step.** A BLOCKED item still records the sweep up to the
+  boundary that blocked it, and names the access or person needed to continue.
 
 ### 4i. Challenge the non-PASS + surface it to the user (mandatory for every non-PASSED item — before Step 6)
 
 Follow [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md) end to end, **before
-the draft exists.** A non-PASS is a hypothesis until it survives this:
+the draft exists** — name the discrepancy (§1), re-verify the expected side against an authoritative
+source including related tickets' AC/EC (§2, and its three outcomes), rule out a test-side cause (§3),
+then surface it (§4). The reference is the single source for those steps.
 
-1. **Name the discrepancy** — `Expected: {X} (source) · Observed: {Y} (evidence)`. If you cannot name
-   the source of the expected value, stop — you are about to file the app against an assumption.
-2. **Re-verify the expected side against an authoritative source, including related tickets' AC/EC** —
-   the bug's own Expected Result stays the primary contract (Step 2), but read it **char-exact** and
-   cross-check the **parent story's AC/EC, every linked issue, and sibling tickets on the same surface**.
-   A related ticket may have **superseded** or **clarified** the expected; a transliteration/feature-name
-   is not the spec; an unconfirmed-spec hedge ("confirm with PO/Figma", "น่าจะ", "TBD") = a **question,
-   not a defect**.
-   - Expected wrong / superseded → **not a FAILED** → recommend adjusting the expected/TC, cite the ticket.
-   - Expected unclear / conflicting / hedged → **BLOCKED + a remark naming who to ask**, never a FAILED.
-   - Expected confirmed authoritative and the app still differs → it survived; carry it to Step 6.
-3. **Surface to the user and let them steer — at the end, not mid-run** — record `expected (+source) ·
-   observed · AC/EC finding · recommendation (A adjust the expected/TC · B re-test · C confirm defect)`,
-   apply the default below, and **queue it for the Step 6d decisions popup** instead of waiting
-   ([round-time-contract.md](../../../references/round-time-contract.md) §2); never silently. Picking
-   **B re-test** there starts a new round (§1). Never edit the ticket's expected-result field to match
-   the app on your own — QA reports the conflict and names the owner.
+What is specific to retest:
+
+- **The primary contract is the bug's own Expected Result** (Step 2), read char-exact, cross-checked
+  against the parent story's AC/EC, every linked issue, and sibling tickets on the same surface.
+- **Surface it at the end, not mid-run** — record `expected (+source) · observed · AC/EC finding ·
+  recommendation (A adjust the expected/TC · B re-test · C confirm defect)` and queue it for the Step 6d
+  decisions popup ([round-time-contract.md](../../../references/round-time-contract.md) §2). Picking
+  **B re-test** there starts a new round (§1).
+- **Never edit the ticket's expected-result field** to match the app on your own — QA reports the
+  conflict and names the owner.
 
 **Default while the question is queued (attended and unattended / bot mode alike):** resolve the gate
 instead of waiting — expected wrong/unclear → BLOCKED + remark (no bug, no halt); test-side cause → fix

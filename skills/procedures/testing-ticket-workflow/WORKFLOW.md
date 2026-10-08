@@ -332,57 +332,43 @@ These three cannot be reconstructed while writing Phase F — do them before mov
 
 ### E2 — Root-cause investigation (mandatory for every FAILED and BLOCKED scenario, during the run)
 
-Follow [root-cause-investigation.md](../../../references/root-cause-investigation.md) end to end,
-**before moving to the next scenario** — the browser, the session and the fixture state are open now
-and cannot be reconstructed in Phase F. Reconstruction is guessing.
+Follow [root-cause-investigation.md](../../../references/root-cause-investigation.md) end to end — the
+debugging skill (§0), the 8-boundary evidence sweep (§1), compare against something that works (§2),
+one falsifiable hypothesis at a time (§3), and a confidence label (§4). The reference is the single
+source for those steps; do not paraphrase them here.
 
-1. **Invoke the debugging skill and announce it** — `superpowers:systematic-debugging` first
-   (fallbacks in §0 of the reference). Follow its Phases 1–3; skip Phase 4 (QA does not patch product
-   code; repairing our own test/selector/fixture/environment is in scope). Name the skill in the
-   write-up.
-2. **Complete the 8-boundary evidence sweep** (§1): surface · console · network request+response ·
-   auth/session/role · server-side truth via a direct API call · **is the behaviour even in the
-   deployed build** (grep the bundle for the feature's own strings/route/param; probe the endpoint) ·
-   fixture state read back from the API · environment (env, build id, flag, VPN). Each boundary ends
-   as an artifact or the literal words `not checked`. Do not stop at the first anomaly.
-3. **Compare against something that works** (§2) — another record, role, entry point, environment, or
-   a sibling feature sharing the endpoint. List every difference.
-4. **One falsifiable hypothesis at a time** (§3), each killed or confirmed by the single smallest
-   check; falsified ones stay in the record with their artifacts.
-5. **Label the result** (§4): `Confirmed` · `Suspected` (+ the exact check that would confirm it and
-   why it was not run) · `Unknown — not investigated` (+ what is needed and from whom).
+What is specific to testing a ticket:
 
-**A test-side cause counts too, and is stated as such** — selector drift, stale auth, missing
-fixture, VPN. Fix our side, re-run, and record it as a test defect, never as a product FAILED
-([qa-debug-discipline.md](../../../references/qa-debug-discipline.md)). And never the reverse: a real
-product bug is never filed away as "flaky".
-
-**BLOCKED is not an escape.** A BLOCKED scenario still records the sweep up to the boundary that
-blocked it and names the access/person needed to continue.
+- **Run it before moving to the next scenario** — the browser, the session and the fixture state are
+  open now and cannot be reconstructed in Phase F.
+- **Skip Phase 4 of the debugging skill** for product code; repairing our own test, selector, fixture
+  or environment is in scope. Name the skill in the write-up.
+- **A test-side cause counts too, and is stated as such** — selector drift, stale auth, missing
+  fixture, VPN. Fix our side, re-run, and record it as a test defect, never as a product FAILED
+  ([qa-debug-discipline.md](../../../references/qa-debug-discipline.md)). Never the reverse: a real
+  product bug is never filed away as "flaky".
+- **BLOCKED is not an escape.** A BLOCKED scenario still records the sweep up to the boundary that
+  blocked it and names the access or person needed to continue.
 
 ### E3 — Challenge the non-PASS + queue it for the user (mandatory for every non-PASSED scenario)
 
 Follow [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md) end to end, **before
-the scenario is written into Phase F as a defect.** A non-PASS is a hypothesis until it survives this:
+the scenario is written into Phase F as a defect** — name the discrepancy (§1), re-verify the expected
+side against an authoritative source including related tickets' AC/EC (§2, and its three outcomes),
+rule out a test-side cause (§3), then surface it (§4). The reference is the single source for those
+steps.
 
-1. **Name the discrepancy** — `Expected: {X} (source) · Observed: {Y} (evidence)`. If you cannot name
-   the source of the expected value, stop — you are about to file the app against an assumption.
-2. **Re-verify the expected side against an authoritative source, including related tickets' AC/EC** —
-   this ticket's Expected/AC/EC **and** the parent story, every linked issue, sibling tickets on the
-   same surface, and the test case's own source, all read character-exact. A related ticket may have
-   **superseded** or **clarified** the expected value; a transliteration/feature-name is not the spec;
-   an unconfirmed-spec hedge ("confirm with PO/Figma", "น่าจะ", "TBD") = a **question, not a defect**.
-   - Expected wrong / superseded → **not a defect** → recommend adjusting the test case.
-   - Expected unclear / conflicting / hedged → **BLOCKED + a remark naming who to ask**, never a defect.
-   - Expected confirmed authoritative and the app still differs → it survived; carry it to Phase F.
-3. **Apply the default, queue the question — no mid-run wait**
-   ([round-time-contract.md §2](../../../references/round-time-contract.md)). Resolve with the gate's
-   documented default — expected wrong/unclear → BLOCKED + remark (no bug, no halt); test-side cause →
-   fix and re-run; confirmed defect → record as normal — and continue the run. Then queue `expected
-   (+source) · observed · AC/EC finding · recommendation (A adjust the TC · B re-test · C confirm
-   defect)` for the end decisions popup. A **B re-test** answer there starts a new round
-   ([§1](../../../references/round-time-contract.md)). Never rewrite the ticket's expected text to match
-   the app on your own.
+What is specific to testing a ticket:
+
+- **The contract is this ticket's Expected/AC/EC and the test case's own source**, read char-exact and
+  cross-checked against the parent story, every linked issue, and sibling tickets on the same surface.
+- **Apply the gate's default and keep running — no mid-run wait**
+  ([round-time-contract.md §2](../../../references/round-time-contract.md)): expected wrong/unclear →
+  BLOCKED + remark (no bug, no halt); test-side cause → fix and re-run; confirmed defect → record as
+  normal. Queue `expected (+source) · observed · AC/EC finding · recommendation (A adjust the TC ·
+  B re-test · C confirm defect)` for the end decisions popup; a **B re-test** answer starts a new round
+  ([§1](../../../references/round-time-contract.md)).
+- **Never rewrite the ticket's expected text** to match the app on your own.
 
 ---
 
