@@ -44,6 +44,12 @@ Full routing and handoffs: [references/skill-routing.md](references/skill-routin
 - **Do not post to Jira** until the user approves drafts (unless waived).
 - Load project config from the user’s workspace `references/*-guide.md` when present.
 
+## Retest skill source of truth
+
+- Changes to `retest-bug-workflow` land in **ols-qa first**. Its renderer and the template test (`tools/retest-guard/`) exist only in ols-qa.
+- On commit, ols-qa's post-commit hook (`scripts/hooks/post-commit` → `scripts/sync-skills-to-helix.sh`) copies the shared skill, reference and command files to helix. A push to helix main then releases automatically, and teammates receive the change at their next session start.
+- If a retest fix has to land in helix first, backport it to ols-qa the same day. Otherwise the next sync overwrites it.
+
 ## More
 
 Install and version: [README.md](README.md)
