@@ -58,6 +58,8 @@ and leaves the equal-dates path alone, **or** the spec owner accepts 500 for thi
 the expected result. Decided by: spec owner.
 
 Originally reported symptom: still present.
+
+_retestskillmarker · skill=retest-bug-workflow · src=ols-qa · via=retest-bug · agent=claude-code_
 ```
 
 ## Lessons
@@ -100,6 +102,8 @@ Output (full comment — this is the entire body, nothing added):
 
 *Expected-result coverage:* 2 / 2 items met
 *Case coverage:* 1 / 1 cases run — 1 passed / 0 failed / 0 blocked
+
+_retestskillmarker · skill=retest-bug-workflow · src=ols-qa · via=retest-bug · agent=claude-code_
 ```
 
 ## Lessons (example 2)

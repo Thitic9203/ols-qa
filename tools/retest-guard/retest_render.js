@@ -222,6 +222,9 @@ function renderWith(m, fmt) {
     m.resolutionOptions.forEach((o, i) => L.push(`${i + 1}. ${text(o.text)} — owner: ${o.owner}`));
     L.push(`Decided by: ${m.decidedBy}`);
   }
+  // The usage marker is always the last line, after one blank line.
+  L.push('');
+  L.push(RULES.markerLine(m.marker));
   return L.join('\n');
 }
 
@@ -263,4 +266,5 @@ function render(m) {
 module.exports = {
   VERDICT_MARK, render, renderWiki, renderAdf, cell, hasBareDelimiter, wikiText, evidenceCell, coverageLabel, STATUS_MARK,
   fieldLines, cellPoints, caseCell, tableHeaders,
+  markerLine: RULES.markerLine, MARKER_ANCHOR: RULES.MARKER_ANCHOR,
 };
