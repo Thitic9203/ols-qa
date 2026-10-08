@@ -3727,6 +3727,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-ta
 
 Full report: [`docs/post-mortem/20261007-post-mortem-report-0180-stall-root-cause-claimed-from-route-correlation.md`](docs/post-mortem/20261007-post-mortem-report-0180-stall-root-cause-claimed-from-route-correlation.md)
 
+### Report #0181 — รันเคสบางส่วนซ้ำแล้วเขียนทับ Playwright report ของรอบ smoke เต็ม
+
+รันเคส creator 15 เคสซ้ำโดยไม่ใส่ `--reporter=list` · `playwright.config.ts:22` ปัก HTML reporter ไว้ที่ `playwright-report/` จึงทับ report ของรอบเต็มที่จะใช้เป็นไฟล์แนบ · ต้องรันทั้งชุดใหม่ 1 รอบก่อนส่งโนติ · กฎ: รันบางส่วนใส่ `--reporter=list` ทุกครั้ง · คัดลอก report รอบเต็มเข้าโฟลเดอร์รอบทันทีที่จบ (skill smoke-test-workflow Stage 3)
+
+Full report: [`docs/post-mortem/20261008-post-mortem-report-0181-partial-rerun-overwrote-full-round-playwright-report.md`](docs/post-mortem/20261008-post-mortem-report-0181-partial-rerun-overwrote-full-round-playwright-report.md)
+
 ### Report #0179 — คิวรันซ้ำเขียน `done rc=0` ทั้งที่ทั้งสองใบจบแบบ SKIPPED
 
 - กฎ: ตัวรันงานเฉพาะกิจทุกตัวตัดสินผลจากบันทึกผลจริง (`results.log`) ไม่ใช่รหัสจบ และต้องผ่านเทสบอทจำลองที่มีเคสต้องไม่ผ่าน ≥1 ก่อนปล่อย · ผลไม่ผ่านต้องแจ้งเองได้แม้โนติหลักถูกพัก · ห้ามเขียน `$?` ในประโยคเดียวกับ `$(...)` — เก็บใส่ตัวแปรทันที

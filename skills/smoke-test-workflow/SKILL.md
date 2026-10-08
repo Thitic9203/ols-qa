@@ -114,14 +114,22 @@ E2E_JSON_OUT=<WORKDIR>/run.json TARGET_ENV=<env> rtk proxy npx playwright test \
 
 - **`rtk proxy` is mandatory.** Without it the rtk hook rewrites the command and collapses Playwright's
   output to `PASS (0) FAIL (0)` — a run that looks empty rather than one that ran.
-- **Do not pass `--reporter=`.** The config's own reporter list includes the HTML reporter, and that
-  report is a deliverable. Overriding it silently loses the artefact.
+- **Do not pass `--reporter=` on the full run.** The config's own reporter list includes the HTML
+  reporter, and that report is a deliverable. Overriding it silently loses the artefact. (Partial runs
+  are the opposite — see below.)
 - `@safe` is read-only. Anything that writes is out of scope for this workflow.
 - `<WORKDIR>` is a **permanent** folder — `~/ols-qa-testing-bot/out/<env>-smoke-<YYYY-MM-DD>/`.
   Never `/tmp`: it is wiped and takes the round's evidence with it.
+- **Copy the HTML report into `<WORKDIR>` the moment the full run ends**
+  (`cp playwright-report/index.html <WORKDIR>/playwright-report-full.html`). The config pins the HTML
+  reporter to `playwright-report/`, so the next run of any size overwrites it.
 
-**Then rerun every flagged case alone**, `--workers=1 --retries=0`, into a separate `--output` dir so
-the first run's artefacts survive. A case that passes on the rerun is unstable, not a defect.
+**Then rerun every flagged case alone**, `--workers=1 --retries=0 --reporter=list`, into a separate
+`--output` dir so the first run's artefacts survive. `--reporter=list` is mandatory on every partial
+run (reruns, targeted checks, triage): without it the partial run rewrites `playwright-report/` and
+the full round's report — a deliverable — is gone (2026-10-08: a 15-case rerun overwrote the full
+round's report and forced a whole new run before the notify). A case that passes on the rerun is
+unstable, not a defect.
 
 ## Stage 4 — Triage every non-passing case
 
