@@ -23,6 +23,10 @@
  * discord.json  — array of {ts, ticket, kind: "retest"|"tested", project?, issuetype?, runner?, owner?}
  *                 `owner` is the QA Owner shown in the post (a reviewer, not the runner) and is
  *                 never used as the poster. The cutoff does not apply to Discord entries.
+ *
+ * One use = a retest result actually posted to Jira. A Discord entry is never counted on its own:
+ * matched to a posted record it only marks (and may upgrade) that record; unmatched, it is listed
+ * in a separate "not posted" table and left out of every count.
  */
 
 const fs = require('fs');
@@ -33,7 +37,6 @@ const VERDICTS = ['PASSED', 'FAILED', 'BLOCKED'];
 const NONE = '—';
 const DAY_MS = 86400000;
 const DISCORD_KINDS = { retest: 'retest-bug-workflow', tested: 'testing-ticket' };
-const DISCORD_UNKNOWN_POSTER = 'unknown (Discord)';
 
 /* ------------------------------------------------------------------ parsing */
 
@@ -267,7 +270,7 @@ function aggregate({ comments = [], snapshotRows = [], discord = null, cutoff = 
     overlapWarning: snapshotRows.length > 0 && cutoffMs === null,
     commentRange: null,
     snapshotRange: null,
-    discord: discord === null ? null : { read: discord.length, matched: 0, upgraded: 0, added: 0, range: null },
+    discord: discord === null ? null : { read: discord.length, matched: 0, upgraded: 0, notPosted: 0, range: null },
   };
 
   // Every record that could be counted: marked comments after the cutoff, and every snapshot row
@@ -335,22 +338,24 @@ function aggregate({ comments = [], snapshotRows = [], discord = null, cutoff = 
     if (isManualRow) manual.push(rec); else records.push(rec);
   });
 
+  // An unmatched entry has no posted Jira result behind it (a draft, or a run that never posted),
+  // so it is not a use: list it for review, keep it out of every count.
   const matchedEntries = new Set(matches.values());
+  const notPostedRows = [];
   entries.forEach((e, di) => {
     if (matchedEntries.has(di)) return;
-    stats.discord.added += 1;
-    records.push({
-      issue_key: e.ticket.trim(),
-      project: e.project || 'unknown',
-      issuetype: e.issuetype || 'unknown',
-      poster: e.runner || DISCORD_UNKNOWN_POSTER, // never e.owner: that is the reviewer, not the runner
-      verdict: 'other',
-      skillVia: DISCORD_KINDS[e.kind],
-      src: 'discord',
-      agent: NONE,
-      inDiscord: true,
+    stats.discord.notPosted += 1;
+    notPostedRows.push({
+      ticket: e.ticket.trim(),
+      kind: e.kind,
+      skill: DISCORD_KINDS[e.kind],
+      ts: String(e.ts).trim(),
+      runner: e.runner || NONE,
+      owner: e.owner || NONE, // the QA Owner is the reviewer, not the runner
+      ms: timeSpan(e.ts).lo,
     });
   });
+  notPostedRows.sort((a, b) => a.ms - b.ms || compareKeys(a.ticket, b.ticket));
   if (stats.discord) stats.discord.range = range(entries.map((e) => parseDate(e.ts)));
 
   stats.commentRange = range(commentTimes);
@@ -382,6 +387,7 @@ function aggregate({ comments = [], snapshotRows = [], discord = null, cutoff = 
   return {
     rows: group(records, ['poster', 'project', 'issuetype', 'skillVia', 'src', 'agent']),
     manualRows: group(manual, ['poster', 'project', 'issuetype', 'skillVia']),
+    notPostedRows: notPostedRows.map(({ ms, ...r }) => r),
     totals: sortedTotals,
     total: records.length,
     stats,
@@ -402,10 +408,12 @@ function cell(v) {
   return String(v == null ? '' : v).replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
 }
 
-function table(headers, rows) {
+/** `footer`: an optional closing row (e.g. a Total) rendered after the data rows, or the (none) row. */
+function table(headers, rows, footer = null) {
   const lines = ['| ' + headers.join(' | ') + ' |', '|' + headers.map(() => '---').join('|') + '|'];
   if (!rows.length) lines.push('| ' + headers.map((_, i) => (i === 0 ? '(none)' : '')).join(' | ') + ' |');
   for (const r of rows) lines.push('| ' + r.map(cell).join(' | ') + ' |');
+  if (footer) lines.push('| ' + footer.map(cell).join(' | ') + ' |');
   return lines.join('\n');
 }
 
@@ -414,7 +422,7 @@ function fmtRange(r) {
 }
 
 function renderMarkdown(result) {
-  const { rows, manualRows, totals, total, stats } = result;
+  const { rows, manualRows, notPostedRows, totals, total, stats } = result;
   const out = [];
   out.push('# Retest skill usage');
   out.push('');
@@ -423,7 +431,8 @@ function renderMarkdown(result) {
   out.push('## Usage');
   out.push('');
   out.push(table(['Poster', 'Project', 'Issuetype', 'Skill/via', 'Src', 'Agent', 'Count', 'Discord', 'Issues'],
-    rows.map((r) => [r.poster, r.project, r.issuetype, r.skillVia, r.src, r.agent, r.count, r.discord, r.issues.join(', ')])));
+    rows.map((r) => [r.poster, r.project, r.issuetype, r.skillVia, r.src, r.agent, r.count, r.discord, r.issues.join(', ')]),
+    ['**Total**', '', '', '', '', '', `**${total}**`, rows.reduce((s, r) => s + r.discord, 0), '']));
   const totalSections = [['poster', 'Poster'], ['issuetype', 'Issuetype'], ['project', 'Project'], ['verdict', 'Verdict']];
   for (const [key, label] of totalSections) {
     out.push('');
@@ -436,6 +445,13 @@ function renderMarkdown(result) {
   out.push('');
   out.push(table(['Poster', 'Project', 'Issuetype', 'Skill', 'Count', 'Issues'],
     manualRows.map((r) => [r.poster, r.project, r.issuetype, r.skillVia, r.count, r.issues.join(', ')])));
+  if (stats.discord) {
+    out.push('');
+    out.push('## Announced in Discord, not posted to Jira (not counted)');
+    out.push('');
+    out.push(table(['Ticket', 'Kind', 'Skill', 'Date', 'Runner', 'QA Owner (reviewer)'],
+      notPostedRows.map((r) => [r.ticket, r.kind, r.skill, r.ts, r.runner, r.owner])));
+  }
   out.push('');
   out.push('---');
   out.push('');
@@ -447,7 +463,7 @@ function renderMarkdown(result) {
   foot.push(`Comment date range: ${fmtRange(stats.commentRange)} · snapshot date range: ${fmtRange(stats.snapshotRange)}`);
   if (stats.discord) {
     const d = stats.discord;
-    foot.push(`Discord entries read: ${d.read} · matched: ${d.matched} · upgraded: ${d.upgraded} · added as new: ${d.added}`);
+    foot.push(`Discord entries read: ${d.read} · matched: ${d.matched} · upgraded: ${d.upgraded} · not posted (not counted): ${d.notPosted}`);
     foot.push(`Discord date range: ${fmtRange(d.range)}`);
   }
   if (stats.overlapWarning) foot.push('Warning: --snapshot given without --cutoff — comments the snapshot already covers may be counted twice.');
