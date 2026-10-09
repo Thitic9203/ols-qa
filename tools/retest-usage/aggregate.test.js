@@ -202,11 +202,12 @@ t('markdown: every section present, main table sorted by count desc, pipes escap
     assert.ok(md.includes(h), 'missing section ' + h);
   }
   assert.ok(md.includes('| Poster | Project | Issuetype | Skill/via | Src | Agent | Count | Discord | Issues |'));
-  const usage = md.split('## Usage')[1].split('##')[0].split('\n').filter((l) => l.startsWith('| ') && !l.startsWith('| Poster'));
+  const usage = md.split('## Usage')[1].split('##')[0].split('\n').filter((l) => l.startsWith('| ') && !l.startsWith('| Poster') && !l.startsWith('| **Total**'));
   assert.strictEqual(usage.length, 2);
   assert.ok(usage[0].startsWith('| Tester A |'), 'highest count first: ' + usage[0]);
   assert.ok(usage[0].includes('| 2 | 0 | DEMO-1, DEMO-2 |'));
   assert.ok(usage[1].includes('Tester B\\|X'), 'pipe not escaped: ' + usage[1]);
+  assert.match(md, /\| \*\*Total\*\* \|  \|  \|  \|  \|  \| \*\*3\*\* \| 0 \|  \|/);
   assert.match(md, /Comments read: 3 · marked, counted: 3 · unmarked, skipped: 0/);
   assert.match(md, /Comment date range: 2026-10-02T03:00:00.000Z → 2026-10-02T03:00:00.000Z/);
 });
@@ -215,6 +216,37 @@ t('markdown: empty input still renders every table with a (none) row', () => {
   const md = A.renderMarkdown(A.aggregate({ comments: [] }));
   assert.ok((md.match(/\| \(none\) \|/g) || []).length >= 6);
   assert.match(md, /Skill uses counted: \*\*0\*\*/);
+  assert.match(md, /\| \*\*Total\*\* \|.*\| \*\*0\*\* \| 0 \|/);
+});
+
+t('markdown: sum of usage rows == Total row == "Skill uses counted" header', () => {
+  const rows = A.parseSnapshot([
+    SNAPSHOT_HEADER,
+    'DEMO-20,DEMO,Bug,1,Tester B,2026-09-01,PASSED,retest-bug-workflow',
+    'DEMO-21,DEMO,Task,2,Tester B,2026-09-02,FAILED,manual',
+    'DEMO-22,DEMO,Bug,3,Tester C,2026-09-03,PASSED,"unknown (no marker, pre-ship)"',
+  ].join('\n'));
+  const r = A.aggregate({
+    comments: [comment(), comment({ issue_key: 'DEMO-2' }), comment({ issue_key: 'DEMO-3', author: 'Tester B' })],
+    snapshotRows: rows, cutoff: '2026-10-01',
+    discord: [disc({ ticket: 'DEMO-21', ts: '2026-09-02' }), disc({ ticket: 'DEMO-99', ts: '2026-09-10' })],
+  });
+  const md = A.renderMarkdown(r);
+  const usage = md.split('## Usage')[1].split('##')[0].split('\n').filter((l) => l.startsWith('| '));
+  const data = usage.filter((l) => !l.startsWith('| Poster') && !l.startsWith('| **Total**'));
+  const totalLine = usage.filter((l) => l.startsWith('| **Total**'));
+  assert.strictEqual(totalLine.length, 1);
+  const countCol = (l) => Number(l.split(' | ')[6].replace(/\*/g, ''));
+  const sum = data.reduce((s, l) => s + countCol(l), 0);
+  const totalRow = countCol(totalLine[0]);
+  const header = Number(/Skill uses counted: \*\*(\d+)\*\*/.exec(md)[1]);
+  assert.strictEqual(sum, totalRow);
+  assert.strictEqual(totalRow, header);
+  assert.strictEqual(header, r.total);
+  // 3 comments + skill row DEMO-20 + unknown row DEMO-22 + manual DEMO-21 upgraded by Discord; DEMO-99 not posted
+  assert.strictEqual(r.total, 6);
+  assert.deepStrictEqual(r.notPostedRows.map((x) => x.ticket), ['DEMO-99']);
+  assert.strictEqual(r.rows.reduce((s, x) => s + x.count, 0), r.total);
 });
 
 /* --------------------------------------------------------------- discord */
@@ -237,7 +269,7 @@ t('discord: entry within 1 day of a marked comment counts once and marks it inDi
   assert.strictEqual(r.rows[0].src, 'ols-qa');
   assert.strictEqual(r.rows[0].discord, 1);
   assert.deepStrictEqual({ ...r.stats.discord, range: undefined },
-    { read: 1, matched: 1, upgraded: 0, added: 0, range: undefined });
+    { read: 1, matched: 1, upgraded: 0, notPosted: 0, range: undefined });
 });
 
 t('discord: a date-only ts matches a Jira +0700 timestamp on the same or adjacent day', () => {
@@ -249,14 +281,17 @@ t('discord: a date-only ts matches a Jira +0700 timestamp on the same or adjacen
   assert.strictEqual(r.stats.discord.matched, 1);
 });
 
-t('discord: 2 days apart is no match — the entry is added as a new run', () => {
+t('discord: 2 days apart is no match — the entry is not counted and is listed as not posted', () => {
   const r = A.aggregate({
     comments: [comment({ created: '2026-10-02T10:00:00.000+0700' })],
     discord: [disc({ ts: '2026-10-04T10:00:01.000+07:00' }), disc({ ts: '2026-10-04' })],
   });
-  assert.strictEqual(r.total, 3);
+  assert.strictEqual(r.total, 1);
   assert.strictEqual(r.stats.discord.matched, 0);
-  assert.strictEqual(r.stats.discord.added, 2);
+  assert.strictEqual(r.stats.discord.notPosted, 2);
+  assert.deepStrictEqual(r.notPostedRows.map((x) => [x.ticket, x.ts]),
+    [['DEMO-1', '2026-10-04'], ['DEMO-1', '2026-10-04T10:00:01.000+07:00']]);
+  assert.ok(r.rows.every((x) => x.src !== 'discord'));
   assert.strictEqual(r.rows.find((x) => x.src === 'ols-qa').discord, 0);
 });
 
@@ -266,8 +301,9 @@ t('discord: different ticket never matches, key compared case-insensitively', ()
     discord: [disc({ ticket: 'DEMO-2' }), disc({ ticket: ' demo-1 ' })],
   });
   assert.strictEqual(r.stats.discord.matched, 1);
-  assert.strictEqual(r.stats.discord.added, 1);
-  assert.strictEqual(r.total, 2);
+  assert.strictEqual(r.stats.discord.notPosted, 1);
+  assert.strictEqual(r.total, 1);
+  assert.deepStrictEqual(r.notPostedRows.map((x) => x.ticket), ['DEMO-2']);
 });
 
 t('discord: one-to-one — duplicate posts for one ticket match one record each, nearest first', () => {
@@ -284,8 +320,9 @@ t('discord: one-to-one — duplicate posts for one ticket match one record each,
   assert.deepStrictEqual([...m.entries()].sort(), [[0, 0], [1, 2]]);
   const r = A.aggregate({ comments, discord });
   assert.strictEqual(r.stats.discord.matched, 2);
-  assert.strictEqual(r.stats.discord.added, 1); // the duplicate post is a run with no Jira record
-  assert.strictEqual(r.total, 3);
+  assert.strictEqual(r.stats.discord.notPosted, 1); // the duplicate post has no Jira record of its own
+  assert.strictEqual(r.total, 2);
+  assert.deepStrictEqual(r.notPostedRows.map((x) => [x.ticket, x.ts]), [['DEMO-3', '2026-10-02T12:00:00.000+07:00']]);
   assert.strictEqual(r.rows.find((x) => x.src === 'ols-qa').discord, 2);
 });
 
@@ -323,7 +360,7 @@ t('discord: matched unknown snapshot row is upgraded; tested → testing-ticket;
   assert.strictEqual(r.stats.discord.matched, 2);
 });
 
-t('discord: unmatched entry is a new run — runner as poster, else unknown; owner never the poster', () => {
+t('discord: unmatched entries are not counted — listed in the not-posted table with runner / owner as given', () => {
   const r = A.aggregate({
     comments: [],
     discord: [
@@ -332,16 +369,23 @@ t('discord: unmatched entry is a new run — runner as poster, else unknown; own
       disc({ ticket: 'DEMO-10', kind: 'tested' }),
     ],
   });
-  assert.strictEqual(r.total, 3);
-  const a = r.rows.find((x) => x.issues.includes('DEMO-8'));
-  assert.deepStrictEqual([a.poster, a.project, a.issuetype, a.skillVia, a.src, a.agent, a.discord],
-    ['Tester A', 'DEMO', 'Bug', 'retest-bug-workflow', 'discord', '—', 1]);
-  const b = r.rows.find((x) => x.issues.includes('DEMO-9'));
-  assert.deepStrictEqual([b.poster, b.project, b.issuetype], ['unknown (Discord)', 'unknown', 'unknown']);
-  const c = r.rows.find((x) => x.issues.includes('DEMO-10'));
-  assert.strictEqual(c.skillVia, 'testing-ticket');
-  assert.deepStrictEqual(r.totals.verdict, [{ name: 'other', count: 3 }]);
-  assert.doesNotMatch(A.renderMarkdown(r), /Reviewer Q/);
+  assert.strictEqual(r.total, 0);
+  assert.deepStrictEqual(r.rows, []);
+  for (const k of ['poster', 'issuetype', 'project', 'verdict']) assert.deepStrictEqual(r.totals[k], [], k);
+  assert.strictEqual(r.stats.discord.notPosted, 3);
+  assert.deepStrictEqual(r.notPostedRows.map((x) => [x.ticket, x.kind, x.skill, x.runner, x.owner]), [
+    ['DEMO-8', 'retest', 'retest-bug-workflow', 'Tester A', 'Reviewer Q'],
+    ['DEMO-9', 'retest', 'retest-bug-workflow', '—', 'Reviewer Q'],
+    ['DEMO-10', 'tested', 'testing-ticket', '—', '—'],
+  ]);
+  const md = A.renderMarkdown(r);
+  assert.match(md, /Skill uses counted: \*\*0\*\*/);
+  const np = md.split('## Announced in Discord, not posted to Jira (not counted)')[1].split('\n---\n')[0];
+  assert.ok(np.includes('| Ticket | Kind | Skill | Date | Runner | QA Owner (reviewer) |'));
+  assert.ok(np.includes('| DEMO-8 | retest | retest-bug-workflow | 2026-10-02T10:30:00.000+07:00 | Tester A | Reviewer Q |'));
+  assert.ok(np.includes('| DEMO-10 | tested | testing-ticket | 2026-10-02T10:30:00.000+07:00 | — | — |'));
+  const usage = md.split('## Usage')[1].split('##')[0];
+  assert.doesNotMatch(usage, /DEMO-8|DEMO-9|DEMO-10|Reviewer Q/);
 });
 
 t('discord: cutoff does not drop entries; a comment before the cutoff is not a match target', () => {
@@ -351,8 +395,9 @@ t('discord: cutoff does not drop entries; a comment before the cutoff is not a m
     cutoff: '2026-10-01',
   });
   assert.strictEqual(r.stats.beforeCutoff, 1);
-  assert.strictEqual(r.stats.discord.added, 2);
-  assert.strictEqual(r.total, 2);
+  assert.strictEqual(r.stats.discord.notPosted, 2);
+  assert.strictEqual(r.notPostedRows.length, 2);
+  assert.strictEqual(r.total, 0);
 });
 
 t('discord: footer counts and the Discord column render', () => {
@@ -361,11 +406,13 @@ t('discord: footer counts and the Discord column render', () => {
     comments: [comment()], snapshotRows: rows, cutoff: '2026-10-01',
     discord: [disc(), disc({ ticket: 'DEMO-11', ts: '2026-09-01' }), disc({ ticket: 'DEMO-12', ts: '2026-09-15' })],
   }));
-  assert.match(md, /Discord entries read: 3 · matched: 2 · upgraded: 1 · added as new: 1/);
+  assert.match(md, /Discord entries read: 3 · matched: 2 · upgraded: 1 · not posted \(not counted\): 1/);
+  assert.match(md, /\| DEMO-12 \| retest \| retest-bug-workflow \| 2026-09-15 \| — \| — \|/);
   assert.match(md, /Discord date range: 2026-09-01T00:00:00.000Z → 2026-10-02T03:30:00.000Z/);
   assert.match(md, /Snapshot rows: 1 · via skill: 1 · not via skill: 0/);
   assert.match(md, /\| retest-bug-workflow \/ retest-bug \| ols-qa \| claude-code \| 1 \| 1 \| DEMO-1 \|/);
   assert.doesNotMatch(A.renderMarkdown(A.aggregate({ comments: [comment()] })), /Discord entries read/);
+  assert.doesNotMatch(A.renderMarkdown(A.aggregate({ comments: [comment()] })), /Announced in Discord/);
 });
 
 t('discord: pure — inputs untouched, a rerun gives the identical result', () => {
@@ -377,7 +424,8 @@ t('discord: pure — inputs untouched, a rerun gives the identical result', () =
   const r2 = A.renderMarkdown(A.aggregate({ comments, snapshotRows, discord, cutoff: '2026-10-01' }));
   assert.strictEqual(JSON.stringify({ comments, snapshotRows, discord }), before);
   assert.strictEqual(r1, r2);
-  assert.match(r1, /Skill uses counted: \*\*5\*\*/);
+  assert.match(r1, /Skill uses counted: \*\*3\*\*/);
+  assert.match(r1, /not posted \(not counted\): 2/);
 });
 
 t('discord: malformed entries are refused', () => {
@@ -412,9 +460,10 @@ t('CLI: reads real files, applies cutoff + snapshot + discord, writes --out', ()
       { encoding: 'utf8' });
     assert.match(stdout, /wrote /);
     const md = fs.readFileSync(out, 'utf8');
-    assert.match(md, /Skill uses counted: \*\*3\*\*/);
-    assert.match(md, /Discord entries read: 2 · matched: 1 · upgraded: 0 · added as new: 1/);
-    assert.match(md, /DEMO-16/);
+    assert.match(md, /Skill uses counted: \*\*2\*\*/);
+    assert.match(md, /Discord entries read: 2 · matched: 1 · upgraded: 0 · not posted \(not counted\): 1/);
+    assert.match(md, /\| DEMO-16 \| tested \| testing-ticket \| 2026-09-21 \| Tester A \| — \|/);
+    assert.doesNotMatch(md.split('## Usage')[1].split('##')[0], /DEMO-16/);
     assert.match(md, /unmarked, skipped: 1/);
     assert.match(md, /before cutoff \(2026-10-01T00:00:00.000Z\), skipped: 1/);
     assert.match(md, /DEMO-15/);

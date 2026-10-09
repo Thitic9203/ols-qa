@@ -52,8 +52,10 @@ and whether to include the team Discord thread where every AI test run is announ
    of a marked comment or snapshot row counts once (as that record, shown in the `Discord` column);
    each record pairs with at most one entry, nearest date first. A matched snapshot row labelled
    `manual…` or `unknown…` is upgraded to `retest-bug-workflow` / `testing-ticket (AI confirmed by
-   Discord)`. Unmatched entries count as new runs (`src = discord`). The cutoff does not apply to
-   Discord entries. The footer lists entries read · matched · upgraded · added as new.
+   Discord)`. One use = a retest result actually posted to Jira, so unmatched entries are **not
+   counted**; they are listed in "Announced in Discord, not posted to Jira (not counted)". The cutoff
+   does not apply to Discord entries. The usage table ends with a Total row equal to "Skill uses
+   counted". The footer lists entries read · matched · upgraded · not posted (not counted).
 6. **Show** the markdown tables in chat. If `--out` is used, the file goes outside the repository too.
 
 ## Safety
