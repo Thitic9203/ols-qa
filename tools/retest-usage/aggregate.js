@@ -3,8 +3,9 @@
 
 /**
  * aggregate.js — turn exported retest comments (plus an optional backfill
- * snapshot) into a markdown usage report: who used the retest skill, on which
- * project / issuetype, through which entry point and agent, and with what verdict.
+ * snapshot, plus optional notifications from the team Discord thread) into a
+ * markdown usage report: who used the retest skill, on which project / issuetype,
+ * through which entry point and agent, and with what verdict.
  *
  * This repo is PUBLIC. The tool only reads files the caller passes in; it never
  * talks to Jira, and its inputs/outputs belong outside the repository.
@@ -15,10 +16,13 @@
  *
  * Usage:
  *   node tools/retest-usage/aggregate.js --comments <comments.json>
- *        [--snapshot <backfill.csv>] [--cutoff <ISO date>] [--out <file.md>]
+ *        [--snapshot <backfill.csv>] [--discord <discord.json>] [--cutoff <ISO date>] [--out <file.md>]
  *
  * comments.json — array of {issue_key, project, issuetype, author, created, body}
  * backfill.csv  — header: issue_key,project,issuetype,comment_id,poster,created,verdict,skill
+ * discord.json  — array of {ts, ticket, kind: "retest"|"tested", project?, issuetype?, runner?, owner?}
+ *                 `owner` is the QA Owner shown in the post (a reviewer, not the runner) and is
+ *                 never used as the poster. The cutoff does not apply to Discord entries.
  */
 
 const fs = require('fs');
@@ -27,6 +31,9 @@ const MARKER_ANCHOR = 'retestskillmarker';
 const SNAPSHOT_COLUMNS = ['issue_key', 'project', 'issuetype', 'comment_id', 'poster', 'created', 'verdict', 'skill'];
 const VERDICTS = ['PASSED', 'FAILED', 'BLOCKED'];
 const NONE = '—';
+const DAY_MS = 86400000;
+const DISCORD_KINDS = { retest: 'retest-bug-workflow', tested: 'testing-ticket' };
+const DISCORD_UNKNOWN_POSTER = 'unknown (Discord)';
 
 /* ------------------------------------------------------------------ parsing */
 
@@ -96,6 +103,25 @@ function parseDate(s) {
   return Date.parse(norm);
 }
 
+/**
+ * A date as a time span in ms: a timestamp is a point, a bare `YYYY-MM-DD` covers its whole UTC
+ * day (a date-only value says nothing about the hour, so it must not be read as midnight only).
+ * Returns null when unparseable.
+ */
+function timeSpan(s) {
+  const ms = parseDate(s);
+  if (Number.isNaN(ms)) return null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(s).trim())) return { lo: ms, hi: ms + DAY_MS - 1 };
+  return { lo: ms, hi: ms };
+}
+
+/** Gap between two spans in ms (0 when they overlap). */
+function spanGap(a, b) {
+  if (a.hi < b.lo) return b.lo - a.hi;
+  if (b.hi < a.lo) return a.lo - b.hi;
+  return 0;
+}
+
 /** Minimal RFC 4180 CSV parser: quoted fields, doubled quotes, CRLF, leading BOM. */
 function parseCsv(text) {
   const src = String(text).replace(/^﻿/, '');
@@ -138,6 +164,23 @@ function parseSnapshot(text) {
   });
 }
 
+/**
+ * Validate parsed discord.json. Throws on anything that would make the count wrong:
+ * a non-array, a missing ticket, an unknown kind or an unparseable timestamp.
+ */
+function validateDiscord(entries) {
+  if (!Array.isArray(entries)) throw new Error('discord file must hold a JSON array');
+  entries.forEach((e, i) => {
+    if (e == null || typeof e !== 'object') throw new Error(`discord entry ${i} is not an object`);
+    if (typeof e.ticket !== 'string' || e.ticket.trim() === '') throw new Error(`discord entry ${i} has no ticket`);
+    if (!Object.prototype.hasOwnProperty.call(DISCORD_KINDS, e.kind)) {
+      throw new Error(`discord entry ${i} has kind ${JSON.stringify(e.kind)} (expected "retest" or "tested")`);
+    }
+    if (timeSpan(e.ts) === null) throw new Error(`discord entry ${i} has an unparseable ts: ${JSON.stringify(e.ts)}`);
+  });
+  return entries;
+}
+
 /* -------------------------------------------------------------- aggregation */
 
 function authorName(a) {
@@ -148,6 +191,43 @@ function authorName(a) {
 
 function isManual(skill) {
   return /^manual/i.test(String(skill || '').trim());
+}
+
+/** Snapshot labels a Discord announcement can upgrade to AI use. */
+function isUpgradable(skill) {
+  return /^(manual|unknown)/i.test(String(skill || '').trim());
+}
+
+function normKey(k) {
+  return String(k == null ? '' : k).trim().toUpperCase();
+}
+
+/**
+ * One-to-one match of Discord entries to counted records: same ticket, gap ≤ 1 day. Greedy over
+ * every candidate pair, nearest first; ties broken by record index then entry index, so a rerun
+ * on the same input always pairs the same way. Records with no parseable date never match.
+ * Returns Map(recordIndex → entryIndex). Reads its inputs only.
+ */
+function matchDiscord(records, entries) {
+  const pairs = [];
+  entries.forEach((e, di) => {
+    const es = timeSpan(e.ts);
+    const ticket = normKey(e.ticket);
+    records.forEach((r, ri) => {
+      if (r.span === null || normKey(r.issue_key) !== ticket) return;
+      const gap = spanGap(r.span, es);
+      if (gap <= DAY_MS) pairs.push([gap, ri, di]);
+    });
+  });
+  pairs.sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2]);
+  const byRecord = new Map();
+  const usedEntries = new Set();
+  for (const [, ri, di] of pairs) {
+    if (byRecord.has(ri) || usedEntries.has(di)) continue;
+    byRecord.set(ri, di);
+    usedEntries.add(di);
+  }
+  return byRecord;
 }
 
 function normVerdict(v) {
@@ -169,7 +249,8 @@ function range(times) {
  * Pure aggregation. `comments` is the parsed comments.json array, `snapshotRows`
  * the parsed snapshot rows (or []), `cutoff` an ISO string or null.
  */
-function aggregate({ comments = [], snapshotRows = [], cutoff = null } = {}) {
+function aggregate({ comments = [], snapshotRows = [], discord = null, cutoff = null } = {}) {
+  if (discord !== null) validateDiscord(discord);
   const cutoffMs = cutoff == null || cutoff === '' ? null : parseDate(cutoff);
   if (cutoffMs !== null && Number.isNaN(cutoffMs)) throw new Error('--cutoff is not a valid date: ' + cutoff);
 
@@ -186,10 +267,12 @@ function aggregate({ comments = [], snapshotRows = [], cutoff = null } = {}) {
     overlapWarning: snapshotRows.length > 0 && cutoffMs === null,
     commentRange: null,
     snapshotRange: null,
+    discord: discord === null ? null : { read: discord.length, matched: 0, upgraded: 0, added: 0, range: null },
   };
 
-  const records = [];
-  const manual = [];
+  // Every record that could be counted: marked comments after the cutoff, and every snapshot row
+  // (manual ones too — a Discord announcement can upgrade them). Split into used / manual last.
+  const candidates = [];
   const commentTimes = [];
   const snapshotTimes = [];
 
@@ -203,7 +286,7 @@ function aggregate({ comments = [], snapshotRows = [], cutoff = null } = {}) {
     }
     stats.marked += 1;
     commentTimes.push(t);
-    records.push({
+    candidates.push({
       issue_key: c.issue_key || 'unknown',
       project: c.project || 'unknown',
       issuetype: c.issuetype || 'unknown',
@@ -212,12 +295,14 @@ function aggregate({ comments = [], snapshotRows = [], cutoff = null } = {}) {
       skillVia: `${fields.skill || 'unknown'} / ${fields.via || 'unknown'}`,
       src: fields.src || 'unknown',
       agent: fields.agent || 'unknown',
+      span: timeSpan(c.created),
+      upgradable: false,
     });
   }
 
   for (const r of snapshotRows) {
     snapshotTimes.push(parseDate(r.created));
-    const rec = {
+    candidates.push({
       issue_key: r.issue_key || 'unknown',
       project: r.project || 'unknown',
       issuetype: r.issuetype || 'unknown',
@@ -226,9 +311,47 @@ function aggregate({ comments = [], snapshotRows = [], cutoff = null } = {}) {
       skillVia: r.skill || 'unknown',
       src: 'snapshot',
       agent: NONE,
-    };
-    if (isManual(r.skill)) { stats.snapshotManual += 1; manual.push(rec); } else { stats.snapshotSkill += 1; records.push(rec); }
+      span: timeSpan(r.created),
+      upgradable: isUpgradable(r.skill),
+    });
   }
+
+  const entries = discord || [];
+  const matches = matchDiscord(candidates, entries);
+  const records = [];
+  const manual = [];
+  candidates.forEach((c, ri) => {
+    const { span, upgradable, ...rec } = c;
+    rec.inDiscord = matches.has(ri);
+    if (rec.inDiscord) {
+      stats.discord.matched += 1;
+      if (upgradable) {
+        rec.skillVia = `${DISCORD_KINDS[entries[matches.get(ri)].kind]} (AI confirmed by Discord)`;
+        stats.discord.upgraded += 1;
+      }
+    }
+    const isManualRow = rec.src === 'snapshot' && isManual(rec.skillVia);
+    if (rec.src === 'snapshot') { if (isManualRow) stats.snapshotManual += 1; else stats.snapshotSkill += 1; }
+    if (isManualRow) manual.push(rec); else records.push(rec);
+  });
+
+  const matchedEntries = new Set(matches.values());
+  entries.forEach((e, di) => {
+    if (matchedEntries.has(di)) return;
+    stats.discord.added += 1;
+    records.push({
+      issue_key: e.ticket.trim(),
+      project: e.project || 'unknown',
+      issuetype: e.issuetype || 'unknown',
+      poster: e.runner || DISCORD_UNKNOWN_POSTER, // never e.owner: that is the reviewer, not the runner
+      verdict: 'other',
+      skillVia: DISCORD_KINDS[e.kind],
+      src: 'discord',
+      agent: NONE,
+      inDiscord: true,
+    });
+  });
+  if (stats.discord) stats.discord.range = range(entries.map((e) => parseDate(e.ts)));
 
   stats.commentRange = range(commentTimes);
   stats.snapshotRange = range(snapshotTimes);
@@ -237,9 +360,10 @@ function aggregate({ comments = [], snapshotRows = [], cutoff = null } = {}) {
     const m = new Map();
     for (const r of list) {
       const k = JSON.stringify(keyFields.map((f) => r[f]));
-      if (!m.has(k)) m.set(k, { ...Object.fromEntries(keyFields.map((f) => [f, r[f]])), count: 0, issues: new Set() });
+      if (!m.has(k)) m.set(k, { ...Object.fromEntries(keyFields.map((f) => [f, r[f]])), count: 0, discord: 0, issues: new Set() });
       const g = m.get(k);
       g.count += 1;
+      if (r.inDiscord) g.discord += 1;
       g.issues.add(r.issue_key);
     }
     return [...m.values()]
@@ -298,8 +422,8 @@ function renderMarkdown(result) {
   out.push('');
   out.push('## Usage');
   out.push('');
-  out.push(table(['Poster', 'Project', 'Issuetype', 'Skill/via', 'Src', 'Agent', 'Count', 'Issues'],
-    rows.map((r) => [r.poster, r.project, r.issuetype, r.skillVia, r.src, r.agent, r.count, r.issues.join(', ')])));
+  out.push(table(['Poster', 'Project', 'Issuetype', 'Skill/via', 'Src', 'Agent', 'Count', 'Discord', 'Issues'],
+    rows.map((r) => [r.poster, r.project, r.issuetype, r.skillVia, r.src, r.agent, r.count, r.discord, r.issues.join(', ')])));
   const totalSections = [['poster', 'Poster'], ['issuetype', 'Issuetype'], ['project', 'Project'], ['verdict', 'Verdict']];
   for (const [key, label] of totalSections) {
     out.push('');
@@ -321,6 +445,11 @@ function renderMarkdown(result) {
   if (stats.undatedKept) foot.push(`Marked comments with no parseable date, kept despite the cutoff: ${stats.undatedKept}`);
   foot.push(`Snapshot rows: ${stats.snapshotRows} · via skill: ${stats.snapshotSkill} · not via skill: ${stats.snapshotManual}`);
   foot.push(`Comment date range: ${fmtRange(stats.commentRange)} · snapshot date range: ${fmtRange(stats.snapshotRange)}`);
+  if (stats.discord) {
+    const d = stats.discord;
+    foot.push(`Discord entries read: ${d.read} · matched: ${d.matched} · upgraded: ${d.upgraded} · added as new: ${d.added}`);
+    foot.push(`Discord date range: ${fmtRange(d.range)}`);
+  }
   if (stats.overlapWarning) foot.push('Warning: --snapshot given without --cutoff — comments the snapshot already covers may be counted twice.');
   out.push(foot.join('  \n'));
   out.push('');
@@ -330,7 +459,7 @@ function renderMarkdown(result) {
 /* ---------------------------------------------------------------------- CLI */
 
 function parseArgs(argv) {
-  const known = { '--comments': 'comments', '--snapshot': 'snapshot', '--cutoff': 'cutoff', '--out': 'out' };
+  const known = { '--comments': 'comments', '--snapshot': 'snapshot', '--discord': 'discord', '--cutoff': 'cutoff', '--out': 'out' };
   const args = {};
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
@@ -346,7 +475,7 @@ function parseArgs(argv) {
 }
 
 const USAGE = 'usage: node tools/retest-usage/aggregate.js --comments <comments.json> ' +
-  '[--snapshot <backfill.csv>] [--cutoff <ISO date>] [--out <file.md>]';
+  '[--snapshot <backfill.csv>] [--discord <discord.json>] [--cutoff <ISO date>] [--out <file.md>]';
 
 function main(argv) {
   let args;
@@ -373,9 +502,19 @@ function main(argv) {
     }
   }
 
+  let discord = null;
+  if (args.discord) {
+    try {
+      discord = validateDiscord(JSON.parse(fs.readFileSync(args.discord, 'utf8')));
+    } catch (e) {
+      console.error('could not read discord file: ' + e.message);
+      return 2;
+    }
+  }
+
   let md;
   try {
-    md = renderMarkdown(aggregate({ comments, snapshotRows, cutoff: args.cutoff || null }));
+    md = renderMarkdown(aggregate({ comments, snapshotRows, discord, cutoff: args.cutoff || null }));
   } catch (e) {
     console.error(e.message);
     return 2;
@@ -390,7 +529,10 @@ function main(argv) {
   return 0;
 }
 
-module.exports = { parseMarker, parseVerdict, parseSnapshot, parseCsv, parseDate, bodyText, aggregate, renderMarkdown, main };
+module.exports = {
+  parseMarker, parseVerdict, parseSnapshot, parseCsv, parseDate, bodyText, validateDiscord, matchDiscord,
+  aggregate, renderMarkdown, main,
+};
 
 // exitCode, not exit(): a hard exit can cut off a large report still draining to a pipe.
 if (require.main === module) process.exitCode = main(process.argv.slice(2));
