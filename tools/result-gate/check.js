@@ -10,7 +10,8 @@
  * means "nothing mechanical is wrong", never "the results are right".
  *
  * Line fields: key, tc, verdict (PASSED|PWMI|FAILED|BLOCKED), actual, evidence[],
- *   clip_verified (true only after the video verifier passed that clip),
+ *   clip_verified (true only after the video verifier passed that clip), verifier_failures[]
+ *   (category names), er_frames_confirmed + er_frames_reviewer (motion/freeze-only waiver),
  *   evidence_mode ("api" → api_verified instead of clip_verified), root_cause, er_issue,
  *   remark, contact (BLOCKED), attempts, failed_attempts, intermittent (FAILED),
  *   requirement_source, requirement_quote (FAILED: confirmed spec, char-exact),
@@ -43,6 +44,26 @@ const HEDGES = [/caveat/i, /not verifiable/i, /cannot verify/i, /\bassumed\b/i, 
 const SCREENSHOT = /\.(png|jpe?g|webp)$/i;
 const CODE_REF = /\S+:\d+/;
 const TICKET_REF = /\b[A-Z][A-Z0-9]+-\d+\b/;
+
+// Owner rule (25/Sep): a clip that shows every ER point passes even when the video verifier fails
+// ONLY on motion/freeze metrics — the metric is a signal to look at frames, not a verdict. It needs a
+// reviewer record (er_frames_confirmed + er_frames_reviewer). Every other verifier failure — manifest
+// missing or mismatched, resolution, wrong env/account, or any name not listed here — stays hard.
+const SOFT_VERIFIER_FAILURES = new Set(['motion', 'low_motion', 'freeze', 'frozen_repeats', 'still_hold']);
+
+function verifierFailures(l) {
+  return (Array.isArray(l.verifier_failures) ? l.verifier_failures : []).map((x) => norm(x)).filter(Boolean);
+}
+
+function hardFailures(l) {
+  return verifierFailures(l).filter((x) => !SOFT_VERIFIER_FAILURES.has(x));
+}
+
+function clipAccepted(l) {
+  if (hardFailures(l).length) return false;
+  if (l.clip_verified === true) return true;
+  return verifierFailures(l).length > 0 && l.er_frames_confirmed === true && !blank(l.er_frames_reviewer);
+}
 
 function blank(v) {
   return v === undefined || v === null || String(v).trim() === '';
@@ -96,12 +117,15 @@ function checkResults(lines, opts = {}) {
     if (blank(l.role)) add('ROLE_MISSING', l, 'no role recorded');
     if (blank(l.env)) add('ENV_MISSING', l, 'no env recorded');
 
+    const hard = hardFailures(l);
+    if (hard.length) add('CLIP_HARD_FAILURE', l, 'video verifier hard failure(s): ' + hard.join(', ') + ' — re-capture or fix the clip; a reviewer cannot waive these');
+
     const ev = Array.isArray(l.evidence) ? l.evidence.filter((e) => !blank(e)) : [];
 
     if (l.verdict === 'PASSED') {
       if (!ev.length) add('PASS_NO_EVIDENCE', l, 'PASSED with no evidence');
-      const verified = l.evidence_mode === 'api' ? l.api_verified === true : l.clip_verified === true;
-      if (!verified) add('PASS_CLIP_UNVERIFIED', l, l.evidence_mode === 'api' ? 'PASSED without api_verified' : 'PASSED without a clip that passed the video verifier (clip_verified)');
+      const verified = l.evidence_mode === 'api' ? l.api_verified === true : clipAccepted(l);
+      if (!verified) add('PASS_CLIP_UNVERIFIED', l, l.evidence_mode === 'api' ? 'PASSED without api_verified' : 'PASSED without an accepted clip (clip_verified, or motion/freeze-only verifier_failures + er_frames_confirmed + er_frames_reviewer)');
       if (HEDGES.some((re) => re.test(String(l.actual || '')))) add('PASS_HEDGED', l, 'PASSED but the actual result hedges: "' + l.actual + '"');
     } else if (VERDICTS.has(l.verdict)) {
       if (blank(l.root_cause)) add('NONPASS_NO_ROOT_CAUSE', l, l.verdict + ' without root_cause');
@@ -121,7 +145,7 @@ function checkResults(lines, opts = {}) {
         // Layer 17: a FAILED is a defect candidate — it needs the confirmed requirement quoted
         // char-exact, a clip that passed the video verifier, and a still of the failing point.
         if (blank(l.requirement_source) || blank(l.requirement_quote)) add('FAILED_NO_REQUIREMENT', l, 'FAILED without requirement_source + char-exact requirement_quote');
-        if (l.clip_verified !== true) add('FAILED_NO_VERIFIED_CLIP', l, 'FAILED without a clip that passed the video verifier (clip_verified)');
+        if (!clipAccepted(l)) add('FAILED_NO_VERIFIED_CLIP', l, 'FAILED without an accepted clip (clip_verified, or motion/freeze-only verifier_failures + er_frames_confirmed + er_frames_reviewer)');
         if (!ev.some((e) => SCREENSHOT.test(String(e)))) add('FAILED_NO_SCREENSHOT', l, 'FAILED without a screenshot in evidence');
       }
       if (l.verdict === 'FAILED') {
@@ -227,4 +251,4 @@ function main(argv) {
 
 if (require.main === module) process.exit(main(process.argv.slice(2)));
 
-module.exports = { checkResults, parseJsonl, normalizeCases, main, VERDICTS, TYPE_SKILL };
+module.exports = { SOFT_VERIFIER_FAILURES, checkResults, parseJsonl, normalizeCases, main, VERDICTS, TYPE_SKILL };

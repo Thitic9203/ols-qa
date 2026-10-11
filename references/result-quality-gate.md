@@ -40,6 +40,8 @@ the exact sentence that preceded a recorded escape below.
 | `actual` | What the screen really showed, in plain words |
 | `evidence[]` | Clip / still / API capture names for this case |
 | `clip_verified` | `true` only after this clip passed the video verifier |
+| `verifier_failures[]` | The verifier's failed checks by category (`motion`, `freeze`, `manifest_mismatch`, …) |
+| `er_frames_confirmed`, `er_frames_reviewer` | A reviewer confirmed every ER point is visible in the frames, and where that record is — layer 10 |
 | `evidence_mode`, `api_verified` | `"api"` cases prove with a verified request/response instead of a clip |
 | `root_cause` | Required for every non-PASSED line |
 | `er_issue` | Which expected-result item the defect breaks (PWMI / FAILED) |
@@ -112,14 +114,22 @@ before execution. Proof: a screen or API read showing the fixture on that surfac
 ([customer-escape-prevention.md](customer-escape-prevention.md) §7). Runs: checker
 `PASS_NO_EVIDENCE`. Proof: checker line.
 
-**10. The clip passed the video verifier before PASSED is written; stills alone never carry it — M.** Stops: a lane writing
+**10. The clip is accepted before PASSED or FAILED is written; stills alone never carry it — M.** Stops: a lane writing
 PASSED while its clip failed the verifier (2026-10-11 round); clips flipped to pass with "verify +
 gate passed" that never ran (#0113); a clip captured with a forbidden recorder and marked PASSED
 before provenance was checked (#0075); lanes marking PASSED with stills only (2026-10-11 round);
-a pass citing the ER from a PNG (#0115). Check: `clip_verified: true` is set only by reading the
-verifier's own result file for that clip, so a stills-only line never carries it; API-only cases
-use `evidence_mode: "api"` with a verified request/response (`api_verified`). Runs: checker
-`PASS_CLIP_UNVERIFIED`. Proof: verifier output per clip.
+a pass citing the ER from a PNG (#0115). Check: a clip is **accepted** when EITHER the verifier passed it
+(`clip_verified: true`, set only by reading the verifier's own result file) OR the verifier's
+**only** failures are motion/freeze metrics (too little motion, frozen repeats, still-hold share)
+**and** a reviewer record confirms every ER point is visible in the frames (`er_frames_confirmed:
+true` + `er_frames_reviewer`). A motion/freeze metric is a signal to look at the frames, not a
+verdict; stutter is fixed by cutting the frozen span, not by rejecting the clip. **Hard** failures
+are never waived by a reviewer: missing or mismatched capture manifest, wrong resolution, wrong env
+or account, and any failure name the gate does not list as motion/freeze. A stills-only line never
+has an accepted clip; API-only cases use `evidence_mode: "api"` with a verified request/response
+(`api_verified`). Runs: checker `PASS_CLIP_UNVERIFIED` / `FAILED_NO_VERIFIED_CLIP` /
+`CLIP_HARD_FAILURE`. Proof: verifier output per clip, plus the reviewer record when the waiver is
+used.
 
 **11. The evidence shows the expected result on a real screen — J.** Stops: a lane flipping cases
 to pass while the clip itself showed a failing verdict strip (#0050). Check: the frame that shows
@@ -176,7 +186,7 @@ the counts. Runs: checker `FAILED_NOT_REPRODUCED`. Proof: checker line plus the 
 Stops: invented severity; a defect reported without what correct looks like or without proof.
 Check: the expected side is a **confirmed** spec quoted char-exact (`requirement_source` +
 `requirement_quote`: AC id, design node or PO comment id — no paraphrase, no invention); the clip
-passed the video verifier and a still shows the failing point; the matching cell of
+is accepted (layer 10) and a still shows the failing point; the matching cell of
 [bug-priority-matrix.md](bug-priority-matrix.md) is cited; PWMI and FAILED name the broken ER item.
 The row goes into the **Defect candidates — NOT filed** table (§ below), never into a tracker on
 its own. Runs: checker `FAILED_NO_REQUIREMENT` / `FAILED_NO_VERIFIED_CLIP` / `FAILED_NO_SCREENSHOT`
@@ -210,7 +220,7 @@ result lines that passed this gate.
 
 | Ticket | TC / ER point | Actual | Expected (what correct looks like) | Requirement reference | Evidence | Root cause | Priority | Status |
 |--------|---------------|--------|------------------------------------|-----------------------|----------|------------|----------|--------|
-| `{ISSUE_KEY}` | `TC_nn` · `ER_n` | what the screen showed | the correct behaviour | source (AC id / design node / PO comment id) + char-exact quote | still path + verified clip + its capture manifest | `path:line` | matrix cell | Not filed yet |
+| `{ISSUE_KEY}` | `TC_nn` · `ER_n` | what the screen showed | the correct behaviour | source (AC id / design node / PO comment id) + char-exact quote | still path + accepted clip (layer 10) + its capture manifest | `path:line` | matrix cell | Not filed yet |
 
 The Status cell is always "Not filed yet" (in a Thai report: "ยังไม่ได้เปิดบั๊ก") until the owner
 says to file; filing then goes through the bug-filing workflow.

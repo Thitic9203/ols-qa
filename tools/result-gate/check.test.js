@@ -299,6 +299,48 @@ t('BLOCKED is not held to the defect-candidate rules', () => {
   assert.ok(!r.some((x) => x.startsWith('FAILED_NO_')), r.join(','));
 });
 
+/* --------------------- motion/freeze-only verifier failure (owner rule 25/Sep) */
+
+/** A clip whose only verifier failures are motion/freeze, with a reviewer record. */
+const SOFT_OK = {
+  clip_verified: false,
+  verifier_failures: ['motion', 'freeze'],
+  er_frames_confirmed: true,
+  er_frames_reviewer: 'review-result round R1 TC_01',
+};
+
+t('PASSED: motion/freeze-only verifier failure + reviewer ER-frames confirmation is accepted', () => {
+  assert.deepStrictEqual(rules([line(SOFT_OK)]), []);
+  assert.deepStrictEqual(rules([line({ ...SOFT_OK, verifier_failures: ['low_motion', 'frozen_repeats', 'still_hold'] })]), []);
+});
+
+t('PASSED: motion-only failure without the reviewer confirmation is a violation', () => {
+  assert.ok(rules([line({ ...SOFT_OK, er_frames_confirmed: false })]).includes('PASS_CLIP_UNVERIFIED'));
+  assert.ok(rules([line({ ...SOFT_OK, er_frames_reviewer: '' })]).includes('PASS_CLIP_UNVERIFIED'));
+});
+
+t('PASSED: a manifest mismatch is a hard failure even with a reviewer confirmation', () => {
+  const r = rules([line({ ...SOFT_OK, verifier_failures: ['motion', 'manifest_mismatch'] })]);
+  assert.ok(r.includes('CLIP_HARD_FAILURE'));
+  assert.ok(r.includes('PASS_CLIP_UNVERIFIED'));
+});
+
+t('missing manifest, resolution, env and account failures are hard; unknown names fail closed', () => {
+  for (const f of ['manifest_missing', 'resolution', 'env', 'account', 'something_new']) {
+    assert.ok(rules([line({ ...SOFT_OK, verifier_failures: [f] })]).includes('CLIP_HARD_FAILURE'), f);
+  }
+});
+
+t('a hard failure listed beside clip_verified:true is still a violation', () => {
+  assert.ok(rules([line({ verifier_failures: ['manifest_mismatch'] })]).includes('CLIP_HARD_FAILURE'));
+});
+
+t('FAILED: motion-only failure + reviewer confirmation is accepted; without it, a violation', () => {
+  assert.ok(!rules([failed({ attempts: 3, failed_attempts: 3, ...SOFT_OK })]).includes('FAILED_NO_VERIFIED_CLIP'));
+  assert.ok(rules([failed({ attempts: 3, failed_attempts: 3, ...SOFT_OK, er_frames_confirmed: undefined })]).includes('FAILED_NO_VERIFIED_CLIP'));
+  assert.ok(rules([failed({ attempts: 3, failed_attempts: 3, ...SOFT_OK, verifier_failures: ['manifest_mismatch'] })]).includes('CLIP_HARD_FAILURE'));
+});
+
 /* ------------------------------------------------------- parsing + CLI */
 
 t('parseJsonl reports the line number of a broken line instead of dropping it', () => {

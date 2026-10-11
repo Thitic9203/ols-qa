@@ -394,7 +394,7 @@ or "wait for someone" before this sweep is written down.
 **Required output when defects are found — never auto-file.** The round's report carries the two
 tables in [result-quality-gate.md](../../../references/result-quality-gate.md) § *Required output
 when the round finds defects*: **Defect candidates — NOT filed** (Ticket · TC/ER point · Actual ·
-Expected · Requirement reference with char-exact quote · Evidence: still + verified clip + capture
+Expected · Requirement reference with char-exact quote · Evidence: still + accepted clip (layer 10) + capture
 manifest · Root cause `path:line` · Priority per
 [bug-priority-matrix.md](../../../references/bug-priority-matrix.md) · Status "Not filed yet", in a
 Thai report "ยังไม่ได้เปิดบั๊ก"), holding only rows whose expected side is a confirmed spec; and
