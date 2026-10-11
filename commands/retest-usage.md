@@ -1,13 +1,16 @@
 ---
 description: |
-  Report who used the retest skill — per poster, project, issuetype, entry point, agent and verdict — from the marker line on posted retest comments. Read-only toward Jira.
+  Report who used the AI test skills (retest-bug-workflow and testing-ticket) — per skill, poster, project, issuetype, entry point, agent and verdict — from the marker line on posted retest and testing-ticket comments. Read-only toward Jira.
   Do NOT use for retesting a ticket (retest-bug), filing bugs (create-bug), or any Jira write.
 ---
 <!-- ols-only: this command runs tools/retest-usage/, which only this workspace has, so it is
      not synced to the generic plugin. -->
 # /retest-usage
 
-On-demand usage report for the retest skill. Takes **no arguments**; ask the user only whether
+On-demand usage report for the retest skill **and** the testing-ticket skill. Both end their posted
+comment with the same anchor `retestskillmarker`; `skill=retest-bug-workflow` or `skill=testing-ticket`
+tells them apart, and a testing-ticket marker carries the round verdict as `result=` plus
+`passed=` / `failed=` / `pwmi=` / `blocked=` case counts. Takes **no arguments**; ask the user only whether
 they have a backfill snapshot CSV (and its marker ship date) for comments posted before the marker existed,
 and whether to include the team Discord thread where every AI test run is announced (step 4).
 
@@ -44,7 +47,8 @@ and whether to include the team Discord thread where every AI test run is announ
      --discord ~/retest-usage/discord.json
    ```
 
-   Snapshot header: `issue_key,project,issuetype,comment_id,poster,created,verdict,skill`. Rows whose
+   Snapshot header: `issue_key,project,issuetype,comment_id,poster,created,verdict,skill` — `skill` is
+   `retest-bug-workflow` or `testing-ticket` for a skill run. Rows whose
    `skill` starts with `manual` land in the separate "not via skill" table and are not counted as use.
    Without `--cutoff`, comments the snapshot already covers may be counted twice (the footer warns).
 
@@ -55,7 +59,7 @@ and whether to include the team Discord thread where every AI test run is announ
    Discord)`. One use = a retest result actually posted to Jira, so unmatched entries are **not
    counted**; they are listed in "Announced in Discord, not posted to Jira (not counted)". The cutoff
    does not apply to Discord entries. The usage table ends with a Total row equal to "Skill uses
-   counted". The footer lists entries read · matched · upgraded · not posted (not counted).
+   counted", and a "Totals by skill" table splits the count per skill. The footer lists entries read · matched · upgraded · not posted (not counted).
 6. **Show** the markdown tables in chat. If `--out` is used, the file goes outside the repository too.
 
 ## Safety
