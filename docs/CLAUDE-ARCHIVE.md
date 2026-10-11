@@ -3727,6 +3727,12 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0154-irreversible-ta
 
 Full report: [`docs/post-mortem/20261007-post-mortem-report-0180-stall-root-cause-claimed-from-route-correlation.md`](docs/post-mortem/20261007-post-mortem-report-0180-stall-root-cause-claimed-from-route-correlation.md)
 
+### Report #0182 — ตั้งเกณฑ์ PASSED ต้องผ่าน strict-motion โดยไม่อ่านกฎเจ้าของงานให้จบ
+
+สั่งทุกเลนรอบ RTT ว่าไม่มี PASSED ถ้าคลิปไม่ผ่าน `--strict-motion` (อนุมานจากชื่อ flag + #0113/#0114) ทั้งที่กฎเจ้าของงาน 25/Sep ให้คลิปที่ครบ ER = PASS ตัวชี้วัดเป็นสัญญาณให้ดูเฟรม · 48/60 คลิปไม่ผ่านเพียงขยับน้อย เลนวนท่าเรียกความขยับ ~22 แถวถูกลดสถานะแล้วคืน · กฎ: ก่อนตั้งเกณฑ์ยอมรับ grep ชื่อ metric ใน memory + CLAUDE.md แล้วอ่านทุก hit ถึงบรรทัดสุดท้าย (วันที่ล่าสุดชนะ) · คำสั่งสดของเจ้าของงานต้องเทียบกับเกณฑ์ก่อนกระจาย · ค้าง: ฝังกฎ motion-only ใน `tools/result-gate` พร้อมเทส + บรรทัดแหล่งกฎในเทมเพลตสั่งเลน
+
+Full report: [`docs/post-mortem/20261011-post-mortem-report-0182-strict-motion-set-as-pass-criterion-without-reading-memory-to-the-end.md`](docs/post-mortem/20261011-post-mortem-report-0182-strict-motion-set-as-pass-criterion-without-reading-memory-to-the-end.md)
+
 ### Report #0181 — รันเคสบางส่วนซ้ำแล้วเขียนทับ Playwright report ของรอบ smoke เต็ม
 
 รันเคส creator 15 เคสซ้ำโดยไม่ใส่ `--reporter=list` · `playwright.config.ts:22` ปัก HTML reporter ไว้ที่ `playwright-report/` จึงทับ report ของรอบเต็มที่จะใช้เป็นไฟล์แนบ · ต้องรันทั้งชุดใหม่ 1 รอบก่อนส่งโนติ · กฎ: รันบางส่วนใส่ `--reporter=list` ทุกครั้ง · คัดลอก report รอบเต็มเข้าโฟลเดอร์รอบทันทีที่จบ (skill smoke-test-workflow Stage 3)

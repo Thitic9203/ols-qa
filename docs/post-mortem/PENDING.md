@@ -203,6 +203,7 @@
 | PM-2026-10-07-09 | 2026-10-07 | run_seq.sh เขียน `done rc=0` ให้ OLS-829/778 ทั้งที่ results.log เป็น SKIPPED ทั้งคู่ (`$?` หลัง `$(date)` + ไม่อ่านผลจริง) | เธรดหลักเปิด results.log เองตอนตรวจ "อย่าเฟลเงียบ" | DONE | 20261007-post-mortem-report-0179-requeue-log-said-done-rc0-for-skipped-runs.md |
 | PM-2026-10-07-10 | 2026-10-07 | รายงานเจ้าของงานว่า route ผ่าน ppp0 คือสาเหตุจริงของ session ค้าง ทั้งที่ทุกโปรเซส Claude ใช้ ppp0 และ API ตอบเร็ว | เจ้าของงานสั่งตรวจละเอียดที่สุด | DONE | 20261007-post-mortem-report-0180-stall-root-cause-claimed-from-route-correlation.md |
 | PM-2026-10-08-01 | 2026-10-08 | รันเคสบางส่วนซ้ำ (creator 15 เคส เริ่ม 12:28:16) โดยไม่ใส่ `--reporter=list` จึงเขียนทับ `playwright-report/index.html` ของรอบ smoke เต็ม 12:19–12:25 ที่จะใช้เป็นไฟล์แนบโนติ · ต้องรันทั้งชุดใหม่ 1 รอบ (13:23–13:32) ก่อนส่งโนติผ่านอย่างเดียว | เตรียมโนติ smoke dev v2026.10.08.1 แบบผ่านอย่างเดียว | DONE | 20261008-post-mortem-report-0181-partial-rerun-overwrote-full-round-playwright-report.md |
+| PM-2026-10-11-01 | 2026-10-10 | สั่งทุกเลนว่า PASSED ต้องผ่าน strict-motion + ลดแถวเป็น EVIDENCE_PENDING ทั้งที่กฎเจ้าของงาน (25/Sep) ให้คลิปครบ ER = PASS | ตรวจรวมคลิปรอบ RTT 08:40 (48/60 ไม่ผ่านเพียงขยับน้อย) | DONE | 20261011-post-mortem-report-0182-strict-motion-set-as-pass-criterion-without-reading-memory-to-the-end.md |
 
 ---
 
