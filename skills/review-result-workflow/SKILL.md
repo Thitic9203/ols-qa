@@ -25,7 +25,8 @@ When invoked:
 3. **Create the run's working directory before writing the first file** — never a system temp directory; a cleared temp directory takes the whole review with it.
 4. **Judge every case against all ten criteria** (WORKFLOW.md Step 5). All ten must pass for a case to pass; one failure is enough to fail it.
 5. **Only three closing statuses exist** — `PASSED`, `FAILED`, `AWAITING RE-REVIEW`. No interim status may be left on a case: a half-status makes the board read as finished while cases are still open.
-6. Read and follow [WORKFLOW.md](../procedures/review-result-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
+6. **Result quality gate before any verdict** — [result-quality-gate.md](../../references/result-quality-gate.md): all 20 layers on every case before a verdict is reported or written; the main thread re-runs it on the lanes' files.
+7. Read and follow [WORKFLOW.md](../procedures/review-result-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
 
 Claude Code shortcut: `/review-result` → [commands/review-result.md](../../commands/review-result.md).
 

@@ -114,6 +114,17 @@ convention, column order, priority labels) unless the user asks for a style revi
 
 ---
 
+## Source sweep before "ask the PO / reporter" (mandatory)
+
+This workflow never decides a product verdict, but it does raise spec-level gaps and questions.
+Before any finding becomes "ask the PO / reporter" or "spec unclear", run the source sweep in
+layer 14 of [result-quality-gate.md](../../references/result-quality-gate.md): the product code at
+the default branch with `path:line`, its inline comments and `git log -L` / blame; the main ticket
+and every comment; the surrounding tickets (parent / epic, linked, siblings on the same screen or
+API, and tickets the commit messages name); regression results; and the design node. Quote what
+was read beside the finding. A question the sources already answer is a finding with its source,
+not a question.
+
 ## Step 4 — Report Good vs Need Improve
 
 Two short lists, each bullet anchored to a row id, AC id, or quoted text — never an unanchored opinion.
