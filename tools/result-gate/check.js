@@ -9,7 +9,8 @@
  * the expected result — that is the human/agent layers of the same reference. Green here
  * means "nothing mechanical is wrong", never "the results are right".
  *
- * Line fields: key, tc, verdict (PASSED|PWMI|FAILED|BLOCKED), actual, evidence[],
+ * Line fields: key, tc, verdict (PASSED|PWMI|FAILED|BLOCKED final; "PASSED WITH MINOR ISSUE" = PWMI;
+ *   EVIDENCE_PENDING interim — clip exists, review pending, never a pass), actual, evidence[],
  *   clip_verified (true only after the video verifier passed that clip), verifier_failures[]
  *   (category names), er_frames_confirmed + er_frames_reviewer (motion/freeze-only waiver),
  *   evidence_mode ("api" → api_verified instead of clip_verified), root_cause, er_issue,
@@ -30,7 +31,18 @@
 const fs = require('fs');
 
 const VERDICTS = new Set(['PASSED', 'PWMI', 'FAILED', 'BLOCKED']);
+// Interim verdicts: legal on a line, never final. EVIDENCE_PENDING = a clip exists and its review is
+// not finished. It is never a pass, never takes the PASSED branch, and does not close an in-scope case.
+const INTERIM_VERDICTS = new Set(['EVIDENCE_PENDING']);
+// Long forms the references spell out (bug-priority-matrix.md "PWMI (PASSED WITH MINOR ISSUE)").
+const VERDICT_ALIASES = { 'PASSED WITH MINOR ISSUE': 'PWMI' };
 const MIN_FAILED_OBSERVATIONS = 3;
+
+function canonicalVerdict(v) {
+  if (blank(v)) return v;
+  const s = String(v);
+  return Object.prototype.hasOwnProperty.call(VERDICT_ALIASES, s) ? VERDICT_ALIASES[s] : s;
+}
 
 // Mirrors references/skill-routing.md § Jira issue type → skill. Other types: skill must
 // be recorded, no mapping is invented.
@@ -105,14 +117,17 @@ function checkResults(lines, opts = {}) {
 
   if (!lines.length) {
     add('NO_RESULTS', null, 'no result lines — nothing measured is not green');
-    return { checked: 0, violations };
+    return { checked: 0, passed: 0, pending: 0, violations };
   }
 
   const finals = new Map();
+  let passed = 0;
+  let pending = 0;
   for (const l of lines) {
+    const verdict = canonicalVerdict(l.verdict);
     const missing = ['key', 'tc', 'verdict', 'ts'].filter((f) => blank(l[f]));
     if (missing.length) add('SCHEMA', l, 'missing ' + missing.join(', '));
-    if (!blank(l.verdict) && !VERDICTS.has(l.verdict)) add('SCHEMA', l, 'verdict "' + l.verdict + '" is not one of ' + [...VERDICTS].join('/'));
+    if (!blank(verdict) && !VERDICTS.has(verdict) && !INTERIM_VERDICTS.has(verdict)) add('SCHEMA', l, 'verdict "' + l.verdict + '" is not one of ' + [...VERDICTS, ...INTERIM_VERDICTS].join('/'));
     if (!blank(l.ts) && Number.isNaN(Date.parse(l.ts))) add('SCHEMA', l, 'ts "' + l.ts + '" is not a timestamp');
     if (blank(l.role)) add('ROLE_MISSING', l, 'no role recorded');
     if (blank(l.env)) add('ENV_MISSING', l, 'no env recorded');
@@ -122,33 +137,35 @@ function checkResults(lines, opts = {}) {
 
     const ev = Array.isArray(l.evidence) ? l.evidence.filter((e) => !blank(e)) : [];
 
-    if (l.verdict === 'PASSED') {
+    if (INTERIM_VERDICTS.has(verdict)) {
+      if (!ev.length) add('PENDING_NO_EVIDENCE', l, verdict + ' without evidence — the clip under review must be listed');
+    } else if (verdict === 'PASSED') {
       if (!ev.length) add('PASS_NO_EVIDENCE', l, 'PASSED with no evidence');
       const verified = l.evidence_mode === 'api' ? l.api_verified === true : clipAccepted(l);
       if (!verified) add('PASS_CLIP_UNVERIFIED', l, l.evidence_mode === 'api' ? 'PASSED without api_verified' : 'PASSED without an accepted clip (clip_verified, or motion/freeze-only verifier_failures + er_frames_confirmed + er_frames_reviewer)');
       if (HEDGES.some((re) => re.test(String(l.actual || '')))) add('PASS_HEDGED', l, 'PASSED but the actual result hedges: "' + l.actual + '"');
-    } else if (VERDICTS.has(l.verdict)) {
-      if (blank(l.root_cause)) add('NONPASS_NO_ROOT_CAUSE', l, l.verdict + ' without root_cause');
-      if (blank(l.actual)) add('NONPASS_NO_ACTUAL', l, l.verdict + ' without an actual result');
-      if ((l.verdict === 'PWMI' || l.verdict === 'FAILED') && blank(l.er_issue)) add('DEFECT_NO_ER_ISSUE', l, l.verdict + ' without er_issue (which ER the defect breaks)');
-      if (l.verdict === 'BLOCKED') {
+    } else if (VERDICTS.has(verdict)) {
+      if (blank(l.root_cause)) add('NONPASS_NO_ROOT_CAUSE', l, verdict + ' without root_cause');
+      if (blank(l.actual)) add('NONPASS_NO_ACTUAL', l, verdict + ' without an actual result');
+      if ((verdict === 'PWMI' || verdict === 'FAILED') && blank(l.er_issue)) add('DEFECT_NO_ER_ISSUE', l, verdict + ' without er_issue (which ER the defect breaks)');
+      if (verdict === 'BLOCKED') {
         if (blank(l.remark)) add('BLOCKED_NO_REMARK', l, 'BLOCKED without remark (what is missing)');
         if (blank(l.contact)) add('BLOCKED_NO_CONTACT', l, 'BLOCKED without contact (who can unblock it)');
       }
-      if (l.verdict === 'BLOCKED' || l.verdict === 'FAILED') {
+      if (verdict === 'BLOCKED' || verdict === 'FAILED') {
         const refs = (v) => (Array.isArray(v) ? v : []).map(String);
         const code = refs(l.code_refs).some((r) => CODE_REF.test(r));
         const ticket = refs(l.ticket_refs).some((r) => TICKET_REF.test(r));
-        if (!code || !ticket) add('NO_SOURCE_SWEEP', l, l.verdict + ' must quote the sources read — ' + (code ? '' : 'no code_refs path:line') + (code || ticket ? '' : ' and ') + (ticket ? '' : 'no ticket_refs key'));
+        if (!code || !ticket) add('NO_SOURCE_SWEEP', l, verdict + ' must quote the sources read — ' + (code ? '' : 'no code_refs path:line') + (code || ticket ? '' : ' and ') + (ticket ? '' : 'no ticket_refs key'));
       }
-      if (l.verdict === 'FAILED') {
+      if (verdict === 'FAILED') {
         // Layer 17: a FAILED is a defect candidate — it needs the confirmed requirement quoted
         // char-exact, a clip that passed the video verifier, and a still of the failing point.
         if (blank(l.requirement_source) || blank(l.requirement_quote)) add('FAILED_NO_REQUIREMENT', l, 'FAILED without requirement_source + char-exact requirement_quote');
         if (!clipAccepted(l)) add('FAILED_NO_VERIFIED_CLIP', l, 'FAILED without an accepted clip (clip_verified, or motion/freeze-only verifier_failures + er_frames_confirmed + er_frames_reviewer)');
         if (!ev.some((e) => SCREENSHOT.test(String(e)))) add('FAILED_NO_SCREENSHOT', l, 'FAILED without a screenshot in evidence');
       }
-      if (l.verdict === 'FAILED') {
+      if (verdict === 'FAILED') {
         const att = Number(l.attempts);
         const fail = Number(l.failed_attempts);
         const counted = Number.isInteger(att) && Number.isInteger(fail) && att >= 1 && fail >= 1 && fail <= att;
@@ -161,6 +178,8 @@ function checkResults(lines, opts = {}) {
     }
 
     if (l.superseded === true) continue;
+    if (verdict === 'PASSED') passed += 1;
+    else if (INTERIM_VERDICTS.has(verdict)) pending += 1;
     const id = l.key + '\u0000' + l.tc;
     if (!finals.has(id)) finals.set(id, []);
     finals.get(id).push(l);
@@ -176,7 +195,11 @@ function checkResults(lines, opts = {}) {
 
   if (opts.cases) {
     const scope = new Set(opts.cases.map((c) => c.key + '\u0000' + c.tc));
-    for (const c of opts.cases) if (!finals.has(c.key + '\u0000' + c.tc)) add('MISSING_CASE', c, 'in-scope case has no final result line');
+    for (const c of opts.cases) {
+      const group = finals.get(c.key + '\u0000' + c.tc);
+      if (!group) add('MISSING_CASE', c, 'in-scope case has no final result line');
+      else if (group.every((l) => INTERIM_VERDICTS.has(canonicalVerdict(l.verdict)))) add('CASE_PENDING', group[0], 'in-scope case has only an interim verdict (' + group[0].verdict + ') — finish the review before the round closes');
+    }
     for (const group of finals.values()) if (!scope.has(group[0].key + '\u0000' + group[0].tc)) add('OUT_OF_SCOPE', group[0], 'result for a case not in the case list');
   }
 
@@ -201,7 +224,7 @@ function checkResults(lines, opts = {}) {
     }
   }
 
-  return { checked: lines.length, violations };
+  return { checked: lines.length, passed, pending, violations };
 }
 
 function readJson(file, label) {
@@ -241,14 +264,14 @@ function main(argv) {
     console.error('result-gate: ' + args.results + ' has 0 result lines — nothing measured is not green');
     return 2;
   }
-  const { checked, violations } = checkResults(lines, opts);
+  const { checked, passed, pending, violations } = checkResults(lines, opts);
   for (const e of errors) console.log('PARSE line ' + e.lineNo + ': ' + e.message);
   for (const v of violations) console.log(v.rule + ' ' + v.key + ' ' + v.tc + ': ' + v.msg);
   const bad = violations.length + errors.length;
-  console.log('result-gate: ' + checked + ' result line(s) checked, ' + errors.length + ' unparseable, ' + violations.length + ' violation(s)');
+  console.log('result-gate: ' + checked + ' result line(s) checked, ' + passed + ' passed, ' + pending + ' evidence-pending (not a pass), ' + errors.length + ' unparseable, ' + violations.length + ' violation(s)');
   return bad ? 1 : 0;
 }
 
 if (require.main === module) process.exit(main(process.argv.slice(2)));
 
-module.exports = { SOFT_VERIFIER_FAILURES, checkResults, parseJsonl, normalizeCases, main, VERDICTS, TYPE_SKILL };
+module.exports = { SOFT_VERIFIER_FAILURES, checkResults, parseJsonl, normalizeCases, main, VERDICTS, INTERIM_VERDICTS, VERDICT_ALIASES, canonicalVerdict, TYPE_SKILL };

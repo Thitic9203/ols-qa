@@ -341,6 +341,68 @@ t('FAILED: motion-only failure + reviewer confirmation is accepted; without it, 
   assert.ok(rules([failed({ attempts: 3, failed_attempts: 3, ...SOFT_OK, verifier_failures: ['manifest_mismatch'] })]).includes('CLIP_HARD_FAILURE'));
 });
 
+/* ------------------------------------- interim verdict + PWMI long form */
+
+/** A line whose clip exists but whose review has not finished yet. */
+function pending(over = {}) {
+  return line({ verdict: 'EVIDENCE_PENDING', clip_verified: false, ...over });
+}
+
+/** A PWMI line that satisfies every rule. */
+const PWMI = { root_cause: 'Label copy differs from the AC', er_issue: 'ER_2 label', actual: 'The label reads Save instead of Submit.' };
+
+t('EVIDENCE_PENDING with a clip is accepted as an interim verdict', () => {
+  assert.deepStrictEqual(rules([pending()]), []);
+});
+
+t('EVIDENCE_PENDING without any evidence is a violation (the clip must exist)', () => {
+  assert.deepStrictEqual(rules([pending({ evidence: [] })]), ['PENDING_NO_EVIDENCE']);
+  assert.deepStrictEqual(rules([pending({ evidence: [''] })]), ['PENDING_NO_EVIDENCE']);
+});
+
+t('EVIDENCE_PENDING is never counted as a pass', () => {
+  const p = G.checkResults([pending()], {});
+  assert.strictEqual(p.passed, 0);
+  assert.strictEqual(p.pending, 1);
+  const ok = G.checkResults([line()], {});
+  assert.strictEqual(ok.passed, 1);
+  assert.strictEqual(ok.pending, 0);
+});
+
+t('EVIDENCE_PENDING does not close an in-scope case; PASSED does', () => {
+  const cases = [{ key: 'DEMO-1', tc: 'TC_01' }];
+  assert.deepStrictEqual(rules([pending()], { cases }), ['CASE_PENDING']);
+  assert.deepStrictEqual(rules([line()], { cases }), []);
+});
+
+t('an unknown verdict is still a SCHEMA violation', () => {
+  for (const v of ['PASS', 'PENDING', 'evidence pending', 'PASSED WITH MINOR ISSUES', 'SKIPPED']) {
+    assert.ok(rules([line({ verdict: v })]).includes('SCHEMA'), 'expected SCHEMA for ' + v);
+  }
+});
+
+t('"PASSED WITH MINOR ISSUE" is the long form of PWMI and gets the PWMI rules', () => {
+  assert.deepStrictEqual(rules([line({ verdict: 'PASSED WITH MINOR ISSUE', ...PWMI })]), []);
+  assert.deepStrictEqual(rules([line({ verdict: 'PASSED WITH MINOR ISSUE', ...PWMI, er_issue: '' })]), ['DEFECT_NO_ER_ISSUE']);
+  assert.strictEqual(G.checkResults([line({ verdict: 'PASSED WITH MINOR ISSUE', ...PWMI })], {}).passed, 0);
+});
+
+t('a pending line kept for history is marked superseded:true; unmarked it is a CONFLICT', () => {
+  const old = pending({ ts: '2026-10-11T08:00:00+07:00' });
+  assert.deepStrictEqual(rules([{ ...old, superseded: true }, line()]), []);
+  assert.deepStrictEqual(rules([old, line()]), ['CONFLICT']);
+  assert.deepStrictEqual(rules([{ ...old, superseded: 'true' }, line()]), ['CONFLICT']);
+});
+
+t('CLI: the summary line counts passes and pending lines separately', () => {
+  const d = tmpdir();
+  const f = path.join(d, 'r.jsonl');
+  fs.writeFileSync(f, [line(), pending({ tc: 'TC_02' })].map((l) => JSON.stringify(l)).join('\n') + '\n');
+  const r = run(['--results', f]);
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /1 passed, 1 evidence-pending \(not a pass\)/);
+});
+
 /* ------------------------------------------------------- parsing + CLI */
 
 t('parseJsonl reports the line number of a broken line instead of dropping it', () => {
