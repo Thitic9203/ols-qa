@@ -613,6 +613,23 @@ if one is specified. See [result-update-discipline.md](references/result-update-
   block, write the one-sentence cause **with its label** and link the full block; never publish a
   `Suspected` cause with its label stripped off.
 
+### G5·M — Usage marker (last line of the tracker summary comment)
+
+🔴 **Every summary comment this run posts on the ticket ends with the usage marker, after one blank
+line** — the same anchor the retest skill uses, so one tracker search (`comment ~ "retestskillmarker"`)
+counts both skills, and `skill=` tells them apart:
+
+```text
+_retestskillmarker · skill=testing-ticket · src={ols-qa|helix} · via={testing-ticket|testing-ticket-workflow|helix-menu} · agent={claude-code|cursor|codex|copilot|other} · result={PASSED|FAILED|BLOCKED|PWMI} · passed={n} · failed={n} · pwmi={n} · blocked={n}_
+```
+
+Fill it from the run, never guess: `src=helix` from the Helix plugin, `src=ols-qa` from this repo;
+`via` = the command or skill the user invoked; `agent` = the AI tool doing the run. `result` = the
+overall result the F1 executive summary states; `passed` / `failed` / `pwmi` / `blocked` = the F2 row
+counts per verdict (they add up to the F2 row count).
+Values are single words or digits — no spaces, no `/`. A comment edited in place keeps the marker as
+its last line, unchanged. Chat-only rounds (nothing posted) carry no marker and are not counted.
+
 ### G6 — Review before “complete” (mandatory)
 
 Before telling the user updates are done:

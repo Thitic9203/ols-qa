@@ -582,6 +582,14 @@ t('markdown: a "Totals by skill" section lists both skills', () => {
   assert.match(body, /\| testing-ticket \| 1 \|/);
 });
 
+t('drift: the testing-ticket WORKFLOW template marker carries the anchor and skill=testing-ticket', () => {
+  const wf = fs.readFileSync(path.join(__dirname, '..', '..', 'skills', 'procedures', 'testing-ticket-workflow', 'WORKFLOW.md'), 'utf8');
+  const line = wf.split('\n').find((l) => l.includes('retestskillmarker') && l.includes('skill=testing-ticket'));
+  assert.ok(line, 'testing-ticket WORKFLOW.md has no marker template line');
+  assert.strictEqual(A.parseMarker(line).skill, 'testing-ticket');
+  for (const k of ['src=', 'via=', 'agent=', 'result=', 'passed=', 'failed=', 'pwmi=', 'blocked=']) assert.ok(line.includes(k), 'template lacks ' + k);
+});
+
 /* ------------------------------------------------------------------ run */
 
 let failed = 0;
