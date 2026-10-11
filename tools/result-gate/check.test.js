@@ -189,6 +189,26 @@ t('a line marked superseded does not count as a final line', () => {
   assert.deepStrictEqual(rules([old, line()]), []);
 });
 
+t('a superseded line is history: per-line rules do not judge it', () => {
+  const old = line({ verdict: 'EVIDENCE_PENDING', evidence: [], clip_verified: false, superseded: true });
+  assert.deepStrictEqual(rules([old, line()]), []);
+  const bare = line({ verdict: 'PASSED', evidence: [], clip_verified: false, role: '', env: '', verifier_failures: ['manifest_mismatch'], superseded: true });
+  assert.deepStrictEqual(rules([bare, line()]), []);
+});
+
+t('the same line without superseded is judged (PENDING_NO_EVIDENCE)', () => {
+  const live = line({ verdict: 'EVIDENCE_PENDING', evidence: [], clip_verified: false });
+  assert.deepStrictEqual(rules([live]), ['PENDING_NO_EVIDENCE']);
+});
+
+t('a superseded line with no later live line for its case is SUPERSEDED_ORPHAN', () => {
+  const old = line({ verdict: 'EVIDENCE_PENDING', superseded: true });
+  assert.deepStrictEqual(rules([old]), ['SUPERSEDED_ORPHAN']);
+  assert.deepStrictEqual(rules([line(), old]), ['SUPERSEDED_ORPHAN']);
+  assert.deepStrictEqual(rules([old, line({ tc: 'TC_02' })]), ['SUPERSEDED_ORPHAN']);
+  assert.deepStrictEqual(rules([old, line()]), []);
+});
+
 t('the same tc under two different keys is not a duplicate', () => {
   assert.deepStrictEqual(rules([line(), line({ key: 'DEMO-2' })]), []);
 });
@@ -339,6 +359,80 @@ t('FAILED: motion-only failure + reviewer confirmation is accepted; without it, 
   assert.ok(!rules([failed({ attempts: 3, failed_attempts: 3, ...SOFT_OK })]).includes('FAILED_NO_VERIFIED_CLIP'));
   assert.ok(rules([failed({ attempts: 3, failed_attempts: 3, ...SOFT_OK, er_frames_confirmed: undefined })]).includes('FAILED_NO_VERIFIED_CLIP'));
   assert.ok(rules([failed({ attempts: 3, failed_attempts: 3, ...SOFT_OK, verifier_failures: ['manifest_mismatch'] })]).includes('CLIP_HARD_FAILURE'));
+});
+
+t('a soft failure carrying a measured suffix (still_hold_28pct, frozen_repeats_47pct) stays soft', () => {
+  for (const f of ['still_hold_28pct', 'frozen_repeats_47pct', 'low_motion_3pct', 'still_hold_12.5pct', 'freeze_4']) {
+    assert.deepStrictEqual(rules([line({ ...SOFT_OK, verifier_failures: [f] })]), [], f);
+  }
+});
+
+t('a numeric suffix never softens a hard or unknown failure', () => {
+  for (const f of ['manifest_mismatch', 'manifest_mismatch_2', 'resolution_720', 'something_new_10pct', 'still_hold_28pct_extra', 'pct']) {
+    assert.ok(rules([line({ ...SOFT_OK, verifier_failures: [f] })]).includes('CLIP_HARD_FAILURE'), f);
+  }
+});
+
+/* ------------------------------------- interim verdict + PWMI long form */
+
+/** A line whose clip exists but whose review has not finished yet. */
+function pending(over = {}) {
+  return line({ verdict: 'EVIDENCE_PENDING', clip_verified: false, ...over });
+}
+
+/** A PWMI line that satisfies every rule. */
+const PWMI = { root_cause: 'Label copy differs from the AC', er_issue: 'ER_2 label', actual: 'The label reads Save instead of Submit.' };
+
+t('EVIDENCE_PENDING with a clip is accepted as an interim verdict', () => {
+  assert.deepStrictEqual(rules([pending()]), []);
+});
+
+t('EVIDENCE_PENDING without any evidence is a violation (the clip must exist)', () => {
+  assert.deepStrictEqual(rules([pending({ evidence: [] })]), ['PENDING_NO_EVIDENCE']);
+  assert.deepStrictEqual(rules([pending({ evidence: [''] })]), ['PENDING_NO_EVIDENCE']);
+});
+
+t('EVIDENCE_PENDING is never counted as a pass', () => {
+  const p = G.checkResults([pending()], {});
+  assert.strictEqual(p.passed, 0);
+  assert.strictEqual(p.pending, 1);
+  const ok = G.checkResults([line()], {});
+  assert.strictEqual(ok.passed, 1);
+  assert.strictEqual(ok.pending, 0);
+});
+
+t('EVIDENCE_PENDING does not close an in-scope case; PASSED does', () => {
+  const cases = [{ key: 'DEMO-1', tc: 'TC_01' }];
+  assert.deepStrictEqual(rules([pending()], { cases }), ['CASE_PENDING']);
+  assert.deepStrictEqual(rules([line()], { cases }), []);
+});
+
+t('an unknown verdict is still a SCHEMA violation', () => {
+  for (const v of ['PASS', 'PENDING', 'evidence pending', 'PASSED WITH MINOR ISSUES', 'SKIPPED']) {
+    assert.ok(rules([line({ verdict: v })]).includes('SCHEMA'), 'expected SCHEMA for ' + v);
+  }
+});
+
+t('"PASSED WITH MINOR ISSUE" is the long form of PWMI and gets the PWMI rules', () => {
+  assert.deepStrictEqual(rules([line({ verdict: 'PASSED WITH MINOR ISSUE', ...PWMI })]), []);
+  assert.deepStrictEqual(rules([line({ verdict: 'PASSED WITH MINOR ISSUE', ...PWMI, er_issue: '' })]), ['DEFECT_NO_ER_ISSUE']);
+  assert.strictEqual(G.checkResults([line({ verdict: 'PASSED WITH MINOR ISSUE', ...PWMI })], {}).passed, 0);
+});
+
+t('a pending line kept for history is marked superseded:true; unmarked it is a CONFLICT', () => {
+  const old = pending({ ts: '2026-10-11T08:00:00+07:00' });
+  assert.deepStrictEqual(rules([{ ...old, superseded: true }, line()]), []);
+  assert.deepStrictEqual(rules([old, line()]), ['CONFLICT']);
+  assert.deepStrictEqual(rules([{ ...old, superseded: 'true' }, line()]), ['CONFLICT']);
+});
+
+t('CLI: the summary line counts passes and pending lines separately', () => {
+  const d = tmpdir();
+  const f = path.join(d, 'r.jsonl');
+  fs.writeFileSync(f, [line(), pending({ tc: 'TC_02' })].map((l) => JSON.stringify(l)).join('\n') + '\n');
+  const r = run(['--results', f]);
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+  assert.match(r.stdout, /1 passed, 1 evidence-pending \(not a pass\)/);
 });
 
 /* ------------------------------------------------------- parsing + CLI */
