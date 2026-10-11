@@ -247,8 +247,9 @@ recording** at all:
 | **D** | Role does not match the tab (criterion 1) | Change the account in that case's configuration, re-run | Per case, small |
 | **E** | Steps or expected results incomplete (criteria 2, 3, 9) | Extend that case's steps in its script | Per case, real work |
 | **F** | An expected result no screen can show | **Stop and ask the owner.** Do not invent a surface for it | Blocked |
+| **G** | Every step and ER is on screen, but the clip stutters or hangs on a frozen picture (criteria judged green otherwise; verifier layer 1b red) | Run the sanctioned freeze-cut, then re-verify the `_cut.mp4` and review it again — [qa-evidence-gates.md § ER complete, freeze-only](../../../references/qa-evidence-gates.md#mp4-evidence--7-layer-quality--correctness-defense-gate-mandatory-fail-closed). Never re-record for freeze alone; never cut with ad-hoc ffmpeg or a copied manifest | No re-record |
 
-Cases failing only A, only C, or both are always the first ones actioned — they are the cheapest
+Cases failing only A, only C, only G, or any mix of them are always the first ones actioned — they are the cheapest
 correct outcome available.
 
 **Re-recording rules:**
