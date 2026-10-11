@@ -4,8 +4,11 @@
 /**
  * aggregate.js — turn exported retest comments (plus an optional backfill
  * snapshot, plus optional notifications from the team Discord thread) into a
- * markdown usage report: who used the retest skill, on which project / issuetype,
- * through which entry point and agent, and with what verdict.
+ * markdown usage report: who used the AI test skills (retest-bug-workflow and
+ * testing-ticket), on which project / issuetype, through which entry point and agent,
+ * and with what verdict. Both skills end their posted comment with the same anchor
+ * (`retestskillmarker`); the marker's `skill=` field tells them apart, and a
+ * testing-ticket marker carries its round verdict as `result=` (plus case counts).
  *
  * This repo is PUBLIC. The tool only reads files the caller passes in; it never
  * talks to Jira, and its inputs/outputs belong outside the repository.
@@ -24,7 +27,7 @@
  *                 `owner` is the QA Owner shown in the post (a reviewer, not the runner) and is
  *                 never used as the poster. The cutoff does not apply to Discord entries.
  *
- * One use = a retest result actually posted to Jira. A Discord entry is never counted on its own:
+ * One use = a retest or testing-ticket result actually posted to Jira. A Discord entry is never counted on its own:
  * matched to a posted record it only marks (and may upgrade) that record; unmatched, it is listed
  * in a separate "not posted" table and left out of every count.
  */
@@ -34,6 +37,9 @@ const fs = require('fs');
 const MARKER_ANCHOR = 'retestskillmarker';
 const SNAPSHOT_COLUMNS = ['issue_key', 'project', 'issuetype', 'comment_id', 'poster', 'created', 'verdict', 'skill'];
 const VERDICTS = ['PASSED', 'FAILED', 'BLOCKED'];
+// A testing-ticket (Story) run states its round verdict in the marker itself (`result=`),
+// because its summary comment has no `Retest Result:` line. PWMI is a valid round verdict there.
+const MARKER_RESULTS = [...VERDICTS, 'PWMI'];
 const NONE = '—';
 const DAY_MS = 86400000;
 const DISCORD_KINDS = { retest: 'retest-bug-workflow', tested: 'testing-ticket' };
@@ -97,6 +103,13 @@ function parseVerdict(body) {
   if (!m) return 'other';
   const v = m[1].toUpperCase();
   return VERDICTS.includes(v) ? v : 'other';
+}
+
+/** Round verdict from the marker's `result=` field; null when the marker has none. */
+function markerVerdict(fields) {
+  if (!fields || fields.result === undefined) return null;
+  const v = String(fields.result).toUpperCase();
+  return MARKER_RESULTS.includes(v) ? v : 'other';
 }
 
 /** Jira writes `+0700`; Date.parse wants `+07:00`. Returns ms or NaN. */
@@ -294,7 +307,8 @@ function aggregate({ comments = [], snapshotRows = [], discord = null, cutoff = 
       project: c.project || 'unknown',
       issuetype: c.issuetype || 'unknown',
       poster: authorName(c.author),
-      verdict: parseVerdict(c.body),
+      verdict: markerVerdict(fields) || parseVerdict(c.body),
+      skill: fields.skill || 'unknown',
       skillVia: `${fields.skill || 'unknown'} / ${fields.via || 'unknown'}`,
       src: fields.src || 'unknown',
       agent: fields.agent || 'unknown',
@@ -311,6 +325,7 @@ function aggregate({ comments = [], snapshotRows = [], discord = null, cutoff = 
       issuetype: r.issuetype || 'unknown',
       poster: r.poster || 'unknown',
       verdict: normVerdict(r.verdict),
+      skill: r.skill || 'unknown',
       skillVia: r.skill || 'unknown',
       src: 'snapshot',
       agent: NONE,
@@ -329,7 +344,8 @@ function aggregate({ comments = [], snapshotRows = [], discord = null, cutoff = 
     if (rec.inDiscord) {
       stats.discord.matched += 1;
       if (upgradable) {
-        rec.skillVia = `${DISCORD_KINDS[entries[matches.get(ri)].kind]} (AI confirmed by Discord)`;
+        rec.skill = DISCORD_KINDS[entries[matches.get(ri)].kind];
+        rec.skillVia = `${rec.skill} (AI confirmed by Discord)`;
         stats.discord.upgraded += 1;
       }
     }
@@ -376,7 +392,7 @@ function aggregate({ comments = [], snapshotRows = [], discord = null, cutoff = 
       .sort((a, b) => b.count - a.count || keyFields.reduce((acc, f) => acc || String(a[f]).localeCompare(String(b[f])), 0));
   };
 
-  const totals = { poster: new Map(), issuetype: new Map(), project: new Map(), verdict: new Map() };
+  const totals = { skill: new Map(), poster: new Map(), issuetype: new Map(), project: new Map(), verdict: new Map() };
   for (const r of records) for (const k of Object.keys(totals)) inc(totals[k], r[k]);
   const sortedTotals = {};
   for (const [k, m] of Object.entries(totals)) {
@@ -424,7 +440,7 @@ function fmtRange(r) {
 function renderMarkdown(result) {
   const { rows, manualRows, notPostedRows, totals, total, stats } = result;
   const out = [];
-  out.push('# Retest skill usage');
+  out.push('# AI skill usage (retest-bug-workflow + testing-ticket)');
   out.push('');
   out.push(`Skill uses counted: **${total}**`);
   out.push('');
@@ -433,7 +449,7 @@ function renderMarkdown(result) {
   out.push(table(['Poster', 'Project', 'Issuetype', 'Skill/via', 'Src', 'Agent', 'Count', 'Discord', 'Issues'],
     rows.map((r) => [r.poster, r.project, r.issuetype, r.skillVia, r.src, r.agent, r.count, r.discord, r.issues.join(', ')]),
     ['**Total**', '', '', '', '', '', `**${total}**`, rows.reduce((s, r) => s + r.discord, 0), '']));
-  const totalSections = [['poster', 'Poster'], ['issuetype', 'Issuetype'], ['project', 'Project'], ['verdict', 'Verdict']];
+  const totalSections = [['skill', 'Skill'], ['poster', 'Poster'], ['issuetype', 'Issuetype'], ['project', 'Project'], ['verdict', 'Verdict']];
   for (const [key, label] of totalSections) {
     out.push('');
     out.push(`## Totals by ${key}`);

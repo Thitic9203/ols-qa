@@ -504,6 +504,92 @@ t('CLI: missing --comments, unreadable file, bad JSON, bad CSV and bad discord a
   }
 });
 
+/* ------------------------------------------------ testing-ticket marker */
+
+// Same anchor as the retest marker (so one tracker search finds both skills); `skill=` tells
+// them apart, and a Story run carries its own round verdict + case counts in the marker itself.
+const TT_MARKER = '_retestskillmarker · skill=testing-ticket · src=ols-qa · via=testing-ticket · agent=claude-code · result=FAILED · passed=12 · failed=1 · pwmi=0 · blocked=0_';
+
+function storyComment(over = {}) {
+  return comment({
+    issue_key: 'DEMO-20',
+    issuetype: 'Story',
+    body: 'Testing summary — 13 cases, see the results tab.\n\n' + TT_MARKER,
+    ...over,
+  });
+}
+
+t('testing-ticket marker: skill, round verdict and case counts are parsed', () => {
+  assert.deepStrictEqual(A.parseMarker('summary\n' + TT_MARKER), {
+    skill: 'testing-ticket', src: 'ols-qa', via: 'testing-ticket', agent: 'claude-code',
+    result: 'FAILED', passed: '12', failed: '1', pwmi: '0', blocked: '0',
+  });
+});
+
+t('testing-ticket: verdict comes from the marker result field (no "Retest Result:" line)', () => {
+  const r = A.aggregate({ comments: [storyComment()] });
+  assert.deepStrictEqual(r.totals.verdict, [{ name: 'FAILED', count: 1 }]);
+});
+
+t('testing-ticket: PWMI round verdict is kept, an unknown result word is "other"', () => {
+  const pwmi = storyComment({ body: 'x\n\n' + TT_MARKER.replace('result=FAILED', 'result=PWMI') });
+  const odd = storyComment({ issue_key: 'DEMO-21', body: 'x\n\n' + TT_MARKER.replace('result=FAILED', 'result=MAYBE') });
+  const r = A.aggregate({ comments: [pwmi, odd] });
+  assert.deepStrictEqual(r.totals.verdict.map((v) => v.name).sort(), ['PWMI', 'other']);
+});
+
+t('both skills: a retest and a Story run are each counted, totals split by skill', () => {
+  const r = A.aggregate({ comments: [comment(), storyComment()] });
+  assert.strictEqual(r.total, 2);
+  assert.deepStrictEqual(r.totals.skill.map((s) => [s.name, s.count]).sort(),
+    [['retest-bug-workflow', 1], ['testing-ticket', 1]]);
+});
+
+t('known-negative: a Story comment naming the skill but without the anchor is not counted', () => {
+  const r = A.aggregate({ comments: [storyComment({ body: 'ran via skill=testing-ticket · result=PASSED' })] });
+  assert.strictEqual(r.total, 0);
+  assert.strictEqual(r.stats.unmarked, 1);
+});
+
+t('backward compat: a retest marker without result= still reads the Retest Result line', () => {
+  const r = A.aggregate({ comments: [comment({ body: '*Retest Result: BLOCKED*\n\n' + MARKER })] });
+  assert.deepStrictEqual(r.totals.verdict, [{ name: 'BLOCKED', count: 1 }]);
+  assert.deepStrictEqual(r.totals.skill, [{ name: 'retest-bug-workflow', count: 1 }]);
+});
+
+t('snapshot rows keep their skill column: testing-ticket rows land under testing-ticket', () => {
+  const rows = A.parseSnapshot([SNAPSHOT_HEADER,
+    'DEMO-30,DEMO,Story,c1,Tester A,2026-09-01T10:00:00+07:00,PASSED,testing-ticket',
+    'DEMO-31,DEMO,Bug,c2,Tester B,2026-09-02T10:00:00+07:00,FAILED,retest-bug-workflow'].join('\n'));
+  const r = A.aggregate({ snapshotRows: rows });
+  assert.deepStrictEqual(r.totals.skill.map((s) => [s.name, s.count]).sort(),
+    [['retest-bug-workflow', 1], ['testing-ticket', 1]]);
+});
+
+t('Discord upgrade of a manual snapshot row sets the skill from the entry kind', () => {
+  const rows = A.parseSnapshot([SNAPSHOT_HEADER,
+    'DEMO-32,DEMO,Story,c1,Tester A,2026-09-01T10:00:00+07:00,PASSED,manual'].join('\n'));
+  const r = A.aggregate({ snapshotRows: rows, discord: [{ ts: '2026-09-01T11:00:00+07:00', ticket: 'DEMO-32', kind: 'tested' }] });
+  assert.deepStrictEqual(r.totals.skill, [{ name: 'testing-ticket', count: 1 }]);
+});
+
+t('markdown: a "Totals by skill" section lists both skills', () => {
+  const md = A.renderMarkdown(A.aggregate({ comments: [comment(), storyComment()] }));
+  const sec = md.split('## Totals by skill')[1];
+  assert.ok(sec, 'no Totals by skill section');
+  const body = sec.split('##')[0];
+  assert.match(body, /\| retest-bug-workflow \| 1 \|/);
+  assert.match(body, /\| testing-ticket \| 1 \|/);
+});
+
+t('drift: the testing-ticket WORKFLOW template marker carries the anchor and skill=testing-ticket', () => {
+  const wf = fs.readFileSync(path.join(__dirname, '..', '..', 'skills', 'procedures', 'testing-ticket-workflow', 'WORKFLOW.md'), 'utf8');
+  const line = wf.split('\n').find((l) => l.includes('retestskillmarker') && l.includes('skill=testing-ticket'));
+  assert.ok(line, 'testing-ticket WORKFLOW.md has no marker template line');
+  assert.strictEqual(A.parseMarker(line).skill, 'testing-ticket');
+  for (const k of ['src=', 'via=', 'agent=', 'result=', 'passed=', 'failed=', 'pwmi=', 'blocked=']) assert.ok(line.includes(k), 'template lacks ' + k);
+});
+
 /* ------------------------------------------------------------------ run */
 
 let failed = 0;
