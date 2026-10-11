@@ -155,6 +155,25 @@ the region in question at a named time fraction and stack the crops into one ima
 - If the zoom still cannot decide it, the criterion is **not** quietly passed — the case goes to the
   three-layer gate in Step 7.
 
+## Result quality gate (mandatory before verdicts are recorded)
+
+Run [result-quality-gate.md](../../../references/result-quality-gate.md) — all 20 layers, every case, PASSED
+ones included — **before Step 7 records any verdict**. Write one final result line per case (older lines marked
+`superseded`), run the mechanical layers with the workspace's checker when it has one, walk the
+judgement layers, and paste the checker's last output line (or the counted hand check) into the
+round's record. A red layer blocks that case's verdict: report the case as what it really is
+(usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
+is a claim — the main thread re-runs the gate itself (layer 20).
+
+**Source sweep before any BLOCKED, FAILED or "ask the PO / reporter" outcome** (layer 14 of
+[result-quality-gate.md](../../../references/result-quality-gate.md)): read the product code at the default
+branch with `path:line` including its inline comments and `git log -L` / blame on those lines, the
+main ticket's description and every comment, the surrounding tickets (parent / epic, linked,
+sibling stories on the same screen or API, and every ticket the commit messages name), the
+regression results, and the design node; if data is missing, try to create it first. Quote each
+source on the verdict line (`code_refs`, `ticket_refs`). Never conclude "cannot be done", "wrong"
+or "wait for someone" before this sweep is written down.
+
 ## Step 7 — Record the verdict
 
 **Only three closing statuses exist:**

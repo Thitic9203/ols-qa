@@ -101,6 +101,16 @@ registry, and the report template: [reference.md](reference.md).
 - A finding with no prevention step — nothing stops it coming back.
 - The report proposes rewrites nobody asked for.
 
+## Result quality gate (mandatory before an audited verdict is confirmed)
+
+Run [result-quality-gate.md](../../references/result-quality-gate.md) — all 20 layers, every case, PASSED
+ones included — **before this audit confirms or rejects any test verdict in the audited work**. Write one final result line per case (older lines marked
+`superseded`), run the mechanical layers with the workspace's checker when it has one, walk the
+judgement layers, and paste the checker's last output line (or the counted hand check) into the
+round's record. A red layer blocks that case's verdict: report the case as what it really is
+(usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
+is a claim — the main thread re-runs the gate itself (layer 20).
+
 ## QA closing (mandatory before "done")
 
 Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + this workflow:

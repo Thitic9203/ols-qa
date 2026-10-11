@@ -174,6 +174,16 @@ Fix stale expectations and test-code defects in `ols-qa-e2e` on a branch. Then:
 **Known trap:** when adding paging to a list reader, honour a `page=` the caller already pinned.
 Appending a second one yields `page=1&page=1`, which the API parses as `NaN` and rejects with 400.
 
+## Result quality gate (mandatory before the summary is built)
+
+Run [result-quality-gate.md](../../references/result-quality-gate.md) — all 20 layers, every case, PASSED
+ones included — **before the Stage 6 summary, Stage 7 deliverables, or Stage 8 notify**. Write one final result line per case (older lines marked
+`superseded`), run the mechanical layers with the workspace's checker when it has one, walk the
+judgement layers, and paste the checker's last output line (or the counted hand check) into the
+round's record. A red layer blocks that case's verdict: report the case as what it really is
+(usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
+is a claim — the main thread re-runs the gate itself (layer 20).
+
 ## Stage 6 — The one-page summary
 
 Template and renderer live off-repo at `~/ols-qa-testing-bot/smoke/`
