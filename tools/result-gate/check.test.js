@@ -341,6 +341,18 @@ t('FAILED: motion-only failure + reviewer confirmation is accepted; without it, 
   assert.ok(rules([failed({ attempts: 3, failed_attempts: 3, ...SOFT_OK, verifier_failures: ['manifest_mismatch'] })]).includes('CLIP_HARD_FAILURE'));
 });
 
+t('a soft failure carrying a measured suffix (still_hold_28pct, frozen_repeats_47pct) stays soft', () => {
+  for (const f of ['still_hold_28pct', 'frozen_repeats_47pct', 'low_motion_3pct', 'still_hold_12.5pct', 'freeze_4']) {
+    assert.deepStrictEqual(rules([line({ ...SOFT_OK, verifier_failures: [f] })]), [], f);
+  }
+});
+
+t('a numeric suffix never softens a hard or unknown failure', () => {
+  for (const f of ['manifest_mismatch', 'manifest_mismatch_2', 'resolution_720', 'something_new_10pct', 'still_hold_28pct_extra', 'pct']) {
+    assert.ok(rules([line({ ...SOFT_OK, verifier_failures: [f] })]).includes('CLIP_HARD_FAILURE'), f);
+  }
+});
+
 /* ------------------------------------- interim verdict + PWMI long form */
 
 /** A line whose clip exists but whose review has not finished yet. */

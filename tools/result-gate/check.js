@@ -67,8 +67,16 @@ function verifierFailures(l) {
   return (Array.isArray(l.verifier_failures) ? l.verifier_failures : []).map((x) => norm(x)).filter(Boolean);
 }
 
+// Lanes record the measured share beside the name (still_hold_28pct, frozen_repeats_47pct). The suffix
+// is stripped only to look the name up; a name that is not soft without its suffix stays hard.
+const MEASURE_SUFFIX = /_\d+(?:\.\d+)?(?:pct|%)?$/;
+
+function isSoftFailure(name) {
+  return SOFT_VERIFIER_FAILURES.has(name) || SOFT_VERIFIER_FAILURES.has(name.replace(MEASURE_SUFFIX, ''));
+}
+
 function hardFailures(l) {
-  return verifierFailures(l).filter((x) => !SOFT_VERIFIER_FAILURES.has(x));
+  return verifierFailures(l).filter((x) => !isSoftFailure(x));
 }
 
 function clipAccepted(l) {
