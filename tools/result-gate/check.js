@@ -17,7 +17,8 @@
  *   remark, contact (BLOCKED), attempts, failed_attempts, intermittent (FAILED),
  *   requirement_source, requirement_quote (FAILED: confirmed spec, char-exact),
  *   code_refs[] (path:line read at origin/main), ticket_refs[] (KEY or KEY#comment) — BLOCKED/FAILED,
- *   role, env, skill, ts, superseded (true = an older line kept for history).
+ *   role, env, skill, ts, superseded (true = an older line kept for history; not judged by
+ *   per-line rules, but it needs a later live line for the same case — SUPERSEDED_ORPHAN).
  *
  * Usage:
  *   node tools/result-gate/check.js --results r.jsonl
@@ -131,7 +132,16 @@ function checkResults(lines, opts = {}) {
   const finals = new Map();
   let passed = 0;
   let pending = 0;
+  // Superseded lines are history: no per-line rule judges them. The one check they keep is that a
+  // later live line exists for the same case (checked after the loop).
+  const history = [];
+  const lastLive = new Map();
+  lines.forEach((l, i) => {
+    if (l.superseded === true) history.push([l, i]);
+    else lastLive.set(l.key + '\u0000' + l.tc, i);
+  });
   for (const l of lines) {
+    if (l.superseded === true) continue;
     const verdict = canonicalVerdict(l.verdict);
     const missing = ['key', 'tc', 'verdict', 'ts'].filter((f) => blank(l[f]));
     if (missing.length) add('SCHEMA', l, 'missing ' + missing.join(', '));
@@ -185,12 +195,16 @@ function checkResults(lines, opts = {}) {
       }
     }
 
-    if (l.superseded === true) continue;
     if (verdict === 'PASSED') passed += 1;
     else if (INTERIM_VERDICTS.has(verdict)) pending += 1;
     const id = l.key + '\u0000' + l.tc;
     if (!finals.has(id)) finals.set(id, []);
     finals.get(id).push(l);
+  }
+
+  for (const [l, i] of history) {
+    const live = lastLive.get(l.key + '\u0000' + l.tc);
+    if (live === undefined || live < i) add('SUPERSEDED_ORPHAN', l, 'superseded line ' + (l.__lineNo || i + 1) + ' has no later live line for this case — history needs the line that replaced it');
   }
 
   for (const group of finals.values()) {

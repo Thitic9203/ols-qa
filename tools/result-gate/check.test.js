@@ -189,6 +189,26 @@ t('a line marked superseded does not count as a final line', () => {
   assert.deepStrictEqual(rules([old, line()]), []);
 });
 
+t('a superseded line is history: per-line rules do not judge it', () => {
+  const old = line({ verdict: 'EVIDENCE_PENDING', evidence: [], clip_verified: false, superseded: true });
+  assert.deepStrictEqual(rules([old, line()]), []);
+  const bare = line({ verdict: 'PASSED', evidence: [], clip_verified: false, role: '', env: '', verifier_failures: ['manifest_mismatch'], superseded: true });
+  assert.deepStrictEqual(rules([bare, line()]), []);
+});
+
+t('the same line without superseded is judged (PENDING_NO_EVIDENCE)', () => {
+  const live = line({ verdict: 'EVIDENCE_PENDING', evidence: [], clip_verified: false });
+  assert.deepStrictEqual(rules([live]), ['PENDING_NO_EVIDENCE']);
+});
+
+t('a superseded line with no later live line for its case is SUPERSEDED_ORPHAN', () => {
+  const old = line({ verdict: 'EVIDENCE_PENDING', superseded: true });
+  assert.deepStrictEqual(rules([old]), ['SUPERSEDED_ORPHAN']);
+  assert.deepStrictEqual(rules([line(), old]), ['SUPERSEDED_ORPHAN']);
+  assert.deepStrictEqual(rules([old, line({ tc: 'TC_02' })]), ['SUPERSEDED_ORPHAN']);
+  assert.deepStrictEqual(rules([old, line()]), []);
+});
+
 t('the same tc under two different keys is not a duplicate', () => {
   assert.deepStrictEqual(rules([line(), line({ key: 'DEMO-2' })]), []);
 });
