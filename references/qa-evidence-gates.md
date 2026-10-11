@@ -138,7 +138,7 @@ The run that executes the case may be the recording — no separate capture pass
 |:--:|---|---|
 | **1** | **Max quality** | Recorded to the **capture spec below** — viewport ≥ 1920×1080, `deviceScaleFactor` 2, H.264 **CRF 18 preset slow**, `yuv420p` limited-range, `+faststart`, **no downscale that blurs text**. On-screen labels legible at 100%. |
 | **1b** | **Steady picture** | No frozen frame inside a moving stretch, and no visible flicker / pumping / stutter / blink when watched at 100%. **≤ 5% of moving frames may be repeats** of their predecessor, excluding the still-holds the manifest **declares** — and those may cover **at most 25% of the clip**: past that the exclusion has eaten the rule, and the honest verdict is *a clip this static cannot judder, but nothing was proven either*. Measured by the verifier named below, never from memory. |
-| **1c** | **Provenance** | The clip came from the capture pipeline below at the rate it claims — a run manifest exists, names the pipeline `cdp-screencast->x264`, and matches the delivered file (name · resolution · fps). **What cannot be checked has not passed** (ตรวจไม่ได้ = ไม่ผ่าน): no manifest = layer red, not a waiver. |
+| **1c** | **Provenance** | The clip came from the capture pipeline below at the rate it claims — a run manifest exists, names the pipeline `cdp-screencast->x264`, and matches the delivered file (name · resolution · fps). **What cannot be checked has not passed** (ตรวจไม่ได้ = ไม่ผ่าน): no manifest = layer red, not a waiver. A cut made by `freeze_cut.py` carries its own manifest with an `edit` record that verify re-proves against the original ([exception below](#mp4-evidence--7-layer-quality--correctness-defense-gate-mandatory-fail-closed)); a cut beside a copied original manifest is red. |
 | **2** | **Whole flow, no skip** | Drives **every** Test Step from the start, on the **real surface** (UI → clicks, not an API shortcut) — no jump-cut, no starting mid-flow, no fast-forward past a step. |
 | **3** | **Reaches the stated target** | If a step says "scroll to menu XX / open dialog YY / find item ZZ / check value VV", the clip **visibly reaches and shows** it — the element is located, scrolled into view, held in frame long enough to read, and acted on. **Never end the recording before arriving**; a step that could not be reached = that case is BLOCKED with the reason, not a short clip claimed as pass. |
 | **4** | **Expected Result on screen** | The exact state that decides each ER item is **visible in the video** (the resulting screen/toast/value is shown), not implied by a click. One provable moment per ER. |
@@ -147,6 +147,24 @@ The run that executes the case may be the recording — no separate capture pass
 | **7** | **Attached + link verified** | Uploaded to the destination (story → Drive; **retest → the Jira issue/comment**) and the reference **actually resolves and plays** from there (open the Jira Evidence-cell link / the Drive file and confirm it plays). |
 
 **Fail-closed:** any layer red on any case (sub-layers 1b / 1c included) ⇒ re-capture that case and re-run the 7 layers. A clip that is the right size in the right codec can still flicker — 1b and 1c exist because one that passed every other check was visibly flickering. Do not post the comment, do not transition, do not report the story/retest complete until every case is green on all 7.
+
+**One exception: ER complete, freeze-only ⇒ sanctioned freeze-cut, not a re-capture.** When a clip shows every step and every Expected Result (layers 2–5 judged green by a human) and its only red is frozen picture — layer 1b *"N% of the moving frames are frozen repeats"*, or a stretch that visibly hangs — cut the frozen frames with **`capture/freeze_cut.py`** (QA bot toolkit, beside the recorder — see *Capture spec* below), then re-verify:
+
+```bash
+python3 capture/freeze_cut.py <clip>.mp4 --dry-run   # shows what would go; nothing written
+python3 capture/freeze_cut.py <clip>.mp4             # writes <clip>_cut.mp4 + <clip>_cut.capture.json
+python3 capture/verify_video.py --strict-motion <clip>_cut.mp4
+```
+
+| Rule | Why |
+|---|---|
+| Only `freeze_cut.py` may make a cut. Never drop frames with ad-hoc ffmpeg, and never copy the original `.capture.json` beside a cut | A copied manifest describes the original, so layer 1c fails (*"manifest describes '<orig>.mp4', not this file"*), and its holds point past the shorter cut (*"still-hold ending at … but the file is only …"*). Both failures are correct and stay |
+| The cut removes **only frames that repeat the frame before them**: short stalls inside motion whole, long freezes trimmed to `--max-still` (default 3 s) — never removed whole | Nothing a viewer could read is taken out, so this is not a jump-cut or fast-forward under layer 2. An ER screen that sits still stays on screen |
+| Keep the original `.mp4` and `.capture.json` beside the cut, unchanged | `verify_video.py` re-derives the cut's `edit` record from them (source and manifest sha256, every removed frame re-measured as a frozen repeat, frame count, fps, remapped holds). Source moved or edited ⇒ the cut fails |
+| More than **60 %** removed ⇒ the tool refuses and verify fails | That much frozen picture means the recording itself failed — re-capture |
+| A clip with audio is refused | Cutting frames would desync narration — cut first, narrate the cut |
+| A red that is **not** freeze-only (missing step/ER, overlay, wrong role, holds over 25 % of the clip, blank, wrong resolution) | Not cuttable — follow the normal re-capture path |
+| Deliver the `_cut.mp4` only after verify passes on it, and review it again from layer 2 | A cut is a new file; it earns its own green |
 
 ### Capture spec — the pipeline layers 1 / 1b / 1c are measured against
 
