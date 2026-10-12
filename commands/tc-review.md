@@ -15,10 +15,12 @@ file link plus a Jira key or URL. If either is missing, ask for it before starti
 
 Do not start without both the TC document (reachable and readable this session) and the ticket's own
 AC/EC (fetched from the ticket itself, not assumed). Build the traceability matrix before judging row
-quality; trace the ticket's business-rules / recheck-list sub-items as well as its AC list.
+quality. Skip struck-through AC/EC entirely. Raise a business rule or comment only when it conflicts with
+an AC/EC.
 
 Report findings as Good vs Need Improve, each anchored to a TC/AC id or quoted source text — never an
-unanchored impression. State plainly when a design source (Figma/PRD) could not be opened rather than
+unanchored impression. Every Need Improve item carries a "→ Suggest:" fix, sourced from the row's own
+data or the AC/EC wording, or marked "confirm with dev/PO". Never put an invented value in a suggestion. State plainly when a design source (Figma/PRD) could not be opened rather than
 guessing what it shows.
 
 Post the review in chat and get the user's go-ahead before sending it anywhere external. For an
