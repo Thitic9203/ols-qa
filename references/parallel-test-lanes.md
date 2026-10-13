@@ -23,6 +23,7 @@ A **lane** = one subagent that owns:
 | **Unit work, end to end** | Execution, the Figma compare, recording during execution, the non-PASS root-cause investigation, and the repro shape ([round-time-contract.md §4](round-time-contract.md#4-fan-out-lanes-own-their-unit)) |
 | **Account(s)** | An exclusive lease on the account(s) its scenarios need — no other lane uses them during the run |
 | **Browser context** | Its own browser context, started from its leased account's saved login file `{auth dir from guide}/{env}-{role}-{alias}.json` — named by account, not by lane, gitignored; never a shared profile. Session check before any result counts; fresh login on failure ([round-time-contract.md §5](round-time-contract.md#5-login-reuse-per-operator-across-runs)) |
+| **Session lease** | If the workspace provides a session-lease tool (see project guide): the lane acquires a lease on its account's login before loading the login file (holder = lane id + round id), renews it on long runs, and releases it in `finally`. Never load a login file without a lease |
 | **Test data** | Records it creates carry the lane id in their name (`QA-L2-…`) and are recorded in its report |
 | **Evidence dir** | Its own output folder (`…/lane-L2/`) — no two lanes write the same path |
 
@@ -143,6 +144,11 @@ Browser context: own context, started from the leased account's login file
 inbox — start from it, do not request a new code). Before any result counts, call the session
 endpoint and expect {user id}; on 401/403, a login redirect, or another user, log in fresh and
 overwrite the file.
+Session lease: if the workspace provides a session-lease tool ({lease tool from guide}), acquire the
+lease on {account tag} BEFORE loading the login file — holder "{Lx} {round id}", TTL longer than the
+run — renew the lease before it expires, and release the lease in finally (on error too). Never load a
+login file without a lease. (When the parent already holds it: LEASE-HELD-BY-PARENT — do not
+acquire or release it yourself.)
 You own your units end to end: execution, Figma compare (one per screen × width), recording during
 execution, non-PASS root-cause investigation, and the repro shape.
 Scenarios (run in this order): {ids, steps, expected, design node per screen, widths, fixture}
@@ -151,7 +157,8 @@ Evidence dir: {path}/lane-{Lx}/
 Follow: {calling WORKFLOW.md path} — Phase D preflight + Phase E (E0–E2), or Step 4 (4a–4h).
 Return: (1) session preflight — env, build id, authenticated user id (2) one row per scenario:
 status · actual · evidence paths (3) every non-PASS with the root-cause investigation and its
-artifacts (4) records created (5) anything that blocked you. Never report a status without evidence.
+artifacts (4) records created (5) anything that blocked you (6) every lease you acquired and that you
+released it. Never report a status without evidence.
 ```
 
 Never paste a password into the prompt or let a lane echo one in its report — point to where the
@@ -175,6 +182,11 @@ credential lives.
    fix the lane plan) or a real concurrency defect in the product. Root-cause it; never re-run until
    green.
 7. Clean up or list the records each lane created, per the calling workflow's data rule.
+8. **Lease check** — every lease this round acquired is released: the lease tool's list shows none
+   whose holder carries this round's id. When the workspace carries `tools/lane-lease-check/`, run
+   `node tools/lane-lease-check/check.js --round {round id} --dir {lease dir from guide}` — exit 0
+   required; exit 1 lists the leases still held (release each, run again); exit 2 is "cannot check",
+   never a pass. A lease left behind blocks that account's background session refresh after the round.
 
 Then continue with the calling workflow's summary / comment step as a single merged result.
 
@@ -189,6 +201,7 @@ Then continue with the calling workflow's summary / comment step as a single mer
 | MUST keep shared-record and multi-role scenarios in one lane, in order | Concurrent edits of one record race |
 | MUST check each lane's authenticated user id against the lease | Proves no collision happened |
 | MUST re-verify every lane's non-PASS in the parent | Subagent output is a claim, not a result |
+| MUST acquire a session lease before a lane loads a login file and release it in `finally` (when the workspace provides a lease tool), and show none held by the round at merge | A refresh of a login in use ends the lane's session mid-run; a lease never released blocks the refresh after the round |
 | NEVER let a lane post, transition, assign, or notify | External writes stay with the parent after approval |
 | NEVER trade a gate for speed (design compare, widths, evidence, root cause) | Parallel shortens wall-clock; it never shortens the checklist |
 | NEVER retry a parallel-only failure until it passes | It is an isolation fault or a real defect |

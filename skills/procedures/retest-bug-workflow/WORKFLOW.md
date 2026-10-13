@@ -312,6 +312,12 @@ own cases with **only its leased account** and records the authenticated user id
 cases run alone after the lanes return. The parent then runs the §6 merge (isolation · coverage ·
 evidence) and does 4i on every non-PASS itself before Step 5. Lanes never post, transition, assign,
 or notify.
+**Session lease per lane.** If the workspace provides a session-lease tool (see project guide), each
+lane acquires the lease on its account before loading the login file, renews it on long runs, and
+releases it in `finally` — the §5 lane prompt carries those lines (or `LEASE-HELD-BY-PARENT` when the
+parent holds the lease). Never load a login file without a lease. The §6 merge adds the lease check:
+none held by this round (`tools/lane-lease-check/` where the workspace carries it), and `run.json`
+records the lanes with `lease: true` (6·0).
 
 **Fan-out rule** ([round-time-contract.md](../../../references/round-time-contract.md) §4): fan out
 whenever the round has **2 or more units**; a barrier unit still runs alone. Lane count =
@@ -568,8 +574,8 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 ||*No.*||*ER*||*Case (Role)*||*Expected Result*||*Actual Result*||*Evidence*||*Status*||
 |1|ER1|• TC_01 {what it verifies} ({role}) \\ • TC_04 {what it verifies} ({role})|{item quoted from the ticket}|• {observed point} \\ • {observed point}|[▶ tc1.mp4|^tc1.mp4] !tc1.png!|✅/❌/⛔|
 
-*Expected-result coverage:* {n} / {total} items met      (a Task reads *Acceptance-criteria coverage:*)
-*Case coverage:* {run} / {total} cases run — {passed} passed / {failed} failed / {blocked} blocked
+*Expected-result coverage:* {met} / {total} items met[ · {k} PWMI][ · {k} failed][ · {k} blocked]      (a Task reads *Acceptance-criteria coverage:*)
+*Case coverage:* {run} / {total} cases run — {passed} passed / {failed} failed[ / {pwmi} PWMI] / {blocked} blocked
 
 *Out of scope this round:* {ids} — not covered by the scoped cases, not verified   (scoped rounds only)
 
@@ -667,7 +673,16 @@ the image shows, so no separate caption line is needed. If a field doesn't apply
 
 The comment is **produced from data**, not typed. Write `run.json` for this round — ticket, type,
 bug type, format, env, design ref, role(s), date, build, fixture, **scope**, the enumerated contract,
-the cases, the per-item results with their evidence.
+the cases, the per-item results with their evidence, and the **lane plan the round ran**:
+`lanes: [{id, account, cases: [TC ids], lease: true}]` ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md)).
+Every in-scope case sits in exactly one lane, every lane held a session lease (`lease: true`), no account
+is in two lanes, and a round with 2+ cases in one lane carries `serialReason` = one of `one-account` ·
+`shared-record` · `env-forbids-concurrency` · `two-or-fewer-scenarios` · `user-asked-serial` (§4 a–e).
+A manifest without `lanes` does not validate.
+
+Coverage footer: *items met* counts PASSED items only; PWMI, failed and blocked items are named after
+it on the same line (`4 / 5 items met · 1 PWMI`), and the line reconciles when they add up to the total.
+A PWMI case is never counted as failed.
 
 **When the workspace provides `tools/retest-guard/` — run it; it is not optional there.** When the
 workspace does not (this skill also ships to projects that have not adopted it), the same rules still

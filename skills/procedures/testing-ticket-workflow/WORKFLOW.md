@@ -267,6 +267,12 @@ cause. Barrier units run alone after the lanes return. The **main thread only me
 queue) on every non-PASS before Phase F. Execution stays agent-driven, step by step. Lanes never post
 or update anything outside the run.
 
+**Session lease per lane.** If the workspace provides a session-lease tool (see project guide), each
+lane acquires the lease on its account before loading the login file, renews it on long runs, and
+releases it in `finally` — the §5 lane prompt carries those lines (or `LEASE-HELD-BY-PARENT` when the
+parent holds the lease). Never load a login file without a lease. The §6 merge adds the lease check:
+none held by this round (`tools/lane-lease-check/` where the workspace carries it).
+
 Drive every scenario through its **real surface** — a UI scenario through the UI (Playwright clicks the
 button / submits the form), following the case's steps completely. The API is for test-data /
 precondition setup only, **never** to perform the action under test; an API scenario is driven at the
