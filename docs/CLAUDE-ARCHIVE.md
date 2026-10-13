@@ -4008,3 +4008,5 @@ Full report: [`docs/post-mortem/20260924-post-mortem-report-0141-uploader-found-
 - **Report #0185 (2026-10-11):** ด่านรอ marker ระหว่างเลนใช้ grep จึงติดประโยคบันทึกที่อ้างชื่อ marker → สคริปต์เขียนเริ่มก่อนเวลา (ไม่มีการเขียน) · กฎ: marker เป็นบรรทัดรูปแบบตายตัว `<ISO-UTC> MARKER <NAME>` ตรวจทั้งบรรทัด
 
 - **Report #0186 (2026-10-12):** ลูป background เปิดหน้าต่างใส่รหัสหลังเจ้าของงานสั่งไม่ใส่รหัสแล้ว · กฎ: คำสั่งเปลี่ยน → ไล่หยุดงาน background ที่ขัดทันที · กู้ session ด้วย relink --force เท่านั้น
+
+- **Report #0187 (2026-10-12):** ตัวต่ออายุ session dev ต่อได้แค่ 2 ชม. สุดท้ายและข้ามเมื่อ VPN หลุด → VPN หลุดตลอดช่วงนั้น session ตายหมด · กฎ: ต่ออายุทุกรอบที่ทำได้ ไม่รอช่วงท้าย + ฟื้น session ที่แอปตายแต่โทเคนยังดีอัตโนมัติ ([`references/session-renewal-resilience.md`](../references/session-renewal-resilience.md)) — [`docs/post-mortem/20261013-post-mortem-report-0187-dev-session-relink-window-missed-during-vpn-outage.md`](post-mortem/20261013-post-mortem-report-0187-dev-session-relink-window-missed-during-vpn-outage.md)
