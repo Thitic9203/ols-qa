@@ -46,6 +46,7 @@ const GOOD_MANIFEST = {
   results: [{ id: 'ER1', actual: 'reads "Review Failed"', evidence: ['PROJ-88_TC_01_CONTENT_ADMIN.mp4'], status: 'PASSED' }],
   verdict: 'PASSED',
   lanes: [{ id: 'L1', account: 'admin01', cases: ['TC_01'], lease: true }],
+  testRunTime: { minutes: 9.8, hasVideo: true, method: 'evidence-burst-v1' },
 };
 
 let failed = 0;

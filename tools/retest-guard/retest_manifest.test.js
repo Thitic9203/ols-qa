@@ -45,6 +45,7 @@ function base() {
     verdict: 'PASSED',
     lanes: [{ id: 'L1', account: 'admin01', cases: ['TC_01', 'TC_02'], lease: true }],
     serialReason: 'two-or-fewer-scenarios',
+    testRunTime: { minutes: 25.3, hasVideo: true, method: 'evidence-burst-v1' },
   };
 }
 
@@ -392,6 +393,29 @@ check('lanes: a scoped round needs only its in-scope cases laned', () => {
   m.scope = { mode: 'CASES', cases: ['TC_01'] };
   m.lanes = [{ id: 'L1', account: 'admin01', cases: ['TC_01'], lease: true }];
   assert.deepStrictEqual(M.validate(m), []);
+});
+
+check('testRunTime: missing is a validation error', () => {
+  const m = base(); delete m.testRunTime;
+  assert.ok(M.validate(m).some((f) => f.field === 'testRunTime'));
+});
+
+check('testRunTime: minutes must be a positive number (0 is not a measurement)', () => {
+  [0, -1, '25', null, NaN].forEach((v) => {
+    const m = base(); m.testRunTime.minutes = v;
+    assert.ok(M.validate(m).some((f) => f.field === 'testRunTime.minutes'), 'accepted ' + String(v));
+  });
+});
+
+check('testRunTime: hasVideo must be a boolean', () => {
+  const m = base(); m.testRunTime.hasVideo = 'yes';
+  assert.ok(M.validate(m).some((f) => f.field === 'testRunTime.hasVideo'));
+});
+
+check('testRunTime: method must equal the measure tool id', () => {
+  const m = base(); m.testRunTime.method = 'estimate';
+  assert.ok(M.validate(m).some((f) => f.field === 'testRunTime.method'));
+  assert.strictEqual(require('../run-time/measure').METHOD, 'evidence-burst-v1');
 });
 
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');

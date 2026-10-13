@@ -581,6 +581,8 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 
 *Out of scope this round:* {ids} — not covered by the scoped cases, not verified   (scoped rounds only)
 
+*Test run time:* {minutes} min — includes evidence capture ({screenshots|screenshots and video}); excludes re-checks, design lookup and comment drafting
+
 _retestskillmarker · skill=retest-bug-workflow · src={ols-qa|helix} · via={retest-bug|retest-bug-workflow|helix-menu} · agent={claude-code|cursor|codex|copilot|other}_
 ```
 
@@ -588,6 +590,26 @@ _retestskillmarker · skill=retest-bug-workflow · src={ols-qa|helix} · via={re
 from the run, never guess: `src=helix` when running from the Helix plugin, `src=ols-qa` from this repo;
 `via` = the command or skill the user invoked; `agent` = the AI tool doing the run. In `run.json` set
 `marker: {src, via, agent}` and the renderer prints it; `retest_guard.js` refuses a body without it (`marker-missing`).
+
+🔴 **The line just above the marker = the measured test run time (one blank line between) — never estimate it.**
+Right before drafting, measure over **every lane's** evidence/result directories (screenshots, clips,
+`results.jsonl`):
+
+```bash
+node tools/run-time/measure.js --dirs {lane1_evidence_dir},{lane2_evidence_dir} [--gap-s 120]
+```
+
+It prints `{method, minutes, bursts, files, gapS, hasVideo}` (method `evidence-burst-v1`): the file write
+times of all lanes as one union, split into bursts wherever no file was written for more than 120 s, and
+the burst durations summed — so it counts running and evidence capture, and leaves out idle time,
+re-checks, design lookup and comment drafting. Copy it into `run.json` as
+`testRunTime: {minutes, hasVideo, method}`; the renderer prints the line (`hasVideo` picks "screenshots" or
+"screenshots and video"), `retest_manifest.js` refuses a manifest without it, and `retest_guard.js`
+refuses a body whose line above the marker is not it (`run-time-line-missing`). Exit 2 = it could not
+measure (a lane directory is missing, or no evidence files) — fix the directory list; never type a
+number instead. When the workspace has no such tool, measure by the same method by hand (list every
+evidence file's modification time across all lanes, split at gaps over 120 s, sum the bursts) and say in
+the chat report that it was measured by hand.
 
 **This block is the shape the renderer produces, not something to hand-type.** Build `run.json` and
 render it (Step 6·0); the guard rejects a body that drifts from this shape, including one typed from

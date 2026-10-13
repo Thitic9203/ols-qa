@@ -25,7 +25,7 @@ const SCOPE_MODES = Object.freeze(['FULL', 'CASES']);
 
 const REQUIRED_TOP = Object.freeze([
   'ticket', 'ticketType', 'bugType', 'format', 'env', 'role', 'date', 'build',
-  'fixture', 'scope', 'contract', 'cases', 'results', 'verdict', 'lanes',
+  'fixture', 'scope', 'contract', 'cases', 'results', 'verdict', 'lanes', 'testRunTime',
 ]);
 
 /**
@@ -227,6 +227,24 @@ function validate(m) {
           out.push(err(`marker.${k}`, `"${m.marker[k]}" is not one of ${allowed.join(' | ')}`, 'name where the run came from, not a guess'));
         }
       });
+    }
+  }
+
+  // The run time is measured by tools/run-time/measure.js, never estimated (owner, 2026-10-13).
+  const rt = m.testRunTime;
+  if (!rt || typeof rt !== 'object' || Array.isArray(rt)) {
+    out.push(err('testRunTime', 'testRunTime must be an object {minutes, hasVideo, method}',
+      'run tools/run-time/measure.js over every lane evidence dir and copy minutes/hasVideo/method'));
+  } else {
+    if (typeof rt.minutes !== 'number' || !Number.isFinite(rt.minutes) || rt.minutes <= 0) {
+      out.push(err('testRunTime.minutes', 'minutes must be a positive measured number — 0 or a guess is not a measurement',
+        'measure it; when the tool cannot measure (exit 2), fix the evidence dirs instead of typing a number'));
+    }
+    if (typeof rt.hasVideo !== 'boolean') {
+      out.push(err('testRunTime.hasVideo', 'hasVideo must be true or false', 'copy it from the measure output'));
+    }
+    if (rt.method !== RULES.RUN_TIME_METHOD) {
+      out.push(err('testRunTime.method', `method must be "${RULES.RUN_TIME_METHOD}"`, 'copy it from the measure output — an estimate has no method id'));
     }
   }
 

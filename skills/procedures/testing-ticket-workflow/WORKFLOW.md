@@ -656,6 +656,8 @@ line** — the same anchor the retest skill uses, so one tracker search (`commen
 counts both skills, and `skill=` tells them apart:
 
 ```text
+*Test run time:* {minutes} min — includes evidence capture ({screenshots|screenshots and video}); excludes re-checks, design lookup and comment drafting
+
 _retestskillmarker · skill=testing-ticket · src={ols-qa|helix} · via={testing-ticket|testing-ticket-workflow|helix-menu} · agent={claude-code|cursor|codex|copilot|other} · result={PASSED|FAILED|BLOCKED|PWMI} · passed={n} · failed={n} · pwmi={n} · blocked={n}_
 ```
 
@@ -665,6 +667,24 @@ overall result the F1 executive summary states; `passed` / `failed` / `pwmi` / `
 counts per verdict (they add up to the F2 row count).
 Values are single words or digits — no spaces, no `/`. A comment edited in place keeps the marker as
 its last line, unchanged. Chat-only rounds (nothing posted) carry no marker and are not counted.
+
+🔴 **The line just above the marker = the measured test run time (one blank line between) — never estimate it.**
+Right before drafting the summary comment, measure over **every lane's** evidence/result directories
+(screenshots, clips, `results.jsonl`):
+
+```bash
+node tools/run-time/measure.js --dirs {lane1_evidence_dir},{lane2_evidence_dir} [--gap-s 120]
+```
+
+It prints `{method, minutes, bursts, files, gapS, hasVideo}` (method `evidence-burst-v1`): the file write
+times of all lanes as one union, split into bursts wherever no file was written for more than 120 s, and
+the burst durations summed — so it counts running and evidence capture, and leaves out idle time,
+re-checks, design lookup and comment drafting. Put `minutes` in the line; `hasVideo` picks "screenshots"
+or "screenshots and video". Exit 2 = it could not measure (a lane directory is missing, or no evidence
+files) — fix the directory list; never type a number instead. When the workspace has no such tool,
+measure by the same method by hand (list every evidence file's modification time across all lanes, split
+at gaps over 120 s, sum the bursts) and say in the chat report that it was measured by hand. This comment
+has no renderer or guard — check the line by eye in the F5 render check before the approval popup.
 
 ### G6 — Review before “complete” (mandatory)
 

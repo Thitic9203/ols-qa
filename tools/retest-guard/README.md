@@ -102,6 +102,19 @@ blocked = total. The case line prints `… 12 passed / 0 failed / 1 PWMI / 2 blo
 when there is one). Before this a round with a PWMI row and no FAILED row printed `5 / 5 items met`
 and `1 failed`.
 
+## Test run time — measured, just above the marker (owner, 2026-10-13)
+
+`run.json` carries `"testRunTime": {"minutes": 25.3, "hasVideo": false, "method": "evidence-burst-v1"}`,
+copied from `node tools/run-time/measure.js --dirs <every lane's evidence dir>` ([../run-time/README.md](../run-time/README.md)).
+The renderer prints it one blank line above the usage marker:
+
+`*Test run time:* 25.3 min — includes evidence capture (screenshots); excludes re-checks, design lookup and comment drafting`
+(`**…**` on v3; "screenshots and video" when `hasVideo` is true).
+
+Refused: a manifest without `testRunTime`, `minutes` that is not a positive number (0 is not a
+measurement), a non-boolean `hasVideo`, or any `method` other than the tool's id; and a body whose
+line above the marker is not a `Test run time: {n} min` line (`run-time-line-missing`).
+
 ## What it does not check, and never implies
 
 Whether the clip reached its target · whether the cause is real · whether the expected side was

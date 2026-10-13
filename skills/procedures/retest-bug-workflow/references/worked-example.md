@@ -59,6 +59,8 @@ the expected result. Decided by: spec owner.
 
 Originally reported symptom: still present.
 
+**Test run time:** 6.4 min — includes evidence capture (screenshots); excludes re-checks, design lookup and comment drafting
+
 _retestskillmarker · skill=retest-bug-workflow · src=ols-qa · via=retest-bug · agent=claude-code_
 ```
 
@@ -102,6 +104,8 @@ Output (full comment — this is the entire body, nothing added):
 
 *Expected-result coverage:* 2 / 2 items met
 *Case coverage:* 1 / 1 cases run — 1 passed / 0 failed / 0 blocked
+
+*Test run time:* 18.2 min — includes evidence capture (screenshots and video); excludes re-checks, design lookup and comment drafting
 
 _retestskillmarker · skill=retest-bug-workflow · src=ols-qa · via=retest-bug · agent=claude-code_
 ```

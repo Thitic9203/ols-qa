@@ -124,5 +124,18 @@ check('the workflow tells the reader how to fill the marker and to keep it on an
   assert.ok(/commentId[^\n]*usage marker/.test(wf), 'the commentId in-place edit does not say to keep the marker');
 });
 
+check('the template shows the measured run-time line just above the marker (owner, 2026-10-13)', () => {
+  const lines = tpl.replace(/\n+$/, '').split('\n');
+  const rt = lines[lines.length - 3];
+  assert.ok(rt && rt.startsWith('*' + R.RUN_TIME_LABEL + '*'), 'the line above the marker is not the run-time line: ' + rt);
+  assert.ok(R.RUN_TIME_LINE.test(rt.replace(/\{minutes\}/, '12.3')), 'the run-time line shape drifted from RUN_TIME_LINE');
+});
+
+check('the workflow tells the reader to measure the run time with the tool, never estimate', () => {
+  assert.ok(/tools\/run-time\/measure\.js --dirs/.test(wf), 'the measure command is not documented');
+  assert.ok(wf.includes(R.RUN_TIME_METHOD), 'the method id is not named');
+  assert.ok(/never estimate/i.test(wf), 'the workflow does not forbid estimating');
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);

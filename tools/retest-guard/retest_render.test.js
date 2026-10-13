@@ -44,6 +44,7 @@ function feManifest() {
     verdict: 'PASSED',
     lanes: [{ id: 'L1', account: 'admin01', cases: ['TC_01', 'TC_02'], lease: true }],
     serialReason: 'two-or-fewer-scenarios',
+    testRunTime: { minutes: 25.3, hasVideo: true, method: 'evidence-burst-v1' },
   };
 }
 
@@ -75,6 +76,7 @@ function apiFailed() {
       { text: 'accept 500 for this input and update the expected result', owner: 'spec owner' },
     ],
     decidedBy: 'spec owner',
+    testRunTime: { minutes: 4.2, hasVideo: false, method: 'evidence-burst-v1' },
   };
 }
 
@@ -343,6 +345,31 @@ check('a PWMI row is neither "met" nor "failed" in the footer', () => {
 check('a FAILED item is not "met"; the footer names it', () => {
   const body = RENDER.render(apiFailed());
   assert.ok(body.includes('0 / 1 items met · 1 failed'), body.split('\n').filter((l) => /coverage/.test(l)).join(' | '));
+});
+
+check('the run-time line sits just above the marker, one blank line between (v2 wiki, video)', () => {
+  const lines = RENDER.render(feManifest()).split('\n');
+  assert.strictEqual(lines[lines.length - 3],
+    '*Test run time:* 25.3 min — includes evidence capture (screenshots and video); excludes re-checks, design lookup and comment drafting');
+});
+
+check('the run-time line renders as markdown bold on v3, screenshots only when no video', () => {
+  const lines = RENDER.render(apiFailed()).split('\n');
+  assert.strictEqual(lines[lines.length - 3],
+    '**Test run time:** 4.2 min — includes evidence capture (screenshots); excludes re-checks, design lookup and comment drafting');
+});
+
+check('the scanner refuses a body whose line above the marker is not the run-time line', () => {
+  const body = RENDER.render(feManifest()).split('\n');
+  body.splice(body.length - 3, 2);
+  const found = R.scanBody(body.join('\n'), { format: R.FORMATS.WIKI, bugType: 'FE' }).filter((f) => f.rule === 'run-time-line-missing');
+  assert.strictEqual(found.length, 1);
+});
+
+check('the scanner refuses a run-time line with no number (an estimate word is not a measurement)', () => {
+  const body = RENDER.render(feManifest()).replace('25.3 min', 'about half an hour');
+  const found = R.scanBody(body, { format: R.FORMATS.WIKI, bugType: 'FE' }).filter((f) => f.rule === 'run-time-line-missing');
+  assert.strictEqual(found.length, 1);
 });
 
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');

@@ -33,6 +33,8 @@ const GOOD = [
   '*Expected-result coverage:* 1 / 1 items met',
   '*Case coverage:* 1 / 1 cases run — 1 passed / 0 failed / 0 blocked',
   '',
+  R.runTimeLine({ minutes: 12.4, hasVideo: false }),
+  '',
   R.markerLine({ src: 'ols-qa', via: 'retest-bug', agent: 'claude-code' }),
 ].join('\n');
 
@@ -311,6 +313,21 @@ check('the refusal names every verdict the summary line actually accepts', () =>
   accepted.forEach((v) => assert.ok(
     (shape.message + ' ' + (shape.fix || '')).includes(v),
     'the refusal never mentions ' + v + ': ' + shape.message));
+});
+
+check('runTimeLine prints the exact shape in both formats, one decimal always', () => {
+  assert.strictEqual(R.runTimeLine({ minutes: 25.3, hasVideo: false }),
+    '*Test run time:* 25.3 min — includes evidence capture (screenshots); excludes re-checks, design lookup and comment drafting');
+  assert.strictEqual(R.runTimeLine({ minutes: 7, hasVideo: true }, R.FORMATS.ADF),
+    '**Test run time:** 7.0 min — includes evidence capture (screenshots and video); excludes re-checks, design lookup and comment drafting');
+  assert.strictEqual(R.RUN_TIME_METHOD, require('../run-time/measure').METHOD, 'the rules and the tool name the same method');
+});
+
+check('run-time-line-missing: fires when absent, not when present', () => {
+  assert.ok(!has(R.scanBody(GOOD, {}), 'run-time-line-missing'));
+  const lines = GOOD.split('\n');
+  const without = [...lines.slice(0, -3), '', lines[lines.length - 1]].join('\n');
+  assert.ok(has(R.scanBody(without, {}), 'run-time-line-missing'));
 });
 
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');

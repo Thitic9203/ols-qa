@@ -193,6 +193,22 @@ function markerLine(marker = {}) {
   return `_${MARKER_ANCHOR} · skill=${MARKER_SKILL} · src=${k.src} · via=${k.via} · agent=${k.agent}_`;
 }
 
+/**
+ * The test-run-time line — the line just above the usage marker (one blank line between).
+ * The minutes come from tools/run-time/measure.js (method `evidence-burst-v1`): bursts of
+ * evidence/result file writes across every lane, never an estimate.
+ */
+const RUN_TIME_LABEL = 'Test run time:';
+const RUN_TIME_METHOD = 'evidence-burst-v1';
+/** Bold label, a measured number with one decimal, then "min". */
+const RUN_TIME_LINE = /^\*{1,2}Test run time:\*{1,2}\s+\d+(\.\d)?\s+min\b/;
+
+function runTimeLine(t, format = FORMATS.WIKI) {
+  const what = t && t.hasVideo ? 'screenshots and video' : 'screenshots';
+  const label = format === FORMATS.ADF ? `**${RUN_TIME_LABEL}**` : `*${RUN_TIME_LABEL}*`;
+  return `${label} ${Number(t.minutes).toFixed(1)} min — includes evidence capture (${what}); excludes re-checks, design lookup and comment drafting`;
+}
+
 /* ------------------------------------------------------------------ *
  * Parsing helpers — pure, no I/O.
  * ------------------------------------------------------------------ */
@@ -368,6 +384,14 @@ function scanBody(body, opts = {}) {
     out.push(finding('marker-missing', lastIdx + 1,
       'the last line is not the usage marker',
       `end the body with one blank line, then ${markerLine()} (src/via/agent filled in)`));
+  }
+
+  let rtIdx = lastIdx - 1;
+  while (rtIdx >= 0 && lines[rtIdx].trim() === '') rtIdx -= 1;
+  if (rtIdx < 0 || !RUN_TIME_LINE.test(lines[rtIdx].trim())) {
+    out.push(finding('run-time-line-missing', rtIdx + 1,
+      'the line above the usage marker is not a measured test-run-time line',
+      `measure with tools/run-time/measure.js and put "${RUN_TIME_LABEL} {minutes} min — …" one blank line above the marker`));
   }
 
   const isScoped = summaryIdx >= 0 && /\(scoped:/i.test(lines[summaryIdx]);
@@ -608,6 +632,10 @@ module.exports = {
   MARKER_AGENT,
   MARKER_DEFAULTS,
   markerLine,
+  RUN_TIME_LABEL,
+  RUN_TIME_METHOD,
+  RUN_TIME_LINE,
+  runTimeLine,
   DRIFT_ALLOWLIST,
   OPEN_QUESTIONS,
   MD_DIVIDER_ROW,
