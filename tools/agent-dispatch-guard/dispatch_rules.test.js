@@ -522,7 +522,7 @@ t('LANE_WITHOUT_LEASE: acquire only, no release, is still BLOCKED', () => {
 t('LANE_WITHOUT_LEASE: acquire + release passes', () => {
   const r = rules.assessBrief(LANE_BAD +
     '\nBefore loading the login file run: node capture/session_lease.js acquire learner02 --ttl-min 60 --holder "L2 R-1"; ' +
-    'renew every 30 min; in finally run: node capture/session_lease.js release learner02.');
+    'renew every 30 min; in finally run: node capture/session_lease.js release learner02 --holder "L2 R-1".');
   assert.ok(!hasLane(r), 'must not flag: ' + rules.formatAssessment(r));
 });
 

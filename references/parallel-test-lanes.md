@@ -146,9 +146,10 @@ endpoint and expect {user id}; on 401/403, a login redirect, or another user, lo
 overwrite the file.
 Session lease: if the workspace provides a session-lease tool ({lease tool from guide}), acquire the
 lease on {account tag} BEFORE loading the login file — holder "{Lx} {round id}", TTL longer than the
-run — renew the lease before it expires, and release the lease in finally (on error too). Never load a
-login file without a lease. (When the parent already holds it: LEASE-HELD-BY-PARENT — do not
-acquire or release it yourself.)
+run — renew the lease before it expires, and release the lease with the same holder in finally (on
+error too). Never load a login file without a lease. If acquire is refused because another holder has
+the account, use a different account or wait — never force or delete another lane's lease. (When the
+parent already holds it: LEASE-HELD-BY-PARENT — do not acquire or release it yourself.)
 You own your units end to end: execution, Figma compare (one per screen × width), recording during
 execution, non-PASS root-cause investigation, and the repro shape.
 Scenarios (run in this order): {ids, steps, expected, design node per screen, widths, fixture}
