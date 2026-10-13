@@ -222,6 +222,7 @@
 | 0186 | 2026-10-12 | หน้าต่างใส่รหัสเด้ง 2 ครั้งหลังเจ้าของงานสั่งไม่ใส่รหัสแล้ว เพราะลูป background ที่ตั้งไว้ก่อนคำสั่งไม่ถูกหยุด · ไม่มีการบันทึก session · กฎ: คำสั่งเปลี่ยน → ไล่หยุดงาน background ที่ขัดก่อน · ห้ามลูปเปิดหน้าต่างใส่รหัส | Medium | [20261012-post-mortem-report-0186-login-window-popped-after-owner-said-no-more-passwords.md](20261012-post-mortem-report-0186-login-window-popped-after-owner-said-no-more-passwords.md) |
 | 0187 | 2026-10-12 | session dev ตายทั้ง 18 บัญชี (refresh 401) เพราะตัวต่ออายุทำงานแค่ 2 ชม. สุดท้ายก่อนคุกกี้ NDLP หมดและข้ามเมื่อ VPN หลุด — VPN หลุดตลอดช่วงนั้นพอดี · session ที่ OLS ตายหลังรีบูตไม่ถูกฟื้นอัตโนมัติ · เจ้าของงานต้องใส่รหัส 2 บัญชี | Medium | [20261013-post-mortem-report-0187-dev-session-relink-window-missed-during-vpn-outage.md](20261013-post-mortem-report-0187-dev-session-relink-window-missed-during-vpn-outage.md) |
 | 0188 | 2026-10-13 | lease ของบอทเขียนทับ lease ที่ยังไม่หมดอายุของเลนอื่นได้ และลบได้โดยไม่ดูผู้ถือ · เลน L4 จองบัญชีทับ L1a · รอบแก้แรกเพิ่มกฎแย่งเมื่อ pid ตายซึ่งใช้ไม่ได้กับ CLI | Medium | [20261013-post-mortem-report-0188-lease-acquire-overwrote-another-lanes-lease.md](20261013-post-mortem-report-0188-lease-acquire-overwrote-another-lanes-lease.md) |
+| 0189 | 2026-10-13 | โปรเซสค้างของเลนทำให้บัญชีถูกมองว่าใช้อยู่และไม่ถูกฟื้น session หลัง VPN tunnel ค้าง | Low | [20261013-post-mortem-report-0189-orphan-lane-process-kept-account-marked-in-use.md](20261013-post-mortem-report-0189-orphan-lane-process-kept-account-marked-in-use.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
