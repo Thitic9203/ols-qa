@@ -1042,6 +1042,28 @@ when **nothing else** still blocks it.
 
 Include the 8d outcome: which stories were moved, and which stayed blocked and by what.
 
+🔴 **Adoption count — verify, then say it in the chat close-out.** After the result comment is posted, check
+that the ticket is counted by the project's AI-skill adoption dashboard (the project guide names it — by
+placeholder `<ADOPTION_DASHBOARD_URL>` in shared files; the real URL lives in local secrets). The dashboard
+runs the tracker search `comment ~ "retestskillmarker"` and counts a ticket when one of its comments carries
+the marker (created after its snapshot cutoff). Run the same search scoped to this ticket and confirm the
+marker is the last line of the posted comment:
+
+```bash
+TRACKER_BASE_URL=https://{JIRA_DOMAIN} TRACKER_EMAIL=… TRACKER_API_TOKEN=… \
+  node tools/adoption-check/check.js --key {ISSUE_KEY} [--cutoff {snapshot cutoff}] [--dashboard {dashboard URL}]
+```
+
+It runs `key = {ISSUE_KEY} AND comment ~ "retestskillmarker"` on the tracker's current search endpoint
+(`POST /rest/api/3/search/jql`), then reads the comments: exit 0 = counted · 1 = not counted (the reason says
+why) · 2 = cannot check. When the workspace has no such tool, run that search by hand and open the posted
+comment to confirm the marker is its last line. The chat close-out MUST then carry exactly one of:
+
+- `Counted in <ADOPTION_DASHBOARD_URL> — tab AI Skill Adoption Overview (dashboard refreshes every 5 minutes)`
+- `NOT counted yet — {reason from the search / comment read}` (also when the check could not run — say why)
+
+Never claim it without the search result.
+
 Write `references/helix-handoff-{KEY}.md` for this round ([handoff-file-template.md](../../../references/handoff-file-template.md)) —
 case list, AC/EC list, Figma node refs, Swagger version, last-round results, one fingerprint per source
 ([round-time-contract.md](../../../references/round-time-contract.md) §10).

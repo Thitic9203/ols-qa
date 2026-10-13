@@ -716,8 +716,31 @@ Only after G6 passes:
 Updated: {link}
 Rows/fields written: {summary}
 Verified: {what you re-read}
+Adoption: {Counted in … | NOT counted yet — …}   (see below)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+🔴 **Adoption count — verify, then say it in the chat close-out.** After the result comment is posted, check
+that the ticket is counted by the project's AI-skill adoption dashboard (the project guide names it — by
+placeholder `<ADOPTION_DASHBOARD_URL>` in shared files; the real URL lives in local secrets). The dashboard
+runs the tracker search `comment ~ "retestskillmarker"` and counts a ticket when one of its comments carries
+the marker (created after its snapshot cutoff). Run the same search scoped to this ticket and confirm the
+marker is the last line of the posted comment:
+
+```bash
+TRACKER_BASE_URL=https://{JIRA_DOMAIN} TRACKER_EMAIL=… TRACKER_API_TOKEN=… \
+  node tools/adoption-check/check.js --key {ISSUE_KEY} [--cutoff {snapshot cutoff}] [--dashboard {dashboard URL}]
+```
+
+It runs `key = {ISSUE_KEY} AND comment ~ "retestskillmarker"` on the tracker's current search endpoint
+(`POST /rest/api/3/search/jql`), then reads the comments: exit 0 = counted · 1 = not counted (the reason says
+why) · 2 = cannot check. When the workspace has no such tool, run that search by hand and open the posted
+comment to confirm the marker is its last line. The chat close-out MUST then carry exactly one of:
+
+- `Counted in <ADOPTION_DASHBOARD_URL> — tab AI Skill Adoption Overview (dashboard refreshes every 5 minutes)`
+- `NOT counted yet — {reason from the search / comment read}` (also when the check could not run — say why)
+
+Never claim it without the search result.
 
 If verification failed partially, state what succeeded and what did not — NEVER say “complete” for unverified work — because partial writes look finished to stakeholders.
 

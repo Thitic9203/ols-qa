@@ -86,6 +86,20 @@ blockers that this retest never touched are not missed.
 
 **Never change the assignee** when picking up an OLS ticket for retest or testing — not to self, not back to the developer after a verdict. Ownership is tracked by status, not assignee. This overrides the generic retest-bug-workflow Step 8b/8c (find developer → assign).
 
+### AI Skill Adoption dashboard — every retest / testing-ticket close-out (owner, 2026-10-13)
+
+| Field | Value |
+|-------|-------|
+| Dashboard | `<ADOPTION_DASHBOARD_URL>` — tab **AI Skill Adoption Overview** (real URL in local secrets only) |
+| Refresh | every 5 minutes |
+| How it counts | runs the tracker search `comment ~ "retestskillmarker"`; a ticket counts when one of its comments carries the usage marker and was created after the snapshot cutoff (older ones come from the snapshot) |
+| Snapshot cutoff | `<ADOPTION_SNAPSHOT_CUTOFF>` (local secrets) — pass as `--cutoff` |
+| Per-ticket check | `node tools/adoption-check/check.js --key OLS-<n> --cutoff <ADOPTION_SNAPSHOT_CUTOFF> --dashboard <ADOPTION_DASHBOARD_URL>` with `TRACKER_BASE_URL` / `TRACKER_EMAIL` / `TRACKER_API_TOKEN` from local secrets |
+
+After the result comment is posted, the chat close-out says `Counted in <ADOPTION_DASHBOARD_URL> — tab AI Skill
+Adoption Overview (dashboard refreshes every 5 minutes)` only when the check returns exit 0; otherwise it says
+`NOT counted yet — <reason>`.
+
 ## Confluence
 
 | Field | Value |
