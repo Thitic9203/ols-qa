@@ -22,7 +22,27 @@ node tools/lane-lease-check/check.js --round <round id> --list-cmd "<lease tool>
 
 An **expired** lease still on disk counts as held: release removes the file, expiry does not.
 
-Known answers (`check.test.js`, 15 cases): a lease naming the round must fail; another round's lease
+## Leftover processes — `--procs-tags`
+
+A lane driver or browser that outlives its lane keeps its account looking "in use" to any job that
+reads command lines. At merge the parent also runs, with every account tag the round leased:
+
+```bash
+node tools/lane-lease-check/check.js --procs-tags <tag1>,<tag2>
+```
+
+It lists processes (`ps -axww -o pid=,ppid=,command=`) whose command line contains any tag, except
+itself and its ancestors, one `LEFTOVER pid <n>: <first 120 chars of command>` line each.
+
+| Exit | Meaning |
+|------|---------|
+| 0 | No other process names a tag |
+| 1 | At least one does — stop it by PID only if this round started it, run again |
+| 2 | Cannot check: ps failed or listed nothing, or a tag is empty / shorter than 3 characters. Never a pass |
+
+`--ps-cmd "<shell>"` replaces the ps call; it exists for the tests.
+
+Known answers (`check.test.js`, 27 cases; 15 lease + 12 process): a lease naming the round must fail; another round's lease
 and an empty dir must pass; missing dir, corrupt lease, failing list command must refuse. Measured
 against the real lease tool on 2026-10-13: acquire → exit 1 · other round id → exit 0 · release → exit 0.
 

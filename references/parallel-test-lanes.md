@@ -150,6 +150,10 @@ run — renew the lease before it expires, and release the lease with the same h
 error too). Never load a login file without a lease. If acquire is refused because another holder has
 the account, use a different account or wait — never force or delete another lane's lease. (When the
 parent already holds it: LEASE-HELD-BY-PARENT — do not acquire or release it yourself.)
+Time limit: run every driver or browser script under a hard time limit — `timeout {seconds} node …`,
+or the script's own overall deadline that closes the browser and exits. Never leave a script without
+one. Before you return, make sure no process you started is still running (driver, browser, shell);
+stop any that is, by its PID, and report each one you had to stop.
 You own your units end to end: execution, Figma compare (one per screen × width), recording during
 execution, non-PASS root-cause investigation, and the repro shape.
 Scenarios (run in this order): {ids, steps, expected, design node per screen, widths, fixture}
@@ -159,7 +163,8 @@ Follow: {calling WORKFLOW.md path} — Phase D preflight + Phase E (E0–E2), or
 Return: (1) session preflight — env, build id, authenticated user id (2) one row per scenario:
 status · actual · evidence paths (3) every non-PASS with the root-cause investigation and its
 artifacts (4) records created (5) anything that blocked you (6) every lease you acquired and that you
-released it. Never report a status without evidence.
+released it (7) every process you had to stop before returning (none = say none). Never report a
+status without evidence.
 ```
 
 Never paste a password into the prompt or let a lane echo one in its report — point to where the
@@ -188,6 +193,15 @@ credential lives.
    `node tools/lane-lease-check/check.js --round {round id} --dir {lease dir from guide}` — exit 0
    required; exit 1 lists the leases still held (release each, run again); exit 2 is "cannot check",
    never a pass. A lease left behind blocks that account's background session refresh after the round.
+9. **Leftover-process check** — no driver, browser, or shell a lane started is still running. When the
+   workspace carries `tools/lane-lease-check/`, run
+   `node tools/lane-lease-check/check.js --procs-tags {account tag 1},{account tag 2},…` with every
+   account tag this round leased — exit 0 required. Exit 1 prints `LEFTOVER pid <n>: <command>` per
+   process: stop a process by its PID only when it belongs to this round (its command names this
+   round's script or evidence dir), never by name or pattern, then run the check again. A leftover that
+   is not this round's is reported, not stopped. Exit 2 (ps could not run) is "cannot check", never a
+   pass. A process left running keeps its account looking in use to any job that reads command lines,
+   so that account is never refreshed.
 
 Then continue with the calling workflow's summary / comment step as a single merged result.
 
@@ -203,6 +217,7 @@ Then continue with the calling workflow's summary / comment step as a single mer
 | MUST check each lane's authenticated user id against the lease | Proves no collision happened |
 | MUST re-verify every lane's non-PASS in the parent | Subagent output is a claim, not a result |
 | MUST acquire a session lease before a lane loads a login file and release it in `finally` (when the workspace provides a lease tool), and show none held by the round at merge | A refresh of a login in use ends the lane's session mid-run; a lease never released blocks the refresh after the round |
+| MUST run every lane driver/browser script under a hard time limit, and show no process of the round left running at merge | A lane that dies leaves its driver running for as long as nothing stops it; that process keeps its account marked in use |
 | NEVER let a lane post, transition, assign, or notify | External writes stay with the parent after approval |
 | NEVER trade a gate for speed (design compare, widths, evidence, root cause) | Parallel shortens wall-clock; it never shortens the checklist |
 | NEVER retry a parallel-only failure until it passes | It is an isolation fault or a real defect |

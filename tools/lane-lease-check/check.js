@@ -17,7 +17,17 @@
  * A lease is `<tag>.lease` JSON {tag, pid, holder, created, expires}; the list command prints
  * `tag \t state \t pid=… \t expires=… \t holder` per lease.
  *
- * exit 0 = no lease of this round is held · 1 = at least one is still held (listed) ·
+ * Leftover processes (§5/§6): a lane driver or browser still running after its lane returned keeps
+ * its account looking "in use" to any job that reads command lines. At merge the parent also runs
+ *
+ *   node tools/lane-lease-check/check.js --procs-tags <tag1,tag2,…>
+ *
+ * which lists every process (ps -axww -o pid=,ppid=,command=) whose command line contains one of
+ * the round's account tags, except this process and its ancestors, as `LEFTOVER pid <n>: <cmd>`.
+ * exit 0 = none · 1 = at least one · 2 = ps could not run or printed nothing (never a pass).
+ * `--ps-cmd "<shell>"` replaces the ps call — for tests only.
+ *
+ * Lease mode: exit 0 = no lease of this round is held · 1 = at least one is still held (listed) ·
  * 2 = cannot check (no round id, unreadable dir, failing list command, corrupt lease that
  * cannot be attributed). "Cannot check" is never reported as a pass.
  *
@@ -62,6 +72,51 @@ function assess(rows, roundId) {
   return { scanned: rows.length, held, unattributable };
 }
 
+const MIN_TAG = 3;
+const PS_CMD = 'ps -axww -o pid=,ppid=,command=';
+
+/** Rows {pid, ppid, command} from `ps -o pid=,ppid=,command=` text. */
+function parsePs(text) {
+  return String(text).split('\n').map((l) => /^\s*(\d+)\s+(\d+)\s+(.*)$/.exec(l)).filter(Boolean)
+    .map((m) => ({ pid: Number(m[1]), ppid: Number(m[2]), command: m[3] }));
+}
+
+/** Processes whose command line contains any tag, minus selfPid and its ancestors. */
+function findLeftovers(rows, tags, selfPid) {
+  const list = (tags || []).map((x) => String(x).trim()).filter((x) => x !== '');
+  if (!list.length || list.some((x) => x.length < MIN_TAG)) {
+    throw new Error(`each tag must be at least ${MIN_TAG} characters and at least one is required — a short tag matches unrelated processes`);
+  }
+  const byPid = new Map(rows.map((r) => [r.pid, r]));
+  const skip = new Set();
+  for (let pid = selfPid; pid && !skip.has(pid);) {
+    skip.add(pid);
+    const row = byPid.get(pid);
+    pid = row ? row.ppid : 0;
+  }
+  return rows.filter((r) => !skip.has(r.pid) && list.some((tag) => r.command.includes(tag)));
+}
+
+function procsMain(argv, say) {
+  let tags = arg(argv, '--procs-tags');
+  const psCmd = arg(argv, '--ps-cmd') || PS_CMD;
+  tags = String(tags || '').split(',');
+  const r = spawnSync('/bin/sh', ['-c', psCmd], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  if (r.error || r.status !== 0) { say(`ps exited ${r.error ? r.error.code : r.status} — cannot check, not a pass`); return 2; }
+  const rows = parsePs(r.stdout);
+  if (!rows.length) { say('ps listed no processes — cannot check, not a pass'); return 2; }
+  let hits;
+  try { hits = findLeftovers(rows, tags, process.pid); } catch (e) { say(e.message); return 2; }
+  if (hits.length) {
+    say(`${hits.length} leftover process(es) carry tag(s) ${tags.join(',')} (scanned ${rows.length}):`);
+    hits.forEach((h) => process.stdout.write(`LEFTOVER pid ${h.pid}: ${h.command.slice(0, 120)}\n`));
+    say('stop a process by its PID only if this round started it, then run this check again');
+    return 1;
+  }
+  say(`ok — scanned ${rows.length} process(es), none carry tag(s) ${tags.join(',')}`);
+  return 0;
+}
+
 function arg(argv, name) {
   const i = argv.indexOf(name);
   return i >= 0 && i + 1 < argv.length ? argv[i + 1] : undefined;
@@ -72,6 +127,7 @@ function main(argv) {
   const dir = arg(argv, '--dir');
   const listCmd = arg(argv, '--list-cmd');
   const say = (s) => process.stdout.write(`[lane-lease-check] ${s}\n`);
+  if (argv.includes('--procs-tags')) return procsMain(argv, say);
   if (!round || (!dir && !listCmd)) {
     say('usage: check.js --round <round id> (--dir <lease dir> | --list-cmd "<lease tool> list") — cannot check');
     return 2;
@@ -103,4 +159,4 @@ function main(argv) {
 
 if (require.main === module) process.exit(main(process.argv.slice(2)));
 
-module.exports = { readDir, parseList, assess, main, MIN_ROUND_ID };
+module.exports = { readDir, parseList, assess, parsePs, findLeftovers, main, MIN_ROUND_ID, MIN_TAG };

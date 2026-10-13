@@ -126,6 +126,88 @@ t('CLI: a --list-cmd that fails → exit 2, never an empty pass', () => {
   assert.strictEqual(r.status, 2, r.stdout + r.stderr);
 });
 
+// --procs-tags: a driver left running after its lane ended (references/parallel-test-lanes.md §5/§6).
+const PS = [
+  '    1     0 /sbin/launchd',
+  '  500     1 /bin/zsh -c run lane L4 acct-tag07',
+  '  501   500 node /scratch/l4dlg2.js --who acct-tag07',
+  '  600     1 node /scratch/other.js --who acct-tag08',
+  '  700     1 /bin/sh -c parent shell acct-tag07 merge',
+  '  701   700 node tools/lane-lease-check/check.js --procs-tags acct-tag07',
+].join('\n') + '\n';
+
+t('parsePs: reads pid, ppid, full command line', () => {
+  const rows = C.parsePs(PS);
+  assert.strictEqual(rows.length, 6);
+  assert.deepStrictEqual([rows[2].pid, rows[2].ppid, rows[2].command], [501, 500, 'node /scratch/l4dlg2.js --who acct-tag07']);
+});
+
+t('findLeftovers: must find — a process naming the tag', () => {
+  const hits = C.findLeftovers(C.parsePs(PS), ['acct-tag07'], 701);
+  assert.deepStrictEqual(hits.map((h) => h.pid), [500, 501]);
+});
+
+t('findLeftovers: must not find — no process names the tag', () => {
+  assert.deepStrictEqual(C.findLeftovers(C.parsePs(PS), ['acct-tag99'], 701), []);
+});
+
+t('findLeftovers: this process and its ancestors are excluded', () => {
+  const hits = C.findLeftovers(C.parsePs(PS), ['acct-tag07'], 701);
+  assert.ok(!hits.some((h) => h.pid === 701 || h.pid === 700), JSON.stringify(hits));
+});
+
+t('findLeftovers: an empty or too-short tag is refused', () => {
+  assert.throws(() => C.findLeftovers([], [], 1), /tag/);
+  assert.throws(() => C.findLeftovers([], ['ab'], 1), /tag/);
+});
+
+const fakePs = (text) => `printf '%s' '${text.replace(/'/g, "'\\''")}'`;
+
+t('CLI --procs-tags: a leftover process → exit 1, prints LEFTOVER pid <n>', () => {
+  const r = run(['--procs-tags', 'acct-tag07,acct-tag99', '--ps-cmd', fakePs(PS)]);
+  assert.strictEqual(r.status, 1, r.stdout + r.stderr);
+  assert.ok(/LEFTOVER pid 501: node \/scratch\/l4dlg2\.js/.test(r.stdout), r.stdout);
+  assert.ok(!/LEFTOVER pid 600/.test(r.stdout), r.stdout);
+});
+
+t('CLI --procs-tags: LEFTOVER line keeps only the first 120 chars of the command', () => {
+  const long = 'node /scratch/x.js acct-tag07 ' + 'z'.repeat(300);
+  const r = run(['--procs-tags', 'acct-tag07', '--ps-cmd', fakePs(`  900     1 ${long}\n`)]);
+  assert.strictEqual(r.status, 1, r.stdout + r.stderr);
+  const line = r.stdout.split('\n').find((l) => l.includes('LEFTOVER pid 900: '));
+  assert.strictEqual(line.split('LEFTOVER pid 900: ')[1], long.slice(0, 120));
+});
+
+t('CLI --procs-tags: nothing names the tag → exit 0', () => {
+  const r = run(['--procs-tags', 'acct-tag99', '--ps-cmd', fakePs(PS)]);
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+});
+
+t('CLI --procs-tags: ps cannot run → exit 2, never a pass', () => {
+  const r = run(['--procs-tags', 'acct-tag07', '--ps-cmd', 'exit 1']);
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+});
+
+t('CLI --procs-tags: ps prints nothing → exit 2, never a pass', () => {
+  const r = run(['--procs-tags', 'acct-tag07', '--ps-cmd', 'true']);
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+});
+
+t('CLI --procs-tags: real ps — a process started with a unique tag is found', () => {
+  const tag = 'leftover-probe-' + process.pid;
+  const child = require('child_process').spawn(process.execPath, ['-e', 'setTimeout(() => {}, 30000)', tag], { stdio: 'ignore' });
+  try {
+    const r = run(['--procs-tags', tag]);
+    assert.strictEqual(r.status, 1, r.stdout + r.stderr);
+    assert.ok(new RegExp(`LEFTOVER pid ${child.pid}:`).test(r.stdout), r.stdout);
+  } finally { child.kill('SIGKILL'); }
+});
+
+t('CLI --procs-tags: real ps — a tag only the check itself carries → exit 0 (self excluded)', () => {
+  const r = run(['--procs-tags', 'leftover-none-' + process.pid]);
+  assert.strictEqual(r.status, 0, r.stdout + r.stderr);
+});
+
 if (ran === 0) { console.log('ran zero tests — refusing'); process.exit(1); }
 console.log(failed ? `\n${failed} FAILED of ${ran}` : `\nALL PASS (${ran})`);
 process.exit(failed ? 1 : 0);

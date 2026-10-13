@@ -315,7 +315,9 @@ or notify.
 **Session lease per lane.** If the workspace provides a session-lease tool (see project guide), each
 lane acquires the lease on its account before loading the login file, renews it on long runs, and
 releases it in `finally` — the §5 lane prompt carries those lines (or `LEASE-HELD-BY-PARENT` when the
-parent holds the lease). Never load a login file without a lease. The §6 merge adds the lease check:
+parent holds the lease). Never load a login file without a lease. Each lane also runs every driver or
+browser script under a hard time limit and leaves no process of its own running when it returns, and
+the §6 merge runs the leftover-process check for the round's account tags (§5/§6). The §6 merge adds the lease check:
 none held by this round (`tools/lane-lease-check/` where the workspace carries it), and `run.json`
 records the lanes with `lease: true` (6·0).
 
