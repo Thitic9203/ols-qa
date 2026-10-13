@@ -34,6 +34,7 @@ This directory is the mechanical layer that prose could not be.
 | `TIME_GATE_UNSOURCED` | **BLOCK** | gates on a file's mtime/save time against a clock value that is not the measured value — every time on that line must carry seconds AND the line must name its source (`measured` / `SAVED` log line / `stat -` / `date +`); better: gate on `session_verify` alone (PM-2026-10-01-02) |
 | `DESIGN_CLAIM_WITHOUT_FIGMA_RULE` | **BLOCK** | the agent decides verdicts (REAL_FAIL / STALE_ER / HARNESS / challenge gate) but the brief never says "by design" / "not a defect" needs the Figma node opened — code and code comments are code intent only (PM-2026-10-01-03) |
 | `IRREVERSIBLE_STEP_NO_PRELEDGER` | **BLOCK** | names a one-way step (irreversible / one-time / onboarding / enrol) without demanding the ledger line BEFORE it AND recognising the step by its write request (page.route / waitForRequest), not by button label (PM-2026-10-01-04) |
+| `LANE_WITHOUT_LEASE` | **BLOCK** | a test-lane brief (`lane` / `L<n>` / `เลน` / `Account lease:`) that loads a saved login file (`storageState` / `state_<tag>.json` / "login file" / `Account lease`) without telling the lane to **acquire** a session lease before loading it **and release** it in finally (e.g. `session_lease … acquire` + `session_lease … release`) — or the literal token `LEASE-HELD-BY-PARENT` when the parent holds the lease ([parallel-test-lanes.md §5](../../references/parallel-test-lanes.md), owner 2026-10-13) |
 
 Only the first blocks. The other two have legitimate uses, and a guard that
 over-blocks is a guard somebody switches off — which then takes the blocking
@@ -52,6 +53,17 @@ Append one JSON line per case to out/round-9/lane1.jsonl before calling the next
 "Write your results to out/x.jsonl at the end of the run" does **not** satisfy
 it, and there is a test pinning that: an end-of-run write is exactly the write
 that never happens.
+
+## Lease rule (LANE_WITHOUT_LEASE)
+
+```
+Before loading the login file: <lease tool> acquire learner02 --ttl-min 60 --holder "L2 <round id>";
+renew it on runs longer than the TTL; in finally: <lease tool> release learner02.
+```
+
+or, when the parent acquired the lease before dispatch, the line `LEASE-HELD-BY-PARENT`. Acquire
+without release still blocks: a lease never released keeps the account from its background refresh
+after the round. A brief with no lane signal, or no login-file signal, is not checked.
 
 ## Layers
 

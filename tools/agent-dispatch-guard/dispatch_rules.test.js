@@ -495,6 +495,77 @@ t('PM-2026-10-01-04 real disk: check.js --file blocks the incident lane brief an
   }
 });
 
+// ------------------------------------------- LANE_WITHOUT_LEASE (owner, 2026-10-13)
+
+const LANE_BAD =
+  'You are lane L2 of a 3-lane test run for DEMO-12. Account lease: learner02 (learner).\n' +
+  'Browser context: own context, started from the leased account\'s login file auth/dev-learner-learner02.json ' +
+  '(storageState).\n' + PERSIST_LINE;
+const hasLane = (r) => r.findings.some((f) => f.code === 'LANE_WITHOUT_LEASE' && f.severity === rules.SEVERITY.BLOCK);
+
+t('LANE_WITHOUT_LEASE: a test lane loading a login file with no lease instruction is BLOCKED', () => {
+  const r = rules.assessBrief(LANE_BAD);
+  assert.ok(hasLane(r), 'got ' + r.findings.map((f) => f.code));
+  assert.strictEqual(r.ok, false);
+});
+
+t('LANE_WITHOUT_LEASE: state_<tag>.json in a lane brief is the same signal', () => {
+  const r = rules.assessBrief('Lane L1: open the app from capture/state_demo01.json and run TC_01–TC_03.\n' + PERSIST_LINE);
+  assert.ok(hasLane(r), 'got ' + r.findings.map((f) => f.code));
+});
+
+t('LANE_WITHOUT_LEASE: acquire only, no release, is still BLOCKED', () => {
+  const r = rules.assessBrief(LANE_BAD + '\nBefore loading the login file run: session_lease acquire learner02 --ttl-min 60 --holder "L2 R-1".');
+  assert.ok(hasLane(r), 'acquire without release must block');
+});
+
+t('LANE_WITHOUT_LEASE: acquire + release passes', () => {
+  const r = rules.assessBrief(LANE_BAD +
+    '\nBefore loading the login file run: node capture/session_lease.js acquire learner02 --ttl-min 60 --holder "L2 R-1"; ' +
+    'renew every 30 min; in finally run: node capture/session_lease.js release learner02.');
+  assert.ok(!hasLane(r), 'must not flag: ' + rules.formatAssessment(r));
+});
+
+t('LANE_WITHOUT_LEASE: the parent-held token passes', () => {
+  const r = rules.assessBrief(LANE_BAD + '\nLEASE-HELD-BY-PARENT — the parent acquired learner02 and releases it after merge.');
+  assert.ok(!hasLane(r), 'must not flag: ' + rules.formatAssessment(r));
+  assert.strictEqual(rules.LEASE_PARENT_MARKER, 'LEASE-HELD-BY-PARENT');
+});
+
+t('LANE_WITHOUT_LEASE: a non-lane brief that opens a state file is unaffected', () => {
+  const r = rules.assessBrief("Open OLS with T.newCtx(browser, 'tc9020') from the state file and save back with T.safeSave.\n" + PERSIST_LINE);
+  assert.ok(!hasLane(r));
+  const r2 = rules.assessBrief('Summarise the lane timings in out/x.md.\n' + PERSIST_LINE);
+  assert.ok(!hasLane(r2));
+});
+
+t('LANE_WITHOUT_LEASE: the check is counted', () => {
+  const r = rules.assessBrief('Read README.md.\n' + PERSIST_LINE);
+  assert.ok(r.checks >= 12, 'checks=' + r.checks);
+});
+
+t('--explain names the lease rule and the parent token', () => {
+  const r = runCheck('', ['--explain']);
+  assert.ok(r.out.includes('LANE_WITHOUT_LEASE') && r.out.includes('LEASE-HELD-BY-PARENT'), r.out);
+});
+
+t('LANE_WITHOUT_LEASE: check.js on a real brief file exits non-zero, then 0 with the token', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lane-lease-brief-'));
+  try {
+    const bad = path.join(dir, 'bad.txt');
+    const good = path.join(dir, 'good.txt');
+    fs.writeFileSync(bad, LANE_BAD);
+    fs.writeFileSync(good, LANE_BAD + '\nLEASE-HELD-BY-PARENT');
+    const rb = runCheck(null, ['--file', bad]);
+    assert.notStrictEqual(rb.code, 0);
+    assert.ok((rb.out + rb.err).includes('LANE_WITHOUT_LEASE'));
+    const rg = runCheck(null, ['--file', good]);
+    assert.strictEqual(rg.code, 0, 'got ' + rg.code + ' ' + rg.out + rg.err);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 // ------------------------------------------------------------------- harness
 
 let failed = 0;

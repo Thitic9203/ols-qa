@@ -82,6 +82,13 @@ function explain() {
     'past ~300k context, where the per-request stall hazard roughly triples.',
     '',
     'Reproduce the numbers: node tools/agent-stall-metrics/measure.js --help',
+    '',
+    'LANE_WITHOUT_LEASE (BLOCK, owner 2026-10-13): a test-lane brief that loads a',
+    'saved login file (storageState / state_<tag>.json / "login file" /',
+    '"Account lease") must tell the lane to acquire a session lease before',
+    'loading it AND release it in finally (e.g. session_lease acquire … /',
+    'session_lease release …), or carry the literal token ' + rules.LEASE_PARENT_MARKER,
+    'when the parent acquired the lease. See references/parallel-test-lanes.md §5.',
   ].join('\n');
 }
 

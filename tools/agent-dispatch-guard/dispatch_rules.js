@@ -160,6 +160,15 @@ const IRREVERSIBLE_STEP_RE = /\birreversible\b|\bone[- ]time\b|\bonboarding\b|\b
 const LEDGER_BEFORE_RE = /ledger(?:\.jsonl)?[^.\n]{0,100}\bbefore\b|\bbefore\b[^.\n]{0,100}ledger|ledger(?:\.jsonl)?[^.\n]{0,100}ก่อน|ก่อน[^.\n]{0,100}ledger/i;
 const BY_REQUEST_RE = /\bpage\.route\b|\bwaitForRequest\b|\b(?:write|network|POST|PUT|PATCH)\s+request\b|\bnot by (?:the )?(?:button )?label\b|จาก request|ไม่ใช่จากชื่อปุ่ม/i;
 
+// Check 12 — a test lane loading a saved login without a session lease (owner, 2026-10-13).
+// A lane is named by "lane"/"เลน"/L<n> or by the lane template's "Account lease:" line; the login
+// signal is a saved state file. Satisfied by acquire AND release, or by the parent's token.
+const LEASE_PARENT_MARKER = 'LEASE-HELD-BY-PARENT';
+const LANE_SIGNAL_RE = /\blanes?\b|\bL\d+\b|เลน|\bAccount lease\b/i;
+const LOGIN_FILE_RE = /\bstorageState\b|\bstate_[\w<>{}.-]*\.json\b|\blogin file\b|\bAccount lease\b/i;
+const LEASE_ACQUIRE_RE = /\bsession_lease(?:\.js)?\b[^\n]{0,40}\bacquire\b|\bacquire\b[^\n]{0,30}\blease\b|\blease\b[^\n]{0,10}\bacquire\b/i;
+const LEASE_RELEASE_RE = /\bsession_lease(?:\.js)?\b[^\n]{0,40}\brelease\b|\brelease\b[^\n]{0,30}\blease\b|\blease\b[^\n]{0,10}\brelease\b/i;
+
 /**
  * Lines that gate on a file-freshness comparison against a clock time that is
  * not cited as a measured value. Returns the offending lines (empty = clean).
@@ -398,6 +407,24 @@ function assessBrief(text) {
     });
   }
 
+  // Check 12 — test lane on a saved login without a lease (owner, 2026-10-13).
+  checks += 1;
+  const isLeaseLane = LANE_SIGNAL_RE.test(text) && LOGIN_FILE_RE.test(text);
+  if (isLeaseLane && !text.includes(LEASE_PARENT_MARKER) && !(LEASE_ACQUIRE_RE.test(text) && LEASE_RELEASE_RE.test(text))) {
+    findings.push({
+      code: 'LANE_WITHOUT_LEASE',
+      severity: SEVERITY.BLOCK,
+      message:
+        'the brief is a test lane that loads a saved login file but never tells it to acquire a session lease before ' +
+        'loading it and release it in finally — without the lease a background relink can refresh that account mid-run ' +
+        'and end the lane\'s session (references/parallel-test-lanes.md §5)',
+      fix:
+        'add: "before loading the login file, acquire the session lease (project guide: lease tool acquire <tag> ' +
+        '--ttl-min N --holder \"<lane> <round id>\"), renew it on long runs, release it in finally" — or, when the parent ' +
+        'holds the lease, put the literal token ' + LEASE_PARENT_MARKER + ' in the brief',
+    });
+  }
+
   if (checks === 0) {
     throw new Error('assessBrief: ran zero checks — refusing rather than reporting clean');
   }
@@ -432,6 +459,7 @@ function formatAssessment(result) {
 module.exports = {
   SEVERITY,
   PERSIST_MARKER,
+  LEASE_PARENT_MARKER,
   hasPersistenceContract,
   unsourcedTimeGates,
   assessBrief,
