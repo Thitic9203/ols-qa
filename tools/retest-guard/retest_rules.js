@@ -160,6 +160,20 @@ const SUMMARY_LINE = new RegExp(
  * item-coverage line read as a reconciled one.
  */
 const ITEM_COVERAGE_LINE = /(expected-result|acceptance-criteria|item)[ -]*coverage:?\**\s*(\d+)\s*\/\s*(\d+)/i;
+/**
+ * "met" counts PASSED items only (2026-10-13: a PWMI round printed "5 / 5 items met"). The rest of
+ * the denominator is named on the same line — `· 1 PWMI · 1 failed · 1 blocked` — and the line
+ * reconciles when met + those counts = total, so every item still carries a status.
+ */
+const ITEM_COVERAGE_REST = /·\s*(\d+)\s*(PWMI|failed|blocked)\b/gi;
+function itemCoverageAccounted(text) {
+  const line = (String(text).split('\n').find((l) => ITEM_COVERAGE_LINE.test(l)) || '');
+  let sum = 0;
+  let m;
+  const re = new RegExp(ITEM_COVERAGE_REST.source, 'gi');
+  while ((m = re.exec(line)) !== null) sum += Number(m[1]);
+  return sum;
+}
 
 /**
  * The usage marker — the last line of every posted retest result, so a JQL/text search
@@ -500,9 +514,9 @@ function scanBody(body, opts = {}) {
     out.push(finding('coverage-line-missing', 0,
       'no expected-result / acceptance-criteria coverage line',
       'e.g. *Expected-result coverage:* 7 / 7 items met — a Case coverage line is not a substitute'));
-  } else if (cov[2] !== cov[3]) {
+  } else if (Number(cov[2]) + itemCoverageAccounted(text) !== Number(cov[3])) {
     out.push(finding('coverage-not-reconciled', 0,
-      `coverage reads ${cov[2]}/${cov[3]}`,
+      `coverage reads ${cov[2]}/${cov[3]} (+${itemCoverageAccounted(text)} PWMI/failed/blocked)`,
       'every enumerated item is a row with a status — close the gap before posting'));
   }
 

@@ -45,6 +45,7 @@ const GOOD_MANIFEST = {
   cases: [{ id: 'TC_01', title: 'modal button labels', covers: ['ER1'], role: 'CONTENT_ADMIN', status: 'PASSED' }],
   results: [{ id: 'ER1', actual: 'reads "Review Failed"', evidence: ['PROJ-88_TC_01_CONTENT_ADMIN.mp4'], status: 'PASSED' }],
   verdict: 'PASSED',
+  lanes: [{ id: 'L1', account: 'admin01', cases: ['TC_01'], lease: true }],
 };
 
 let failed = 0;

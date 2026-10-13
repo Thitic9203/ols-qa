@@ -42,6 +42,8 @@ function feManifest() {
       { id: 'ER2', actual: 'badge present after close', evidence: ['PROJ-88_TC_02_CONTENT_ADMIN.mp4'], status: 'PASSED' },
     ],
     verdict: 'PASSED',
+    lanes: [{ id: 'L1', account: 'admin01', cases: ['TC_01', 'TC_02'], lease: true }],
+    serialReason: 'two-or-fewer-scenarios',
   };
 }
 
@@ -65,6 +67,7 @@ function apiFailed() {
     cases: [{ id: 'TC_01', title: 'invalid range is rejected', covers: ['ER1'], role: 'ADMIN', status: 'FAILED' }],
     results: [{ id: 'ER1', actual: '500, unhandled exception', evidence: [], status: 'FAILED' }],
     verdict: 'FAILED',
+    lanes: [{ id: 'L1', account: 'admin01', cases: ['TC_01'], lease: true }],
     symptomGone: false,
     rootCause: { text: 'the range check runs after the persistence call', label: 'Confirmed' },
     resolutionOptions: [
@@ -202,6 +205,7 @@ function multiCaseManifest() {
   m.build = 'PR #12 in tag v1 · the env shows no build number';
   m.fixture = 'queue item created for the run · deleted after, count back to 0';
   m.cases.push({ id: 'TC_03', title: 'narrow width keeps the label', covers: ['ER1'], role: 'VIEWER', status: 'PASSED' });
+  m.lanes.push({ id: 'L2', account: 'viewer01', cases: ['TC_03'], lease: true });
   m.results[0].actual = 'reads "Review Failed" · stays on one line at 390 px';
   return m;
 }
@@ -313,6 +317,32 @@ check('a manifest marker is rendered as given, in both formats', () => {
     const found = errorsOnly(R.scanBody(body, { format, bugType }));
     assert.deepStrictEqual(found, [], JSON.stringify(found.map((f) => f.rule + '@' + f.line)));
   });
+});
+
+// Defect measured 2026-10-13: a round with a PWMI row and no FAILED row printed "5 / 5 items met"
+// and "… 1 failed …". Met means PASSED; PWMI is its own count; nothing is FAILED that was not.
+check('a PWMI row is neither "met" nor "failed" in the footer', () => {
+  const m = feManifest();
+  m.cases[1].status = 'PWMI';
+  m.results[1].status = 'PWMI';
+  m.results[1].actual = 'badge present but 2 px off the design';
+  m.verdict = 'PWMI';
+  m.rootCause = { text: 'badge offset in the list row style', label: 'Confirmed' };
+  m.resolutionOptions = ['code change (Dev)', 'spec change (PO)'];
+  m.decidedBy = 'PO';
+  m.symptomGone = true;
+  assert.deepStrictEqual(M.validate(m), []);
+  const body = RENDER.render(m);
+  assert.ok(body.includes('1 / 2 items met · 1 PWMI'), body.split('\n').filter((l) => /coverage/.test(l)).join(' | '));
+  assert.ok(body.includes('1 passed / 0 failed / 1 PWMI / 0 blocked'), body.split('\n').filter((l) => /Case coverage/.test(l)).join(' | '));
+  assert.ok(!/\b1 failed\b/.test(body), 'a PWMI round printed "1 failed"');
+  const found = errorsOnly(R.scanBody(body, { format: R.FORMATS.WIKI, bugType: 'FE' }));
+  assert.deepStrictEqual(found, [], JSON.stringify(found.map((f) => f.rule + '@' + f.line)));
+});
+
+check('a FAILED item is not "met"; the footer names it', () => {
+  const body = RENDER.render(apiFailed());
+  assert.ok(body.includes('0 / 1 items met · 1 failed'), body.split('\n').filter((l) => /coverage/.test(l)).join(' | '));
 });
 
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');

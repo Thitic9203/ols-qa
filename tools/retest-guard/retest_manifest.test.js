@@ -43,6 +43,8 @@ function base() {
       { id: 'ER3', actual: 'list refreshed', evidence: ['PROJ-88_TC_02_CONTENT_ADMIN.mp4'], status: 'PASSED' },
     ],
     verdict: 'PASSED',
+    lanes: [{ id: 'L1', account: 'admin01', cases: ['TC_01', 'TC_02'], lease: true }],
+    serialReason: 'two-or-fewer-scenarios',
   };
 }
 
@@ -282,6 +284,114 @@ check('an unknown marker value is refused, field by field', () => {
   assert.deepStrictEqual(fields, ['marker.agent', 'marker.src', 'marker.via']);
   m.marker = 'helix';
   assert.deepStrictEqual(M.validate(m).map((f) => f.field), ['marker']);
+});
+
+// ---- lanes (references/parallel-test-lanes.md §1, §3, §4) — owner-approved 2026-10-13 ----
+
+function threeCases() {
+  const m = base();
+  m.cases.push({ id: 'TC_03', title: 'refresh after close', covers: ['ER3'], role: 'CONTENT_ADMIN', status: 'PASSED' });
+  m.lanes = [
+    { id: 'L1', account: 'admin01', cases: ['TC_01', 'TC_03'], lease: true },
+    { id: 'L2', account: 'admin02', cases: ['TC_02'], lease: true },
+  ];
+  delete m.serialReason;
+  return m;
+}
+const laneFields = (m) => M.validate(m).map((f) => f.field);
+
+check('lanes: a missing lanes field is a validation error', () => {
+  const m = base();
+  delete m.lanes;
+  assert.ok(laneFields(m).includes('lanes'), JSON.stringify(M.validate(m)));
+});
+
+check('lanes: two lanes covering every case once, each leased, validate', () => {
+  assert.deepStrictEqual(M.validate(threeCases()), []);
+});
+
+check('lanes: a case in no lane is refused', () => {
+  const m = threeCases();
+  m.lanes[0].cases = ['TC_01'];
+  assert.ok(M.validate(m).some((f) => f.field === 'lanes' && /TC_03/.test(f.message)));
+});
+
+check('lanes: a case in two lanes is refused', () => {
+  const m = threeCases();
+  m.lanes[1].cases = ['TC_02', 'TC_03'];
+  assert.ok(M.validate(m).some((f) => f.field === 'lanes' && /TC_03/.test(f.message) && /2 lanes/.test(f.message)));
+});
+
+check('lanes: a lane naming a case that does not exist is refused', () => {
+  const m = threeCases();
+  m.lanes[1].cases = ['TC_02', 'TC_99'];
+  assert.ok(M.validate(m).some((f) => /lanes\[1\]\.cases/.test(f.field) && /TC_99/.test(f.message)));
+});
+
+check('lanes: lease must be literally true', () => {
+  const m = threeCases();
+  m.lanes[1].lease = 'yes';
+  assert.ok(laneFields(m).includes('lanes[1].lease'));
+  delete m.lanes[1].lease;
+  assert.ok(laneFields(m).includes('lanes[1].lease'));
+});
+
+check('lanes: one account leased to two lanes is refused (§3)', () => {
+  const m = threeCases();
+  m.lanes[1].account = 'admin01';
+  assert.ok(M.validate(m).some((f) => f.field === 'lanes' && /admin01/.test(f.message)));
+});
+
+check('lanes: a multi-role lane may hold an account list', () => {
+  const m = threeCases();
+  m.lanes[0].account = ['admin01', 'learner03'];
+  assert.deepStrictEqual(M.validate(m), []);
+});
+
+check('lanes: 3 cases in 1 lane without serialReason is refused', () => {
+  const m = threeCases();
+  m.lanes = [{ id: 'L1', account: 'admin01', cases: ['TC_01', 'TC_02', 'TC_03'], lease: true }];
+  assert.ok(laneFields(m).includes('serialReason'));
+});
+
+check('lanes: serialReason must be a §4 predicate', () => {
+  const m = threeCases();
+  m.lanes = [{ id: 'L1', account: 'admin01', cases: ['TC_01', 'TC_02', 'TC_03'], lease: true }];
+  m.serialReason = 'faster to do it myself';
+  assert.ok(laneFields(m).includes('serialReason'));
+  M.SERIAL_REASONS.filter((r) => r !== 'two-or-fewer-scenarios').forEach((r) => {
+    m.serialReason = r;
+    assert.deepStrictEqual(M.validate(m), [], r);
+  });
+});
+
+check('lanes: the §4 list is exactly predicates a–e', () => {
+  assert.deepStrictEqual(M.SERIAL_REASONS, [
+    'one-account', 'shared-record', 'env-forbids-concurrency', 'two-or-fewer-scenarios', 'user-asked-serial',
+  ]);
+});
+
+check('lanes: "two-or-fewer-scenarios" is refused when the round has 3 cases', () => {
+  const m = threeCases();
+  m.lanes = [{ id: 'L1', account: 'admin01', cases: ['TC_01', 'TC_02', 'TC_03'], lease: true }];
+  m.serialReason = 'two-or-fewer-scenarios';
+  assert.ok(M.validate(m).some((f) => f.field === 'serialReason' && /3/.test(f.message)));
+});
+
+check('lanes: a 1-case round needs no serialReason', () => {
+  const m = base();
+  m.cases = [m.cases[0]];
+  m.cases[0].covers = ['ER1', 'ER2', 'ER3'];
+  m.lanes = [{ id: 'L1', account: 'admin01', cases: ['TC_01'], lease: true }];
+  delete m.serialReason;
+  assert.deepStrictEqual(M.validate(m), []);
+});
+
+check('lanes: a scoped round needs only its in-scope cases laned', () => {
+  const m = threeCases();
+  m.scope = { mode: 'CASES', cases: ['TC_01'] };
+  m.lanes = [{ id: 'L1', account: 'admin01', cases: ['TC_01'], lease: true }];
+  assert.deepStrictEqual(M.validate(m), []);
 });
 
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');

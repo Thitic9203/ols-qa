@@ -25,7 +25,20 @@ const SCOPE_MODES = Object.freeze(['FULL', 'CASES']);
 
 const REQUIRED_TOP = Object.freeze([
   'ticket', 'ticketType', 'bugType', 'format', 'env', 'role', 'date', 'build',
-  'fixture', 'scope', 'contract', 'cases', 'results', 'verdict',
+  'fixture', 'scope', 'contract', 'cases', 'results', 'verdict', 'lanes',
+]);
+
+/**
+ * The only reasons a round with 2+ cases may run in ONE lane — references/parallel-test-lanes.md
+ * §4 predicates a–e, in that order. Anything else ("faster to do it myself", "the guide does not
+ * mention parallel") is the serial-by-habit the reference names as the main cost of long runs.
+ */
+const SERIAL_REASONS = Object.freeze([
+  'one-account', // a. one account in total
+  'shared-record', // b. every scenario shares one mutable record
+  'env-forbids-concurrency', // c. documented rate limit, one OTP device, VPN seat limit
+  'two-or-fewer-scenarios', // d. plan has ≤ 2 scenarios
+  'user-asked-serial', // e. user asked for serial in chat
 ]);
 
 function isNonEmptyString(v) { return typeof v === 'string' && v.trim() !== ''; }
@@ -63,6 +76,18 @@ function coverage(m) {
   const byId = new Map(asArray(m.results).map((r) => [r.id, r]));
   const n = ids.filter((id) => byId.has(id) && STATUSES.includes(byId.get(id).status)).length;
   return { n, total: ids.length };
+}
+
+/**
+ * Item counts for the footer. `met` is PASSED only — a PWMI or FAILED item carries a status but
+ * did not meet its expected result (2026-10-13: a PWMI round printed "5 / 5 items met").
+ */
+function itemTally(m) {
+  const ids = inScopeIds(m);
+  const byId = new Map(asArray(m.results).map((r) => [r.id, r]));
+  const st = ids.map((id) => (byId.get(id) || {}).status);
+  const count = (s) => st.filter((x) => x === s).length;
+  return { met: count('PASSED'), pwmi: count('PWMI'), failed: count('FAILED'), blocked: count('BLOCKED'), total: ids.length };
 }
 
 /** The verdict the results actually support — never the one that was hoped for. */
@@ -104,6 +129,72 @@ function verdictLine(m) {
 }
 
 function err(field, message, fix) { return { field, message, fix, severity: 'error' }; }
+
+/**
+ * The lane plan the round actually ran (references/parallel-test-lanes.md §1, §3, §4).
+ * Prose said "parallel by default, one leased account per lane"; rounds still ran serial in one
+ * agent on a shared login. Here the plan is data: every in-scope case sits in exactly one lane,
+ * every lane held a session lease, no account is in two lanes, and a one-lane round with 2+
+ * cases names its §4 predicate.
+ */
+function validateLanes(m, caseIds) {
+  const out = [];
+  const lanes = m.lanes;
+  if (!Array.isArray(lanes) || lanes.length === 0) {
+    return [err('lanes', 'lanes must be a non-empty list [{id, account, cases, lease}]',
+      'record the lane plan the round ran (parallel-test-lanes.md §2)')];
+  }
+  const where = new Map(); // case id -> lane ids
+  const accountLanes = new Map(); // account -> lane ids
+  lanes.forEach((l, i) => {
+    const lane = l && typeof l === 'object' ? l : {};
+    if (!isNonEmptyString(lane.id)) out.push(err(`lanes[${i}].id`, 'every lane needs an id', 'L1, L2, …'));
+    const accounts = Array.isArray(lane.account) ? lane.account : [lane.account];
+    if (accounts.length === 0 || !accounts.every(isNonEmptyString)) {
+      out.push(err(`lanes[${i}].account`, 'every lane names its leased account (or a list for a multi-role lane)',
+        'the account alias from the guide — never an email or a password'));
+    }
+    accounts.filter(isNonEmptyString).forEach((a) => {
+      if (!accountLanes.has(a)) accountLanes.set(a, []);
+      accountLanes.get(a).push(lane.id || `#${i}`);
+    });
+    if (lane.lease !== true) {
+      out.push(err(`lanes[${i}].lease`, 'lease must be true — the lane held a session lease on its login file',
+        'acquire the lease before loading the login file, release it in finally'));
+    }
+    if (!Array.isArray(lane.cases) || lane.cases.length === 0) {
+      out.push(err(`lanes[${i}].cases`, 'a lane with no cases ran nothing', 'list the TC ids it ran, or drop the lane'));
+    }
+    asArray(lane.cases).forEach((cid) => {
+      if (!caseIds.has(cid)) out.push(err(`lanes[${i}].cases`, `lane case "${cid}" is not in cases[]`, 'lanes name cases that exist'));
+      if (!where.has(cid)) where.set(cid, []);
+      where.get(cid).push(lane.id || `#${i}`);
+    });
+  });
+  accountLanes.forEach((ls, a) => {
+    if (ls.length > 1) {
+      out.push(err('lanes', `account "${a}" is leased to ${ls.length} lanes (${ls.join(', ')})`,
+        'one account, one lane, for the whole run (parallel-test-lanes.md §3)'));
+    }
+  });
+  const run = inScopeCases(m).map((c) => c.id);
+  run.forEach((cid) => {
+    const ls = where.get(cid) || [];
+    if (ls.length === 0) out.push(err('lanes', `case "${cid}" is in no lane`, 'every in-scope case is in exactly one lane'));
+    else if (ls.length > 1) out.push(err('lanes', `case "${cid}" is in ${ls.length} lanes (${ls.join(', ')})`, 'every in-scope case is in exactly one lane'));
+  });
+  if (run.length >= 2 && lanes.length === 1) {
+    if (!SERIAL_REASONS.includes(m.serialReason)) {
+      out.push(err('serialReason', `${run.length} cases ran in 1 lane without a §4 predicate`
+        + (m.serialReason === undefined ? '' : ` ("${m.serialReason}" is not one)`),
+        `fan out to lanes, or set serialReason to one of ${SERIAL_REASONS.join(' | ')}`));
+    } else if (m.serialReason === 'two-or-fewer-scenarios' && run.length > 2) {
+      out.push(err('serialReason', `"two-or-fewer-scenarios" but the round ran ${run.length} cases`,
+        'the predicate must be true of the round'));
+    }
+  }
+  return out;
+}
 
 /**
  * Validate a manifest. Returns findings — empty means every mechanical check
@@ -185,6 +276,8 @@ function validate(m) {
     }
   }
 
+  validateLanes(m, caseIds).forEach((f) => out.push(f));
+
   const ids = inScopeIds(m);
   const byId = new Map(asArray(m.results).map((r) => [r.id, r]));
   asArray(m.results).forEach((r, i) => {
@@ -250,10 +343,13 @@ module.exports = {
   PASSING,
   SCOPE_MODES,
   REQUIRED_TOP,
+  SERIAL_REASONS,
+  validateLanes,
   inScopeIds,
   outOfScopeIds,
   inScopeCases,
   coverage,
+  itemTally,
   computedVerdict,
   verdictLine,
   validate,

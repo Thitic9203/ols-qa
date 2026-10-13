@@ -193,6 +193,13 @@ check('coverage that does not reconcile is refused', () => {
   assert.ok(has(fs, 'coverage-not-reconciled'));
 });
 
+check('coverage reconciles when met + PWMI + failed + blocked = total (2026-10-13)', () => {
+  const ok = R.scanBody(GOOD.replace('coverage:* 1 / 1 items met', 'coverage:* 2 / 5 items met · 1 PWMI · 1 failed · 1 blocked'), {});
+  assert.ok(!has(ok, 'coverage-not-reconciled'), JSON.stringify(rules(ok)));
+  const short = R.scanBody(GOOD.replace('coverage:* 1 / 1 items met', 'coverage:* 2 / 5 items met · 1 PWMI'), {});
+  assert.ok(has(short, 'coverage-not-reconciled'), 'an item with no status read as reconciled');
+});
+
 check('a local path in the body is refused', () => {
   // Built at runtime: this repo is public and its secret guard refuses the literal
   // shape of a home directory even in a counter-example, which is the correct

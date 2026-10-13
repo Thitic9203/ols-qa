@@ -38,7 +38,7 @@ one module with tests do not.
 | file | what it is |
 |---|---|
 | `retest_rules.js` | **the rules** — required header lines, table headers, banned constructs per endpoint, caveat and hedge vocabulary, scope and coverage line shapes, the usage marker (`markerLine()`, rule `marker-missing`), plus `scanBody()`. Markdown links here; it does not restate a rule |
-| `retest_manifest.js` | the run manifest: scope arithmetic, coverage, and the verdict **the rows support** rather than the one that was hoped for |
+| `retest_manifest.js` | the run manifest: scope arithmetic, coverage, the lane plan (`lanes`, `serialReason`), and the verdict **the rows support** rather than the one that was hoped for |
 | `retest_render.js` | manifest → comment body (v2 wiki / v3 markdown). The markup rules become the only way the text can be produced |
 | `retest_guard.js` | the CLI: validate, render, scan, report, exit |
 | `adf_colwidth.js` | the post-publish layout step: column widths + centred evidence on the posted comment's ADF, and the readback check |
@@ -78,6 +78,29 @@ those cases cover, renders the verdict as `PASSED (scoped: TC_03, TC_07)`, and p
 Before this, a request to retest two named cases had no honest path: the coverage gate reconciled
 against the whole contract, so the choice was to break the gate or to quietly widen what the user
 asked for.
+
+## Lanes — the plan the round ran (owner, 2026-10-13)
+
+`run.json` carries `"lanes": [{"id": "L1", "account": "learner01", "cases": ["TC_01", "TC_03"], "lease": true}]`
+(`account` may be a list for a multi-role lane). `validate()` refuses (exit 1):
+
+- a manifest with no `lanes`;
+- an in-scope case that is in no lane, or in more than one; a lane naming a case not in `cases[]`;
+- a lane whose `lease` is not literally `true` (the lane held a session lease on its login file);
+- one account in two lanes ([parallel-test-lanes.md §3](../../references/parallel-test-lanes.md));
+- a round with 2+ in-scope cases in one lane without `serialReason` set to a §4 predicate:
+  `one-account` · `shared-record` · `env-forbids-concurrency` · `two-or-fewer-scenarios` ·
+  `user-asked-serial` (a–e, `SERIAL_REASONS`). `two-or-fewer-scenarios` with 3+ cases is refused too.
+
+Releasing the leases is checked at merge by [`tools/lane-lease-check`](../lane-lease-check/README.md).
+
+## Coverage footer — PWMI is not failed (2026-10-13)
+
+`*items met*` counts PASSED items only; the rest of the denominator is named on the same line —
+`4 / 5 items met · 1 PWMI` — and `coverage-not-reconciled` fires unless met + PWMI + failed +
+blocked = total. The case line prints `… 12 passed / 0 failed / 1 PWMI / 2 blocked` (the PWMI part only
+when there is one). Before this a round with a PWMI row and no FAILED row printed `5 / 5 items met`
+and `1 failed`.
 
 ## What it does not check, and never implies
 

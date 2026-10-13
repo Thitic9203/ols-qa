@@ -144,7 +144,9 @@ function contractLabel(m) {
 function tallies(cases) {
   return {
     passed: cases.filter((c) => c.status === 'PASSED').length,
-    failed: cases.filter((c) => c.status === 'FAILED' || c.status === 'PWMI').length,
+    // PWMI is its own count, never folded into failed (2026-10-13: a PWMI-only round read "1 failed").
+    failed: cases.filter((c) => c.status === 'FAILED').length,
+    pwmi: cases.filter((c) => c.status === 'PWMI').length,
     blocked: cases.filter((c) => c.status === 'BLOCKED').length,
     // "cases run" means run: a BLOCKED case was planned and never executed, and
     // counting it as run is the same footnote-instead-of-row habit the gates exist for.
@@ -167,7 +169,6 @@ function renderWith(m, fmt) {
   const ids = M.inScopeIds(m);
   const byId = new Map((m.results || []).map((r) => [r.id, r]));
   const contractById = new Map((m.contract || []).map((c) => [c.id, c]));
-  const cov = M.coverage(m);
   const t = tallies(cases);
   const isApi = m.bugType === 'API';
   const txt = (l) => (l === '' ? l : text(l));
@@ -203,8 +204,12 @@ function renderWith(m, fmt) {
     L.push(fmt.dataRow(row));
   });
   L.push('');
-  L.push(`${bold(coverageLabel(m))} ${cov.n} / ${cov.total} items met`);
-  L.push(`${bold('Case coverage:')} ${t.run} / ${cases.length} cases run — ${t.passed} passed / ${t.failed} failed / ${t.blocked} blocked`);
+  const it = M.itemTally(m);
+  const rest = [[it.pwmi, 'PWMI'], [it.failed, 'failed'], [it.blocked, 'blocked']]
+    .filter(([k]) => k > 0).map(([k, w]) => ` · ${k} ${w}`).join('');
+  L.push(`${bold(coverageLabel(m))} ${it.met} / ${it.total} items met${rest}`);
+  const pwmiPart = t.pwmi > 0 ? ` / ${t.pwmi} PWMI` : '';
+  L.push(`${bold('Case coverage:')} ${t.run} / ${cases.length} cases run — ${t.passed} passed / ${t.failed} failed${pwmiPart} / ${t.blocked} blocked`);
 
   const out = M.outOfScopeIds(m);
   if (out.length) {
