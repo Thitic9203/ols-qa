@@ -24,6 +24,7 @@ When invoked:
 4. **Test deeply** — [customer-escape-prevention.md](../../references/customer-escape-prevention.md): cover the whole surface, run every in-scope width with overflow/overlap **measured**, use fixtures big enough to fail, evidence on passed rows too, and never PASSED over a "cannot verify" note.
 5. **Run in parallel lanes by default** — [parallel-test-lanes.md](../../references/parallel-test-lanes.md): split the plan across subagents, **one leased account per lane** (never two lanes on one login), barrier for anything every lane sees; serial only with a named predicate.
 6. **Result quality gate before any verdict** — [result-quality-gate.md](../../references/result-quality-gate.md): all 20 layers on every case before a verdict is reported or written; the main thread re-runs it on the lanes' files.
+6a. **No-wait decision gate before any BLOCKED / "needs decision" / held post** — [no-wait-decision-gate.md](../../references/no-wait-decision-gate.md): all 20 layers — read every source, apply precedent, create missing data, decide and act; never park a case or a finished post waiting for someone.
 7. Read and follow [WORKFLOW.md](../procedures/testing-ticket-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
 
 Claude Code shortcut: `/testing-ticket` → [commands/testing-ticket.md](../../commands/testing-ticket.md).

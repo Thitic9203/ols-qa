@@ -263,6 +263,7 @@ Follow [figma-design-comparison.md](../../../references/figma-design-comparison.
 
 - **A design node exists and covers the screen** → record the link on the header's `Design ref:` line,
   and compare at Step 4d.
+- **Before declaring no design node**, try every route in [no-wait-decision-gate.md](../../../references/no-wait-decision-gate.md) layer 7 (design-tool API with the configured token, browser view, exported image).
 - **No design node** (none linked, the link does not cover this screen, or the file is unreachable) →
   **report it back to the person or channel that assigned this retest** — state the ticket, the screen,
   where you looked, and ask for one of: the node link · a written visual contract · an explicit
@@ -447,9 +448,12 @@ What is specific to retest:
   conflict and names the owner.
 
 **Default while the question is queued (attended and unattended / bot mode alike):** resolve the gate
-instead of waiting — expected wrong/unclear → BLOCKED + remark (no bug, no halt); test-side cause → fix
-and re-run; confirmed defect → draft the comment as normal. Unattended runs have no popup: the queued
-items go into the run's report.
+instead of waiting. Expected wrong/unclear, sources disagree, data missing, or "needs a decision" →
+run the **[no-wait decision gate](../../../references/no-wait-decision-gate.md) (20 layers)** and
+decide from evidence: read every source, apply precedent and standing decisions, create the missing
+data, and write the decision log. BLOCKED only for the layer-17 causes, with the layer-18 record.
+Test-side cause → fix and re-run; confirmed defect → draft the comment as normal. Only what no layer
+can resolve is queued; unattended runs put it in the run's report.
 
 ---
 
@@ -815,6 +819,8 @@ QA — or another agent given the ticket, the deliverable and nothing else*. Mak
 resolve as BLOCKED rows with reasons — never halt the queue, never post over an unanswered finding.
 
 ### 6d. End of round — decisions popup, then one approval bundle (mandatory, fixed order)
+
+**Delegated rounds:** when the owner has delegated the round ("don't ask", "don't wait", "handle it"), the decisions popup carries only what the [no-wait decision gate](../../../references/no-wait-decision-gate.md) could not resolve, and the approval wait is skipped (layer 19) — every format, syntax and readback gate below still runs. Opening new bugs still needs a live yes.
 
 Follow [round-time-contract.md](../../../references/round-time-contract.md) §3 in this order:
 

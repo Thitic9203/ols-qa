@@ -170,6 +170,9 @@ Use [parallel-prep.md](../../../references/parallel-prep.md) when Jira fetch and
    browser-automation MCP**: open the file URL (a logged-in browser session persists auth), let the
    canvas render, screenshot the node. Dismiss the **"Want to view this file in Dev Mode?"** modal with
    **"Not now"** — NEVER "Request access". A View+Comment account is enough.
+   Before declaring a screen has no design node, try every route in
+   [no-wait-decision-gate.md](../../../references/no-wait-decision-gate.md) layer 7 (design-tool API with
+   the configured token, browser view, exported image).
    **A screen with no design node → report it back to the person or channel that assigned this run**
    (ticket · screen · where you looked · what you need: the node link, a written visual contract, or an
    explicit "function only"). Keep testing everything that does not depend on the design; the visual
@@ -371,9 +374,12 @@ What is specific to testing a ticket:
 - **The contract is this ticket's Expected/AC/EC and the test case's own source**, read char-exact and
   cross-checked against the parent story, every linked issue, and sibling tickets on the same surface.
 - **Apply the gate's default and keep running — no mid-run wait**
-  ([round-time-contract.md §2](../../../references/round-time-contract.md)): expected wrong/unclear →
-  BLOCKED + remark (no bug, no halt); test-side cause → fix and re-run; confirmed defect → record as
-  normal. Queue `expected (+source) · observed · AC/EC finding · recommendation (A adjust the TC ·
+  ([round-time-contract.md §2](../../../references/round-time-contract.md)): expected wrong/unclear,
+  sources disagree, data missing, or "needs a decision" → run the
+  **[no-wait decision gate](../../../references/no-wait-decision-gate.md) (20 layers)** and decide from
+  evidence (every source read, precedent applied, missing data created, decision logged); BLOCKED only
+  for its layer-17 causes with the layer-18 record. Test-side cause → fix and re-run; confirmed defect →
+  record as normal. Only what no layer can resolve is queued. Queue `expected (+source) · observed · AC/EC finding · recommendation (A adjust the TC ·
   B re-test · C confirm defect)` for the end decisions popup; a **B re-test** answer starts a new round
   ([§1](../../../references/round-time-contract.md)).
 - **Never rewrite the ticket's expected text** to match the app on your own.
