@@ -250,7 +250,7 @@ function validate(m) {
 
   if (m.bugType === 'FE' && !isNonEmptyString(m.designRef)) {
     out.push(err('designRef', 'a UI retest carries the design node, or the reason there is none',
-      'record the node link, or "none — asked <who> <date>" and hold the visual points BLOCKED'));
+      'record the node link, or "none, asked <who> <date>" and hold the visual points BLOCKED'));
   }
 
   // A duplicate id corrupts silently: the second entry overrides the first in every

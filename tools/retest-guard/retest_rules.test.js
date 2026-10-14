@@ -231,6 +231,30 @@ check('a hedge word in a non-PASSED comment is flagged as a warning', () => {
   assert.strictEqual(hedge[0].severity, 'warn');
 });
 
+// The ticket's own words are quoted, not QA's cause: a bug ER reading "should be" is the
+// contract, and flagging it pushed executors to paraphrase the verbatim line (eval RB-2).
+const BLOCKED_BODY = GOOD.replace('*Retest Result: PASSED* ✅', '*Retest Result: BLOCKED* ⛔')
+  .replace('|!tc1.png!|✅|', '|!tc1.png!|⛔|')
+  .replace('1 / 1 items met', '0 / 1 items met · 1 blocked')
+  .replace('1 passed / 0 failed / 0 blocked', '0 passed / 0 failed / 1 blocked')
+  .replace('*Case coverage:*', '*Root cause:* Unknown\n*Resolution options:* deploy the fix\n*Case coverage:*');
+
+check('hedge-as-cause: must NOT find a hedge in the verbatim ER line or the Expected Result cell', () => {
+  assert.deepStrictEqual(R.scanBody(BLOCKED_BODY, {}), [], 'control body must be clean');
+  const body = BLOCKED_BODY
+    .replace('*Expected Result (from ticket, verbatim):* the label reads บันทึก',
+      '*Expected Result (from ticket, verbatim):* the label should be บันทึก')
+    .replace('|label reads บันทึก|label reads บันทึก|', '|label should be บันทึก|label reads บันทึก|');
+  assert.ok(!has(R.scanBody(body, {}), 'hedge-as-cause'), 'got ' + JSON.stringify(rules(R.scanBody(body, {}))));
+});
+
+check('hedge-as-cause: must still find a hedge in the Actual Result cell and the Root cause line', () => {
+  const actual = BLOCKED_BODY.replace('|label reads บันทึก|!tc1.png!|', '|label reads X, probably stale|!tc1.png!|');
+  assert.ok(has(R.scanBody(actual, {}), 'hedge-as-cause'));
+  const cause = BLOCKED_BODY.replace('*Root cause:* Unknown', '*Root cause:* the label should be refreshed');
+  assert.ok(has(R.scanBody(cause, {}), 'hedge-as-cause'));
+});
+
 check('an API bug drops the Evidence column and needs no Design ref', () => {
   const body = GOOD
     .replace('*Design ref:* https://figma.example/file/x?node-id=1-2\n', '')

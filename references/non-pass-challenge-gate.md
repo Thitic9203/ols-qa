@@ -85,8 +85,8 @@ Figma/PO", "น่าจะ", "TBD", or any unconfirmed-spec marker, the spec is
 
 | Finding | This is… | Next |
 |---|---|---|
-| Expected was **wrong / misread / stale**; the app matches the authoritative source | **not a defect** | §4 — recommend adjusting the test case / expected |
-| Expected is **superseded** by a related ticket; the app follows the newer behavior | **not a defect** | §4 — recommend adjusting the TC, cite the superseding ticket |
+| Expected was **wrong / misread / stale**; the app matches the authoritative source | **not a confirmed defect** (spec conflict) | **BLOCKED** + remark until the owner picks A; §4 — recommend adjusting the test case / expected |
+| Expected is **superseded** by a related ticket; the app follows the newer behavior | **not a confirmed defect** (spec conflict) | **BLOCKED** + remark until the owner picks A; §4 — recommend adjusting the TC, cite the superseding ticket |
 | Expected is **genuinely unclear / conflicting** across related tickets, or carries a hedge | a **question**, not a bug | **BLOCKED** for that case + an actionable remark naming the discrepancy, the related ticket, and **who to ask** (spec owner / PO) — never a bug ticket |
 | Expected is **confirmed authoritative** and the app still differs | possibly a real defect | §3 |
 
