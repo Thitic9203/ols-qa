@@ -10,6 +10,16 @@ every lane.
 
 ---
 
+## Contents
+
+- [1. Default = parallel lanes](#1-default--parallel-lanes)
+- [2. Build the lane plan (before the confirm gate)](#2-build-the-lane-plan-before-the-confirm-gate)
+- [3. Account isolation — no collision](#3-account-isolation--no-collision)
+- [4. When serial is the right call](#4-when-serial-is-the-right-call)
+- [5. Lane prompt (what the parent sends)](#5-lane-prompt-what-the-parent-sends)
+- [6. Merge (parent, after all lanes return)](#6-merge-parent-after-all-lanes-return)
+- [MUST / NEVER](#must--never)
+
 ## 1. Default = parallel lanes
 
 Execution is **parallel by default**. Serial (one agent runs everything) is allowed only when one of

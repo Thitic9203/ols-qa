@@ -17,6 +17,41 @@ available to the accounts you hold**, and the wrong first attempt can permanentl
 lever you had. This workflow orders the attempts so the cheapest, most reversible, least
 accusatory one is tried first, and so no attempt destroys the next.
 
+## Contents
+
+- [Progress checklist](#progress-checklist)
+- [Discipline](#discipline)
+- [Refusal-first (preconditions)](#refusal-first-preconditions)
+- [Step 0 — Intake, in one message \[medium freedom\]](#step-0--intake-in-one-message-medium-freedom)
+- [Step 1 — Inventory the batch from the API, not from a screen \[low freedom\]](#step-1--inventory-the-batch-from-the-api-not-from-a-screen-low-freedom)
+- [Step 2 — Prove the items are otherwise healthy first \[low freedom\]](#step-2--prove-the-items-are-otherwise-healthy-first-low-freedom)
+- [Step 3 — Pick the mechanism, cleanest first \[low freedom\]](#step-3--pick-the-mechanism-cleanest-first-low-freedom)
+- [Step 4 — The traps that make this go wrong \[low freedom\]](#step-4--the-traps-that-make-this-go-wrong-low-freedom)
+- [Step 5 — Execute \[low freedom\]](#step-5--execute-low-freedom)
+- [Step 6 — Verify from the outside, five ways \[low freedom\]](#step-6--verify-from-the-outside-five-ways-low-freedom)
+- [Step 7 — Report, evidence, and memory \[medium freedom\]](#step-7--report-evidence-and-memory-medium-freedom)
+- [Step 8 — Rollback readiness \[low freedom\]](#step-8--rollback-readiness-low-freedom)
+- [MUST NOT](#must-not)
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+Content takedown progress:
+- [ ] Refusal-first (preconditions)
+- [ ] Step 0 — Intake, in one message
+- [ ] Step 1 — Inventory the batch from the API, not from a screen
+- [ ] Step 2 — Prove the items are otherwise healthy first
+- [ ] Step 3 — Pick the mechanism, cleanest first
+- [ ] Step 4 — The traps that make this go wrong
+- [ ] Step 5 — Execute
+- [ ] Step 6 — Verify from the outside, five ways
+- [ ] Step 7 — Report, evidence, and memory
+- [ ] Step 8 — Rollback readiness
+```
+
 ## Discipline
 
 Follow [shared-preamble.md](../../../references/shared-preamble.md).
@@ -51,7 +86,7 @@ MUST refuse, and say so plainly, when the environment is one the workspace marks
 the instruction is to hide content the user does not own or administer, or when the only available
 mechanism would require writing something untrue about a person (Step 3d).
 
-## Step 0 — Intake, in one message
+## Step 0 — Intake, in one message [medium freedom]
 
 Ask for anything missing from the refusal list in a **single** message, then wait. Do not begin the
 inventory while a precondition is open — the inventory itself is cheap, but starting work signals
@@ -60,7 +95,7 @@ approval you do not have.
 State back, before touching anything: the environment, the account(s), the batch definition, the
 expected item count if known, and the sentence *"I will not change anything outside this set."*
 
-## Step 1 — Inventory the batch from the API, not from a screen
+## Step 1 — Inventory the batch from the API, not from a screen [low freedom]
 
 Pull the authoritative list and keep it on disk; every later step keys off this file.
 
@@ -79,7 +114,7 @@ Pull the authoritative list and keep it on disk; every later step keys off this 
 **Show the user the list before you touch it** — titles, count, and how many are in each rule
 bucket. This is their last cheap chance to say "not that one".
 
-## Step 2 — Prove the items are otherwise healthy first
+## Step 2 — Prove the items are otherwise healthy first [low freedom]
 
 Hiding content also hides evidence. If an item is broken, that is a finding the user may want
 **before** it disappears, and "we hid it" must never be the reason a defect went unseen.
@@ -101,7 +136,9 @@ you could not observe playback yourself rather than implying you did.
 
 Report what you found. If something is genuinely broken, stop and ask before hiding it.
 
-## Step 3 — Pick the mechanism, cleanest first
+**Go back:** If a health check fails ("something is genuinely broken"), stop and ask. If the answer changes the batch, return to Step 1 — Inventory the batch from the API, not from a screen, because every later step keys off that file.
+
+## Step 3 — Pick the mechanism, cleanest first [low freedom]
 
 Work down this ladder and **stop at the first rung that the accounts you hold can actually reach**.
 Verify each rung with one real call on one item — never assume a role's powers from its name.
@@ -132,7 +169,7 @@ creator of, how many creators are affected, and that it distorts the customer's 
 statistics. If they decline, stop. If they reaffirm after hearing it, that is their decision —
 proceed, and record in the note field what is actually true about the content.
 
-## Step 4 — The traps that make this go wrong
+## Step 4 — The traps that make this go wrong [low freedom]
 
 **🔴 One report per (account, item), and the first one is binding.** Re-reporting the same item from
 the same account returns the **same case id and the same status regardless of the reason code you
@@ -157,7 +194,7 @@ environment's own session endpoint before planning around it.
 **🔴 A refusal must never read as a pass.** If a precondition fails mid-batch, stop the batch —
 do not let partially-hidden state be reported as done.
 
-## Step 5 — Execute
+## Step 5 — Execute [low freedom]
 
 - **Dry-run first on exactly one item**, then verify that one item guest-side (Step 6) before the
   remaining N−1. A mechanism that works on item 1 and fails on item 2 is far cheaper to discover
@@ -170,7 +207,9 @@ do not let partially-hidden state be reported as done.
 - Tally the outcomes by status and print every item that did not reach the intended state. Zero
   silent drops.
 
-## Step 6 — Verify from the outside, five ways
+**Go back:** If the one-item dry-run fails its Step 6 check, return to Step 3 — Pick the mechanism, cleanest first: that rung does not work for the accounts you hold. If a precondition fails mid-batch, stop the batch (Step 4).
+
+## Step 6 — Verify from the outside, five ways [low freedom]
 
 The write's own `201` proves nothing about what the public sees. All five, every time:
 
@@ -184,7 +223,9 @@ The write's own `201` proves nothing about what the public sees. All five, every
 
 Layer 4 is the one that catches collateral damage, and it is the one people skip.
 
-## Step 7 — Report, evidence, and memory
+**Go back:** If layer 1, 2, 3 or 5 fails, return to Step 5 — Execute for the items the tally shows short of the intended state, then run all five layers again. If layer 4 fails, something outside the batch moved: stop and report it first — a refusal must never read as a pass (Step 4).
+
+## Step 7 — Report, evidence, and memory [medium freedom]
 
 - Send the guest screenshot in chat (`SendUserFile`), captioned with environment, route, account
   state (guest) and timestamp.
@@ -195,7 +236,7 @@ Layer 4 is the one that catches collateral damage, and it is the one people skip
 - Write what was learned to agent memory — endpoint shapes, role powers, traps — and put real
   hosts/accounts/ids only in the local secrets store, never in this repo.
 
-## Step 8 — Rollback readiness
+## Step 8 — Rollback readiness [low freedom]
 
 Before you call the job done, be able to answer: *if the user asks tomorrow to put all of this back,
 what exactly do I run?* In OLS that is an admin account issuing
@@ -204,6 +245,8 @@ owner issuing `republish` — either way you need the per-item ids from Step 5 o
 
 If the batch cannot be restored by any call available to the accounts you hold, say that **before**
 executing, not after.
+
+**Go back:** If any item has no undo id in the Step 5 record, return to Step 5 — Execute and complete the per-item record before calling the job done.
 
 ## MUST NOT
 

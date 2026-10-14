@@ -231,6 +231,30 @@ check('a hedge word in a non-PASSED comment is flagged as a warning', () => {
   assert.strictEqual(hedge[0].severity, 'warn');
 });
 
+// The ticket's own words are quoted, not QA's cause: a bug ER reading "should be" is the
+// contract, and flagging it pushed executors to paraphrase the verbatim line (eval RB-2).
+const BLOCKED_BODY = GOOD.replace('*Retest Result: PASSED* ✅', '*Retest Result: BLOCKED* ⛔')
+  .replace('|!tc1.png!|✅|', '|!tc1.png!|⛔|')
+  .replace('1 / 1 items met', '0 / 1 items met · 1 blocked')
+  .replace('1 passed / 0 failed / 0 blocked', '0 passed / 0 failed / 1 blocked')
+  .replace('*Case coverage:*', '*Root cause:* Unknown\n*Resolution options:* deploy the fix\n*Case coverage:*');
+
+check('hedge-as-cause: must NOT find a hedge in the verbatim ER line or the Expected Result cell', () => {
+  assert.deepStrictEqual(R.scanBody(BLOCKED_BODY, {}), [], 'control body must be clean');
+  const body = BLOCKED_BODY
+    .replace('*Expected Result (from ticket, verbatim):* the label reads บันทึก',
+      '*Expected Result (from ticket, verbatim):* the label should be บันทึก')
+    .replace('|label reads บันทึก|label reads บันทึก|', '|label should be บันทึก|label reads บันทึก|');
+  assert.ok(!has(R.scanBody(body, {}), 'hedge-as-cause'), 'got ' + JSON.stringify(rules(R.scanBody(body, {}))));
+});
+
+check('hedge-as-cause: must still find a hedge in the Actual Result cell and the Root cause line', () => {
+  const actual = BLOCKED_BODY.replace('|label reads บันทึก|!tc1.png!|', '|label reads X, probably stale|!tc1.png!|');
+  assert.ok(has(R.scanBody(actual, {}), 'hedge-as-cause'));
+  const cause = BLOCKED_BODY.replace('*Root cause:* Unknown', '*Root cause:* the label should be refreshed');
+  assert.ok(has(R.scanBody(cause, {}), 'hedge-as-cause'));
+});
+
 check('an API bug drops the Evidence column and needs no Design ref', () => {
   const body = GOOD
     .replace('*Design ref:* https://figma.example/file/x?node-id=1-2\n', '')
@@ -328,6 +352,42 @@ check('run-time-line-missing: fires when absent, not when present', () => {
   const lines = GOOD.split('\n');
   const without = [...lines.slice(0, -3), '', lines[lines.length - 1]].join('\n');
   assert.ok(has(R.scanBody(without, {}), 'run-time-line-missing'));
+});
+
+/* Owner, 2026-10-14: an all-BLOCKED round may print "not measured — no case ran". */
+function withRunTime(body, line) {
+  const lines = body.split('\n');
+  const i = lines.findIndex((l) => l.startsWith('*Test run time:*'));
+  lines[i] = line;
+  return lines.join('\n');
+}
+const ALL_BLOCKED = withRunTime(GOOD, '*Test run time:* not measured — no case ran')
+  .replace('*Retest Result: PASSED* ✅', '*Retest Result: BLOCKED* ⛔')
+  .replace('*Case coverage:* 1 / 1 cases run — 1 passed / 0 failed / 0 blocked', '*Case coverage:* 0 / 1 cases run — 0 passed / 0 failed / 1 blocked');
+
+check('runTimeLine prints the not-measured line when notMeasured is set', () => {
+  assert.strictEqual(R.runTimeLine({ notMeasured: true }), '*Test run time:* not measured — no case ran');
+  assert.strictEqual(R.runTimeLine({ notMeasured: true }, R.FORMATS.ADF), '**Test run time:** not measured — no case ran');
+});
+
+check('must-not-find: "not measured — no case ran" in an all-BLOCKED round', () => {
+  assert.ok(!has(R.scanBody(ALL_BLOCKED, {}), 'run-time-not-measured-with-cases'));
+  assert.ok(!has(R.scanBody(ALL_BLOCKED, {}), 'run-time-line-missing'));
+});
+
+check('must-find: "not measured" when a case passed', () => {
+  const body = withRunTime(GOOD, '*Test run time:* not measured — no case ran');
+  assert.ok(has(R.scanBody(body, {}), 'run-time-not-measured-with-cases'));
+});
+
+check('must-find: "not measured" with a BLOCKED summary but a case that failed', () => {
+  const body = ALL_BLOCKED.replace('0 passed / 0 failed / 1 blocked', '0 passed / 1 failed / 0 blocked');
+  assert.ok(has(R.scanBody(body, {}), 'run-time-not-measured-with-cases'));
+});
+
+check('must-find: any other non-number run time is still run-time-line-missing', () => {
+  const body = withRunTime(ALL_BLOCKED, '*Test run time:* about 10 min');
+  assert.ok(has(R.scanBody(body, {}), 'run-time-line-missing'));
 });
 
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');

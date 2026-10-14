@@ -17,7 +17,16 @@ const R = require('./retest_rules');
 const ROOT = path.join(__dirname, '..', '..');
 const WF = path.join(ROOT, 'skills', 'procedures', 'retest-bug-workflow', 'WORKFLOW.md');
 
-const wf = fs.readFileSync(WF, 'utf8');
+/** The workflow = WORKFLOW.md plus the part files it links in its own folder (D2 split, 2026-10-14). */
+function readWorkflow(abs) {
+  const dir = path.dirname(abs);
+  const main = fs.readFileSync(abs, 'utf8');
+  const parts = [...new Set([...main.matchAll(/\]\(([a-z0-9-]+\.md)(?:#[^)]*)?\)/g)].map((m) => m[1]))]
+    .filter((n) => n !== 'WORKFLOW.md' && fs.existsSync(path.join(dir, n)));
+  return [main, ...parts.map((n) => fs.readFileSync(path.join(dir, n), 'utf8'))].join('\n');
+}
+
+const wf = readWorkflow(WF);
 
 /** The v2 wiki template block the workflow prints. */
 function templateBlock() {
@@ -135,6 +144,35 @@ check('the workflow tells the reader to measure the run time with the tool, neve
   assert.ok(/tools\/run-time\/measure\.js --dirs/.test(wf), 'the measure command is not documented');
   assert.ok(wf.includes(R.RUN_TIME_METHOD), 'the method id is not named');
   assert.ok(/never estimate/i.test(wf), 'the workflow does not forbid estimating');
+});
+
+/** A minimal clean body whose Design ref value is `value` — only header-inline-list matters here. */
+const designRefFindings = (value) => R.scanBody([
+  '*Retest Result: PASSED* ✅', '', '*Env:* dev', `*Design ref:* ${value}`, '',
+].join('\n'), {}).filter((f) => f.rule === 'header-inline-list');
+
+check('the template\'s "no design node" fallback passes header-inline-list (eval RB-1..3)', () => {
+  const line = tpl.split('\n').find((l) => l.startsWith('*Design ref:*')) || '';
+  const m = /or "([^"]+)"/.exec(line);
+  assert.ok(m, 'the Design ref line no longer shows a quoted fallback: ' + line);
+  const filled = m[1].replace('{who}', 'PO').replace('{YYYY-MM-DD}', '2026-10-14');
+  assert.deepStrictEqual(designRefFindings(filled), [], 'the template fallback is refused by the guard: ' + filled);
+  // must-find: the retired " — " form really is a multipoint value
+  assert.strictEqual(designRefFindings('none — asked PO 2026-10-14').length, 1);
+});
+
+check('the template summary line names every verdict SUMMARY_VERDICTS accepts, and each is accepted', () => {
+  const line = tpl.split('\n').find((l) => l.startsWith('*Retest Result:')) || '';
+  R.SUMMARY_VERDICTS.forEach((v) => {
+    assert.ok(line.includes(v), `the template summary line does not offer ${v}: ${line}`);
+    assert.ok(R.SUMMARY_LINE.test(`*Retest Result: ${v}*`), `${v} is not accepted by SUMMARY_LINE`);
+  });
+  assert.ok(!R.SUMMARY_LINE.test('*Retest Result: DONE*'), 'must-find: an unknown verdict is refused');
+});
+
+check('no workflow line restricts the summary line to PASSED / FAILED only', () => {
+  const bad = wf.split('\n').filter((l) => /\*\*PASSED ✅\*\* or \*\*FAILED ❌\*\*/.test(l));
+  assert.deepStrictEqual(bad, [], 'stale PASSED-or-FAILED-only wording: ' + bad.join(' | '));
 });
 
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');

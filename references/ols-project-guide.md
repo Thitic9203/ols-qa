@@ -5,6 +5,33 @@
 Project-specific config for all Helix workflows in this workspace.
 AI reads this file before asking any OLS-related questions.
 
+## Contents
+
+- [Jira](#jira)
+- [Confluence](#confluence)
+- [Figma](#figma)
+- [Qase (test management)](#qase-test-management)
+- [Training-OLS smoke-test sheet](#training-ols-smoke-test-sheet)
+- [QA tracking sheet (ticket list + TC status)](#qa-tracking-sheet-ticket-list--tc-status)
+- [Customer UAT sheet (regression TC delivery)](#customer-uat-sheet-regression-tc-delivery)
+- [Bug-status sync — `Bug report by HI` tab (hourly, added 2026-08-16)](#bug-status-sync--bug-report-by-hi-tab-hourly-added-2026-08-16)
+- [Bug mirror — the `list` tab of our own regression sheet (`bugmirror_sync.py`)](#bug-mirror--the-list-tab-of-our-own-regression-sheet-bugmirror_syncpy)
+- [HI bug-log watch — the two states nobody was watching (`hi_status_watch.py`, added 2026-09-03)](#hi-bug-log-watch--the-two-states-nobody-was-watching-hi_status_watchpy-added-2026-09-03)
+- [Responsive test matrix — the `Responsive` tab of the QA tracking sheet](#responsive-test-matrix--the-responsive-tab-of-the-qa-tracking-sheet)
+- [Test-type deliverable sheets — `sync-tc-result` (System / Integration / Unit)](#test-type-deliverable-sheets--sync-tc-result-system--integration--unit)
+- [Screenshot evidence (Drive)](#screenshot-evidence-drive)
+- [Bug ticket field schema (where the bug content actually lives)](#bug-ticket-field-schema-where-the-bug-content-actually-lives)
+- [Retest-bug QA notify](#retest-bug-qa-notify)
+- [TC glossary (terminology source of truth)](#tc-glossary-terminology-source-of-truth)
+- [Test Environment](#test-environment)
+- [OLS domain — LP states & test-data recipes (learned OLS-26, 2026-07-13)](#ols-domain--lp-states--test-data-recipes-learned-ols-26-2026-07-13)
+- [Content-detail click pitfall — two buttons named "บันทึก" (learned OLS-721 retest, 2026-09-24)](#content-detail-click-pitfall--two-buttons-named-บันทึก-learned-ols-721-retest-2026-09-24)
+- [Comment list and replies — facts for test scripts (learned OLS-829, 2026-10-08)](#comment-list-and-replies--facts-for-test-scripts-learned-ols-829-2026-10-08)
+- [Content name guard (ชื่อที่ผู้ใช้จริงเห็น) — pre-prod only, 11:00 + 17:00](#content-name-guard-ชื่อที่ผู้ใช้จริงเห็น--pre-prod-only-1100--1700)
+- [Daily health check — pre-prod only, 12:00 and 18:00](#daily-health-check--pre-prod-only-1200-and-1800)
+- [Default assignee / reporter](#default-assignee--reporter)
+- [Preferred CSV format](#preferred-csv-format)
+
 ## Jira
 
 | Field | Value |

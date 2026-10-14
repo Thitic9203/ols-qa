@@ -10,6 +10,15 @@ layer off.
 just strict", "it failed once, that is enough", "the role probably has access" — each of these is
 the exact sentence that preceded a recorded escape below.
 
+## Contents
+
+- [How to run it](#how-to-run-it)
+- [Result line](#result-line)
+- [The 20 layers](#the-20-layers)
+- [Required output when the round finds defects](#required-output-when-the-round-finds-defects)
+- [Red flags — stop, the verdict is not ready](#red-flags--stop-the-verdict-is-not-ready)
+- [Used by](#used-by)
+
 ## How to run it
 
 1. Write one result line per case (JSONL, fields in § Result line). A resumed or re-run lane does
@@ -216,11 +225,10 @@ output line, and the lines opened.
 Defects are **never filed automatically**. The round's report carries two tables, built from the
 result lines that passed this gate.
 
-**Defect candidates — NOT filed.** Only rows whose expected side is a **confirmed** spec.
-
-| Ticket | TC / ER point | Actual | Expected (what correct looks like) | Requirement reference | Evidence | Root cause | Priority | Status |
-|--------|---------------|--------|------------------------------------|-----------------------|----------|------------|----------|--------|
-| `{ISSUE_KEY}` | `TC_nn` · `ER_n` | what the screen showed | the correct behaviour | source (AC id / design node / PO comment id) + char-exact quote | still path + accepted clip (layer 10) + its capture manifest | `path:line` | matrix cell | Not filed yet |
+**Defect candidates — NOT filed.** Only rows whose expected side is a **confirmed** spec. Use the
+exact table, the Needs PO table and the fixed owner question in
+[output-templates/defect-candidates.md](output-templates/defect-candidates.md) — the single copy of
+that shape.
 
 The Status cell is always "Not filed yet" (in a Thai report: "ยังไม่ได้เปิดบั๊ก") until the owner
 says to file; filing then goes through the bug-filing workflow.

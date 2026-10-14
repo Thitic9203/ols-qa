@@ -12,6 +12,41 @@ Prepare **API manual test cases** from an **API spec** and **Swagger/OpenAPI**, 
 
 **Portable:** Any agent with this skill. **Project-agnostic:** No hardcoded services or ticket IDs.
 
+## Contents
+
+- [Progress checklist](#progress-checklist)
+- [Discipline](#discipline)
+- [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
+- [Phase A — API sources (mandatory) \[medium freedom\]](#phase-a--api-sources-mandatory-medium-freedom)
+- [Phase B — Test case table format (mandatory) \[medium freedom\]](#phase-b--test-case-table-format-mandatory-medium-freedom)
+- [Phase C — Where to deliver (mandatory) \[medium freedom\]](#phase-c--where-to-deliver-mandatory-medium-freedom)
+- [Phase D — Scope and design \[medium freedom\]](#phase-d--scope-and-design-medium-freedom)
+- [Phase E — Coverage & quality review (mandatory; 1–2 rounds) \[medium freedom\]](#phase-e--coverage--quality-review-mandatory-12-rounds-medium-freedom)
+- [Phase F — Draft in chat (approval gate) \[medium freedom\]](#phase-f--draft-in-chat-approval-gate-medium-freedom)
+- [Phase G — Deliver (after approval only) \[low freedom\]](#phase-g--deliver-after-approval-only-low-freedom)
+- [QA closing (mandatory before "done") \[low freedom\]](#qa-closing-mandatory-before-done-low-freedom)
+- [Out of scope](#out-of-scope)
+- [References](#references)
+- [MUST / NEVER](#must--never)
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+TC API prep progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Phase A — API sources (mandatory)
+- [ ] Phase B — Test case table format (mandatory)
+- [ ] Phase C — Where to deliver (mandatory)
+- [ ] Phase D — Scope and design
+- [ ] Phase E — Coverage & quality review (mandatory; 1–2 rounds)
+- [ ] Phase F — Draft in chat (approval gate)
+- [ ] Phase G — Deliver (after approval only)
+- [ ] QA closing (mandatory before "done")
+```
+
 ## Discipline
 
 Follow [shared-preamble.md](../../../references/shared-preamble.md).
@@ -33,7 +68,7 @@ On first response after constraints, follow [workspace-guide-discovery.md](../..
 
 ---
 
-## Phase A — API sources (mandatory)
+## Phase A — API sources (mandatory) [medium freedom]
 
 Collect in **one** message (skip fields already provided):
 
@@ -60,7 +95,7 @@ If the user mentions Swagger **changed**, a **new API version**, or updating exi
 
 ---
 
-## Phase B — Test case table format (mandatory)
+## Phase B — Test case table format (mandatory) [medium freedom]
 
 Show the **default column list** from [references/default-columns.md](references/default-columns.md) (summary table only — do not duplicate the full definitions here).
 
@@ -75,7 +110,7 @@ If the default set is fine, reply **default** or **no changes**.
 
 ---
 
-## Phase C — Where to deliver (mandatory)
+## Phase C — Where to deliver (mandatory) [medium freedom]
 
 Ask in **one** message:
 
@@ -98,7 +133,7 @@ You can pick A, B, or both. For (A), provide the link now. For (B), say CSV, Exc
 
 ---
 
-## Phase D — Scope and design
+## Phase D — Scope and design [medium freedom]
 
 From API spec + Swagger:
 
@@ -130,7 +165,7 @@ This order puts verifiable success criteria at the top, making the table easier 
 
 ---
 
-## Phase E — Coverage & quality review (mandatory; 1–2 rounds)
+## Phase E — Coverage & quality review (mandatory; 1–2 rounds) [medium freedom]
 
 MUST complete **before** Phase F.
 
@@ -162,7 +197,7 @@ If review fails → revise Phase D and re-run E1–E3b (max 2 rounds).
 
 ---
 
-## Phase F — Draft in chat (approval gate)
+## Phase F — Draft in chat (approval gate) [medium freedom]
 
 Post the full table in the conversation using the **confirmed columns**:
 
@@ -182,9 +217,11 @@ State clearly: **Not posted / no file written yet.**
 
 **Wait for approval** or edits. Re-show changed rows after feedback.
 
+**Go back:** If the user asks for edits, apply them and return to the start of Phase F — re-show the changed rows and wait. Phase G starts only after approval.
+
 ---
 
-## Phase G — Deliver (after approval only)
+## Phase G — Deliver (after approval only) [low freedom]
 
 ### G1 — File export (if user chose B)
 
@@ -238,6 +275,8 @@ After G1 and/or G2, run the **full review checklist** from [jira-comment-post-re
 
 MUST NOT run G3 close until post-publish review passes — because first export/post is often wrong.
 
+**Go back:** If any G-verify check fails, fix and return to G2 (comment) or G1 (file) to re-post, then run G-verify again — max 3 rounds. G3 waits.
+
 **Fresh-eyes:** MUST re-read the full draft table before G2/G1 when **> 15 rows** ([skill-rules-style.md](../../../references/skill-rules-style.md)).
 
 ### G3 — Close
@@ -246,7 +285,7 @@ Only after **G-verify** pass, follow [session-closing.md](../../../references/se
 
 ---
 
-## QA closing (mandatory before "done")
+## QA closing (mandatory before "done") [low freedom]
 
 Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific:
 
@@ -260,6 +299,8 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] Close-out includes `Verified:` and test case count.
 - [ ] G-verify completed (at least one re-read of destination).
 - [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (TC API section).
+
+**Go back:** If any item above is unchecked, return to the phase it names (E, B or G) and redo from there; do not report done.
 
 ---
 

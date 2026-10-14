@@ -12,6 +12,57 @@ Prepare **frontend manual test cases** from a Jira **story** (acceptance criteri
 
 **Portable:** Works in any AI agent that can read this skill. **Project-agnostic:** No hardcoded repos, paths, or ticket numbers.
 
+## Contents
+
+- [Progress checklist](#progress-checklist)
+- [Discipline](#discipline)
+- [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
+- [Prerequisites (read before Step 0)](#prerequisites-read-before-step-0)
+- [Step 0 — Obtain the story \[high freedom\]](#step-0--obtain-the-story-high-freedom)
+- [Step 1 — Load or create project config \[medium freedom\]](#step-1--load-or-create-project-config-medium-freedom)
+- [Step 2 — Extract requirements \[medium freedom\]](#step-2--extract-requirements-medium-freedom)
+- [Step 2a — AC/EC internal consistency check \[medium freedom\]](requirement-gates.md#step-2a--acec-internal-consistency-check-medium-freedom)
+- [Step 2.5 — Conflict check against PRD and Figma (pre-design gate) \[medium freedom\]](requirement-gates.md#step-25--conflict-check-against-prd-and-figma-pre-design-gate-medium-freedom)
+- [Step 2.6 — TC glossary re-check (mandatory gate) \[medium freedom\]](requirement-gates.md#step-26--tc-glossary-re-check-mandatory-gate-medium-freedom)
+- [Step 3 — Design test cases \[medium freedom\]](design-and-review.md#step-3--design-test-cases-medium-freedom)
+- [Step 4 — Coverage & quality review (mandatory; loop until zero comments, report EVERY round) \[medium freedom\]](design-and-review.md#step-4--coverage--quality-review-mandatory-loop-until-zero-comments-report-every-round-medium-freedom)
+- [Step 4.5 — Thai↔English term confirmation (mandatory gate) \[medium freedom\]](design-and-review.md#step-45--thaienglish-term-confirmation-mandatory-gate-medium-freedom)
+- [Step 5 — HTML draft in Chrome (approval gate) \[medium freedom\]](#step-5--html-draft-in-chrome-approval-gate-medium-freedom)
+- [Step 6 — Save artifacts in the user's workspace \[medium freedom\]](#step-6--save-artifacts-in-the-users-workspace-medium-freedom)
+- [Step 7 — Publish to Jira (story only) \[low freedom\]](#step-7--publish-to-jira-story-only-low-freedom)
+- [Step 7.5 — Final TC review report (mandatory before "done") \[low freedom\]](#step-75--final-tc-review-report-mandatory-before-done-low-freedom)
+- [QA closing (mandatory before "done") \[low freedom\]](#qa-closing-mandatory-before-done-low-freedom)
+- [Step 8 — Session closing \[medium freedom\]](#step-8--session-closing-medium-freedom)
+- [Reference files](#reference-files)
+- [Out of scope](#out-of-scope)
+- [MUST / NEVER](#must--never)
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+TC FE prep progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Prerequisites (read before Step 0)
+- [ ] Step 0 — Obtain the story
+- [ ] Step 1 — Load or create project config
+- [ ] Step 2 — Extract requirements
+- [ ] Step 2a — AC/EC internal consistency check
+- [ ] Step 2.5 — Conflict check against PRD and Figma (pre-design gate)
+- [ ] Step 2.6 — TC glossary re-check (mandatory gate)
+- [ ] Step 3 — Design test cases
+- [ ] Step 4 — Coverage & quality review (mandatory; loop until zero comments, report EVERY round)
+- [ ] Step 4.5 — Thai↔English term confirmation (mandatory gate)
+- [ ] Step 5 — HTML draft in Chrome (approval gate)
+- [ ] Step 6 — Save artifacts in the user's workspace
+- [ ] Step 7 — Publish to Jira (story only)
+- [ ] Step 7.5 — Final TC review report (mandatory before "done")
+- [ ] QA closing (mandatory before "done")
+- [ ] Step 8 — Session closing
+```
+
 ## Discipline
 
 Follow [shared-preamble.md](../../../references/shared-preamble.md). Ask one focused question at a time when setup is missing.
@@ -32,7 +83,7 @@ On first response after constraints, follow [workspace-guide-discovery.md](../..
 
 ---
 
-## Step 0 — Obtain the story
+## Step 0 — Obtain the story [high freedom]
 
 If the user did not provide a ticket key or URL:
 
@@ -42,7 +93,7 @@ If the user did not provide a ticket key or URL:
 
 ---
 
-## Step 1 — Load or create project config
+## Step 1 — Load or create project config [medium freedom]
 
 If workspace-guide-discovery already loaded a guide → use it and go to Step 2.
 
@@ -55,7 +106,7 @@ Config should capture: Jira domain, default story vs sub-task policy, portal nam
 
 ---
 
-## Step 2 — Extract requirements
+## Step 2 — Extract requirements [medium freedom]
 
 From the Jira story, build a checklist:
 
@@ -70,475 +121,19 @@ From the Jira story, build a checklist:
 
 ---
 
-## Step 2a — AC/EC internal consistency check
+## Steps 2a–2.6 — requirement gates
 
-**Must complete after Step 2 and before Step 2.5.** Catches duplicates, redundancies, and contradictions within the ticket's own AC/EC list — problems that waste TC effort or produce conflicting test cases.
-
-### 2a.1 — Analyse all AC and EC items
-
-Compare every AC/EC pair against every other AC/EC on the same ticket. Flag items that fall into any of these categories:
-
-| Category | Definition | Example |
-|----------|-----------|---------|
-| **Duplicate** | Two items describe the same requirement in different wording | AC_02 "กดปุ่มบันทึกแล้วบันทึกข้อมูลสำเร็จ" ↔ AC_05 "ระบบบันทึกข้อมูลเมื่อผู้ใช้คลิกปุ่ม Save" |
-| **Redundant** | One item is a subset of another (fully covered by the broader item) | AC_01 "ค้นหาด้วยชื่อ, รหัส, หรือคำอธิบาย" covers EC_03 "ค้นหาด้วยชื่อแล้วพบผลลัพธ์" |
-| **Contradictory** | Two items specify conflicting expected behaviour for the same scenario | AC_04 "เมื่อฟิลด์ว่าง → ปุ่มบันทึกปิดใช้งาน" vs EC_02 "เมื่อฟิลด์ว่าง → แสดง error message ใต้ฟิลด์" |
-
-### 2a.2 — Build report (do not post tables in chat)
-
-Collect all findings from 2a.1 into the HTML report. The report is generated in Step 2.5d together with the conflict check results — both checks share one HTML page.
-
-**If NO issues:** record `Issues found: NO` for the HTML template.
-
-**If issues found:** record each item with its category badge and recommendation for the HTML template.
-
-Do NOT post tables in chat — all detail goes into the HTML page (Step 2.5d).
-
-### 2a.3 — User decision gate (when issues found)
-
-After the HTML report is opened in Chrome (Step 2.5d), if Step 2a found issues, ask in chat:
-
-> พบ AC/EC ที่ซ้ำ/ซ้ำซ้อน/ขัดแย้งกัน (ดูรายละเอียดใน Chrome) — ต้องการให้จัดการอย่างไรครับ?
->
-> 1. **ข้ามส่วนที่ซ้ำ** — ตัดข้อที่ซ้ำซ้อนออก draft TC เฉพาะข้อที่ไม่ซ้ำ
-> 2. **Draft ตาม AC/EC ทั้งหมดที่ระบุในทิคเกต** — เขียน TC ตาม AC/EC ทุกข้อตามที่เขียนไว้ ไม่ตัดไม่รวม
-> 3. **ปรับ AC/EC ก่อน** — แจ้งให้แก้ไข AC/EC ในทิคเกตก่อนแล้วค่อยกลับมา draft
->
-> หรือระบุวิธีอื่นได้เลยครับ
-
-**Wait for the user's answer.** Apply their decision:
-- **Option 1 (skip duplicates):** Record which items are skipped and which are kept. Use only kept items for TC design. Note skipped items in the Remark block (Step 3d).
-- **Option 2 (draft all as-is):** Proceed with all AC/EC items as written. Each gets its own TC rows — even if duplicated.
-- **Option 3 (fix first):** Pause workflow. Resume from Step 2 after the user updates the ticket.
-- **Custom:** Follow the user's instruction.
-
-Do NOT proceed past Step 2.6 until the user has decided on Step 2a issues (if any) AND Step 2.5 conflicts (if any). The surviving AC/EC set determines which terms Step 2.6 must scan.
+Read and follow [requirement-gates.md](requirement-gates.md) before Step 3 — Step 2a (AC/EC consistency), Step 2.5 (PRD and Figma conflict check) and Step 2.6 (glossary re-check), end to end.
 
 ---
 
-## Step 2.5 — Conflict check against PRD and Figma (pre-design gate)
+## Steps 3–4.5 — design and review
 
-**Must complete before Step 3.** Do not skip even if requirements look complete — conflicts caught here prevent rework after TCs are drafted.
-
-### 2.5a — Locate PRD and Figma links
-
-Check the ticket's description and linked documents for a **PRD link** and **Figma link**.
-
-If either is missing, ask the user once:
-
-> Before I start designing test cases, I'd like to cross-check the ticket against the PRD and Figma design to catch any conflicts early.
->
-> Could you share links to any that are missing?
-> - **PRD:** [found at {link} / not found — please share if available]
-> - **Figma:** [found at {link} / not found — please share if available]
->
-> If neither exists for this story, reply "no PRD / no Figma" and I'll proceed with ticket content only.
-
-**Wait for the user's response.** If the user confirms that a source does not exist (or provides no link after being asked):
-
-- **Record which links are absent** (Figma / PRD / both) for the HTML report and the Remark block (Step 3e / Step 5).
-- Continue to Step 2.5b with available sources only.
-
-### 2.5b — Collect source metadata (recency)
-
-For each source that is available, record its **last-updated datetime** before comparing content:
-
-| Source | What to look for |
-|--------|-----------------|
-| Jira ticket | "Updated" timestamp in issue detail; story status (Open / In Progress / Done) |
-| PRD | Page last-modified datetime (Confluence footer); version number in page title if present |
-| Figma | Frame or page last-edited datetime shown in Figma (hover the file or frame); version label in page/frame name if present |
-
-**Timezone:** All datetimes MUST be displayed in **Bangkok time (ICT, UTC+7)**. Convert from UTC or any other timezone before displaying — never show UTC or raw platform timestamps.
-
-Format: `DD Mon YYYY HH.MM AM/PM` (e.g. `05 Jun 2026 02.30 PM`)
-
-If a datetime cannot be determined, mark it **"ไม่ทราบวันที่"** — do not guess.
-
-**Recency rule:** The most recently updated source is the **stronger default truth**. When two sources conflict, the newer one takes precedence unless the user says otherwise. Always surface recency in the report so the user can override this default.
-
-### 2.5c — Cross-reference and conflict detection
-
-Compare against the story's AC/EC and description across these areas:
-
-| Check area | What to look for |
-|-----------|-----------------|
-| AC/EC vs PRD | AC/EC items absent from PRD, or PRD requirements not reflected in any AC/EC |
-| AC/EC vs Figma | UI flows, field labels, error messages, or states in Figma that differ from the AC/EC description |
-| Description vs Figma | Status names, tabs, field limits, or forbidden actions in the ticket description vs Figma |
-| Scope gaps | Features visible in Figma/PRD that no AC/EC covers |
-| Contradictions | Conflicting expected results between ticket and PRD/Figma |
-
-### 2.5d — Generate HTML report and open in Chrome
-
-**Do NOT post conflict tables or AC/EC consistency tables in chat.** Generate a single HTML page that contains both Step 2a and Step 2.5 results.
-
-1. **Generate** `references/{ISSUE_KEY}_FE_pre_draft_review.html` following [html-pre-draft-review-template.md](references/html-pre-draft-review-template.md) — includes Step 2a consistency check + Step 2.5 conflict/recency/scope-gap sections.
-2. **Write** the file to the workspace using the Write tool.
-3. **Open** in the browser (the agent's browser tool, `open_url` / `navigate`) → `file:///absolute/path/to/references/{ISSUE_KEY}_FE_pre_draft_review.html`
-4. **Post in chat** (short — all detail is in Chrome):
-
-> Pre-draft review เปิดใน Chrome แล้ว — ตรวจสอบผลการเช็ค AC/EC consistency + PRD/Figma conflict ได้เลยครับ
-
-Then handle user decisions in chat:
-- If Step 2a found issues → post the Step 2a.3 decision prompt in chat.
-- If Step 2.5 found conflicts or gaps → present recommendations in chat and wait for the user to confirm or override.
-- If both checks are clean → tell the user in chat and proceed to Step 3.
-
-**Column detail rules** (apply when building the HTML) — every cell must be fully written out, never summarised or abbreviated:
-
-| Column | What to put in it |
-|--------|------------------|
-| **AC/EC** | Label + full text of the acceptance/edge criterion as written in the ticket (e.g. `AC_02: When the user clicks Save, the system saves the record and shows a success toast`) |
-| **Area** | Specific UI element, field, flow, or rule being compared — not a generic category (e.g. `Save button → post-save feedback` not just `Save`) |
-| **Ticket says** | Exact wording or behavior from the ticket — quote verbatim where possible; include field names, error texts, UI labels as written |
-| **PRD/Figma says** | Exact wording, label, or behavior from PRD/Figma; include frame name/number or PRD section for traceability (e.g. `Figma frame P-14: modal titled "ยืนยันการบันทึก?" with "ตกลง" and "ยกเลิก" buttons`) |
-| **Newer source (ICT)** | Source name + its last-updated datetime in `DD Mon YYYY HH.MM AM/PM` |
-| **Severity** | High = blocks TC design or changes core flow; Medium = affects expected result wording or label; Low = cosmetic / minor label difference |
-
-**If NO conflicts and no gaps and no Step 2a issues:** generate the HTML (both sections show clean status), tell the user in chat, then continue to Step 3 immediately.
-
-**If conflicts, gaps, or Step 2a issues found:** generate the HTML, open in Chrome, then handle each set of issues in chat. Do NOT start Step 3 until all issues are resolved — TCs built on contradictory or inconsistent requirements must be redesigned.
+Read and follow [design-and-review.md](design-and-review.md) before Step 5 — Step 3 (design TCs), Step 4 (coverage and quality review loop) and Step 4.5 (Thai↔English term gate), end to end.
 
 ---
 
-## Step 2.6 — TC glossary re-check (mandatory gate)
-
-**Must complete after the Step 2a and Step 2.5 decisions are settled, and before Step 3.** Runs last among the pre-design gates because the gap scan below covers only the terms the *surviving* AC/EC will use — and which AC/EC survive is not known until the user answers Step 2a.3.
-
-The Thai wording inside test cases comes from a project glossary that the team edits between runs. A cached copy is not evidence.
-
-Rules: [tc-glossary.md](../../../references/tc-glossary.md). Sheet URL, tab, and `gid`: the project guide loaded in Step 1.
-
-### 2.6.1 — Re-fetch the glossary
-
-Fetch the published tab as CSV using the `gid` from the project guide, overwriting the local mirror. Never hand-edit the CSV.
-
-**If `curl` fails TLS verification (exit 60):** the machine has an intercepting proxy (corporate AV). Export its CA from the OS trust store and pass `--cacert`. **Never** pass `-k` / `--insecure` — it disables verification against a proxy you have not identified.
-
-### 2.6.2 — Report to the user (evidence)
-
-Post in chat, before any test case design:
-
-```
-**TC glossary — re-checked**
-
-ที่มา: {published sheet URL}
-Tab: {tab name} (gid {gid}) · {N} คำ
-ไฟล์: references/tc-glossary.csv
-
-{diff vs committed CSV — added / removed / changed rows, or "ไม่มีการเปลี่ยนแปลงจากครั้งก่อน"}
-```
-
-Attach or link the CSV. The user must be able to see the words, not take the agent's word for them.
-
-### 2.6.3 — Gap and ambiguity scan
-
-Scan **only the terms this ticket's test cases will use** — do not interrogate the user about the whole sheet.
-
-| Condition | Action |
-|-----------|--------|
-| Thai cell empty | **STOP and ask** what word to use. May offer the Step 3b fallback term, labelled as a suggestion. |
-| One English key, conflicting Thai meanings across rows | **STOP and ask** which meaning applies to this ticket. |
-| Thai cell has comma-separated variants | Not blocking — propose one variant at the Step 4.5 gate. |
-| No row for the term | Use the Step 3b fallback table; if absent there too, ask. |
-
-**Wait for the user's answers.** Record each decision for the Step 4.5 table.
-
-Writing a guess and tagging it *provisional* / *pending confirmation* / *documented fallback* is **not** asking. See the red flags in [tc-glossary.md](../../../references/tc-glossary.md).
-
-Do NOT proceed to Step 3 until Step 2.6 gaps are resolved.
-
----
-
-## Step 3 — Design test cases
-
-### 3a — Pre-design setup
-
-All settings in this workspace are **fixed** — do NOT ask the user about any of them:
-
-- **TC Language = Thai (always).** All test case content is formal Thai per ราชบัณฑิตยสภา (Step 3b), using the project TC glossary re-fetched at Step 2.6 as the first authority. English only where no official Thai term exists, and only after the Step 4.5 term-confirmation gate.
-- **Type column is always present**, restricted to `System Test` / `Unit Test` / `Integration Test` (Qase Type field — Step 3d). Do not offer to skip it.
-- **TC ID = simple sequential number: 1, 2, 3** (see Step 3c). No prefix, no padding, no format selection. Do not ask.
-- **Typed CSVs**: all three (Unit_Test, Integration_Test, System_Test) are generated when TCs of that type exist — no selection needed. Each populated with TCs filtered by Type and mapped to that template's columns (Step 6).
-
-**No questions needed in this step — proceed to Step 3b.**
-
-(Note: Qase auto-generates its own case IDs on import; the Test Case ID column is for the Jira comment table and traceability only.)
-
-### 3b — Language rules (Thai always)
-
-This workspace writes **all** FE test case content in Thai. There is no English-only mode.
-
-**Thai mode (the only mode):**
-- All content in formal/professional Thai (ภาษาทางการ) — suitable for internal and external stakeholder delivery.
-- **Term priority (stop at the first rule that answers):**
-  1. **The project TC glossary** re-fetched at Step 2.6 — if the English term has a row with a non-empty Thai cell, use that Thai term **verbatim**. The glossary outranks every table in this file.
-  2. **The fallback table below** — only for terms the glossary has no row for.
-  3. **Ask the user** — anything else. Never coin a term.
-- Where the glossary and this file disagree, **the glossary wins**. Do not "reconcile" them or prefer the wording you remember.
-- Terms whose glossary row exists but has an **empty** Thai cell are a Step 2.6 blocking question, not a free choice. Where a former default exists (e.g. `Dropdown` → `รายการแบบเลื่อนลง`), offer it as a **suggestion** in that question — never as the answer.
-- **Fallback table — only for terms absent from the glossary:**
-
-  | English | ใช้คำไทย |
-  |---------|----------|
-  | Logout / Sign out | ออกจากระบบ |
-  | Button | ปุ่ม |
-  | Search | ค้นหา |
-  | Sort | เรียงลำดับ |
-  | Download | ดาวน์โหลด *(ราชบัณฑิต ทับศัพท์)* |
-  | Export | ส่งออก |
-  | Import | นำเข้า |
-  | Permission | สิทธิ์การเข้าถึง |
-  | Password | รหัสผ่าน |
-  | Username | ชื่อผู้ใช้ |
-  | Reset | รีเซ็ต *(ราชบัณฑิต ทับศัพท์)* |
-  | Submit | ส่ง / บันทึก *(แล้วแต่ context)* |
-  | Error message | ข้อความแสดงข้อผิดพลาด |
-  | Toggle | ปุ่มสลับ |
-  | Sidebar | แถบด้านข้าง |
-  | Navbar | แถบนำทาง |
-  | Input field | ช่องกรอกข้อมูล |
-
-  Terms removed from this table because the glossary now owns them: Login, Checkbox, Filter, Upload, Status, Role, Cancel, Confirm, Notification, Toast, Modal, Dialog, Tab, Dashboard. Read them from the glossary — do not re-add them here.
-
-- **Keep in English** (no official Thai term, or internationally standardised):
-  - Acronyms and technical standards: API, URL, HTTP, HTTPS, CRUD, QA, UX, UI, ID, OTP, JWT, Token
-  - Feature/module names **as displayed in the system UI** — if the UI shows a label in English, refer to it by that label
-  - Error codes and field keys (e.g. `OLS_ERR_401`, `user_id`)
-
-  **Collision rule:** when a term is *both* in the glossary *and* rendered in English by the UI (e.g. glossary says `Dashboard → แผงควบคุม` but the screen reads "Dashboard"), this is a Step 2.6 question — **ask the user which to use**. Do not silently apply the UI-label exception to escape a glossary term.
-- Numbered items in Test Steps and Expected Result must still use numerals (`1.`, `2.`, `3.`).
-
-### 3c — TC ID rules (fixed — no user input)
-
-TC IDs are always simple sequential numbers: `1`, `2`, `3`, …
-
-- No prefix (`TC_`, `OLS-`, feature name, etc.)
-- No leading-zero padding
-- Applies to **every output**: Jira comment table, Draft_Jira CSV, Import_Qase CSV, and all typed CSVs
-- In typed CSVs (Unit/Integration/System), the number column (`No.` / `ลำดับ`) restarts at 1 within that file (since the file is filtered to one Type)
-- Do not ask the user about format — it is fixed
-
-### 3d — Type column (always present)
-
-**Type** is the Qase `Type` field. It is always present (after Priority).
-
-**Allowed values (exactly these three — no others):** `System Test` | `Unit Test` | `Integration Test`
-
-**Assignment rules:**
-- Assign the type that best describes *what layer* the test case validates:
-  - **System Test** — end-to-end UI flow (user can see and interact with the feature as a whole)
-  - **Integration Test** — verifying that two or more components/services work together (e.g. FE → API → DB round-trip, real-time state change, cache invalidation)
-  - **Unit Test** — isolated behaviour of one logic unit (e.g. a pure function, single component input→output), testable without the full UI flow
-- A ticket does **not** need to have all three types — derive only what the AC/EC actually requires.
-- When a type has no applicable test cases for this ticket, **do NOT invent cases just to fill the type**. Instead, add a Remark block under the table (see below).
-- Extra test cases may be added to cover a type's perspective **only if** they stay within the scope of the AC/EC on this ticket — do not pull in requirements from other tickets.
-
-**Unit Test heuristic — derive from PRD, ticket description, and Figma only (do not ask dev):**
-
-Look for AC/EC that implies **pure function / logic behavior** that can be verified with input → expected output, without needing the full browser flow:
-
-| Signal in AC/EC | Likely Type |
-|-----------------|-------------|
-| "function returns X when given Y" / "logic applies Z correctly" | Unit Test |
-| Search/filter matching across multiple fields (name OR desc OR tag) | Unit Test |
-| Combining filter criteria with AND/OR logic | Unit Test |
-| Visibility/access guard based on a single state (published, deleted, auth) | Unit Test |
-| Format / calculate / transform a value | Unit Test |
-| Two or more real services/modules communicating (API ↔ DB, cache invalidate, cross-service event) | Integration Test |
-| User performs an action → UI responds (full flow through browser) | System Test |
-
-**Key question:** Can this criterion be verified by calling a single function with test inputs and checking the output — **without a browser**? → Unit Test. If yes, write a Unit TC for the logic AND a System TC for the UI flow (they test different layers of the same AC/EC).
-
-**Remark block (add after the table when any type is absent OR when Figma/PRD links were missing):**
-
-```
-**Remark — Type coverage:**
-- No *System Test* cases for this ticket.
-- No *Integration Test* cases for this ticket.
-```
-
-List only the types that are absent. Omit types that have at least one test case.
-
-**Missing-link Remark lines** — append to the Remark block when a source link was not found in the ticket:
-
-```
-- ไม่มีลิงก์ Figma ระบุไว้ใน ticket ณ ขณะที่ draft TC ชุดนี้
-- ไม่มีลิงก์ PRD ระบุไว้ใน ticket ณ ขณะที่ draft TC ชุดนี้
-```
-
-Include only the line(s) that apply (Figma / PRD / both). If both links exist, omit these lines entirely.
-
----
-
-Default **10 columns** for the HTML draft, CSV files, and markdown `.md` — Type is always included:
-
-| Column | Purpose |
-|--------|---------|
-| Acceptance Criteria | AC_0n / EC_0n label + full criterion text |
-| Services Impacted | 1 service: plain name, no prefix (e.g. `Media Library`). 2+ services: bold-numbered inline (e.g. `**1.** order-service **2.** api-gateway`) — never use `- ` bullet prefix |
-| Test Case ID | Sequential number: 1, 2, 3 (fixed — no prefix, no padding) |
-| Test Title | Action + expected outcome (no `[Tag]` prefixes unless user wants them) |
-| Precondition | **Jira comment table:** omitted (see Step 7 slim-table rule). **CSV exports (Draft_Jira, Import_Qase, all typed CSVs):** full shared prep steps expanded inline (numbered, continuous) + per-case setup — CSV files are standalone; no separate shared-prep block. |
-| Test Data | Values to enter |
-| Test Steps | Numbered manual steps |
-| Expected Result | Numbered assertions |
-| Priority | High / Medium / Low |
-| **Type** | `System Test` / `Unit Test` / `Integration Test` (Step 3d) |
-
-> **Jira comment table** uses a **slim 6-column** version (see Step 7) — Precondition, Test Data, Steps, Expected are omitted to stay within Jira's comment size limit. Full content is always available in the attached CSV files.
-
-The Qase import CSV uses a **different** column set (AC/EC, Title, Preconditions, Priority, Type, Status, Suite, Steps, Tags) — see [qase-import-format.md](references/qase-import-format.md). The Jira markdown table above and the Qase CSV describe the same test cases in two layouts.
-
-**Shared data prep (above table)** — typical pattern:
-
-1. Log in with the required role.
-2. Navigate to the feature area.
-3. Open the correct tab or filter.
-4. Ensure required data state exists (with "if missing, create via …" referencing another story id if needed).
-5. Identify the target entity used across TCs.
-
-Add a **Precondition column note** above the table explaining that the column means: *after shared prep, before Test Steps*.
-
-**Precondition in CSV exports (all files):** Unlike the Jira comment table, CSV files have no separate shared-prep block. The Precondition cell must contain the full shared prep steps expanded inline, followed by any per-case steps. Re-number all steps continuously (1, 2, 3, …). Apply to Draft_Jira, Import_Qase, and all typed CSVs (Unit_Test, Integration_Test, System_Test).
-
-### 3e — Row ordering
-
-Sort rows before presenting the draft.
-
-Row ordering differs by output:
-
-**Jira comment + Draft_Jira CSV + Import_Qase CSV** — all three use the same ordering: Type first, then AC/EC within each group:
-1. All `Unit Test` rows first
-2. Then all `Integration Test` rows
-3. Then all `System Test` rows
-
-Within each Type group: ACs ascending (AC_01, AC_02, …), then ECs ascending (EC_01, EC_02, …). TC IDs run continuously 1, 2, 3, … across the whole file — do NOT restart per Type group.
-
-**Typed CSVs (Unit_Test, Integration_Test, System_Test)** — each file contains only its own Type; sort rows within the file: ACs ascending, then ECs ascending. TC ID (`No.`) restarts at 1 within each file.
-
----
-
-## Step 4 — Coverage & quality review (mandatory; loop until zero comments, report EVERY round)
-
-MUST complete **before** Step 5. Do not skip because the first draft “looks fine.”
-
-**Review is a loop, not a fixed number of passes.** Run the checks (4a–4e) and the independent
-reviewer-agent pass (4f), fix every finding, then **re-review**, and keep looping until a review round
-returns **zero actionable comments**. There is no “good enough after 2 rounds” exit — the exit
-condition is a clean round, however many rounds that takes. **Report the outcome of EVERY round to the
-user** as it happens (round number + verdict + what was fixed) — never batch the rounds into one
-end-of-run summary, and never go silent between rounds.
-
-### 4a — AC / EC coverage (FE scope)
-
-Follow [ac-ec-coverage-review.md](references/ac-ec-coverage-review.md):
-
-- Build the **traceability matrix** (every AC and EC → one or more `TC_*`).
-- Confirm **ไม่ขาด** (full AC/EC outcomes covered), **ไม่เกิน / ไม่กาว / ไม่เพ้อ** (no orphan or invented cases).
-- Row count **need not** equal AC+EC count; alignment matters, not 1:1 rows.
-
-### 4b — International TC quality (ISTQB + ISO/IEC/IEEE 29119-3)
-
-Follow [tc-quality-standards.md](../../../references/tc-quality-standards.md) on every row (objective, preconditions, steps, expected results, priority, observability).
-
-### 4c — Post review summary in chat
-
-Post the **FE TC coverage review** block from ac-ec-coverage-review.md (with **Ready for draft: YES**).
-
-MUST NOT show the full TC table until **Ready for draft: YES** — because stakeholders approve coverage before row-level editing.
-
-### 4d — Coverage delta summary
-
-Post the table from [coverage-delta-template.md](../../../references/coverage-delta-template.md) (FE section) — even when all rows are `OK`.
-
-If review fails → fix Step 3 design and re-run 4a–4d. Repeat until a round is clean (no cap).
-
-### 4e — Unclear spec → BLOCK the case, never guess (mandatory, zero omissions)
-
-During review, any case whose expected behaviour is **not certain** — contradictory AC/EC, spec that
-conflicts with Key Feature/Business Rules/PRD/Figma, values referenced from another ticket that is not
-confirmed, mis-threaded comments, or any point the reviewer cannot verify from the ticket itself —
-MUST NOT be resolved by guessing or by silently picking one interpretation.
-
-For every such case, do ALL of the following — no case may be skipped:
-
-1. Set that case's **Test Status = `BLOCKED`** (per-row, in the tracking sheet / result table — not
-   the whole ticket unless every case is affected).
-2. Write a **Remark on that exact case's row** that names, explicitly:
-   - **Actor** — the case's **QA Owner** is the person who must go make contact (name them, e.g.
-     `QA Owner ({owner}) ติดต่อ …` — never a bare "waiting for X" with no actor);
-   - **Contact target** — the specific person to contact (Reporter / PO / designer, by name);
-   - **Topic** — exactly what must be confirmed, quoting the conflicting AC/EC labels or sources;
-   - **Unblock condition** — what happens after the answer (e.g. "ได้คำตอบแล้วจึงปรับ TC และรันได้").
-3. Cases that are certain remain unblocked — blocking is per-case, surgical, never blanket.
-
-**Zero-omission rule:** every uncertainty found anywhere in the review (coverage check, quality check,
-conflict check, comment triage) MUST end up as a `BLOCKED` row with such a Remark. An uncertainty
-mentioned only in chat, a report, or a commit message — but absent from the sheet row — is a
-workflow violation.
-
-### 4f — Independent reviewer-agent loop (mandatory; report EVERY round)
-
-The agent's own 4a–4e pass is not enough — draft TCs MUST also be checked by **independent reviewer
-subagents** (dispatch via the Agent/Task tool; when the user asks for "superpowers" review, this is it)
-so a second, skeptical set of eyes catches fabrication and coverage gaps the author is blind to.
-
-Run it as a loop, and **tell the user the result of each round the moment it finishes** — round number,
-verdict, and every finding + how it was fixed. Do not proceed to Step 4.5 until a round is clean.
-
-1. **Dispatch reviewer(s).** Give each reviewer the ticket's **verbatim AC/EC + seed** and the current
-   TC draft, and instruct them to judge **only** against the ticket content (no requirements of their
-   own). Each must check: every AC/EC covered; **nothing fabricated** (no invented role, service,
-   surface, count, severity, or EC the ticket never states); scope honored (per the user's Step 2a/2.5
-   decisions); char-exact seed text; correct Thai/glossary terms; Type classification; testability. For
-   a thorough/"2 rounds"/"superpowers" request, run ≥2 independent reviewers per round.
-2. **Reviewer output is binary per round:** `CLEAN` (zero actionable defects) or `HAS-COMMENTS` (a
-   numbered defect list). Nitpicks/optional polish are not defects — only genuine defects against the
-   ticket count.
-3. **Report the round to the user** immediately: `รีวิวรอบ N: CLEAN` or `รีวิวรอบ N: พบ X จุด — …` with
-   the fixes applied. This report is mandatory every round (the user must never wonder whether a round
-   ran or what it found).
-4. **If HAS-COMMENTS →** fix every finding in the draft, then dispatch a **fresh** reviewer round and
-   go back to step 2. **If CLEAN →** the loop is done; continue to Step 4.5.
-5. **No round cap and no silent rounds.** Loop until a reviewer round returns zero comments, however
-   many rounds it takes; a round whose result was never reported to the user does not count.
-
----
-
-## Step 4.5 — Thai↔English term confirmation (mandatory gate)
-
-Because content is Thai by default but some terms stay in English (Step 3b), the user MUST see and approve the term choices **before** any content is written to the real TC file.
-
-After the Step 4 review passes and before showing the full draft (Step 5), post the term table in chat:
-
-```
-**Thai ↔ English terms used in this TC set**
-
-Glossary: {published sheet URL} · tab {tab name} (gid {gid}) · {N} คำ · re-checked {date}
-
-These terms appear in the test cases. Thai follows the glossary first, then ราชบัณฑิตยสภา; English is kept only where no suitable official Thai term exists or the system UI shows it in English.
-
-| English term | ใช้ในเทสเคสเป็น | ที่มา | เหตุผลที่คงอังกฤษ (ถ้าคงไว้) |
-|--------------|----------------|-------|------------------------------|
-| {term} | {Thai term used} / {kept as English} | glossary / fallback / user | {no official Thai term / UI shows it in English / acronym-standard / —} |
-
-ต้องการปรับคำไหนไหมครับ? ถ้าโอเคทั้งหมด ผมจะใช้ชุดคำนี้เขียนลงเทสเคสจริง
-```
-
-**Rules:**
-- List **every** term where a Thai-vs-English choice was made — both the ones translated to Thai and the ones deliberately kept in English.
-- The **ที่มา** column is mandatory on every row: `glossary` (row in the Step 2.6 CSV), `fallback` (Step 3b table, no glossary row), or `user` (answered a Step 2.6 question). A row with no provenance means the term was invented — remove it and ask.
-- Where the glossary offered comma-separated variants (e.g. `แถบ, แท็บ`), propose one and mark the row `glossary` — the user confirms the pick here.
-- For each kept-English term, state the reason (no official Thai term / UI label is English / acronym or standard like API, URL, OTP).
-- **Wait for the user's response.** If the user asks to change any term, apply it and re-post the changed rows.
-- Only after the user confirms (or after applying their adjustments) proceed to Step 5 and use the confirmed terms in every cell.
-- Do NOT write any TC content to a file (Step 6) until this gate is confirmed.
-
----
-
-## Step 5 — HTML draft in Chrome (approval gate)
+## Step 5 — HTML draft in Chrome (approval gate) [medium freedom]
 
 Do NOT post the TC table as markdown in chat. Instead:
 
@@ -553,11 +148,13 @@ Do NOT post the TC table as markdown in chat. Instead:
 
 **Wait for approval** or edit requests. Apply edits → regenerate HTML → re-open Chrome. Repeat until approved.
 
+**Go back:** Step 6 starts only on approval; each edit request returns to item 1 of this step (regenerate, re-open).
+
 **Header rule (Jira comment only):** Every column header MUST be wrapped in `**bold**` in the Jira comment and the markdown `.md` file (Step 7 / Step 6). The HTML file uses plain `<th>` — no `**` needed.
 
 ---
 
-## Step 6 — Save artifacts in the user's workspace
+## Step 6 — Save artifacts in the user's workspace [medium freedom]
 
 **Suite gate (do before writing the CSV):** The Qase CSV needs a **Suite** value per row. Inspect the OLS project's existing suite tree first (Qase web UI → Test cases → suite sidebar, or ask the user to paste the current suite list — there is no Qase MCP) and reuse a fitting suite; only propose a new suite (with user approval) when none fits. Never assign a suite blind, never create a duplicate. Full rules: [qase-import-format.md](references/qase-import-format.md) — Suite rules.
 
@@ -570,8 +167,8 @@ After approval (and Suite confirmed), write **four files** inside the user's pro
 | `references/Import_Qase_{ISSUE_KEY}.csv` | always (unless xlsx requested) | **Qase import CSV** — schema per [qase-import-format.md](references/qase-import-format.md) |
 | `references/Draft_Jira_{ISSUE_KEY}.xlsx` / `references/Import_Qase_{ISSUE_KEY}.xlsx` | user explicitly requested Excel/xlsx | Excel versions of both files above |
 | `references/Unit_Test_{ISSUE_KEY}.csv` | only if Type = `Unit Test` TCs exist | **Typed content CSV** — 13 English columns; TCs filtered to Type = `Unit Test`, content mapped to Unit Test template columns (Step 6 mapping); Function/Sub Function groupings from ticket title + Services Impacted |
-| `references/Integration_Test_{ISSUE_KEY}.csv` | only if Type = `Integration Test` TCs exist | **Typed content CSV** — 9 Thai columns; TCs filtered to Type = `Integration Test`, content mapped to Integration Test template columns (Step 6 mapping); summary footer |
-| `references/System_Test_{ISSUE_KEY}.csv` | only if Type = `System Test` TCs exist | **Typed content CSV** — 9 Thai columns; TCs filtered to Type = `System Test`, content mapped to System Test template columns (Step 6 mapping); summary footer |
+| `references/Integration_Test_{ISSUE_KEY}.csv` | only if Type = `Integration Test` TCs exist | **Typed content CSV** — 9 Thai columns; TCs filtered to Type = `Integration Test`, content mapped to Integration Test template columns (Step 6 mapping); no summary footer |
+| `references/System_Test_{ISSUE_KEY}.csv` | only if Type = `System Test` TCs exist | **Typed content CSV** — 9 Thai columns; TCs filtered to Type = `System Test`, content mapped to System Test template columns (Step 6 mapping); no summary footer |
 
 Both CSV files (`Draft_Jira` + `Import_Qase`) are always produced together and both are uploaded to Jira (Step 7). Follow [csv-export-rules.md](../../../references/csv-export-rules.md) for cell cleaning (convert `<br>`, strip tags, preserve Thai) — applies to all CSV files. Never silently produce only one when both are required.
 
@@ -635,7 +232,7 @@ If no Unit Test TCs exist: **skip this file**. A skip-note will appear in the Ji
 | วันที่ทดสอบ | *(execution result)* | Leave blank — tester fills after running the test |
 | ผู้ทดสอบ | *(execution result)* | Leave blank — tester fills after running the test |
 
-Build 9-column Thai header; write sequential numbered rows from the filtered TC set. **No summary footer** — end after the last data row. Encoding: UTF-8 BOM (`utf-8-sig`).
+Build 9-column Thai header in this order: `ลำดับ, โมดูล, รายการทดสอบ, ขั้นตอนการทดสอบ, ผลการทดสอบที่คาดหวัง, ผลการทดสอบ, วันที่ทดสอบ, ผู้ทดสอบ, หมายเหตุ`; write sequential numbered rows from the filtered TC set. **No summary footer** — end after the last data row. Encoding: UTF-8 BOM (`utf-8-sig`).
 
 If no Integration Test TCs exist: **skip Integration_Test file**. If no System Test TCs exist: **skip System_Test file**. Skip-notes for each absent type appear in the Jira comment footer (Step 7, after attachment links, before Disclaimer).
 
@@ -649,15 +246,17 @@ After writing all CSV files, build ADF JSON for the **slim 6-column Jira comment
 2. Set `colwidth` on every `tableHeader` node per the Step 7 table spec: `[90, 130, 50, 510, 90, 150]`
 3. No hardBreak nodes needed — no multi-line cells in the slim table
 4. Build complete ADF document with `__ATT1_ID__`, `__ATT2_ID__`, `__ATT3_ID__`, `__ATT4_ID__` as literal string placeholders in attachment link nodes (one placeholder per attached file)
-5. Store ADF string in agent context (transient — not written to a file)
+5. Store ADF string in agent context (transient — not written to a file). Exception: when the user asks for a draft without posting ("draft only" / "do not post"), write it to `Jira_comment_{ISSUE_KEY}.adf.json` plus a readable `Jira_comment_{ISSUE_KEY}.preview.md`, per [jira-comment-adf-template.md](references/jira-comment-adf-template.md) — never a Markdown file as the comment body
 
 Then report to user: "Files saved. ADF ready. Publishing..."
 
 ---
 
-## Step 7 — Publish to Jira (story only)
+## Step 7 — Publish to Jira (story only) [low freedom]
 
 **Target:** `{ISSUE_KEY}` story the user specified.
+
+**Draft-only request (owner, 2026-10-14):** when the user asked for the comment without posting, do not publish — save it as `Jira_comment_{ISSUE_KEY}.adf.json` plus a readable `Jira_comment_{ISSUE_KEY}.preview.md` per [jira-comment-adf-template.md](references/jira-comment-adf-template.md), report both paths, and stop before the post.
 
 ADF is already built from Step 6 — proceed directly to fast publish. Full JS patterns: [jira-fast-publish.md](../../../references/jira-fast-publish.md).
 
@@ -706,6 +305,8 @@ Verify ALL of the following are present in the ADF body before calling the Jira 
 
 Shortcut check: scroll to bottom of the ADF `content` array — last node MUST be the Disclaimer paragraph. Second-to-last MUST be the Remark block (if applicable). If you are only fixing TC text, you MUST still rebuild the full ADF with all 5 elements intact.
 
+**Go back:** If any row of this re-check is missing, add it to the ADF and run the re-check again from row 1 before calling the comment API.
+
 ---
 
 **Publish method — ADF-direct (single JS call):**
@@ -732,11 +333,13 @@ Run the **full review checklist** from [jira-comment-post-review.md](../../../re
 
 If any check fails → fix and re-post → re-verify on Jira UI (max 3 rounds).
 
+**Go back:** If a post-publish check fails, fix and return to *Publish method* item 1 to re-post, then run this checklist again — max 3 rounds. Step 7.5 waits.
+
 **MUST NOT tell user "commented" or "done" until all checks pass.** See [jira-comment-post-review.md](../../../references/jira-comment-post-review.md) for fix procedures and reporting templates.
 
 ---
 
-## Step 7.5 — Final TC review report (mandatory before "done")
+## Step 7.5 — Final TC review report (mandatory before "done") [low freedom]
 
 After Step 7 post-publish review **passes** (or after final approved draft when publish was skipped), run the **four-axis final review** on the TC set the user will keep.
 
@@ -749,9 +352,11 @@ Follow [tc-final-review-report.md](references/tc-final-review-report.md):
 
 **MUST NOT** say TC prep is complete, post the Step 8 `Verdict:` block, or offer the next workflow until this report is posted with overall **PASS**.
 
+**Go back:** On **FAIL**, fix the TC and return to Step 7 (published) or Step 5 (draft-only), then run Step 7.5 again — max 2 rounds.
+
 ---
 
-## QA closing (mandatory before "done")
+## QA closing (mandatory before "done") [low freedom]
 
 Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific:
 
@@ -763,7 +368,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] Step 4 review block posted with **Ready for draft: YES** and traceability matrix complete.
 - [ ] Step 4f independent reviewer-agent loop run; **every round's verdict reported to the user**; loop exited only on a clean (zero-comment) round.
 - [ ] AC/EC coverage complete; quality checklist PASS per tc-quality-standards.
-- [ ] Step 4.5 Thai↔English term table posted with glossary source line and a `ที่มา` value on every row; user confirmed (or adjustments applied) **before** any file write.
+- [ ] Step 4.5 Thai↔English term table posted with glossary source line and a `ที่มา` value on every row; user confirmed (or adjustments applied) **before** any deliverable file write (the Step 4f working draft outside the repo is the only earlier file).
 - [ ] Every Thai term in the final TC matches the Step 2.6 glossary verbatim where a non-empty row exists; no term was invented, and none tagged "provisional".
 - [ ] All content is Thai per ราชบัณฑิตยสภา (Step 3b); English kept only where the Step 4.5 gate marked it kept-English.
 - [ ] Suite gate done — every CSV row uses an existing OLS suite, or a new suite was user-approved; no duplicate suites.
@@ -780,9 +385,11 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] **Fresh-eyes:** re-read full draft before publish when table **> 15 rows**.
 - [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (TC FE section).
 
+**Go back:** If any item above is unchecked, return to the step it names and redo from there; do not report done.
+
 ---
 
-## Step 8 — Session closing
+## Step 8 — Session closing [medium freedom]
 
 **Prerequisite:** Step 7.5 final review report posted with overall **PASS**.
 
@@ -831,11 +438,11 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST write all TC content in Thai (Step 3b) — there is no English-only mode | Workspace standard; English mode is not offered for FE TC |
 | MUST re-fetch the TC glossary from its published sheet at Step 2.6 every run, and post the source URL, row count, and diff in chat before designing TCs | The team edits the sheet between runs; a cached CSV is not evidence of the current words |
 | MUST treat the glossary as the first authority for Thai wording — above the Step 3b fallback table, above remembered wording, above the UI-label exception | Two sources of truth guarantee drift; the sheet is the one the team maintains |
-| MUST NOT normalise, spell-fix, dedupe, or sort [`references/tc-glossary.csv`](https://github.com/Thitic9203/ols-qa-evidence/blob/main/references/tc-glossary.csv) — it is a verbatim mirror; typos are fixed in the sheet by its owner | A CSV that differs from the sheet is a silent drift bug |
+| MUST NOT normalise, spell-fix, dedupe, or sort `{EVIDENCE_REPO}/references/tc-glossary.csv` — it is a verbatim mirror; typos are fixed in the sheet by its owner | A CSV that differs from the sheet is a silent drift bug |
 | MUST stop and ask the user when a glossary Thai cell is empty, or when one English key carries conflicting Thai meanings across rows | The agent has no authority to coin project terminology |
 | MUST NOT write a guessed term and tag it "provisional", "pending confirmation", or "documented fallback" instead of asking | Tagging a guess is not asking; the guess still reaches the deliverable |
 | MUST use ราชบัณฑิตยสภา approved Thai term first (Step 3b); fall back to English only when no official term exists or the UI label is English | Authoritative Thai is more professional than ad-hoc transliteration or unnecessary English |
-| MUST post the Step 4.5 Thai↔English term table and get user confirmation BEFORE writing any TC content to a file | User must approve term choices before they are committed to the real TC file |
+| MUST post the Step 4.5 Thai↔English term table and get user confirmation BEFORE writing any TC content to a deliverable file — the Step 4f reviewer working draft, outside the repo, is the only exception | User must approve term choices before they are committed to the real TC file |
 | MUST use formal Thai language level throughout | TCs are delivered to internal and external teams |
 | MUST keep Type to exactly `System Test` / `Unit Test` / `Integration Test` (Step 3d) | These are the OLS Qase Type values; other values break import |
 | MUST set Status = `Done` on every Qase CSV row | Workspace rule for OLS Qase import |

@@ -15,6 +15,8 @@ Canonical map for `/helix`, [commands/helix.md](../commands/helix.md), and [AGEN
 | Review an existing TC document against a ticket's AC/EC | `tc-review-workflow` | `/tc-review` |
 | Review already-recorded results and their evidence clips | `review-result-workflow` | `/review-result` |
 | Audit finished work against its governing sources | `catch-ai-workflow` | `/catch-ai` |
+| Smoke test a deployed build on a named environment | `smoke-test-workflow` | `/smoke-test` |
+| Create, fix, or verify test data (content, covers, accounts) | `test-data-prep-workflow` | `/test-data-prep` |
 | Unsure / multi-step | `helix` skill or `/helix` (Claude Code) | `/helix` or `@helix` |
 
 ## Jira issue type → skill (unattended and bot runs)
@@ -56,3 +58,5 @@ From context (branch, linked ticket, defects in chat) the router MAY **suggest**
 | `content-takedown-workflow` | Delete content permanently, rename items, or hide an item whose defect has not been surfaced first |
 | `review-result-workflow` | Run the tests being reviewed, retest a ticket after a dev fix, or rename an evidence file |
 | `catch-ai-workflow` | File the bug it confirms (→ create-bug), retest a ticket after a dev fix (→ retest-bug), or rewrite the audited work |
+| `smoke-test-workflow` | Test a single ticket (→ testing-ticket), retest after a fix (→ retest-bug), or run a full regression |
+| `test-data-prep-workflow` | Run tests on a ticket (→ testing-ticket), retest a bug (→ retest-bug), or draft TC tables (→ tc-fe-prep / tc-api-prep) |

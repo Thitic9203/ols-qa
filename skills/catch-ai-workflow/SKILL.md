@@ -1,8 +1,8 @@
 ---
 name: catch-ai-workflow
 description: |
-  Audit work that is already finished — your own prior output, a document or report, a test artifact, or a feature under test — by tracing every claim to the source that governs it, separating confirmed defects from open questions, and closing each defect with a sourced fix and a prevention layer.
-  Use when the user says CatchAI, /catch-ai, claims mistakes exist in something already delivered, asks you to review your own work again, check yourself, find your own mistakes, QA or audit a deliverable, or says ตรวจงานตัวเองอีกรอบ. Also use before reporting that a check passed, that a defect exists, or that work is complete.
+  Audit work that is already finished — the agent's own prior output, a document or report, a test artifact, or a feature under test — by tracing every claim to the source that governs it, separating confirmed defects from open questions, and closing each defect with a sourced fix and a prevention layer.
+  Use when the user says CatchAI, /catch-ai, claims mistakes exist in something already delivered, asks the agent to review its own work again, says "check yourself" or "find your own mistakes", QA or audit a deliverable, or says ตรวจงานตัวเองอีกรอบ. Also use before reporting that a check passed, that a defect exists, or that work is complete.
   Do NOT use for retesting a Jira bug after a dev fix (retest-bug-workflow), for drafting new TC tables (tc-fe-prep-workflow / tc-api-prep-workflow), for running a ticket's Playwright pass (testing-ticket-workflow), or for filing the bug once a defect is confirmed (create-bug-workflow).
 proactive_triggers:
   - /catch-ai
@@ -16,11 +16,48 @@ proactive_triggers:
 
 # Catch AI
 
+## Contents
+
+- [Progress checklist](#progress-checklist)
+- [Discipline](#discipline)
+- [The Iron Law](#the-iron-law)
+- [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
+- [Procedure \[high freedom\]](#procedure-high-freedom)
+- [Quick reference](#quick-reference)
+- [Rationalizations — STOP](#rationalizations--stop)
+- [Red flags — start over](#red-flags--start-over)
+- [Result quality gate (mandatory before an audited verdict is confirmed) \[low freedom\]](#result-quality-gate-mandatory-before-an-audited-verdict-is-confirmed-low-freedom)
+- [QA closing (mandatory before "done") \[low freedom\]](#qa-closing-mandatory-before-done-low-freedom)
+- [MUST / NEVER](#must--never)
+- [Must-read files](#must-read-files)
+- [Dependencies](#dependencies)
+
 Audit finished work the way a senior QA engineer does: every claim traced to the source that governs it, every defect reproducible, every gap named, nothing invented.
 
 **Core principle: a defect is "actual differs from a *confirmed* expected".** Actual differing from what you assumed, translated, or inferred is not a defect — it is a question.
 
 Claude Code shortcut: `/catch-ai` → [commands/catch-ai.md](../../commands/catch-ai.md).
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+Catch AI progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Procedure 1 — Fix the scope
+- [ ] Procedure 2 — Enumerate
+- [ ] Procedure 3 — Name the governing source for each
+- [ ] Procedure 4 — Inspect the actual side directly
+- [ ] Procedure 5 — Compare character-exact
+- [ ] Procedure 6 — Map coverage
+- [ ] Procedure 7 — Find the root cause of each defect
+- [ ] Procedure 8 — Propose the fix and the prevention
+- [ ] Procedure 9 — Report and give the verdict
+- [ ] Result quality gate (mandatory before an audited verdict is confirmed)
+- [ ] QA closing (mandatory before "done")
+```
 
 ## Discipline
 
@@ -46,7 +83,7 @@ guess, a translation, or a feature name — that is the OLS-315 failure, recorde
 this workflow; a confirmed defect hands off to `create-bug-workflow`, and Priority comes from the
 [Bug Priority & Severity Matrix](../../references/bug-priority-matrix.md), never invented.
 
-## Procedure
+## Procedure [high freedom]
 
 1. **Fix the scope.** Name what is under audit and what is out.
 2. **Enumerate** every claim, number, file, screen, endpoint, and section in scope.
@@ -101,7 +138,9 @@ registry, and the report template: [reference.md](reference.md).
 - A finding with no prevention step — nothing stops it coming back.
 - The report proposes rewrites nobody asked for.
 
-## Result quality gate (mandatory before an audited verdict is confirmed)
+**Go back:** Any red flag returns you to Procedure step 1 — Fix the scope, and the audit runs again from there.
+
+## Result quality gate (mandatory before an audited verdict is confirmed) [low freedom]
 
 Run [result-quality-gate.md](../../references/result-quality-gate.md) — all 20 layers, every case, PASSED
 ones included — **before this audit confirms or rejects any test verdict in the audited work**. Write one final result line per case (older lines marked
@@ -111,7 +150,9 @@ round's record. A red layer blocks that case's verdict: report the case as what 
 (usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
 is a claim — the main thread re-runs the gate itself (layer 20).
 
-## QA closing (mandatory before "done")
+**Go back:** A red layer returns that case to Procedure step 4 — Inspect the actual side directly; if it still cannot be confirmed, the case is BLOCKED with the reason.
+
+## QA closing (mandatory before "done") [low freedom]
 
 Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + this workflow:
 
@@ -123,6 +164,8 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + this work
 - [ ] Coverage gaps listed separately from defects.
 - [ ] Verdict stated: PASSED / FAILED / BLOCKED / No issue found.
 
+**Go back:** An unchecked item returns to its Procedure step — scope → 1; defect fields → 4–5; Question vs defect → 5; fix source or prevention → 8; coverage gaps → 6; verdict → 9.
+
 ## MUST / NEVER
 
 | Rule | Because |
@@ -133,3 +176,39 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + this work
 | MUST attach a prevention layer to every defect | A fix without prevention returns as the same finding |
 | MUST NOT file a Jira bug from this workflow | Filing belongs to `create-bug-workflow` after the defect is confirmed |
 | MUST NOT rewrite the audited work beyond the reported corrections | Audit and rewrite are different jobs |
+
+## Must-read files
+
+Every file this skill's procedure requires, one hop from here. Read each at the point its line names.
+
+- Read [bug-priority-matrix.md](../../references/bug-priority-matrix.md) before setting any priority or a PWMI / FAILED verdict.
+- Read [customer-escape-prevention.md](../../references/customer-escape-prevention.md) before any QA run; the gates that stop shipped defects.
+- Read [defect-report-completeness.md](../../references/defect-report-completeness.md) before writing up any defect or non-pass.
+- Read [figma-design-comparison.md](../../references/figma-design-comparison.md) before judging any UI or visual result against the design.
+- Read [helix-session-constraints.md](../../references/helix-session-constraints.md) once at session start.
+- Read [jira-comment-post-review.md](../../references/jira-comment-post-review.md) after posting a Jira comment, before saying done.
+- Read [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) before posting a Jira table with multi-line cells.
+- Read [long-workflow-todos.md](../../references/long-workflow-todos.md) when the workflow has many steps; keep the todo list.
+- Read [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) before recording any result that is not PASSED.
+- Read [playwright-preflight.md](../../references/playwright-preflight.md) before any Playwright run.
+- Read [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) when a QA follow-up could be suggested.
+- Read [qa-debug-discipline.md](../../references/qa-debug-discipline.md) when a test is flaky or a tool errors.
+- Read [qa-evidence-gates.md](../../references/qa-evidence-gates.md) before any completion claim.
+- Read [resilient-selectors.md](../../references/resilient-selectors.md) when writing or fixing Playwright selectors.
+- Read [root-cause-investigation.md](../../references/root-cause-investigation.md) before naming a cause for any failure.
+- Read [round-time-contract.md](../../references/round-time-contract.md) when a round starts and before reporting times.
+- Read [session-closing.md](../../references/session-closing.md) at session end.
+- Read [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) before invoking or switching skills.
+- Read [skill-routing.md](../../references/skill-routing.md) when choosing which skill handles a request.
+- Read [skill-rules-style.md](../../references/skill-rules-style.md) before asking the user or stopping on a missing input.
+- Read [test-through-real-steps.md](../../references/test-through-real-steps.md) before testing an action; no API shortcut for the action under test.
+- Read [user-communication.md](../../references/user-communication.md) before any message to the user.
+- Read [verify-closing-checklist.md](../../references/verify-closing-checklist.md) before reporting a verify or retest done.
+
+## Dependencies
+
+Run the check for each of these before step 1 — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
+
+- Node.js
+- in-repo guard tools (`tools/result-gate`)
+- `superpowers:systematic-debugging`

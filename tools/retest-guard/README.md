@@ -111,6 +111,11 @@ The renderer prints it one blank line above the usage marker:
 `*Test run time:* 25.3 min — includes evidence capture (screenshots); excludes re-checks, design lookup and comment drafting`
 (`**…**` on v3; "screenshots and video" when `hasVideo` is true).
 
+One exception (owner, 2026-10-14): a round where every case and result is BLOCKED ran nothing, so
+`"testRunTime": {"notMeasured": true, "reason": "no-case-ran"}` renders
+`*Test run time:* not measured — no case ran`. Any round with a case that passed, failed or was PWMI is
+refused (`retest_manifest.js` field `testRunTime.notMeasured`; guard rule `run-time-not-measured-with-cases`).
+
 Refused: a manifest without `testRunTime`, `minutes` that is not a positive number (0 is not a
 measurement), a non-boolean `hasVideo`, or any `method` other than the tool's id; and a body whose
 line above the marker is not a `Test run time: {n} min` line (`run-time-line-missing`).

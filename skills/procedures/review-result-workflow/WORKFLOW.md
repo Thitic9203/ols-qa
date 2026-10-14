@@ -8,6 +8,27 @@ description: |
 
 # Review result workflow
 
+## Contents
+
+- [Progress checklist](#progress-checklist)
+- [Discipline](#discipline)
+- [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
+- [Step 1 — Working directory (before the first file) \[medium freedom\]](#step-1--working-directory-before-the-first-file-medium-freedom)
+- [Step 2 — Build the run manifest from the case list \[medium freedom\]](#step-2--build-the-run-manifest-from-the-case-list-medium-freedom)
+- [Step 3 — One contact sheet per clip \[medium freedom\]](#step-3--one-contact-sheet-per-clip-medium-freedom)
+- [Step 4 — Per-case brief, before looking at pixels \[medium freedom\]](#step-4--per-case-brief-before-looking-at-pixels-medium-freedom)
+- [Step 5 — The ten criteria \[low freedom\]](#step-5--the-ten-criteria-low-freedom)
+- [Step 6 — Zoom only where the contact sheet cannot decide \[high freedom\]](#step-6--zoom-only-where-the-contact-sheet-cannot-decide-high-freedom)
+- [Result quality gate (mandatory before verdicts are recorded) \[low freedom\]](#result-quality-gate-mandatory-before-verdicts-are-recorded-low-freedom)
+- [Step 7 — Record the verdict \[low freedom\]](#step-7--record-the-verdict-low-freedom)
+- [Step 8 — Live board (mandatory for every review round) \[low freedom\]](#step-8--live-board-mandatory-for-every-review-round-low-freedom)
+- [Step 9 — Lanes and dispatch \[high freedom\]](#step-9--lanes-and-dispatch-high-freedom)
+- [Step 10 — Fix ordering, cheapest first \[high freedom\]](#step-10--fix-ordering-cheapest-first-high-freedom)
+- [Step 11 — Final review (mandatory before "done") \[low freedom\]](#step-11--final-review-mandatory-before-done-low-freedom)
+- [Skill composition](#skill-composition)
+- [Out of scope](#out-of-scope)
+- [MUST / NEVER](#must--never)
+
 End-to-end review of a set of results that has **already been executed and recorded**: intake → working
 directory → run manifest → contact sheet per clip → per-case brief → the ten criteria → targeted zoom →
 recorded verdict → live board → lane dispatch → fix ordering → final review.
@@ -23,6 +44,28 @@ exist; it never changes the criteria or the statuses.
 **Project-agnostic.** Environment names, hands-off environments, customer-owned content markers, board
 template location, and the account/session store all come from the workspace's own
 `references/*-guide.md` — never from a value written into this skill.
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+Review result progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Step 1 — Working directory (before the first file)
+- [ ] Step 2 — Build the run manifest from the case list
+- [ ] Step 3 — One contact sheet per clip
+- [ ] Step 4 — Per-case brief, before looking at pixels
+- [ ] Step 5 — The ten criteria
+- [ ] Step 6 — Zoom only where the contact sheet cannot decide
+- [ ] Result quality gate (mandatory before verdicts are recorded)
+- [ ] Step 7 — Record the verdict
+- [ ] Step 8 — Live board (mandatory for every review round)
+- [ ] Step 9 — Lanes and dispatch
+- [ ] Step 10 — Fix ordering, cheapest first
+- [ ] Step 11 — Final review (mandatory before "done")
+```
 
 ## Discipline
 
@@ -56,7 +99,7 @@ refusal block. Reviewing clips without the case list behind them yields an opini
 
 ---
 
-## Step 1 — Working directory (before the first file)
+## Step 1 — Working directory (before the first file) [medium freedom]
 
 **Create the run's working directory before writing anything.** Never write run files into a system
 temp directory: it is cleared without warning, and a review that loses its verdicts, contact sheets and
@@ -74,7 +117,7 @@ A layout that has worked, one directory per run:
 
 Everything the review produces goes here. The clips themselves stay where they live.
 
-## Step 2 — Build the run manifest from the case list
+## Step 2 — Build the run manifest from the case list [medium freedom]
 
 Export the case list once into a machine-readable manifest and **derive every structural fact from it** —
 tab, role, sequence number, expected results, and which evidence file belongs to the case.
@@ -87,7 +130,9 @@ every time — that closes the whole class rather than one instance of it.
 Reconcile before reviewing anything: every case in scope has an evidence file, every evidence file maps to
 a case. An unmatched file on either side is reported now, not discovered at the end.
 
-## Step 3 — One contact sheet per clip
+**Go back:** If reconciliation finds an unmatched case or evidence file, report it now and return to the start of Step 2 once the case list or evidence set is corrected.
+
+## Step 3 — One contact sheet per clip [medium freedom]
 
 For each clip, extract **frames evenly spread across the whole clip plus the real last frame**, and tile
 them into a **single image for that case** (a 4×3 of twelve reads well: eleven spread + the last frame in
@@ -104,7 +149,7 @@ the same image as everything else — no second pass over the set.
 | Tiling invoked with a single input | The tile step fails, but the **previous run's output file is still sitting there** — and it is read as this case's evidence | **Delete the output file before every run.** A stale image read as a fresh one is worse than no image |
 | A fixed pixel crop reused across clips | Clips are recorded at different resolutions; a crop tuned on one lands somewhere else on the next | Compute every crop from **that clip's own width and height**, never from a constant |
 
-## Step 4 — Per-case brief, before looking at pixels
+## Step 4 — Per-case brief, before looking at pixels [medium freedom]
 
 Print a short text brief per case **first**: the tab's role · the item under test · the steps · the
 expected results · the addresses visited during the clip · any word matching the test-data marker list ·
@@ -117,7 +162,7 @@ image hunting for what to check — is slower and misses more.
 The brief tells you what to look for; the image decides. Never the reverse: a brief alone never passes a
 case, because the criteria are about what is **on screen**.
 
-## Step 5 — The ten criteria
+## Step 5 — The ten criteria [low freedom]
 
 Judge every case against all ten. **All ten must pass. One failure fails the case** — there is no
 "passed with a note".
@@ -144,7 +189,9 @@ backend check is recorded beside it, never inside it.
 wrong role, and it is counted in the wrong total. It is moved — see Step 9 group A — and the fix never
 involves renaming its clip.
 
-## Step 6 — Zoom only where the contact sheet cannot decide
+**Go back:** A criterion the contact sheet cannot settle goes to Step 6. A failed case goes to Step 10 for its fix group, and a re-recorded clip returns to Step 3 as `AWAITING RE-REVIEW`.
+
+## Step 6 — Zoom only where the contact sheet cannot decide [high freedom]
 
 Zoom is the exception, not the method. When a criterion genuinely cannot be settled from the sheet, crop
 the region in question at a named time fraction and stack the crops into one image.
@@ -155,7 +202,7 @@ the region in question at a named time fraction and stack the crops into one ima
 - If the zoom still cannot decide it, the criterion is **not** quietly passed — the case goes to the
   three-layer gate in Step 7.
 
-## Result quality gate (mandatory before verdicts are recorded)
+## Result quality gate (mandatory before verdicts are recorded) [low freedom]
 
 Run [result-quality-gate.md](../../../references/result-quality-gate.md) — all 20 layers, every case, PASSED
 ones included — **before Step 7 records any verdict**. Write one final result line per case (older lines marked
@@ -164,6 +211,8 @@ judgement layers, and paste the checker's last output line (or the counted hand 
 round's record. A red layer blocks that case's verdict: report the case as what it really is
 (usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
 is a claim — the main thread re-runs the gate itself (layer 20).
+
+**Go back:** A red layer returns that case to the step that produced the failing input — Step 2 (manifest), Step 3 (contact sheet) or Step 5 (criteria). If it cannot be fixed, report the case as BLOCKED with the reason.
 
 **Source sweep before any BLOCKED, FAILED or "ask the PO / reporter" outcome** (layer 14 of
 [result-quality-gate.md](../../../references/result-quality-gate.md)): read the product code at the default
@@ -174,7 +223,7 @@ regression results, and the design node; if data is missing, try to create it fi
 source on the verdict line (`code_refs`, `ticket_refs`). Never conclude "cannot be done", "wrong"
 or "wait for someone" before this sweep is written down.
 
-## Step 7 — Record the verdict
+## Step 7 — Record the verdict [low freedom]
 
 **Only three closing statuses exist:**
 
@@ -210,7 +259,7 @@ grouped for Step 9, and drifts in wording until two identical problems look like
 reports fewer results than were actually reached — under-reporting looks like honest progress and is not
 questioned.
 
-## Step 8 — Live board (mandatory for every review round)
+## Step 8 — Live board (mandatory for every review round) [low freedom]
 
 Every review round has a **one-page live board** that reads its numbers from the live data store, updated
 **the moment a status changes** — not when someone asks.
@@ -231,7 +280,9 @@ Every review round has a **one-page live board** that reads its numbers from the
 - **Never claim the board was published without reading the live version back** and confirming the new
   content is there and the old content is gone.
 
-## Step 9 — Lanes and dispatch
+**Go back:** If the live read-back does not show the new content, regenerate the payload from the verdict files and publish again from the top of Step 8.
+
+## Step 9 — Lanes and dispatch [high freedom]
 
 **A lane is a role or a tab — never a slice of the raw file count.** Splitting by file count puts two
 lanes on the same account and the same data, and they corrupt each other's session. Splitting by role
@@ -253,7 +304,7 @@ lane nobody dispatched is capacity disappearing silently.
 **Read-only analysis work is the easiest to dispatch** — it collides with almost nothing, and it usually
 unblocks something else.
 
-## Step 10 — Fix ordering, cheapest first
+## Step 10 — Fix ordering, cheapest first [high freedom]
 
 Group the failures by **how expensive the fix is**, and start with the groups that need **no new
 recording** at all:
@@ -281,7 +332,7 @@ correct outcome available.
   `AWAITING RE-REVIEW`. It is then reviewed again from Step 3 — a replacement is not trusted because it is
   a replacement.
 
-## Step 11 — Final review (mandatory before "done")
+## Step 11 — Final review (mandatory before "done") [low freedom]
 
 Two checks that are easy to skip and expensive to miss, plus the status sweep:
 
@@ -292,6 +343,8 @@ Two checks that are easy to skip and expensive to miss, plus the status sweep:
 - [ ] **No case carries an interim status** — every case reads `PASSED`, `FAILED`, or `AWAITING RE-REVIEW`.
 - [ ] **Board numbers match the recorded verdicts** — regenerated from the verdict files, read back live.
 - [ ] **Every case flagged for a question has been raised** with the owner, not left on the board.
+
+**Go back:** A broken sequence returns to Step 10 group A (renumber); a changed filename returns to Step 10 (restore it); an interim status returns to Step 7; a board mismatch returns to Step 8; an unraised question returns to the Step 7 three-layer gate.
 
 ---
 

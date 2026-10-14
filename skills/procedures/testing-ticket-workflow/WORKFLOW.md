@@ -12,6 +12,47 @@ Run **Playwright-based** testing for a **single ticket** after intake (the plan 
 
 **This workflow does not open bug reports.** If the user wants bugs filed → route to **`create-bug-workflow`** (`/helix` → Create bug).
 
+## Contents
+
+- [Progress checklist](#progress-checklist)
+- [Discipline](#discipline)
+- [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
+- [Core constraints](#core-constraints)
+- [Phase A — Session intake (mandatory) \[medium freedom\]](#phase-a--session-intake-mandatory-medium-freedom)
+- [Phase B — Load context \[high freedom\]](#phase-b--load-context-high-freedom)
+- [Phase C — Show the plan, then run \[medium freedom\]](#phase-c--show-the-plan-then-run-medium-freedom)
+- [Phase D — Pre-flight (mandatory) \[low freedom\]](#phase-d--pre-flight-mandatory-low-freedom)
+- [Phase E — Execute tests (Playwright) \[low freedom\]](execute-and-summarize.md#phase-e--execute-tests-playwright-low-freedom)
+- [Result quality gate (mandatory before Phase F) \[low freedom\]](execute-and-summarize.md#result-quality-gate-mandatory-before-phase-f-low-freedom)
+- [Phase F — Summarize in this chat (mandatory) \[high freedom\]](execute-and-summarize.md#phase-f--summarize-in-this-chat-mandatory-high-freedom)
+- [Phase G — Optional: update results elsewhere \[low freedom\]](results-update.md#phase-g--optional-update-results-elsewhere-low-freedom)
+- [Phase H — A question arrives after results were published \[low freedom\]](#phase-h--a-question-arrives-after-results-were-published-low-freedom)
+- [QA closing (mandatory before session end) \[low freedom\]](#qa-closing-mandatory-before-session-end-low-freedom)
+- [Out of scope](#out-of-scope)
+- [Next workflows](#next-workflows)
+- [References](#references)
+- [MUST / NEVER](#must--never)
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+Testing ticket progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Phase A — Session intake (mandatory)
+- [ ] Phase B — Load context
+- [ ] Phase C — Show the plan, then run
+- [ ] Phase D — Pre-flight (mandatory)
+- [ ] Phase E — Execute tests (Playwright)
+- [ ] Result quality gate (mandatory before Phase F)
+- [ ] Phase F — Summarize in this chat (mandatory)
+- [ ] Phase G — Optional: update results elsewhere
+- [ ] QA closing (mandatory before session end)
+- [ ] Phase H — A question arrives after results were published
+```
+
 ## Discipline
 
 **Settle and strategize FIRST** — before intake or any tool call, follow
@@ -114,7 +155,7 @@ Then follow [workspace-guide-discovery.md](../../../references/workspace-guide-d
 
 ---
 
-## Phase A — Session intake (mandatory)
+## Phase A — Session intake (mandatory) [medium freedom]
 
 Collect these **seven** items (one grouped message when possible; skip fields already on the one-pager as done):
 
@@ -148,7 +189,7 @@ re-read in full; a changed or missing fingerprint re-reads that source only.
 
 ---
 
-## Phase B — Load context
+## Phase B — Load context [high freedom]
 
 Use [parallel-prep.md](../../../references/parallel-prep.md) when Jira fetch and Confluence/Swagger are independent.
 
@@ -193,7 +234,7 @@ Use [parallel-prep.md](../../../references/parallel-prep.md) when Jira fetch and
 
 ---
 
-## Phase C — Show the plan, then run
+## Phase C — Show the plan, then run [medium freedom]
 
 Print the plan below, then start Phase D **without waiting**
 ([round-time-contract.md §2](../../../references/round-time-contract.md)). The plan rides again in the
@@ -228,9 +269,11 @@ Plan printed — starting Phase D now. It appears again in the end decisions pop
 If results contradict expectations or tests are flaky, follow [qa-debug-discipline.md](../../../references/qa-debug-discipline.md) before changing pass/fail wording. "Flaky" is a hypothesis, not a
 conclusion — it needs the E2 investigation and an artifact like any other cause.
 
+**Go back:** If the end decisions popup corrects this plan, return to Phase C — the correction starts a new round.
+
 ---
 
-## Phase D — Pre-flight (mandatory)
+## Phase D — Pre-flight (mandatory) [low freedom]
 
 Follow [playwright-preflight.md](../../../references/playwright-preflight.md) end-to-end. MUST NOT start Phase E until **Ready to run: YES**.
 
@@ -251,508 +294,23 @@ one lane and is never shared across concurrent sessions.
 authenticated user id — the parent accepts a lane's results only when that id matches the lane's
 leased account ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3).
 
----
-
-## Phase E — Execute tests (Playwright)
-
-Run the planned scenarios; record **PASSED** / **FAILED** / **BLOCKED** / **NOT TESTED** with evidence (screenshots, console, network).
-
-**Fan out whenever the plan has 2 or more units** ([round-time-contract.md §4](../../../references/round-time-contract.md)) —
-dispatch the planned lanes at once, after any parent pre-login for accounts sharing one OTP
-inbox (§3), one subagent per lane, all in a single message, each
-with the lane prompt from [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §5.
-Lane count = min(units, accounts leasable without collision); **no fixed lane cap** for this flow.
-**Each lane owns its unit end to end:** execution, the E0 Figma compare, recording during execution
-([round-time-contract.md §8](../../../references/round-time-contract.md) — the run that executes the
-case is the recording; every clip still passes all 7 layers), the E1 repro shape, and the E2 root
-cause. Barrier units run alone after the lanes return. The **main thread only merges** — it runs the
-§6 merge (isolation · coverage · evidence) into one report and one bundle, and applies E3 (default +
-queue) on every non-PASS before Phase F. Execution stays agent-driven, step by step. Lanes never post
-or update anything outside the run.
-
-**Session lease per lane.** If the workspace provides a session-lease tool (see project guide), each
-lane acquires the lease on its account before loading the login file, renews it on long runs, and
-releases it in `finally` — the §5 lane prompt carries those lines (or `LEASE-HELD-BY-PARENT` when the
-parent holds the lease). Never load a login file without a lease. Each lane also runs every driver or
-browser script under a hard time limit and leaves no process of its own running when it returns, and
-the §6 merge runs the leftover-process check for the round's account tags (§5/§6). The §6 merge adds the lease check:
-none held by this round (`tools/lane-lease-check/` where the workspace carries it).
-
-Drive every scenario through its **real surface** — a UI scenario through the UI (Playwright clicks the
-button / submits the form), following the case's steps completely. The API is for test-data /
-precondition setup only, **never** to perform the action under test; an API scenario is driven at the
-API. See [test-through-real-steps.md](../../../references/test-through-real-steps.md).
-
-**Cover every enumerated AC/EC id (coverage gate layers 3–5).** Exercise each `AC*/EC*` id on its
-real surface — never infer one from a sibling, never assume it covered because the happy path passed.
-An id you cannot reach is an **explicit BLOCKED row** with the reason, never left off the table. Record
-each id's result as its **own row** (layer 4 — row, never a remark); a case is **PASSED only when every
-id it covers met its expected** (layer 5), and an id observed to differ makes that a FAILED/PWMI/BLOCKED
-row for that point — never a PASS with the exception noted below the table.
-
-Internal failures: note for chat summary only — **do not create Jira/GitHub issues in this workflow.**
-
-### E0 — Design comparison + depth checks (every scenario, PASSED ones included)
-
-Run this **as each scenario executes**, not while writing Phase F.
-
-1. **Compare the screen against its design node** on all five points — elements present · text
-   char-exact · order/position · the states the node defines · no overflow and no overlap
-   ([figma-design-comparison.md](../../../references/figma-design-comparison.md) §3). Record the node
-   link on the scenario's row. **Dedupe, never shorten** ([round-time-contract.md §7](../../../references/round-time-contract.md)):
-   one compare per screen × width per round — cases on the same screen share one fresh app capture and
-   one design read; cache the design-side export (node screenshot + metadata) keyed by the Figma file's
-   `lastModified` and re-fetch only when it changes. The app-side capture is always fresh, and the
-   compare still covers all five points.
-2. **Measure the layout checks, do not eyeball them** — overflow is `rect.right > window.innerWidth` or
-   `document.documentElement.scrollWidth > window.innerWidth`; overlap is two text rectangles
-   intersecting by more than ~3 px. Run them at **every in-scope width**, and on both sides of any
-   breakpoint the spec names.
-3. **Check values against their source**, not just their presence — each displayed value against the
-   API field / record / count it comes from.
-4. **Exercise the states in scope** (empty · loading · error · over-limit · disabled), not only the
-   happy state.
-5. **Report anything wrong you see, even where no AC asked for it** — as its own row where it belongs
-   to the contract, otherwise as a noted observation with evidence
-   ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §2).
-6. **A difference is not yet a defect** → E3. A screen this ticket intentionally changed is **design
-   out of date** (report it, name the design owner, ask for the node update in this ticket), and an AC
-   revised mid-test to match the build is an **accepted limitation** the verdict line must spell out
-   (§5–§6 of the same reference).
-7. **No design node for this screen** → it was already reported back to the assigner in Phase B; keep
-   its visual points **BLOCKED** with that remark. Never upgrade them to PASSED because the function
-   worked.
-
-### E1 — For every FAILED scenario, capture the repro shape *during the run*
-
-These three cannot be reconstructed while writing Phase F — do them before moving to the next scenario
-([defect-report-completeness.md](../../../references/defect-report-completeness.md) §2–§3):
-
-1. **Every entry point, one at a time.** Reach the failing surface by the direct route **and** by the
-   in-app path a real user takes (list card, menu, CTA, deep link). One screenshot per path, one
-   **repro-matrix row** per path. A path you did not exercise is recorded `not tested` — never inferred
-   from another path, never silently dropped.
-2. **Settle after every state change.** After a fixture step that changes server state (publish /
-   unpublish / approve / delete / role change), hard-reload each surface before observing it. An
-   already-open view holds pre-change data; recording it reports your test timing as the product's
-   behavior. A stale window worth reporting is a **separate timing note** with the measured delay.
-3. **Resolve contradictions before writing anything down.** If two of your observations of the same
-   surface disagree, name it, re-run that surface cleanly, record which was the artifact and why. Never
-   resolve it in favour of the result you already wrote. Unresolvable after a clean re-run → **BLOCKED**,
-   not FAILED.
-
-### E2 — Root-cause investigation (mandatory for every FAILED and BLOCKED scenario, during the run)
-
-Follow [root-cause-investigation.md](../../../references/root-cause-investigation.md) end to end — the
-debugging skill (§0), the 8-boundary evidence sweep (§1), compare against something that works (§2),
-one falsifiable hypothesis at a time (§3), and a confidence label (§4). The reference is the single
-source for those steps; do not paraphrase them here.
-
-What is specific to testing a ticket:
-
-- **Run it before moving to the next scenario** — the browser, the session and the fixture state are
-  open now and cannot be reconstructed in Phase F.
-- **Skip Phase 4 of the debugging skill** for product code; repairing our own test, selector, fixture
-  or environment is in scope. Name the skill in the write-up.
-- **A test-side cause counts too, and is stated as such** — selector drift, stale auth, missing
-  fixture, VPN. Fix our side, re-run, and record it as a test defect, never as a product FAILED
-  ([qa-debug-discipline.md](../../../references/qa-debug-discipline.md)). Never the reverse: a real
-  product bug is never filed away as "flaky".
-- **BLOCKED is not an escape.** A BLOCKED scenario still records the sweep up to the boundary that
-  blocked it and names the access or person needed to continue.
-
-### E3 — Challenge the non-PASS + queue it for the user (mandatory for every non-PASSED scenario)
-
-Follow [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md) end to end, **before
-the scenario is written into Phase F as a defect** — name the discrepancy (§1), re-verify the expected
-side against an authoritative source including related tickets' AC/EC (§2, and its three outcomes),
-rule out a test-side cause (§3), then surface it (§4). The reference is the single source for those
-steps.
-
-What is specific to testing a ticket:
-
-- **The contract is this ticket's Expected/AC/EC and the test case's own source**, read char-exact and
-  cross-checked against the parent story, every linked issue, and sibling tickets on the same surface.
-- **Apply the gate's default and keep running — no mid-run wait**
-  ([round-time-contract.md §2](../../../references/round-time-contract.md)): expected wrong/unclear,
-  sources disagree, data missing, or "needs a decision" → run the
-  **[no-wait decision gate](../../../references/no-wait-decision-gate.md) (20 layers)** and decide from
-  evidence (every source read, precedent applied, missing data created, decision logged); BLOCKED only
-  for its layer-17 causes with the layer-18 record. Test-side cause → fix and re-run; confirmed defect →
-  record as normal. Only what no layer can resolve is queued. Queue `expected (+source) · observed · AC/EC finding · recommendation (A adjust the TC ·
-  B re-test · C confirm defect)` for the end decisions popup; a **B re-test** answer starts a new round
-  ([§1](../../../references/round-time-contract.md)).
-- **Never rewrite the ticket's expected text** to match the app on your own.
+**Go back:** If **Ready to run** is not YES — session user, build id or environment missing — fix the cause and return to the start of Phase D. A lane whose authenticated user id does not match its leased account logs in fresh (*Login reuse*) and re-runs its preflight before its results count.
 
 ---
 
-## Result quality gate (mandatory before Phase F)
+## Phases E–F — execute and summarize
 
-Run [result-quality-gate.md](../../../references/result-quality-gate.md) — all 20 layers, every case, PASSED
-ones included — **before any result is summarized in Phase F or written in Phase G**. Write one final result line per case (older lines marked
-`superseded`), run the mechanical layers with the workspace's checker when it has one, walk the
-judgement layers, and paste the checker's last output line (or the counted hand check) into the
-round's record. A red layer blocks that case's verdict: report the case as what it really is
-(usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
-is a claim — the main thread re-runs the gate itself (layer 20).
-
-**Source sweep before any BLOCKED, FAILED or "ask the PO / reporter" outcome** (layer 14 of
-[result-quality-gate.md](../../../references/result-quality-gate.md)): read the product code at the default
-branch with `path:line` including its inline comments and `git log -L` / blame on those lines, the
-main ticket's description and every comment, the surrounding tickets (parent / epic, linked,
-sibling stories on the same screen or API, and every ticket the commit messages name), the
-regression results, and the design node; if data is missing, try to create it first. Quote each
-source on the verdict line (`code_refs`, `ticket_refs`). Never conclude "cannot be done", "wrong"
-or "wait for someone" before this sweep is written down.
-
-**Required output when defects are found — never auto-file.** The round's report carries the two
-tables in [result-quality-gate.md](../../../references/result-quality-gate.md) § *Required output
-when the round finds defects*: **Defect candidates — NOT filed** (Ticket · TC/ER point · Actual ·
-Expected · Requirement reference with char-exact quote · Evidence: still + accepted clip (layer 10) + capture
-manifest · Root cause `path:line` · Priority per
-[bug-priority-matrix.md](../../../references/bug-priority-matrix.md) · Status "Not filed yet", in a
-Thai report "ยังไม่ได้เปิดบั๊ก"), holding only rows whose expected side is a confirmed spec; and
-**Needs PO decision** for spec conflicts, quoting both sources. Filing waits for the owner.
-
-## Phase F — Summarize in this chat (mandatory)
-
-Always post a clear summary **in the same conversation** before anything else:
-
-### F1 — Executive summary
-
-2–4 sentences: overall result, pass/fail counts, blockers.
-
-### F2 — Results table
-
-```text
-| # | Scenario | AC/EC id | Width | Result | Evidence |
-|---|----------|----------|-------|--------|----------|
-| 1 | ...      | AC1      | 1280  | PASSED | shot-01.png |
-| 2 | ...      | AC2 / EC1| 375   | FAILED | shot-02.png |
-```
-
-**Every row carries evidence — passed rows included** (`count(passed rows) == count(evidence
-references)`). 🔴 **No design-node column** — the design reference is one fact about the round, not a
-per-row fact: it goes on the report header's `Design ref:` line (the node URL, or the Phase B
-BLOCKED-with-reason when none exists), never repeated down every row. Removed on user instruction
-2026-08-25. A
-run whose passed rows have no evidence cannot be re-examined later, which is how layout defects
-survived a green round and reached the customer
-([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §7). `Width` is
-the screen width the row was run at; a scenario in scope at two widths is two rows.
-
-**Every enumerated AC/EC id has a row here (coverage gate layer 4·6).** The table — not the Notes
-column, not a remark below it — is where each AC/EC result lives. If an AC/EC point matters, it is a
-row with its own verdict; it is **never** parked in Notes/remark/chat while the case reads PASSED.
-
-### F3 — Defects observed (if any)
-
-List issues found **without filing tickets**:
-
-```text
-| # | Title | Severity | Confidence | Evidence |
-|---|-------|----------|------------|----------|
-| 1 | ...   | High     | Confirmed  | ...      |
-```
-
-The **Confidence** column carries the E2 label — `Confirmed` / `Suspected` / `Unknown — not
-investigated` — and it describes the **cause**, not how strongly you feel about the defect.
-
-**The `Severity` column is judged only by the [Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md)** — match the observed defect to its row, never invent a severity/priority
-notion. Cheat-sheet (full matrix + hard rule at the link):
-
-| If the defect reads like… | Priority | Verdict |
-|---|---|---|
-| cosmetic / typo / UI misalignment | Low | **PWMI** |
-| minor calculation or display error | Low | **PWMI** |
-| major feature affected **but a workaround exists** | Low | **PWMI** |
-| minor glitch that does **not** block the workflow | Medium | **PWMI** |
-| **optional** feature not working | Medium | **PWMI** |
-| functionality problem affecting **several** users | Medium | **PWMI** |
-| critical feature **partially** broken | Medium | **PWMI** |
-| rarely-used feature **fully** broken | High | **FAILED** |
-| feature issue affecting **some** users | High | **FAILED** |
-| core functionality affected / partial outage | High | **FAILED** |
-| core system failure affecting **most** users | High | **FAILED** |
-| security warning in a minor feature | Highest | **FAILED** |
-| system crash for some users | Highest | **FAILED** |
-| complete outage / data loss / security breach | Highest | **FAILED** |
-
-**Each defect row expands into a complete write-up** — this is what gets pasted into a bug, a Jira
-comment, or a sheet cell later, so it must stand alone
-([defect-report-completeness.md](../../../references/defect-report-completeness.md) §1–§4 and
-[root-cause-investigation.md](../../../references/root-cause-investigation.md) §5):
-
-| Block | Content | Answers |
-|-------|---------|---------|
-| **Repro matrix** | one row per entry point exercised: entry point · steps · observed · reproduces? · evidence file; untried paths `not tested` | "does this only happen from a direct URL?" |
-| **Expected vs Actual** | the failing acceptance/expected line **quoted verbatim**, then *should be* vs *is now* as implementable facts (which elements render, which are disabled, which route) | "what should it look like, and which line did I break?" |
-| **Root cause** | the E2 investigation block verbatim: one-sentence cause + `Confirmed`/`Suspected`/`Unknown — not investigated` label, the skill used, the 8-boundary evidence lines, hypotheses ruled out, and (Suspected) the check that would confirm it | "why does it happen, which layer do I open, and how sure are you?" |
-| **Resolution options** | when the behavior deviates from the written expectation but the feature otherwise works: the two mutually exclusive outcomes with a named owner each — spec owner updates the expectation (no code change) **or** dev changes `{exact route/surface}` and leaves `{what already passes}` alone | "do I change code or does the spec change, and who decides?" |
-
-**Never rewrite the ticket's acceptance/expected text to match observed behavior.** Report the conflict and
-name the decision-maker.
-
-**Every defect row must have passed the E3 challenge gate** — its expected side re-verified against an
-authoritative source (this ticket's AC/EC **and** related/linked tickets), and the discrepancy already
-queued for the end decisions popup. A row whose expected turned out wrong / superseded / unclear does **not** belong
-here — it is a test-case adjustment or a BLOCKED question, not a defect.
-
-### F4 — Reader gate (MUST pass before Phase G)
-
-Read F2 + F3 as the developer who will act on them. Run the six-question gate in
-[defect-report-completeness.md](../../../references/defect-report-completeness.md) §5. Any "no" → fix the
-write-up. Also confirm: every scope word (`always`, `any entry point`, `only when …`) traces to a
-repro-matrix row, and no observation is under an unresolved contradiction.
-
-**AC/EC coverage reconciliation (gate layers 6–7 — hard, fail-closed).** Reconcile the Phase B
-enumerated `AC*/EC*` list against F2: **`enumerated ids == rows carrying a verdict + evidence (or an
-explicit BLOCKED reason)`**. Every id appears as a row; no id lives only in a remark/Notes/chat; no row
-is verdict-less; no case reads PASSED while an id it covers was untested or observed to differ. Any
-shortfall ⇒ the run is **NOT complete** — go back, add the row / run the id / re-verdict the partial
-case, and do **not** proceed to Phase G, report "100%/complete", or close the session until the count
-is green.
-
-**Design + depth reconciliation (same pass, fail-closed).**
-
-- [ ] Every UI row carries a **design node link**, or the Phase B BLOCKED-with-reason naming who was
-      asked for it. No UI row is PASSED on an assumed expected.
-- [ ] Every in-scope width has results for every in-scope page, and the overflow/overlap checks were
-      **measured** (numbers in the notes), not judged by eye. Out-of-scope widths are stated as such.
-- [ ] `count(rows with a passing verdict) == count(evidence references)`.
-- [ ] No row carries a passing verdict while its notes contain `caveat` / `not verifiable` /
-      `assumed` / `ยืนยันไม่ได้` / `ตรวจไม่ได้` — those are BLOCKED, or PWMI with a bug raised.
-- [ ] Anything wrong that was seen during the run is written down, including what no AC asked for.
-- [ ] The surface's existing cases were covered, not only this ticket's AC lines; the build id under
-      test is recorded.
-
-Any box unchecked ⇒ the run is **not complete** — fix it before Phase G
-([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) ·
-[figma-design-comparison.md](../../../references/figma-design-comparison.md)).
-
-**Cause gate (same pass, no exceptions)** — read every sentence in F1–F3 that states or implies a
-cause:
-
-- [ ] It cites a **captured artifact** from the E2 sweep (status code, response field, console error,
-      bundle probe, fixture read-back) — not a recollection, not another scenario's behaviour.
-- [ ] It carries a label matching what was actually run — `Confirmed` only if the falsifying check ran.
-- [ ] It contains **no hedge standing in for a cause** (`probably`, `น่าจะ`, `seems`, `flaky`,
-      `cache issue`, `environment issue`, `race condition`).
-- [ ] It does not restate the symptom as the cause, and `not checked` boundaries are still visible.
-
-Any box unchecked → delete the sentence or return to E2 and earn it. Never soften it into a hedge.
-
-If the user wants these logged as bugs:
-
-> Say **Create bug** from `/helix`, or ask me to switch to the **create-bug-workflow**.
-
-**The report ends with the round-time line** ([round-time-contract.md §1](../../../references/round-time-contract.md)),
-measured from the session's own timestamps, never estimated:
-
-```text
-Round time: AGENT+EXEC {n} min · human wait {h} min · overrun {max(0, n-15)} min
-```
-
-**Do not proceed to Phase G until F1–F4 are posted.**
-
-### F5 — End of round (fixed order)
-
-Follow [round-time-contract.md §3](../../../references/round-time-contract.md):
-
-1. **Reviewer and bundle in parallel.** If the project names an independent reviewer subagent, start it
-   in the background; meanwhile build the bundle — the render and media check
-   ([§6](../../../references/round-time-contract.md)) when a comment will be posted, and the popups. The
-   reviewer must return CLEAN before step 4.
-2. **Decisions popup** — only when questions are queued. One `AskUserQuestion`, batched 4 at a time:
-   the scope plan from Phase C, each queued E3 non-PASS (A/B/C), missing design, and cross-ticket
-   conflicts (*Investigate further* / *Close out now*).
-3. **Apply the answers** — re-render the draft and re-run the guard.
-4. **Approval popup** — one approval for the whole bundle, naming every concrete action: the comment
-   (target ticket + endpoint), each external result update (destination + rows), and any notify
-   (channel + resolved recipient).
-5. **Execute** — Phase G4–G7 with no second approval.
-
-No queued decisions → step 2 is skipped and the round has a single human touch.
-Write `references/helix-handoff-{KEY}.md` at the close of every round with the fingerprints
-([§10](../../../references/round-time-contract.md)).
+Read and follow [execute-and-summarize.md](execute-and-summarize.md) before Phase E — Phase E (execute), the result quality gate and Phase F (summarize in chat), end to end.
 
 ---
 
-## Phase G — Optional: update results elsewhere
+## Phase G — update results elsewhere
 
-G1–G3 collapse into the F5 end-of-round bundle
-([round-time-contract.md §2–§3](../../../references/round-time-contract.md)) — no separate questions
-and no separate confirm.
-
-### G1 — Destination wanted? (from the guide)
-
-Whether results go somewhere else (Jira comment, Google Sheet, Confluence table, CSV file, etc.) is read
-from the workspace guide's results destination. If the guide has no entry, ask **once** — in the
-Phase A grouped intake or the F5 decisions popup — and save the answer to the guide immediately.
-
-- **None** → Reply: *Testing ticket session complete.* **Stop here.**
-- **A destination** → G2.
-
-### G2 — Destination details (from the guide)
-
-Read from the guide; ask once and save immediately only for what is missing:
-
-1. **Link** — full URL to the destination (Jira issue, Sheet, Confluence page, file path in repo if applicable).
-2. **Columns** — which columns or fields to update (names or letters, e.g. `Result`, `Tester`, `Date`, `Notes`).
-3. **Formats** — per-column rules if specific (e.g. `Result` = `PASSED`/`FAILED` only; `Date` = `YYYY-MM-DD`; language; no bare ticket keys in Jira wiki).
-
-### G3 — Update plan (a line item in the single approval popup)
-
-The update plan is listed in the F5 approval popup next to every other action — not a separate gate:
-
-```text
-Result update — destination: {link}
-  Columns: {Column A}: {format rule} · {Column B}: {format rule}
-  Rows to update: {count} — mapped from scenarios 1..N
-```
-
-Approval of that popup covers G4–G7; there is no second approval.
-
-### G4 — Access and read first
-
-- Open or fetch the destination (browser, API, MCP, or file read).
-- **Match existing layout** — headers, row order, language, status vocabulary already in use.
-- For Google Sheets: read headers and sample rows before writing. **Detect the result columns from the header row — never assume fixed column letters**, and confirm the tab name and tab id refer to the same tab.
-- For Jira comments: draft in chat; use v2 wiki vs v3 ADF per project guide if present. **The chat draft's markdown is not the posted body** — on the v2 path rewrite it as wiki markup and run both gates in [jira-wiki-vs-markdown.md](../../../references/jira-wiki-vs-markdown.md); markdown posts with HTTP 200 and renders wrong. The render and media check on the **final** body (render locally in the guide's format; every referenced image/clip resolves to an existing attachment) runs in F5 **before** the approval popup — a failure blocks the popup until fixed ([round-time-contract.md §6](../../../references/round-time-contract.md)).
-- If access fails (auth, 403, VPN) → report exactly what failed; **do not claim success.**
-
-**Claim the scope (layer 1 — hard gate).** Snapshot the destination, then classify every target
-row: untested (empty / `NOT STARTED`, no result text, no links) or written by an earlier run of
-yours = **yours to write**; anything a person filled in = **not yours**. Drop the not-yours rows
-here and list them for the user. Same for a shared evidence folder: note which files already
-exist and were not uploaded by you. **When the project uses a shared evidence folder, organize
-uploads one subfolder per test-case id** (e.g. `<ticket>/<TC-ID>/…`) rather than dropping every
-file flat in the ticket folder — follow the project guide's exact folder scheme and upload command
-if one is specified. See [result-update-discipline.md](references/result-update-discipline.md).
-
-### G5 — Apply updates
-
-- Write **every** planned row/cell/comment field **that this run owns** — and nothing else.
-- Map each test scenario to the correct row (by TC id, row number, or user mapping), and **anchor
-  on the row's own identifier**: if the id in that row is not the case you are recording, skip it.
-- **Re-read each row immediately before writing** (layer 2) — if it changed since G4, someone is
-  editing it; skip that row rather than overwrite.
-- Never overwrite, rename, delete, reorder, or reformat anything a person put there — and never
-  reuse an existing file's link as this run's evidence. Refusing is a correct outcome: record
-  "not written — owned by someone else" and carry on.
-- **Do not damage what you do write:** never put a literal over a cell holding a formula; send
-  text so the sheet cannot re-read it as a formula/date/number (`=`, `+`, `-`, `@`, `1/2`,
-  `2026-07-23`, `007`); and make every row exactly as wide as the range so nothing shifts into
-  the wrong column.
-- Include evidence references where the format allows (screenshot names, bug keys as `{{KEY}}` in Jira wiki).
-- **A FAILED/BLOCKED row carries its F3 write-up, not just the word "FAILED".** Whatever the destination
-  allows (actual-result cell, Jira comment, remark column) must state which entry points reproduce it,
-  the expected line verbatim vs what actually happens, **the root cause with its `Confirmed` /
-  `Suspected` / `Unknown — not investigated` label**, and — when the deviation is from the written
-  expectation rather than a broken feature — who decides between updating the expectation and changing
-  the code. A bare status forces the next reader back to you.
-- **The cause label travels with the sentence.** If the destination is too narrow for the full E2
-  block, write the one-sentence cause **with its label** and link the full block; never publish a
-  `Suspected` cause with its label stripped off.
-
-### G5·M — Usage marker (last line of the tracker summary comment)
-
-🔴 **Every summary comment this run posts on the ticket ends with the usage marker, after one blank
-line** — the same anchor the retest skill uses, so one tracker search (`comment ~ "retestskillmarker"`)
-counts both skills, and `skill=` tells them apart:
-
-```text
-*Test run time:* {minutes} min — includes evidence capture ({screenshots|screenshots and video}); excludes re-checks, design lookup and comment drafting
-
-_retestskillmarker · skill=testing-ticket · src={ols-qa|helix} · via={testing-ticket|testing-ticket-workflow|helix-menu} · agent={claude-code|cursor|codex|copilot|other} · result={PASSED|FAILED|BLOCKED|PWMI} · passed={n} · failed={n} · pwmi={n} · blocked={n}_
-```
-
-Fill it from the run, never guess: `src=helix` from the Helix plugin, `src=ols-qa` from this repo;
-`via` = the command or skill the user invoked; `agent` = the AI tool doing the run. `result` = the
-overall result the F1 executive summary states; `passed` / `failed` / `pwmi` / `blocked` = the F2 row
-counts per verdict (they add up to the F2 row count).
-Values are single words or digits — no spaces, no `/`. A comment edited in place keeps the marker as
-its last line, unchanged. Chat-only rounds (nothing posted) carry no marker and are not counted.
-
-🔴 **The line just above the marker = the measured test run time (one blank line between) — never estimate it.**
-Right before drafting the summary comment, measure over **every lane's** evidence/result directories
-(screenshots, clips, `results.jsonl`):
-
-```bash
-node tools/run-time/measure.js --dirs {lane1_evidence_dir},{lane2_evidence_dir} [--gap-s 120]
-```
-
-It prints `{method, minutes, bursts, files, gapS, hasVideo}` (method `evidence-burst-v1`): the file write
-times of all lanes as one union, split into bursts wherever no file was written for more than 120 s, and
-the burst durations summed — so it counts running and evidence capture, and leaves out idle time,
-re-checks, design lookup and comment drafting. Put `minutes` in the line; `hasVideo` picks "screenshots"
-or "screenshots and video". Exit 2 = it could not measure (a lane directory is missing, or no evidence
-files) — fix the directory list; never type a number instead. When the workspace has no such tool,
-measure by the same method by hand (list every evidence file's modification time across all lanes, split
-at gaps over 120 s, sum the bursts) and say in the chat report that it was measured by hand. This comment
-has no renderer or guard — check the line by eye in the F5 render check before the approval popup.
-
-### G6 — Review before “complete” (mandatory)
-
-Before telling the user updates are done:
-
-1. **Re-open or re-fetch** the destination.
-2. **Checklist:**
-   - [ ] Every scenario from Phase F2 has a corresponding update (or documented skip reason).
-   - [ ] Column values match agreed formats.
-   - [ ] No partial rows, empty required cells, or wrong ticket/sheet tab.
-   - [ ] Jira/Confluence: comment or table visible as intended (not draft-only unless user asked draft).
-   - [ ] **No literal `<br>`, HTML tags, or stray markup** visible as text in any cell.
-   - [ ] **Numbered items** each on a separate line — not running together on one line.
-   - [ ] **Nothing outside this run's own cells/files changed** (layer 3): diff the destination
-         against the G4 snapshot. Anything else changed → restore it from the snapshot, stop, and
-         tell the user. Existing files in a shared folder still present and unmodified.
-   - [ ] Every **refused / skipped** row is listed in the report with the reason.
-   - [ ] **Nothing was damaged**: written cells read back exactly what was sent, every formula
-         that was there is still a formula, no new `#REF!/#NAME?/#VALUE!/#N/A` anywhere, and the
-         header row is unchanged.
-3. If any mismatch → fix and re-check. **Maximum 3 fix rounds** — then report specific failures with best available workaround (see [jira-comment-post-review.md](../../../references/jira-comment-post-review.md)).
-
-### G7 — Close
-
-Only after G6 passes:
-
-```text
-━━━ Result update complete ━━━
-Updated: {link}
-Rows/fields written: {summary}
-Verified: {what you re-read}
-Adoption: {Counted in … | NOT counted yet — …}   (see below)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
-🔴 **Adoption count — verify, then say it in the chat close-out.** After the result comment is posted, check
-that the ticket is counted by the project's AI-skill adoption dashboard (the project guide names it — by
-placeholder `<ADOPTION_DASHBOARD_URL>` in shared files; the real URL lives in local secrets). The dashboard
-runs the tracker search `comment ~ "retestskillmarker"` and counts a ticket when one of its comments carries
-the marker (created after its snapshot cutoff). Run the same search scoped to this ticket and confirm the
-marker is the last line of the posted comment:
-
-```bash
-TRACKER_BASE_URL=https://{JIRA_DOMAIN} TRACKER_EMAIL=… TRACKER_API_TOKEN=… \
-  node tools/adoption-check/check.js --key {ISSUE_KEY} [--cutoff {snapshot cutoff}] [--dashboard {dashboard URL}]
-```
-
-It runs `key = {ISSUE_KEY} AND comment ~ "retestskillmarker"` on the tracker's current search endpoint
-(`POST /rest/api/3/search/jql`), then reads the comments: exit 0 = counted · 1 = not counted (the reason says
-why) · 2 = cannot check. When the workspace has no such tool, run that search by hand and open the posted
-comment to confirm the marker is its last line. The chat close-out MUST then carry exactly one of:
-
-- `Counted in <ADOPTION_DASHBOARD_URL> — tab AI Skill Adoption Overview (dashboard refreshes every 5 minutes)`
-- `NOT counted yet — {reason from the search / comment read}` (also when the check could not run — say why)
-
-Never claim it without the search result.
-
-If verification failed partially, state what succeeded and what did not — NEVER say “complete” for unverified work — because partial writes look finished to stakeholders.
+Read and follow [results-update.md](results-update.md) before Phase G — whenever the run updates results outside this chat (sheet, Jira comment, usage marker).
 
 ---
 
-## Phase H — A question arrives after results were published
+## Phase H — A question arrives after results were published [low freedom]
 
 A follow-up question is a **defect in the write-up**, not a normal step
 ([defect-report-completeness.md](../../../references/defect-report-completeness.md) §6).
@@ -772,7 +330,7 @@ A follow-up question is a **defect in the write-up**, not a normal step
 
 ---
 
-## QA closing (mandatory before session end)
+## QA closing (mandatory before session end) [low freedom]
 
 Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific. **Run its [cross-ticket conflict check](../../../references/qa-closing-shared.md#cross-ticket-conflict-check) first** — apply its unattended default (step 5) and queue *Investigate further* / *Close out now* into the F5 end decisions popup, before the approval popup ([round-time-contract.md §3](../../../references/round-time-contract.md)); the session is not done until the user has answered it there:
 
@@ -795,6 +353,8 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] **Fresh-eyes:** re-read F2 before Phase G when **> 15 scenarios**.
 - [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (Testing ticket section).
 - [ ] Suggest **create-bug** if F3 has defects; handoff file written every round (§10).
+
+**Go back:** If any item above is unchecked, return to the phase it names (E, F or G) and redo from there; do not report done.
 
 ---
 

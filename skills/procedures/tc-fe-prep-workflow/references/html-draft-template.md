@@ -2,6 +2,16 @@
 
 Used in **Step 5** to render the TC draft as a full-width HTML page opened in Chrome, instead of a markdown table in chat.
 
+## Contents
+
+- [When to use](#when-to-use)
+- [File path](#file-path)
+- [HTML template](#html-template)
+- [How to build TABLE_ROWS](#how-to-build-table_rows)
+- [How to build REMARK_BLOCK](#how-to-build-remark_block)
+- [How to build SHARED_PREP_LI](#how-to-build-shared_prep_li)
+- [Opening in Chrome](#opening-in-chrome)
+
 ## When to use
 
 Every time Step 5 is reached — always generate the HTML file and open it in Chrome. Do NOT post the markdown table in chat.

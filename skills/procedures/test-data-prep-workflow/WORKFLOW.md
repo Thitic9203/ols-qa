@@ -11,7 +11,40 @@ description: |
 End-to-end preparation of OLS test/training data from a request: confirm env + account → reuse existing published content → create only what is missing per the recipe → apply the cover / video / naming rules → pass every gate → get sample approval → report.
 
 **Single source of truth:** every recipe, formula, tool, and gate lives in
-**[ols-data-prep.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ols-data-prep.md)** (private) and this repo's `CLAUDE.md`. This workflow orchestrates them — it never re-invents a formula, a tool, or a cover style. Read the source first; follow it exactly.
+**`{EVIDENCE_REPO}/docs/ols-data-prep.md`** (private evidence repo; `{EVIDENCE_REPO}` = its local clone, from the workspace project guide) and this repo's `CLAUDE.md`. This workflow orchestrates them — it never re-invents a formula, a tool, or a cover style. Read the source first; follow it exactly.
+
+## Contents
+
+- [Progress checklist](#progress-checklist)
+- [Discipline](#discipline)
+- [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
+- [Gate 0 — Intake (mandatory, wait for the user) \[medium freedom\]](#gate-0--intake-mandatory-wait-for-the-user-medium-freedom)
+- [Step 1 — Reuse first \[high freedom\]](#step-1--reuse-first-high-freedom)
+- [Step 2 — Create only what is missing, at the exact target status \[low freedom\]](#step-2--create-only-what-is-missing-at-the-exact-target-status-low-freedom)
+- [Step 3 — Names + descriptions = real content for real users \[medium freedom\]](#step-3--names--descriptions--real-content-for-real-users-medium-freedom)
+- [Step 4 — Covers (the 10 Cover-correction rules + 5-level gate) \[medium freedom\]](#step-4--covers-the-10-cover-correction-rules--5-level-gate-medium-freedom)
+- [Step 5 — Videos (motion-graphics) \[medium freedom\]](#step-5--videos-motion-graphics-medium-freedom)
+- [Step 6 — Gates (pass every layer before use) \[low freedom\]](#step-6--gates-pass-every-layer-before-use-low-freedom)
+- [Step 7 — Report \[high freedom\]](#step-7--report-high-freedom)
+- [MUST / NEVER](#must--never)
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+Test data prep progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Gate 0 — Intake (mandatory, wait for the user)
+- [ ] Step 1 — Reuse first
+- [ ] Step 2 — Create only what is missing, at the exact target status
+- [ ] Step 3 — Names + descriptions = real content for real users
+- [ ] Step 4 — Covers (the 10 Cover-correction rules + 5-level gate)
+- [ ] Step 5 — Videos (motion-graphics)
+- [ ] Step 6 — Gates (pass every layer before use)
+- [ ] Step 7 — Report
+```
 
 ## Discipline
 
@@ -19,7 +52,7 @@ Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
 **Read before creating anything.** Open ols-data-prep.md and this repo's `CLAUDE.md` data-prep section (the 🔴 test-data rules + the **Cover corrections (2026-08-08)** 10-rule block) BEFORE the first login or creation. Both govern this workflow. Inventing a recipe, a cover style, or a tool is the single most common cause of rejected data — do not do it.
 
-**Reuse the real tools.** The working tools are off-repo in `~/ols-qa-testing-bot/` (`dt_client.js`, `thumb_ai.js`, `thumb_final.js`, `thai_wrap.js`, `cover_prompts.json`, `cover_photo_guard.js`, capture harness, upload). Reuse them as-is — never rewrite a divergent copy that drifts from the client-approved output.
+**Reuse the real tools.** The working tools are off-repo under `{QA_TOOLS_ROOT}/` (local clone root from the workspace project guide; `dt_client.js`, `thumb_ai.js`, `thumb_final.js`, `thai_wrap.js`, `cover_prompts.json`, `cover_photo_guard.js`, capture harness, upload). Reuse them as-is — never rewrite a divergent copy that drifts from the client-approved output.
 
 **Not-all-green = not usable.** Data that fails any gate layer is "ยังไม่เรียบร้อย": never upload it to Drive, never test with it, never call the job done, never report it silently. Fail a layer → root-cause → fix at source → restart from layer 1 (no partial pass, no workaround).
 
@@ -33,9 +66,9 @@ MUST NOT create, upload, or "seed" anything until:
 2. **Account + role is confirmed** for the create/verify surface.
 3. **ols-data-prep.md has been read** for the exact type + target status being produced.
 
-If any is missing → stop and ask (Gate 0). Covers additionally require Draft Things API `:7860` ON — if the app is not installed, the cover work is **BLOCKED**; say so in chat, do not fall back to a solid/gradient/PIL cover.
+If any is missing → stop and ask (Gate 0). Covers additionally require Draw Things API `:{IMAGE_API_PORT}` ON — if the app is not installed, the cover work is **BLOCKED**; say so in chat, do not fall back to a solid/gradient/PIL cover.
 
-## Gate 0 — Intake (mandatory, wait for the user)
+## Gate 0 — Intake (mandatory, wait for the user) [medium freedom]
 
 Per ols-data-prep.md §0.0 and CLAUDE.md's env-intake rule. **Gather EVERY requirement below and get the user's confirmation BEFORE any login, reuse check, or creation.** Ask in the three ordered steps below — do not skip ahead, do not start on a partial answer. Skip a question only if the user already answered it explicitly this session (then state the value back and let them confirm with a short "ok", never re-ask).
 
@@ -43,7 +76,7 @@ Use the **AskUserQuestion** tool so each step is a real prompt the user answers 
 
 ### Intake 0.1 — Environment + spec source (ask first, wait)
 
-- **Environment** — `dev` / `pre-prod` / `training-*` (staging / prod only if the user names them). Never pick one yourself, even a more convenient one (per CLAUDE.md env-intake rule). **dev and pre-prod require VPN; training does NOT (public).** Do not pick an env just because training skips VPN — env choice is the user's. There is currently **one** training env; resolve its real host from `~/.ols-qa-secrets/` (never write the host into this public repo).
+- **Environment** — `dev` / `pre-prod` / `training-*` (staging / prod only if the user names them). Never pick one yourself, even a more convenient one (per CLAUDE.md env-intake rule). **dev and pre-prod require VPN; training does NOT (public).** Do not pick an env just because training skips VPN — env choice is the user's. There is currently **one** training env; resolve its real host from `{SECRETS_DIR}/` (from the workspace project guide) (never write the host into this public repo).
 - **Account / role** — offer the canonical OLS roles: **System Admin · Admin Content · Learner · Creator**. Capture which role each item is created with (Creator = the default owner for media/course/LP).
 - **Confluence (CF) URL** — the spec / reference page for the content to build. If the user has none, say so explicitly and note there is no CF spec (do not invent requirements).
 
@@ -83,15 +116,15 @@ Keep it lean: skip a detail question if the selected types make it irrelevant, o
 
 **Confirmation gate:** restate the full captured spec (env · account · CF URL · types+status · style · quantity · purpose · any 0.4 details) back to the user in one block and wait for a clear "go" before Step 1. Nothing is created until this is confirmed.
 
-## Step 1 — Reuse first
+## Step 1 — Reuse first [high freedom]
 
 Before creating, list what already exists on the target env — `GET /api/media|courses|learning-paths`. If a published item already covers the need, use it. Do not create a duplicate.
 
-## Step 2 — Create only what is missing, at the exact target status
+## Step 2 — Create only what is missing, at the exact target status [low freedom]
 
 Follow the ols-data-prep.md §5–6 recipe for the type. Produce the **exact** status requested — `PUBLISHED · UNPUBLISHED · DRAFT · REJECTED · FLAGGED · PENDING_EDIT` — not "all published". For each status, follow the recipe's create → transition chain (see the LP state model + test-data recipes in `references/ols-project-guide.md` for which ticket/role produces which state).
 
-## Step 3 — Names + descriptions = real content for real users
+## Step 3 — Names + descriptions = real content for real users [medium freedom]
 
 Per CLAUDE.md §5.1 and the 2026-08-08 naming feedback. Every name and description is what a real user sees — it must read as genuine content.
 
@@ -104,9 +137,11 @@ Per CLAUDE.md §5.1 and the 2026-08-08 naming feedback. Every name and descripti
 
 **Duplicate-name clash → stop and ask the user.** Never silently create a second item with a colliding name. Report which item it clashes with (name / id / status) and let the user decide skip / rename / proceed.
 
-## Step 4 — Covers (the 10 Cover-correction rules + 5-level gate)
+**Go back:** If the user picks rename, return to the top of Step 3 and check the new name against the rules and existing content again.
 
-Cover source = ols-data-prep.md §5.7.2 (client-approved FINAL). **Prereq:** Draw Things API `HTTP:7860` ON — open it yourself first (check `curl :7860/sdapi/v1/options`; if not installed, BLOCK and tell the user, never fall back to a plain cover).
+## Step 4 — Covers (the 10 Cover-correction rules + 5-level gate) [medium freedom]
+
+Cover source = ols-data-prep.md §5.7.2 (client-approved FINAL). **Prereq:** Draw Things API `HTTP:{IMAGE_API_PORT}` ON (port from the workspace project guide) — open it yourself first (check `curl :{IMAGE_API_PORT}/sdapi/v1/options`; if not installed, BLOCK and tell the user, never fall back to a plain cover).
 
 Every cover = **a photograph** from Draw Things (SDXL, warm editorial, `seed=hash(id)`) + **Thai text overlaid by the program layer** (the model renders no text — negative prompt strips letters/logo/watermark/gibberish). Apply all 10 corrections (CLAUDE.md, 2026-08-08):
 
@@ -123,7 +158,7 @@ Every cover = **a photograph** from Draw Things (SDXL, warm editorial, `seed=has
 
 Tone (STYLE_TAIL) and sharpness are **separate levers** — "make it sharper" means push res/unsharp only, never change mood.
 
-**Sharpness + completeness are judged strictly against [ols-data-prep.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ols-data-prep.md) §5.7.2 — that doc is the authority, not this summary.** Open the rendered PNG and check it by eye; never assume from the pipeline.
+**Sharpness + completeness are judged strictly against `{EVIDENCE_REPO}/docs/ols-data-prep.md` §5.7.2 — that doc is the authority, not this summary.** Open the rendered PNG and check it by eye; never assume from the pipeline.
 
 **Cover gate — pass EVERY row, or regenerate (fail-closed, no partial pass):**
 
@@ -144,11 +179,13 @@ Tone (STYLE_TAIL) and sharpness are **separate levers** — "make it sharper" me
 - the image looks soft / not matching the approved lot's sharpness
 - you are about to accept it from the pipeline **without opening the PNG and looking**
 
-## Step 5 — Videos (motion-graphics)
+**Go back:** If any cover-gate level fails or a red flag shows, regenerate that cover and return to level 1 of the cover gate — no partial pass.
+
+## Step 5 — Videos (motion-graphics) [medium freedom]
 
 VIDEO type = motion-graphics (ols-data-prep.md §5.7.2F, client-approved FINAL): Ken Burns + kinetic text, warm editorial, Thai male voice `th-TH-NiwatNeural` +4%, ≤25MB. **Never** a static slideshow / PowerPoint / plain-colour background.
 
-## Step 6 — Gates (pass every layer before use)
+## Step 6 — Gates (pass every layer before use) [low freedom]
 
 - **§7 — 3-layer** (correct / complete / thorough): readback field-by-field after create.
 - **§8 — 5-layer media** (publish chain + guest verify): confirm each field survives the publish chain and a guest session sees it.
@@ -156,7 +193,9 @@ VIDEO type = motion-graphics (ols-data-prep.md §5.7.2F, client-approved FINAL):
 
 Fail any layer → root-cause → fix at source → **restart from layer 1**. No partial pass, no silence.
 
-## Step 7 — Report
+**Go back:** After the fix at source, return to the step that produced the failing item — Step 2 (created item or status), Step 4 (cover) or Step 5 (video) — then restart this gate from layer 1.
+
+## Step 7 — Report [high freedom]
 
 Report to the user: what was **reused**, what was **created** (type · id · final status · name), every **gate result**, and any **clash / block** encountered. Record any new user correction into `CLAUDE.md` + ols-data-prep.md.
 

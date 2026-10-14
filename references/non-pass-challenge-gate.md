@@ -1,8 +1,16 @@
 # Challenge a non-PASS before you record it — the "wait, really?" gate
 
+## Contents
+
+- [1. Pause and name the discrepancy — do not write "FAILED" yet](#1-pause-and-name-the-discrepancy--do-not-write-failed-yet)
+- [2. Re-verify the EXPECTED side against an authoritative source — including related tickets' AC/EC](#2-re-verify-the-expected-side-against-an-authoritative-source--including-related-tickets-acec)
+- [3. Rule out a test-side cause](#3-rule-out-a-test-side-cause)
+- [4. Surface it to the user and let them steer — before the verdict is committed or a bug is filed](#4-surface-it-to-the-user-and-let-them-steer--before-the-verdict-is-committed-or-a-bug-is-filed)
+- [MUST / NEVER](#must--never)
+
 Applies to **every** QA result that is not a clean PASSED — any test case, any ticket, in
-[testing-ticket-workflow](../skills/procedures/testing-ticket-workflow/WORKFLOW.md),
-[retest-bug-workflow](../skills/procedures/retest-bug-workflow/WORKFLOW.md), any per-case verdict
+[testing-ticket-workflow](../skills/testing-ticket-workflow/SKILL.md),
+[retest-bug-workflow](../skills/retest-bug-workflow/SKILL.md), any per-case verdict
 written to a sheet, comment, or notify, and any finding [catch-ai-workflow](../skills/catch-ai-workflow/SKILL.md)
 is about to classify as a Defect — §2's supersession check is that workflow's Iron Law, by name.
 
@@ -77,8 +85,8 @@ Figma/PO", "น่าจะ", "TBD", or any unconfirmed-spec marker, the spec is
 
 | Finding | This is… | Next |
 |---|---|---|
-| Expected was **wrong / misread / stale**; the app matches the authoritative source | **not a defect** | §4 — recommend adjusting the test case / expected |
-| Expected is **superseded** by a related ticket; the app follows the newer behavior | **not a defect** | §4 — recommend adjusting the TC, cite the superseding ticket |
+| Expected was **wrong / misread / stale**; the app matches the authoritative source | **not a confirmed defect** (spec conflict) | **BLOCKED** + remark until the owner picks A; §4 — recommend adjusting the test case / expected |
+| Expected is **superseded** by a related ticket; the app follows the newer behavior | **not a confirmed defect** (spec conflict) | **BLOCKED** + remark until the owner picks A; §4 — recommend adjusting the TC, cite the superseding ticket |
 | Expected is **genuinely unclear / conflicting** across related tickets, or carries a hedge | a **question**, not a bug | **BLOCKED** for that case + an actionable remark naming the discrepancy, the related ticket, and **who to ask** (spec owner / PO) — never a bug ticket |
 | Expected is **confirmed authoritative** and the app still differs | possibly a real defect | §3 |
 

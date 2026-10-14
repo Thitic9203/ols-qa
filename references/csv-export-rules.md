@@ -4,6 +4,15 @@ Use when `tc-fe-prep-workflow` or `tc-api-prep-workflow` writes an export file n
 
 > **TC FE CSV types:** Three template formats exist (Unit Test / Integration Test / System Test), each with different columns and row structure. See [csv-template-types.md](csv-template-types.md) before generating a TC FE CSV.
 
+## Contents
+
+- [Format detection (decide before exporting)](#format-detection-decide-before-exporting)
+- [Cell text cleaning (apply to EVERY cell, both formats)](#cell-text-cleaning-apply-to-every-cell-both-formats)
+- [CSV export (default)](#csv-export-default)
+- [Excel / xlsx export (when user explicitly requests Excel)](#excel--xlsx-export-when-user-explicitly-requests-excel)
+- [Typed TC FE export (Unit / Integration / System)](#typed-tc-fe-export-unit--integration--system)
+- [Sibling format — Test.md (agent-native)](#sibling-format--testmd-agent-native)
+
 ## Format detection (decide before exporting)
 
 | User’s request contains… | Output format | File extension |
@@ -156,31 +165,26 @@ If xlsx generation fails (missing Python, permission error, etc.) → warn the u
 
 ## Typed TC FE export (Unit / Integration / System)
 
-When `{csv_type}` is set (from Step 3a of `tc-fe-prep-workflow`), generate one additional typed CSV alongside `Draft_Jira` and `Import_Qase`. Full column/row specs: [csv-template-types.md](csv-template-types.md).
+Generate one typed CSV per Type that has TCs (Unit / Integration / System), after `Draft_Jira` and `Import_Qase`. Each file holds only that Type's TCs, with content mapped per the Step 6 column-mapping tables in `tc-fe-prep-workflow` `WORKFLOW.md`; only execution-result columns stay blank. Skip the file for a Type with no TCs. Full column/row specs: [csv-template-types.md](csv-template-types.md).
 
-### Branching logic
+| Type | File | Template spec |
+|------|------|---------------|
+| Unit Test | `Unit_Test_{ISSUE_KEY}.csv` | 13 English columns, Function/Sub Function header rows, no footer |
+| Integration Test | `Integration_Test_{ISSUE_KEY}.csv` | 9 Thai columns, one row per TC, no footer, UTF-8 BOM |
+| System Test | `System_Test_{ISSUE_KEY}.csv` | 9 Thai columns, one row per TC, no footer, UTF-8 BOM |
 
-| `{csv_type}` | File | Template spec |
-|-------------|------|---------------|
-| `unit` | `Unit_Test_{ISSUE_KEY}.csv` | 13 English columns, Function/Sub Function header rows, no footer |
-| `integration` | `Integration_Test_{ISSUE_KEY}.csv` | 9 Thai columns, 330 blank rows, summary footer, UTF-8 BOM |
-| `system` | `System_Test_{ISSUE_KEY}.csv` | 9 Thai columns, 800 blank rows, summary footer, UTF-8 BOM |
-
-### If `unit`
+### Unit Test
 
 1. Header: `No., Sub Function, Test Scenario, Test Description, Pre-condition, Test Step, Test Data, Expected Result, Actual Result, Test status, Test Date, Test By, Comment`
-2. For each Sub Function group: insert a `Function : <name>` header row, then a `Sub Function : <name>` header row (col 1 only; cols 2–13 empty), then numbered data rows (content columns blank)
+2. One `Function : <name>` header row, then per Sub Function group a `Sub Function : <name>` header row (col 1 only; cols 2–13 empty), then that group's numbered data rows
 3. No summary footer
 4. Encoding: UTF-8 (no BOM needed for English-header files)
 
-If the user has not provided Function/Sub Function names, ask once before generating:
-> "Unit Test CSV needs Function and Sub Function group names. Please list them (one per line: Function → Sub Function)."
-
-### If `integration` or `system`
+### Integration Test / System Test
 
 1. Header: `ลำดับ, โมดูล, รายการทดสอบ, ขั้นตอนการทดสอบ, ผลการทดสอบที่คาดหวัง, ผลการทดสอบ, วันที่ทดสอบ, ผู้ทดสอบ, หมายเหตุ`
-2. Rows 1 → N (330 for integration, 800 for system): col 1 = row number, cols 2–9 empty
-3. Append summary footer after 1 blank row (see Python snippet in [csv-template-types.md](csv-template-types.md))
+2. One numbered data row per TC of that Type
+3. No summary footer — end after the last data row
 4. Encoding: UTF-8 BOM (`utf-8-sig`) — required for Thai to open correctly in Excel
 
 ### Upload + comment link

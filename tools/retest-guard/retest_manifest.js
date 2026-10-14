@@ -235,6 +235,16 @@ function validate(m) {
   if (!rt || typeof rt !== 'object' || Array.isArray(rt)) {
     out.push(err('testRunTime', 'testRunTime must be an object {minutes, hasVideo, method}',
       'run tools/run-time/measure.js over every lane evidence dir and copy minutes/hasVideo/method'));
+  } else if (rt.notMeasured === true) {
+    // Owner, 2026-10-14: a round where every case is BLOCKED ran nothing — nothing to measure.
+    const statuses = [...asArray(m.cases).map((c) => c && c.status), ...asArray(m.results).map((r) => r && r.status)];
+    if (statuses.length === 0 || statuses.some((st) => st !== 'BLOCKED')) {
+      out.push(err('testRunTime.notMeasured', 'notMeasured is allowed only when every case and result is BLOCKED',
+        'a case ran — measure it with tools/run-time/measure.js and copy minutes/hasVideo/method'));
+    }
+    if (rt.reason !== 'no-case-ran') {
+      out.push(err('testRunTime.reason', 'a not-measured run time needs reason "no-case-ran"', 'set reason to "no-case-ran"'));
+    }
   } else {
     if (typeof rt.minutes !== 'number' || !Number.isFinite(rt.minutes) || rt.minutes <= 0) {
       out.push(err('testRunTime.minutes', 'minutes must be a positive measured number — 0 or a guess is not a measurement',
@@ -250,7 +260,7 @@ function validate(m) {
 
   if (m.bugType === 'FE' && !isNonEmptyString(m.designRef)) {
     out.push(err('designRef', 'a UI retest carries the design node, or the reason there is none',
-      'record the node link, or "none — asked <who> <date>" and hold the visual points BLOCKED'));
+      'record the node link, or "none, asked <who> <date>" and hold the visual points BLOCKED'));
   }
 
   // A duplicate id corrupts silently: the second entry overrides the first in every

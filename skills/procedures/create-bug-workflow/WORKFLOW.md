@@ -10,6 +10,41 @@ description: |
 
 File **one or more bug reports** on the tracker the user names (Jira, GitHub Issues, etc.). Ported from the former full-test **Phase 6** — **self-contained in Helix**; do not invoke `full-test-plugin`.
 
+## Contents
+
+- [Progress checklist](#progress-checklist)
+- [Discipline](#discipline)
+- [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
+- [Phase A — Intake (one message, three parts) \[medium freedom\]](#phase-a--intake-one-message-three-parts-medium-freedom)
+- [Phase B — Parse target \[medium freedom\]](#phase-b--parse-target-medium-freedom)
+- [Phase B2 — Board-conflict re-check (hard gate, before drafting/confirm) \[low freedom\]](#phase-b2--board-conflict-re-check-hard-gate-before-draftingconfirm-low-freedom)
+- [Phase C — Confirm before create (hard gate) \[low freedom\]](#phase-c--confirm-before-create-hard-gate-low-freedom)
+- [Phase D — Create issues \[low freedom\]](#phase-d--create-issues-low-freedom)
+- [Phase E — Falsification (before create) \[high freedom\]](#phase-e--falsification-before-create-high-freedom)
+- [Phase F — Fix-verify and close (mandatory) \[low freedom\]](#phase-f--fix-verify-and-close-mandatory-low-freedom)
+- [QA closing (mandatory before "done") \[low freedom\]](#qa-closing-mandatory-before-done-low-freedom)
+- [Out of scope](#out-of-scope)
+- [References](#references)
+- [MUST / NEVER](#must--never)
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+Create bug progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Phase A — Intake (one message, three parts)
+- [ ] Phase B — Parse target
+- [ ] Phase B2 — Board-conflict re-check (hard gate, before drafting/confirm)
+- [ ] Phase E — Falsification (before create)
+- [ ] Phase C — Confirm before create (hard gate)
+- [ ] Phase D — Create issues
+- [ ] Phase F — Fix-verify and close (mandatory)
+- [ ] QA closing (mandatory before "done")
+```
+
 ## Discipline
 
 Follow [shared-preamble.md](../../../references/shared-preamble.md).
@@ -45,7 +80,7 @@ On first response after constraints, follow [workspace-guide-discovery.md](../..
 
 ---
 
-## Phase A — Intake (one message, three parts)
+## Phase A — Intake (one message, three parts) [medium freedom]
 
 Ask in **one** grouped message (fill in only what the user has not already provided):
 
@@ -81,7 +116,7 @@ The user may reference findings from a **prior testing-ticket** run in the same 
 
 ---
 
-## Phase B — Parse target
+## Phase B — Parse target [medium freedom]
 
 | Target | Detect | Pre-flight |
 |--------|--------|------------|
@@ -90,9 +125,11 @@ The user may reference findings from a **prior testing-ticket** run in the same 
 
 If pre-flight fails, report and stop — do not create issues silently.
 
+**Go back:** If pre-flight fails, return to Phase A — Intake (A1 — Where to open bugs) once the user gives a reachable target; nothing is created meanwhile.
+
 ---
 
-## Phase B2 — Board-conflict re-check (hard gate, before drafting/confirm)
+## Phase B2 — Board-conflict re-check (hard gate, before drafting/confirm) [low freedom]
 
 **For every bug about to be filed, search the tracker/board first** — a defect the team already
 discussed and concluded is *intended behavior* is not a bug, and re-filing it wastes a full
@@ -120,9 +157,11 @@ file → retest → close-out round.
 Only candidates that clear this gate move to Phase C. Note in the confirm block that the board was
 checked (see Phase C).
 
+**Go back:** A candidate that fails this gate (conflict or duplicate) leaves the batch here. If the user or PO answers an uncertain match with "still a bug", return to item 3 of this phase and decide that candidate again.
+
 ---
 
-## Phase C — Confirm before create (hard gate)
+## Phase C — Confirm before create (hard gate) [low freedom]
 
 Show:
 
@@ -146,9 +185,11 @@ Then post **full drafts** (one block per bug) per [bug-draft-template.md](refere
 
 **Do not call `gh issue create`, `createJiraIssue`, or browser create until the user confirms.**
 
+**Go back:** If the user asks for edits instead of **confirm**, revise the drafts and return to the start of Phase C — show the confirm block again. Phase D waits for **confirm**.
+
 ---
 
-## Phase D — Create issues
+## Phase D — Create issues [low freedom]
 
 Follow [posting-discipline.md](references/posting-discipline.md).
 
@@ -181,7 +222,7 @@ HTTP 200 and renders as garbage — run both gates in
 
 ---
 
-## Phase E — Falsification (before create)
+## Phase E — Falsification (before create) [high freedom]
 
 For each bug, if not already validated in a prior test:
 
@@ -189,9 +230,11 @@ For each bug, if not already validated in a prior test:
   (the board-conflict search is Phase B2 — do not skip it just because a bug "looks obvious").
 - Drop or mark **Needs Review** — only create **Confirmed** / user-approved **Likely** items.
 
+**Go back:** If the disproof attempt finds the item already settled in another ticket, return to Phase B2 — Board-conflict re-check for that candidate.
+
 ---
 
-## Phase F — Fix-verify and close (mandatory)
+## Phase F — Fix-verify and close (mandatory) [low freedom]
 
 After Phase D create calls:
 
@@ -200,6 +243,8 @@ After Phase D create calls:
 3. If mismatch (wrong project, truncated body, wrong severity) → fix via edit API or recreate per user direction → **re-fetch** each link.
 4. **Maximum 2 fix-verify rounds** — then report partial success honestly.
 5. If any create failed → report which succeeded and which failed.
+
+**Go back:** If fix-verify round 1 finds a mismatch, fix it (item 3) and return to item 2 of this phase — re-fetch every link. After round 2, stop and report partial success.
 
 MUST NOT say “all bugs created” until at least one full fix-verify round passes — because create APIs can return success with wrong content.
 
@@ -214,7 +259,7 @@ Verdict: CREATED {N}/{N} — verified at destination
 
 ---
 
-## QA closing (mandatory before "done")
+## QA closing (mandatory before "done") [low freedom]
 
 Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific:
 
@@ -224,6 +269,8 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] Close-out includes `Verdict: CREATED x/y`.
 - [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (Create bug section).
 - [ ] Suggest **retest** after fix; handoff if blocked.
+
+**Go back:** If any item above is unchecked, return to the phase it names (B2, D or F) and redo from there; do not report done.
 
 ---
 

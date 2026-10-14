@@ -1,8 +1,22 @@
 # Customer-escape prevention — the gates a shipped-defect review put in writing
 
+## Contents
+
+- [1. Test the surface, not only the ticket's own AC](#1-test-the-surface-not-only-the-tickets-own-ac)
+- [2. Expected results must test "is it right", never "is it present"](#2-expected-results-must-test-is-it-right-never-is-it-present)
+- [3. "Cannot verify" is never PASSED — enforced by words, not memory](#3-cannot-verify-is-never-passed--enforced-by-words-not-memory)
+- [4. Screen sizes: measure them, and say which ones are in scope](#4-screen-sizes-measure-them-and-say-which-ones-are-in-scope)
+- [5. Fixtures must be able to fail](#5-fixtures-must-be-able-to-fail)
+- [6. A result expires when the build moves](#6-a-result-expires-when-the-build-moves)
+- [7. Every passed row carries its evidence](#7-every-passed-row-carries-its-evidence)
+- [8. No requirement ⇒ a question, never a verdict and never a bug](#8-no-requirement--a-question-never-a-verdict-and-never-a-bug)
+- [9. Preflight the session before believing any result](#9-preflight-the-session-before-believing-any-result)
+- [10. An empty field means nothing was recorded — not that nothing was done](#10-an-empty-field-means-nothing-was-recorded--not-that-nothing-was-done)
+- [MUST / NEVER](#must--never)
+
 Applies to **every** QA run in
-[testing-ticket-workflow](../skills/procedures/testing-ticket-workflow/WORKFLOW.md) and
-[retest-bug-workflow](../skills/procedures/retest-bug-workflow/WORKFLOW.md).
+[testing-ticket-workflow](../skills/testing-ticket-workflow/SKILL.md) and
+[retest-bug-workflow](../skills/retest-bug-workflow/SKILL.md).
 
 These are not general good practice. Each section below is a mechanism that let a real defect reach
 the customer after our own run reported the surface green, taken from the root-cause review of **25

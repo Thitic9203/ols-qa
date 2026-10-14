@@ -6,6 +6,18 @@ Single-JS publish patterns for Jira comment + CSV upload. Reduces publish from 8
 
 ---
 
+## Contents
+
+- [Decision rule — which method](#decision-rule--which-method)
+- [Pattern A — Pre-set data (Call 1)](#pattern-a--pre-set-data-call-1)
+- [Pattern B — Upload CSVs + post comment (Call 2)](#pattern-b--upload-csvs--post-comment-call-2)
+- [Pattern C — Read result (Call 3)](#pattern-c--read-result-call-3)
+- [Pattern D — Comment-only, no CSVs (retest-bug > 3 table rows)](#pattern-d--comment-only-no-csvs-retest-bug--3-table-rows)
+- [ADF pre-compute rules](#adf-pre-compute-rules)
+- [Large-table handling (> 50 rows)](#large-table-handling--50-rows)
+- [Constraints](#constraints)
+- [Error recovery](#error-recovery)
+
 ## Decision rule — which method
 
 | Content | Method | Pattern |

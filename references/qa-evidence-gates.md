@@ -2,6 +2,20 @@
 
 Adapted from evidence-before-claims discipline for **QA deliverables**. Use with [verify-closing-checklist.md](verify-closing-checklist.md).
 
+## Contents
+
+- [Gate function](#gate-function)
+- [Claim → evidence map](#claim--evidence-map)
+- [Story-testing evidence-completeness gate (5-step, per story)](#story-testing-evidence-completeness-gate-5-step-per-story)
+- [Capture scope — every role, every step, every target the ticket names](#capture-scope--every-role-every-step-every-target-the-ticket-names)
+- [MP4 evidence — 7-layer quality + correctness defense gate (mandatory, fail-closed)](#mp4-evidence--7-layer-quality--correctness-defense-gate-mandatory-fail-closed)
+- [Re-recording evidence that was already delivered — 6-layer gate (mandatory, fail-closed)](#re-recording-evidence-that-was-already-delivered--6-layer-gate-mandatory-fail-closed)
+- [AC/EC & bug-detail coverage — 7-layer completeness defense gate (mandatory, fail-closed)](#acec--bug-detail-coverage--7-layer-completeness-defense-gate-mandatory-fail-closed)
+- [Pre-delivery completeness — 7-layer defense gate (before handing results to the requester)](#pre-delivery-completeness--7-layer-defense-gate-before-handing-results-to-the-requester)
+- [Wording red flags](#wording-red-flags)
+- [Workflow pointers](#workflow-pointers)
+- [Evidence must be a real FE screen — a raw-data page is never evidence](#evidence-must-be-a-real-fe-screen--a-raw-data-page-is-never-evidence)
+
 ## Gate function
 
 Before claiming **passed**, **posted**, **created**, **retest complete**, or **tests done**:

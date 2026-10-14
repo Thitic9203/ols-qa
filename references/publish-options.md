@@ -2,6 +2,17 @@
 
 Choose method based on content type. **Always verify on Jira UI.**
 
+## Contents
+
+- [Decision flowchart](#decision-flowchart)
+- [Mandatory: convert `<br>` before posting (all options)](#mandatory-convert--before-posting-all-options)
+- [Option A — Atlassian MCP / REST (markdown)](#option-a--atlassian-mcp--rest-markdown)
+- [Option B — ADF + authenticated browser (fast publish)](#option-b--adf--authenticated-browser-fast-publish)
+- [Option C — Manual handoff](#option-c--manual-handoff)
+- [Option D — Test.md (agent-native, additive)](#option-d--testmd-agent-native-additive)
+- [Verification checklist](#verification-checklist)
+- [CSV upload requirements](#csv-upload-requirements)
+
 ## Decision flowchart
 
 ```

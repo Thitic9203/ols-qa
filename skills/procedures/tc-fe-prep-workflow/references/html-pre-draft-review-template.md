@@ -2,6 +2,22 @@
 
 Used in **Step 2a + Step 2.5** to render the AC/EC consistency check and PRD/Figma conflict check as a single HTML page opened in Chrome, instead of posting tables in chat.
 
+## Contents
+
+- [When to use](#when-to-use)
+- [File path](#file-path)
+- [HTML template](#html-template)
+- [How to build STEP_2A_STATUS_BANNER](#how-to-build-step_2a_status_banner)
+- [How to build STEP_2A_TABLE](#how-to-build-step_2a_table)
+- [How to build STEP_2A_RECOMMENDATION](#how-to-build-step_2a_recommendation)
+- [How to build RECENCY_ITEMS](#how-to-build-recency_items)
+- [How to build STEP_25_STATUS_BANNER](#how-to-build-step_25_status_banner)
+- [How to build STEP_25_TABLE](#how-to-build-step_25_table)
+- [How to build SCOPE_GAP_BLOCK](#how-to-build-scope_gap_block)
+- [How to build STEP_25_RECOMMENDATION](#how-to-build-step_25_recommendation)
+- [Opening in Chrome](#opening-in-chrome)
+- [Regeneration](#regeneration)
+
 ## When to use
 
 Every time Step 2.5 completes (or Step 2a completes when Step 2.5 is skipped because no PRD/Figma exists). Generate one combined HTML report covering both checks.

@@ -15,6 +15,14 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+/** The workflow = WORKFLOW.md plus the part files it links in its own folder (D2 split, 2026-10-14). */
+function readWorkflow(abs) {
+  const dir = path.dirname(abs);
+  const main = fs.readFileSync(abs, 'utf8');
+  const parts = [...new Set([...main.matchAll(/\]\(([a-z0-9-]+\.md)(?:#[^)]*)?\)/g)].map((m) => m[1]))]
+    .filter((n) => n !== 'WORKFLOW.md' && fs.existsSync(path.join(dir, n)));
+  return [main, ...parts.map((n) => fs.readFileSync(path.join(dir, n), 'utf8'))].join('\n');
+}
 
 const ROOT = path.join(__dirname, '..', '..');
 const SCAN_DIRS = ['skills', 'commands'];
@@ -95,7 +103,7 @@ for (const rule of RULES) {
 
 check('the retest skill still points the reader at the project guide for those values', () => {
   const wf = path.join(ROOT, 'skills', 'procedures', 'retest-bug-workflow', 'WORKFLOW.md');
-  const text = fs.readFileSync(wf, 'utf8');
+  const text = readWorkflow(wf);
   assert.ok(/take transition names\/ids, notify-helper flags, app URL shapes and UI-automation quirks from the workspace's project guide/.test(text),
     'removing the project values without leaving a pointer just loses them');
 });
@@ -106,7 +114,7 @@ check('a synced skill never orders an unconditional run of a workspace-local too
   // unconditional `node tools/...` there fails, and a failing gate command reads as
   // "could not run" — which the same workflow says is not a pass. So it would block
   // a retest in every project that has not adopted the tool.
-  const wf = fs.readFileSync(path.join(ROOT, 'skills', 'procedures', 'retest-bug-workflow', 'WORKFLOW.md'), 'utf8');
+  const wf = readWorkflow(path.join(ROOT, 'skills', 'procedures', 'retest-bug-workflow', 'WORKFLOW.md'));
   assert.ok(/When the workspace provides `tools\/retest-guard\/` — run it;\s+it is not optional there/.test(wf),
     'the guard step is not stated as conditional on the workspace providing it');
   assert.ok(/a missing tool is not a lighter\s+standard/.test(wf),
