@@ -253,7 +253,7 @@ case stays BLOCKED until the PO decides — it never appears in the defect table
 
 - [testing-ticket-workflow/WORKFLOW.md](../skills/procedures/testing-ticket-workflow/WORKFLOW.md) § Result quality gate
 - [retest-bug-workflow/WORKFLOW.md](../skills/procedures/retest-bug-workflow/WORKFLOW.md) § Result quality gate
-- [review-result-workflow/WORKFLOW.md](../skills/procedures/review-result-workflow/WORKFLOW.md) § Result quality gate
-- [smoke-test-workflow/SKILL.md](../skills/smoke-test-workflow/SKILL.md) § Result quality gate
+- `review-result-workflow` WORKFLOW.md § Result quality gate (ols-qa workspace only)
+- `smoke-test-workflow` SKILL.md § Result quality gate (ols-qa workspace only)
 - [catch-ai-workflow/SKILL.md](../skills/catch-ai-workflow/SKILL.md) § Result quality gate
 - [shared-preamble.md](shared-preamble.md)

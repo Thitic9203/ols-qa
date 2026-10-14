@@ -15,6 +15,9 @@
  *       /command.
  *   A5  the helix numbered menu covers every skill: each skills/<name>/SKILL.md (helix
  *       excluded) is linked from a numbered row of the Routing table in skills/helix/SKILL.md,
+ *       or — for an ols-qa-only skill that is not shipped to helix (owner decision 14/Oct/2026) —
+ *       named there as plain text `<name>` on a row that says "(ols-qa workspace only)", so the
+ *       shared router file has no link that would break in helix,
  *       and references/menu-text.md lists one numbered option per routed row plus "Other",
  *       with the "Reply with 1–N" line matching the last number.
  *
@@ -125,7 +128,11 @@ function helixMenuProblems(root) {
   const table = sec.split(/^## /m)[0];
   const rows = [...table.matchAll(/^\|\s*(\d+),[^|]*\|([^\n]*)$/gm)];
   const linked = new Set();
-  for (const r of rows) for (const m of r[2].matchAll(/\]\(\.\.\/([a-z0-9-]+)\/SKILL\.md\)/g)) linked.add(m[1]);
+  for (const r of rows) {
+    for (const m of r[2].matchAll(/\]\(\.\.\/([a-z0-9-]+)\/SKILL\.md\)/g)) linked.add(m[1]);
+    // ols-qa-only skill: plain-text `name` (no link) accepted only on a row labelled as such.
+    if (/\(ols-qa workspace only\)/.test(r[2])) for (const m of r[2].matchAll(/`([a-z0-9-]+)`/g)) linked.add(m[1]);
+  }
   for (const s of listSkills(root)) {
     if (s !== 'helix' && !linked.has(s)) problems.push(`helix Routing table: no numbered row links ${s}`);
   }
@@ -239,6 +246,19 @@ test('A5 must-find: a skill only named in prose (not a numbered row) and a stale
     'menu-text.md: options [1,2,3] do not match the 2 Routing rows',
     'menu-text.md: "Reply with" range is not 1–2',
   ]);
+});
+
+test('A5 must-not-find: an ols-qa-only skill named as plain text on a labelled numbered row', () => {
+  const r = fixture({ skills: { 'a-workflow': GOOD_DESC, 'b-workflow': GOOD_DESC }, routing: ROUTING_OK,
+    helix: routingTable(['| 1, a | Read and follow [a-workflow](../a-workflow/SKILL.md) |', '| 2, b | `b-workflow` (ols-qa workspace only) |', '| 3, other | Clarify |']) });
+  fs.writeFileSync(path.join(r, 'references', 'menu-text.md'), menuText(3));
+  assert.deepStrictEqual(helixMenuProblems(r), []);
+});
+test('A5 must-find: a plain-text skill name on a numbered row without the ols-qa-only label', () => {
+  const r = fixture({ skills: { 'a-workflow': GOOD_DESC, 'b-workflow': GOOD_DESC }, routing: ROUTING_OK,
+    helix: routingTable(['| 1, a | Read and follow [a-workflow](../a-workflow/SKILL.md) |', '| 2, b | `b-workflow` |', '| 3, other | Clarify |']) });
+  fs.writeFileSync(path.join(r, 'references', 'menu-text.md'), menuText(3));
+  assert.deepStrictEqual(helixMenuProblems(r), ['helix Routing table: no numbered row links b-workflow']);
 });
 
 // Real repo

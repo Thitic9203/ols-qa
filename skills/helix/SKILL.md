@@ -71,10 +71,10 @@ Say the number/name to start, or ignore. (Set HELIX_PROACTIVE=0 to silence.)
 | 5, create bug, file bug | Read and follow [create-bug-workflow](../create-bug-workflow/SKILL.md) |
 | 6, catch ai, audit, review my work | Read and follow [catch-ai-workflow](../catch-ai-workflow/SKILL.md) |
 | 7, tc review, review test cases | Read and follow [tc-review-workflow](../tc-review-workflow/SKILL.md) |
-| 8, content takedown, hide content | Read and follow [content-takedown-workflow](../content-takedown-workflow/SKILL.md) |
-| 9, review result, review evidence clips | Read and follow [review-result-workflow](../review-result-workflow/SKILL.md) |
-| 10, smoke test, post-deploy smoke | Read and follow [smoke-test-workflow](../smoke-test-workflow/SKILL.md) |
-| 11, test data prep, seed test data | Read and follow [test-data-prep-workflow](../test-data-prep-workflow/SKILL.md) |
+| 8, content takedown, hide content | `content-takedown-workflow` (ols-qa workspace only) — not shipped in helix; outside ols-qa, say so and suggest the closest workflow above |
+| 9, review result, review evidence clips | `review-result-workflow` (ols-qa workspace only) — not shipped in helix; outside ols-qa, say so and suggest the closest workflow above |
+| 10, smoke test, post-deploy smoke | `smoke-test-workflow` (ols-qa workspace only) — not shipped in helix; outside ols-qa, say so and suggest the closest workflow above |
+| 11, test data prep, seed test data | `test-data-prep-workflow` (ols-qa workspace only) — not shipped in helix; outside ols-qa, say so and suggest the closest workflow above |
 | 12, other | Clarify; suggest closest workflow |
 
 Handoffs: [skill-routing.md](../../references/skill-routing.md).
