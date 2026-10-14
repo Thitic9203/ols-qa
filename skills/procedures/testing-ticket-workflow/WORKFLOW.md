@@ -473,6 +473,10 @@ Report defects **without filing them**, as these two tables (bullets or prose do
 | `{ISSUE_KEY}` | `TC_nn` · `ER_n` | … | … | AC id / design node / PO comment id: "…" | … | … | Confirmed | … | Not filed yet (Thai: ยังไม่ได้เปิดบั๊ก) |
 
 **Needs PO decision** — `| Ticket | TC / ER point | Source 1 + char-exact quote | Source 2 + char-exact quote | Observed |`, one row per spec conflict; the case stays BLOCKED.
+Follow the template and example in [defect-candidates.md](../../../references/output-templates/defect-candidates.md):
+when the candidate table has at least one row, the report ends with its fixed owner question
+`Open bugs for the <N> candidate(s) above? (Yes → create-bug for all · Choose rows · No)` — filing
+starts only after the owner answers.
 The **Confidence** column carries the E2 label — `Confirmed` / `Suspected` / `Unknown — not
 investigated` — and it describes the **cause**, not how strongly you feel about the defect.
 

@@ -29,6 +29,7 @@ Every must-read file for this workflow, linked directly from here. References al
 
 - [WORKFLOW.md](../procedures/tc-fe-prep-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
 - [csv-export-rules.md](../../references/csv-export-rules.md) — when exporting the CSV file(s).
+- [jira-comment-adf-template.md](../procedures/tc-fe-prep-workflow/references/jira-comment-adf-template.md) — before building the Jira comment ADF, and always on a "draft only / do not post" request — write the .adf.json + preview per this template.
 - [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — right after posting a Jira comment — full review checklist.
 - [jira-fast-publish.md](../../references/jira-fast-publish.md) — when the fast-publish step returns an error.
 - [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) — before posting a table that contains line breaks to Jira.

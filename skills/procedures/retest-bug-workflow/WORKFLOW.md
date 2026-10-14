@@ -561,7 +561,9 @@ Expected · Requirement reference with char-exact quote · Evidence: still + acc
 manifest · Root cause `path:line` · Priority per
 [bug-priority-matrix.md](../../../references/bug-priority-matrix.md) · Status "Not filed yet", in a
 Thai report "ยังไม่ได้เปิดบั๊ก"), holding only rows whose expected side is a confirmed spec; and
-**Needs PO decision** for spec conflicts, quoting both sources. Filing waits for the owner.
+**Needs PO decision** for spec conflicts, quoting both sources. Filing waits for the owner. Use the
+exact shape in [defect-candidates.md](../../../references/output-templates/defect-candidates.md),
+ending with its fixed owner question when the candidate table has at least one row.
 
 ## Step 6 — Draft Jira comment [medium freedom]
 
@@ -642,6 +644,8 @@ the chat report that it was measured by hand.
 **This block is the shape the renderer produces, not something to hand-type.** Build `run.json` and
 render it (Step 6·0); the guard rejects a body that drifts from this shape, including one typed from
 this very block.
+Follow [comment-template-v2.md](references/comment-template-v2.md) for the render command, the
+line order and a machine-checked manifest → body example.
 
 🔴 **ONE table — owner format, 2026-09-24.** The comment carries a single table, heading exactly
 `No.` · `ER` (a Task: `AC`) · `Case (Role)` · `Expected Result` · `Actual Result` · `Evidence` ·

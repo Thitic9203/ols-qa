@@ -673,7 +673,7 @@ After writing all CSV files, build ADF JSON for the **slim 6-column Jira comment
 2. Set `colwidth` on every `tableHeader` node per the Step 7 table spec: `[90, 130, 50, 510, 90, 150]`
 3. No hardBreak nodes needed — no multi-line cells in the slim table
 4. Build complete ADF document with `__ATT1_ID__`, `__ATT2_ID__`, `__ATT3_ID__`, `__ATT4_ID__` as literal string placeholders in attachment link nodes (one placeholder per attached file)
-5. Store ADF string in agent context (transient — not written to a file)
+5. Store ADF string in agent context (transient — not written to a file). Exception: when the user asks for a draft without posting ("draft only" / "do not post"), write it to `Jira_comment_{ISSUE_KEY}.adf.json` plus a readable `Jira_comment_{ISSUE_KEY}.preview.md`, per [jira-comment-adf-template.md](references/jira-comment-adf-template.md) — never a Markdown file as the comment body
 
 Then report to user: "Files saved. ADF ready. Publishing..."
 

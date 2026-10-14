@@ -36,6 +36,8 @@ Every must-read file for this workflow, linked directly from here. References al
 
 - [WORKFLOW.md](../procedures/retest-bug-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
 - [bug-priority-matrix.md](../../references/bug-priority-matrix.md) — whenever a Priority/Severity is named or judged.
+- [comment-template-v2.md](../procedures/retest-bug-workflow/references/comment-template-v2.md) — before drafting the v2 comment — render it from run.json per this template; never type the body.
+- [defect-candidates.md](../../references/output-templates/defect-candidates.md) — before reporting any defect found in the round — follow this exact table and the fixed owner question; never file without the owner.
 - [defect-report-completeness.md](../../references/defect-report-completeness.md) — for any verdict that is not a clean PASSED — what the write-up must contain.
 - [intake-one-pager.md](../../references/intake-one-pager.md) — at intake, to show the one-page list of inputs the run needs.
 - [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — right after posting a Jira comment — full review checklist.

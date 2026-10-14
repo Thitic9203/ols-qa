@@ -35,6 +35,7 @@ Claude Code shortcut: `/review-result` → [commands/review-result.md](../../com
 Every must-read file for this workflow, linked directly from here. References already linked above are not repeated.
 
 - [WORKFLOW.md](../procedures/review-result-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
+- [defect-candidates.md](../../references/output-templates/defect-candidates.md) — before reporting any defect found in the round — follow this exact table and the fixed owner question; never file without the owner.
 - [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — when recording or judging evidence clips and the AC/EC coverage gate.
 - [shared-must-never.md](../../references/shared-must-never.md) — before any write or post — rules shared by every workflow.
 - [shared-preamble.md](../../references/shared-preamble.md) — at the start of every run, before the first reply (preamble, constraints, tone).

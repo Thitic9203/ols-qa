@@ -225,11 +225,10 @@ output line, and the lines opened.
 Defects are **never filed automatically**. The round's report carries two tables, built from the
 result lines that passed this gate.
 
-**Defect candidates — NOT filed.** Only rows whose expected side is a **confirmed** spec.
-
-| Ticket | TC / ER point | Actual | Expected (what correct looks like) | Requirement reference | Evidence | Root cause | Priority | Status |
-|--------|---------------|--------|------------------------------------|-----------------------|----------|------------|----------|--------|
-| `{ISSUE_KEY}` | `TC_nn` · `ER_n` | what the screen showed | the correct behaviour | source (AC id / design node / PO comment id) + char-exact quote | still path + accepted clip (layer 10) + its capture manifest | `path:line` | matrix cell | Not filed yet |
+**Defect candidates — NOT filed.** Only rows whose expected side is a **confirmed** spec. Use the
+exact table, the Needs PO table and the fixed owner question in
+[output-templates/defect-candidates.md](output-templates/defect-candidates.md) — the single copy of
+that shape.
 
 The Status cell is always "Not filed yet" (in a Thai report: "ยังไม่ได้เปิดบั๊ก") until the owner
 says to file; filing then goes through the bug-filing workflow.

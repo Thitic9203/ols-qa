@@ -5,6 +5,16 @@ this matrix — never invent a severity or priority notion, never guess ("ยึ
 When a defect's priority is unclear, cite the matching row/column below; if nothing here answers it,
 say so and ask rather than assume.
 
+## Contents
+
+- [Source of truth](#source-of-truth)
+- [How to read the matrix](#how-to-read-the-matrix)
+- [The matrix](#the-matrix)
+- [Matrix → Priority → verdict cheat-sheet](#matrix--priority--verdict-cheat-sheet)
+- [Hard rule](#hard-rule)
+- [Verdict line format](#verdict-line-format)
+- [Used by](#used-by)
+
 ## Source of truth
 
 Source of truth: Bug Priority & Severity Matrix — Confluence (space `<CONFLUENCE_SPACE>`, page id in
@@ -70,6 +80,34 @@ Rule of thumb: **workaround exists · cosmetic · optional · "several"** → �
   never leave a High/Highest defect as PWMI.
 - BLOCKED and SKIPPED are unrelated to this matrix (they are not verdicts about a bug's priority) —
   see local agent memory `feedback_verdict-rubric` for the full rubric.
+
+## Verdict line format
+
+Write one line per non-PASSED ER point, in the working verdict file and in the chat report. Copy the
+shape as-is:
+
+```text
+<TC_nn · ERn> — <PWMI|FAILED|BLOCKED> — Priority <Lowest|Low|Medium|High|Highest> — matrix bug-priority-matrix.md:<LINE> "<cheat-sheet row text, verbatim>" — <one-line reason>
+```
+
+- The matrix reference is the cheat-sheet row's line number plus its text copied character for
+  character — never the file name alone.
+- BLOCKED rows: `Priority n/a (BLOCKED: <what is missing>)`. Never write a conditional priority such
+  as "if confirmed, Low".
+
+Example — input:
+
+```text
+TC_02 ER2 · button misaligned 4 px vs design node <NODE_ID> · fix build contains <SHA_FIX>
+TC_03 ER3 · fix commit not in deploy tag <TAG_OLD>
+```
+
+Output:
+
+```text
+TC_02 · ER2 — PWMI — Priority Low — matrix bug-priority-matrix.md:52 "cosmetic / typo / UI misalignment" — 4 px offset vs node <NODE_ID>
+TC_03 · ER3 — BLOCKED — Priority n/a (BLOCKED: <SHA_FIX> not in <TAG_OLD>, git tag --contains) — waiting for deploy
+```
 
 ## Used by
 
