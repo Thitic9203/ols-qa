@@ -24,12 +24,23 @@ HELIX="${HELIX_REPO:-$HOME/GitHub/helix}"
 PUSH="${HELIX_SYNC_PUSH:-1}"
 SYNC_NEW="${HELIX_SYNC_NEW:-0}"
 
+# --- ols-qa must be on main: only merged content may deploy. 2026-10-14 two feature-branch
+#     commits (one from a linked worktree) reached helix main and shipped unreviewed text. ---
+OLSQA_BRANCH="$(git -C "$OLSQA" symbolic-ref --quiet --short HEAD 2>/dev/null || echo "(detached)")"
+if [ "$OLSQA_BRANCH" != "main" ]; then
+  echo "sync: ❌ ols-qa checkout is on $OLSQA_BRANCH, not main — refusing to deploy unmerged content. NOTHING deployed."
+  echo "sync:    Merge the change to ols-qa main, then run the sync from a checkout on main."
+  exit 1
+fi
+# Content is read from this commit, never from the working tree (uncommitted edits must not ship).
+SRC_COMMIT="$(git -C "$OLSQA" rev-parse --verify --quiet HEAD^{commit})" || { echo "sync: ❌ cannot resolve the ols-qa commit to sync. NOTHING deployed."; exit 1; }
+
 [ -d "$HELIX/.git" ] || { echo "sync: helix repo not found at $HELIX — skip"; exit 0; }
 [ -x "$HELIX/scripts/check-no-secrets.sh" ] || { echo "sync: helix guard missing — ABORT (refuse to sync without the secret guard)"; exit 1; }
 
 # --- changed files ---
 if [ "$#" -gt 0 ]; then CHANGED="$(for a in "$@"; do printf '%s\n' "$a"; done)"
-else CHANGED="$(cd "$OLSQA" && git diff --name-only HEAD~1 HEAD 2>/dev/null)"; fi
+else CHANGED="$(git -C "$OLSQA" diff --name-only "$SRC_COMMIT~1" "$SRC_COMMIT" 2>/dev/null)"; fi
 
 # --- keep only SHARED skill files (exist in both, under skills/|references/|commands/) ---
 FILES=()          # to sync (relative paths)
@@ -38,7 +49,7 @@ SKIPPED_REF=()    # new references/* not present in helix (never auto-created; r
 while IFS= read -r f; do
   [ -n "$f" ] || continue
   case "$f" in skills/*|references/*|commands/*) ;; *) continue ;; esac
-  [ -f "$OLSQA/$f" ] || continue     # skip deletions
+  git -C "$OLSQA" cat-file -e "$SRC_COMMIT:$f" 2>/dev/null || continue     # skip deletions / not in the commit
   if [ -f "$HELIX/$f" ]; then
     FILES+=("$f")
   else
@@ -74,9 +85,17 @@ echo "sync: propagating to helix ($HELIX):"
 printf '  · %s\n' "${FILES[@]}"
 
 # --- LAYER: pre-scan the ols-qa SOURCE files BEFORE copying anything to helix ---
-SRC_ABS=()
-for f in "${FILES[@]}"; do SRC_ABS+=("$OLSQA/$f"); done
-if ! "$HELIX/scripts/check-no-secrets.sh" "${SRC_ABS[@]}"; then
+SRC_DIR="$(mktemp -d)" || { echo "sync: ❌ cannot create a temp dir for the committed content. NOTHING deployed."; exit 1; }
+trap 'rm -rf "$SRC_DIR"' EXIT
+for f in "${FILES[@]}"; do
+  mkdir -p "$SRC_DIR/$(dirname "$f")"
+  if ! git -C "$OLSQA" show "$SRC_COMMIT:$f" > "$SRC_DIR/$f"; then
+    echo "sync: ❌ cannot read $f from ols-qa commit $SRC_COMMIT. NOTHING deployed."
+    exit 1
+  fi
+done
+# scanned under their repo-relative names, exactly as helix's pre-commit sees staged blobs
+if ! SCAN_ROOT="$SRC_DIR" "$HELIX/scripts/check-no-secrets.sh" "${FILES[@]}"; then
   echo "sync: ❌ OLS secret in ols-qa SOURCE file(s) — refusing to copy, NOTHING deployed."
   exit 1
 fi
@@ -123,7 +142,7 @@ if ! git pull --rebase --quiet origin main 2>/dev/null; then
 fi
 for f in "${FILES[@]}"; do
   mkdir -p "$HELIX/$(dirname "$f")"
-  cp -f "$OLSQA/$f" "$HELIX/$f"
+  cp -f "$SRC_DIR/$f" "$HELIX/$f"
 done
 
 # --- EXPLICIT secret guard on the copied files (do not rely on the hook alone) ---
