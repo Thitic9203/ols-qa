@@ -10,26 +10,27 @@
 | :---: | :--- | :---: | :--- |
 | 1 | แผนนี้ (map + decision tickets) | ✅ | — |
 | 2 | รีวิวแผนแบบหาจุดอ่อน — แก้ 6 จุด | ✅ | — |
-| 3 | D10 — eval baseline ของ 3 skill หลัก + โมเดลที่ใช้ทดสอบ (ทำก่อนแก้ไฟล์ใดๆ) | ⬜ | — |
-| 4 | D12 — ไฟล์ที่ Claude โหลดจริง: deploy helix → `~/.helix/…` และเทียบเวอร์ชัน | ⬜ | — |
-| 5 | D13 — พิสูจน์เครื่องมือวัด baseline (ต้องพบ 1 · ต้องไม่พบ 1) | ⬜ | — |
-| 6 | D1 — โครงสร้างลิงก์ 1 ชั้น (stub → WORKFLOW → references) | ⬜ | — |
-| 7 | D2 — แยก WORKFLOW 3 ไฟล์ที่เกิน 500 บรรทัด + ส่งไฟล์ใหม่เข้า helix | 🚫 | รอ D1, D10, D12 |
-| 8 | D3 — ตรวจ description (ไม่เขียนใหม่ทั้งชุด) | ⬜ | — |
-| 9 | D4 — กำหนด degrees of freedom รายขั้นตอน | ⬜ | — |
+| 3 | D10 — eval: ร่าง 9 scenario ✅ · รัน baseline | 🟡 | — |
+| 4 | D12 — ไฟล์ที่ Claude โหลดจริง | ✅ | ดู Decisions so far |
+| 5 | D13 — พิสูจน์เครื่องมือวัด + baseline ใหม่ | ✅ | ดู Decisions so far |
+| 6 | D1 — โครงสร้างลิงก์ 1 ชั้น | ✅ ตัดสินแล้ว · ร่าง patch 🟡 | — |
+| 7 | D2 — แยก WORKFLOW 3 ไฟล์ที่เกิน 500 บรรทัด + ส่งไฟล์ใหม่เข้า helix | 🚫 | รอ D10 baseline, แก้ helix auto-update |
+| 8 | D3 — ตรวจ description: ผ่าน 8/12 · ร่าง patch 4 ใบ | 🟡 | — |
+| 9 | D4 — degrees of freedom | ✅ ตัดสินแล้ว · ร่าง patch 🟡 | — |
 | 10 | D5 — checklist + go-back line | 🚫 | รอ D2, D10 |
-| 11 | D6 — feedback loop / validator ของ output แต่ละชนิด | ⬜ | — |
-| 12 | D7 — template + ตัวอย่าง input/output | 🚫 | รอ D4 |
-| 13 | D8 — inventory dependencies ต่อ skill (research) | ⬜ | — |
-| 14 | D9 — audit hook: กฎ 🔴 ที่ยังไม่มี hook + อัตราติดธงผิดของ guard เดิม | ⬜ | — |
-| 15 | D11 — lint gate กันถอยหลัง (500 / ToC / depth) | 🚫 | รอ D1, D13 |
-| 16 | ใส่ ToC ใน references ที่ยาวเกิน 100 บรรทัด | 🚫 | รอ D13 |
+| 11 | D6 — feedback loop / validator | ✅ | ดู Decisions so far |
+| 12 | D7 — template + ตัวอย่าง input/output | ⬜ | — |
+| 13 | D8 — inventory dependencies | ✅ | ดู Decisions so far |
+| 14 | D9 — audit hook + อัตราติดธงผิด | ✅ | ดู Decisions so far |
+| 15 | D11 — lint gate กันถอยหลัง | 🟡 | branch `feat/skill-lint` |
+| 16 | ใส่ ToC ในไฟล์ที่ยาวเกิน 100 บรรทัด | 🟡 ร่าง patch | — |
+| 17 | แก้ helix auto-update ที่ค้างตั้งแต่ 8/10 | 🟡 สืบสาเหตุ | — |
 
 > **Status legend:** ✅ Done · 🟡 In progress · ⬜ To Do · ❌ Failed · 🚫 Blocked
 >
-> **Updated:** 14/10/2026, 15:28 (Bangkok)
+> **Updated:** 14/10/2026, 15:51 (Bangkok)
 
-**สถานะสรุป:** ⬜ วางแผน + รีวิวเสร็จ ยังไม่แตะไฟล์ skill — 13 decision ticket · เริ่มได้ทันที: D10, D12, D13, D1, D3, D4, D6, D8, D9 · ห้ามแก้ไฟล์ skill ก่อน D10 มี baseline
+**สถานะสรุป:** 🟡 research ครบ 7 ใบ · ตัดสินแล้ว D1 D4 D10 · กำลังรัน eval baseline + ร่าง patch (ยังไม่แก้ไฟล์ skill) · พบ helix บนเครื่องค้าง v1.5.107 กำลังสืบ
 
 ---
 
@@ -117,6 +118,18 @@
 | D11 | Task (AFK) | เพิ่ม lint ใน `run-test-suites.sh`: ไฟล์ skill ≤ 500 · ToC เมื่อ > 100 · ความลึกลิงก์ "ต้องอ่าน" · พร้อม test ที่ต้องพบ 1 / ต้องไม่พบ 1 | D1, D13 |
 
 ---
+
+## Decisions so far
+
+- **D1** (เจ้าของงาน 14/10): stub `skills/<name>/SKILL.md` เป็นสารบัญลิงก์ WORKFLOW + reference ที่ต้องอ่านทุกไฟล์ตรง 1 ชั้น · ไม่ย้ายไฟล์
+- **D4** (เจ้าของงาน 14/10): 3 ระดับตามความเสี่ยง — Low = เขียนออกระบบนอก + verdict · Medium = ร่างตามเทมเพลต · High = สรุปแชท/วิธีสืบ · ป้ายท้ายหัวข้อขั้นตอน เช่น `## Step 5 — Post comment [low freedom]`
+- **D10** (เจ้าของงาน 14/10): รัน eval เป็น subagent ใน Claude Code (ไม่เรียก API แยก) · 9 scenario อิง post-mortem จริง · ห้ามแก้ไฟล์ skill ก่อนมี baseline · ต้นทุนประมาณ input 18k–117k token/รอบ (bytes/4)
+- **D12**: ไฟล์ที่โหลดจริงของ 8 skill มาจาก helix ที่ติดตั้งบนเครื่อง ซึ่งค้างที่ v1.5.107 (helix main ไปถึง v1.5.119) — 4 skill + 3 reference ต่างจาก main · อีก 4 skill (content-takedown, review-result, smoke-test, test-data-prep) ลิงก์ตรงเข้า working tree ของ ols-qa (branch ไหนก็ไปถึง Claude ทันที) · symlink `test-data-prep` ชี้ไปโฟลเดอร์ที่ไม่มี · sync ไม่ส่งไฟล์ใหม่ใน `references/` เลย และ `skills/` ใหม่ต้องตั้ง `HELIX_SYNC_NEW=1`
+- **D13**: เครื่องมือวัดผ่าน fixture ต้องพบ/ต้องไม่พบทุกตัว · ToC 0/14 references และ 0/17 ไฟล์ skill ที่ยาวเกิน 100 บรรทัด · references ลิงก์ต่อกัน 43/60 (ไม่ใช่ 44) · go-back 3/20 · ลิงก์ "ต้องอ่าน" จาก SKILL.md: 1 ชั้น 24 · 2 ชั้น 37 · 3 ชั้น 8 ไฟล์
+- **D3**: ผ่าน 8/12 · ไม่ผ่าน: catch-ai ใช้ "your/you" · helix ระบุ 5 skill แต่ routing มี 9 · smoke-test ไม่มี "Do NOT use for…" · smoke-test และ test-data-prep ไม่อยู่ใน `skill-routing.md`
+- **D6**: output ที่ไม่มีทั้งตัวตรวจและ loop: Qase CSV (tc-fe-prep) · CSV/Excel (tc-api-prep) · Playwright report (smoke) · รายงาน tc-review · `tools/result-gate/check.js` มีแต่ไม่มี workflow เรียกตรง
+- **D8**: 67 dependency ไม่มีคำสั่งตรวจ/ติดตั้ง · repo ไม่มีไฟล์ pin เวอร์ชัน (มีแค่ CI node 20) · `superpowers:systematic-debugging` ถูกอ้าง 9/12 skill ไม่มีวิธีตรวจ · smoke-test SKILL.md และ test-data-prep มี path เครื่องผิดกฎ `portable-content.md`
+- **D9**: hook ที่ควรเพิ่มอันดับ 1 = ตรวจหลักฐาน ณ วินาทีก่อนกระทำการย้อนไม่ได้ (~14 incident) · อันดับ 2 = "ถูกปฏิเสธ/เงียบ ≠ ผ่าน" ใน content-takedown (~7) · อัตราติดธงผิด: investigation-guard 263/1,080 (24.4%, 30 วัน) · ask-guard ใช้ override 35/156 (22%) คำที่จับกว้างเกิน (account/sheet/token/destination) · issue-creation-guard 9/43 (21%) — ตัวเลข incident มาจาก keyword + อ่านหัวเรื่อง ยังไม่ได้อ่านทุกฉบับเต็ม
 
 ## Not yet specified
 
