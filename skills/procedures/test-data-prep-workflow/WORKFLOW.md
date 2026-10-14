@@ -15,6 +15,7 @@ End-to-end preparation of OLS test/training data from a request: confirm env + a
 
 ## Contents
 
+- [Progress checklist](#progress-checklist)
 - [Discipline](#discipline)
 - [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
 - [Gate 0 — Intake (mandatory, wait for the user) \[medium freedom\]](#gate-0--intake-mandatory-wait-for-the-user-medium-freedom)
@@ -26,6 +27,24 @@ End-to-end preparation of OLS test/training data from a request: confirm env + a
 - [Step 6 — Gates (pass every layer before use) \[low freedom\]](#step-6--gates-pass-every-layer-before-use-low-freedom)
 - [Step 7 — Report \[high freedom\]](#step-7--report-high-freedom)
 - [MUST / NEVER](#must--never)
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+Test data prep progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Gate 0 — Intake (mandatory, wait for the user)
+- [ ] Step 1 — Reuse first
+- [ ] Step 2 — Create only what is missing, at the exact target status
+- [ ] Step 3 — Names + descriptions = real content for real users
+- [ ] Step 4 — Covers (the 10 Cover-correction rules + 5-level gate)
+- [ ] Step 5 — Videos (motion-graphics)
+- [ ] Step 6 — Gates (pass every layer before use)
+- [ ] Step 7 — Report
+```
 
 ## Discipline
 
@@ -118,6 +137,8 @@ Per CLAUDE.md §5.1 and the 2026-08-08 naming feedback. Every name and descripti
 
 **Duplicate-name clash → stop and ask the user.** Never silently create a second item with a colliding name. Report which item it clashes with (name / id / status) and let the user decide skip / rename / proceed.
 
+**Go back:** If the user picks rename, return to the top of Step 3 and check the new name against the rules and existing content again.
+
 ## Step 4 — Covers (the 10 Cover-correction rules + 5-level gate) [medium freedom]
 
 Cover source = ols-data-prep.md §5.7.2 (client-approved FINAL). **Prereq:** Draw Things API `HTTP:7860` ON — open it yourself first (check `curl :7860/sdapi/v1/options`; if not installed, BLOCK and tell the user, never fall back to a plain cover).
@@ -158,6 +179,8 @@ Tone (STYLE_TAIL) and sharpness are **separate levers** — "make it sharper" me
 - the image looks soft / not matching the approved lot's sharpness
 - you are about to accept it from the pipeline **without opening the PNG and looking**
 
+**Go back:** If any cover-gate level fails or a red flag shows, regenerate that cover and return to level 1 of the cover gate — no partial pass.
+
 ## Step 5 — Videos (motion-graphics) [medium freedom]
 
 VIDEO type = motion-graphics (ols-data-prep.md §5.7.2F, client-approved FINAL): Ken Burns + kinetic text, warm editorial, Thai male voice `th-TH-NiwatNeural` +4%, ≤25MB. **Never** a static slideshow / PowerPoint / plain-colour background.
@@ -169,6 +192,8 @@ VIDEO type = motion-graphics (ols-data-prep.md §5.7.2F, client-approved FINAL):
 - **Cover 5-level** (Step 4 table).
 
 Fail any layer → root-cause → fix at source → **restart from layer 1**. No partial pass, no silence.
+
+**Go back:** After the fix at source, return to the step that produced the failing item — Step 2 (created item or status), Step 4 (cover) or Step 5 (video) — then restart this gate from layer 1.
 
 ## Step 7 — Report [high freedom]
 

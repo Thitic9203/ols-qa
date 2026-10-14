@@ -151,6 +151,8 @@ What is specific to testing a ticket:
   ([§1](../../../references/round-time-contract.md)).
 - **Never rewrite the ticket's expected text** to match the app on your own.
 
+**Go back:** A test-side cause returns that scenario to Phase E (fix and re-run on its real surface); a **B re-test** answer in the F5 popup returns to Phase C — a new round.
+
 ---
 
 ## Result quality gate (mandatory before Phase F) [low freedom]
@@ -162,6 +164,8 @@ judgement layers, and paste the checker's last output line (or the counted hand 
 round's record. A red layer blocks that case's verdict: report the case as what it really is
 (usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
 is a claim — the main thread re-runs the gate itself (layer 20).
+
+**Go back:** A layer red for missing or unopened evidence returns that case to Phase E to capture it again; if it cannot be fixed, report the case as BLOCKED with the reason. Phase F waits until every case has a final line.
 
 **Source sweep before any BLOCKED, FAILED or "ask the PO / reporter" outcome** (layer 14 of
 [result-quality-gate.md](../../../references/result-quality-gate.md)): read the product code at the default
@@ -298,6 +302,8 @@ Any box unchecked ⇒ the run is **not complete** — fix it before Phase G
 ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) ·
 [figma-design-comparison.md](../../../references/figma-design-comparison.md)).
 
+**Go back:** A UI row with no design node returns to Phase B (design reference); an unmeasured width, a missing evidence reference or an uncovered existing case returns that row to Phase E — E0.
+
 **Cause gate (same pass, no exceptions)** — read every sentence in F1–F3 that states or implies a
 cause:
 
@@ -345,5 +351,7 @@ Follow [round-time-contract.md §3](../../../references/round-time-contract.md):
 No queued decisions → step 2 is skipped and the round has a single human touch.
 Write `references/helix-handoff-{KEY}.md` at the close of every round with the fingerprints
 ([§10](../../../references/round-time-contract.md)).
+
+**Go back:** If the reviewer returns findings, fix them and return to F5 step 1 with a fresh round; a scope correction or **B re-test** answer at step 2 returns to Phase C — a new round.
 
 ---

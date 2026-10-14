@@ -213,6 +213,8 @@ node tools/retest-guard/retest_guard.js --manifest run.json --out body.txt --evi
 - **exit 1** — findings; each names the rule and the fix. Close them; do not draft around them.
 - **exit 2** — the guard could not run. That is **not** a pass and never becomes one.
 
+**Go back:** On exit 1, fix the manifest or body and return to the top of Step 6·0 — re-run the guard. On exit 2, make the guard run. The draft moves to 6a/6b on neither.
+
 **Scope is a field, not a sentence.** `"scope": {"mode":"FULL"}` for a full retest (the comment then
 prints no Scope line at all);
 `{"mode":"CASES","cases":["TC_03","TC_07"]}` when the user asked for particular cases, or for a
@@ -259,6 +261,8 @@ comment**, never "post now and explain in chat". Also confirm: every scope word 
 `any entry point`, `only when …`) traces to something you actually exercised and captured (a verdict-table
 row + its `Evidence` screenshot), and no observation in the draft is under an unresolved contradiction.
 
+**Go back:** If any of the six questions is "no", fix the comment and return to Step 6·0 — re-render and re-run the guard before 6c.
+
 **Cause gate (same pass, no exceptions):** read every sentence in the draft that states or implies a
 cause and check each one —
 
@@ -302,6 +306,8 @@ QA — or another agent given the ticket, the deliverable and nothing else*. Mak
 5. **Verify the reviewer's claims yourself before acting on them** — a subagent's report is not
    evidence, it is a lead.
 
+**Go back:** If a round returns `HAS-COMMENTS`, fix every finding and return to 6c item 1 with a fresh reviewer. The Step 6d approval popup waits for `CLEAN`.
+
 **Unattended / bot mode:** run one reviewer round, fold its findings in, and record any it could not
 resolve as BLOCKED rows with reasons — never halt the queue, never post over an unanswered finding.
 
@@ -330,6 +336,8 @@ Follow [round-time-contract.md](../../../references/round-time-contract.md) §3 
 5. **Execute** — post (Step 7), then the 7d post-publish re-read, then transition, assign, unblock,
    notify and update results under that same approval. **No second approval.**
 
+**Go back:** If the render or media check fails, fix the body and return to 6d item 1. If an answer is a scope correction or **B re-test**, return to Step 2c — a new round starts.
+
 ---
 
 ## Step 7 — Post comment [low freedom]
@@ -348,6 +356,8 @@ Run both gates in [jira-wiki-vs-markdown.md](../../../references/jira-wiki-vs-ma
 grep the **exact outgoing body** for `**`, `^---$`, `^\|\s*-{3,}`, `![](`, backticks and unescaped
 `{word}`; then after posting, re-fetch with `?expand=renderedBody` and check the four counts. Any
 pre-post hit = fix the body, do not post.
+
+**Go back:** If the pre-post checklist or the syntax scan fails, fix the body and return to the top of Step 7 — Pre-post checklist. Nothing is posted until both are clean.
 
 This is a string scan, not a read-through — markdown leaks are invisible when proof-reading, because
 the draft looks like what you meant.
@@ -406,6 +416,8 @@ Before Step 8 transition, run review per [jira-comment-post-review.md](../../../
 3. If any check fails → fix → re-post → re-verify on Jira UI. **Max 3 rounds** — then report specific failures with best available workaround.
 
 MUST NOT transition, assign, or report "done" until 7d passes — because stakeholders trust Jira, not MCP output.
+
+**Go back:** If any 7d check fails, fix and return to Step 7 to re-post, then run 7d again — max 3 rounds. Step 8 does not start until 7d passes.
 
 **Fresh-eyes:** MUST re-read full draft from Step 6 before Step 7 when comment **> 80 lines** or table **> 15 rows**.
 

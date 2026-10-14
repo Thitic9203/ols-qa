@@ -14,6 +14,7 @@ Run **Playwright-based** testing for a **single ticket** after intake (the plan 
 
 ## Contents
 
+- [Progress checklist](#progress-checklist)
 - [Discipline](#discipline)
 - [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
 - [Core constraints](#core-constraints)
@@ -31,6 +32,26 @@ Run **Playwright-based** testing for a **single ticket** after intake (the plan 
 - [Next workflows](#next-workflows)
 - [References](#references)
 - [MUST / NEVER](#must--never)
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+Testing ticket progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Phase A — Session intake (mandatory)
+- [ ] Phase B — Load context
+- [ ] Phase C — Show the plan, then run
+- [ ] Phase D — Pre-flight (mandatory)
+- [ ] Phase E — Execute tests (Playwright)
+- [ ] Result quality gate (mandatory before Phase F)
+- [ ] Phase F — Summarize in this chat (mandatory)
+- [ ] Phase G — Optional: update results elsewhere
+- [ ] QA closing (mandatory before session end)
+- [ ] Phase H — A question arrives after results were published
+```
 
 ## Discipline
 
@@ -248,6 +269,8 @@ Plan printed — starting Phase D now. It appears again in the end decisions pop
 If results contradict expectations or tests are flaky, follow [qa-debug-discipline.md](../../../references/qa-debug-discipline.md) before changing pass/fail wording. "Flaky" is a hypothesis, not a
 conclusion — it needs the E2 investigation and an artifact like any other cause.
 
+**Go back:** If the end decisions popup corrects this plan, return to Phase C — the correction starts a new round.
+
 ---
 
 ## Phase D — Pre-flight (mandatory) [low freedom]
@@ -270,6 +293,8 @@ one lane and is never shared across concurrent sessions.
 **In a parallel run the session preflight runs per lane**, inside each lane, and records the
 authenticated user id — the parent accepts a lane's results only when that id matches the lane's
 leased account ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3).
+
+**Go back:** If **Ready to run** is not YES — session user, build id or environment missing — fix the cause and return to the start of Phase D. A lane whose authenticated user id does not match its leased account logs in fresh (*Login reuse*) and re-runs its preflight before its results count.
 
 ---
 
@@ -328,6 +353,8 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] **Fresh-eyes:** re-read F2 before Phase G when **> 15 scenarios**.
 - [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (Testing ticket section).
 - [ ] Suggest **create-bug** if F3 has defects; handoff file written every round (§10).
+
+**Go back:** If any item above is unchecked, return to the phase it names (E, F or G) and redo from there; do not report done.
 
 ---
 

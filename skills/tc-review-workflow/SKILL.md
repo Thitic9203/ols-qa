@@ -18,6 +18,7 @@ proactive_triggers:
 
 ## Contents
 
+- [Progress checklist](#progress-checklist)
 - [Discipline](#discipline)
 - [The Iron Law](#the-iron-law)
 - [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
@@ -37,6 +38,23 @@ test cases itself. It answers one question: *does this document, as written, pro
 business rules will be checked?*
 
 Claude Code shortcut: `/tc-review` → [commands/tc-review.md](../../commands/tc-review.md).
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+TC review progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Step 1 — Load both sources verbatim
+- [ ] Step 2 — Build the traceability matrix
+- [ ] Step 3 — Row-quality check
+- [ ] Source sweep before "ask the PO / reporter" (mandatory)
+- [ ] Step 4 — Report Good vs Need Improve
+- [ ] Step 5 — Optional: share the review externally
+- [ ] QA closing (mandatory before "done")
+```
 
 ## Discipline
 
@@ -215,6 +233,8 @@ channel, thread, or mention id.
    for "ticket" in the destination's language) — check the workspace's own rules before sending; do not
    invent new wording.
 
+**Go back:** If the item-2 read-back shows the wrong destination, return to item 3 (delete and resend); wrong content or an unresolved mention → edit in place (item 5) and read back again. The send is not done before a clean read-back.
+
 ---
 
 ## QA closing (mandatory before "done") [low freedom]
@@ -227,6 +247,8 @@ channel, thread, or mention id.
       quoted from the AC/EC, or the line says who confirms it. No suggestion contains a made-up value.
 - [ ] Any design-source (Figma/PRD) claim states plainly whether it was actually opened this session.
 - [ ] If sent externally: destination and mentions verified from the read-back response, not assumed.
+
+**Go back:** A matrix item unchecked returns to Step 2; an unanchored finding or a missing "→ Suggest:" line returns to Step 4; a design-source claim not opened returns to Step 1 item 3; an unverified send returns to Step 5 item 2.
 
 See also [qa-evidence-gates.md](../../references/qa-evidence-gates.md).
 
