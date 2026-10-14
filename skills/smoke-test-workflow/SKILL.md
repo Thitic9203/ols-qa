@@ -18,6 +18,7 @@ public: never write a resolved host, id, account or channel into any file here.
 
 ## Contents
 
+- [Progress checklist](#progress-checklist)
 - [Round-time contract](#round-time-contract)
 - [Stage 0 — Intake (blocking) \[medium freedom\]](#stage-0--intake-blocking-medium-freedom)
 - [Stage 1 — Preflight \[low freedom\]](#stage-1--preflight-low-freedom)
@@ -32,6 +33,27 @@ public: never write a resolved host, id, account or channel into any file here.
 - [Stage 8 — Notify \[low freedom\]](#stage-8--notify-low-freedom)
 - [Stage 7.5 — The numbers gate (the trap that cost a round) \[low freedom\]](#stage-75--the-numbers-gate-the-trap-that-cost-a-round-low-freedom)
 - [MUST / NEVER](#must--never)
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+Smoke test progress:
+- [ ] Stage 0 — Intake (blocking)
+- [ ] Stage 1 — Preflight
+- [ ] Stage 2 — Identify the deployed version
+- [ ] Stage 2.5 — The one-shot rule (read this before running anything)
+- [ ] Stage 3 — Run
+- [ ] Stage 4 — Triage every non-passing case
+- [ ] Stage 5 — Fix what is ours, then re-verify
+- [ ] Result quality gate (mandatory before the summary is built)
+- [ ] Stage 6 — The one-page summary
+- [ ] Stage 7 — Deliverables
+- [ ] Stage 7.5 — The numbers gate (the trap that cost a round)
+- [ ] Stage 8 — Notify
+```
 
 ## Round-time contract
 
@@ -61,6 +83,8 @@ This workflow follows the Helix round-time contract (Helix `references/round-tim
 
 `global-setup` re-checks all three and fails loudly. A preflight failure is a **harness** failure —
 never report it as a product verdict.
+
+**Go back:** If any preflight check fails, fix the harness (VPN, host, secrets store) and return to the top of Stage 1. Stage 3 does not start, and the failure is never a product verdict.
 
 ## Stage 2 — Identify the deployed version [high freedom]
 
@@ -188,6 +212,8 @@ Fix stale expectations and test-code defects in `ols-qa-e2e` on a branch. Then:
    8 others is a net loss, and only a full run shows it.
 4. Commit with a message that names the ticket and the source line behind each change.
 
+**Go back:** If `tsc` or `eslint` is not clean, fix and return to item 1. If the full re-run shows any new failure, return to Stage 4 — Triage every non-passing case for it.
+
 **Known trap:** when adding paging to a list reader, honour a `page=` the caller already pinned.
 Appending a second one yields `page=1&page=1`, which the API parses as `NaN` and rejects with 400.
 
@@ -200,6 +226,8 @@ judgement layers, and paste the checker's last output line (or the counted hand 
 round's record. A red layer blocks that case's verdict: report the case as what it really is
 (usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
 is a claim — the main thread re-runs the gate itself (layer 20).
+
+**Go back:** A red layer returns that case to Stage 4 — Triage every non-passing case for a verdict with evidence; if it cannot be fixed, report the case as BLOCKED with the reason.
 
 ## Stage 6 — The one-page summary [medium freedom]
 
@@ -224,6 +252,8 @@ measures *exactly* `avail` still spills — leave a few px of slack.
 
 **Always rasterise the finished PDF and look at it** before sending. A page-count check does not
 catch a broken layout.
+
+**Go back:** If `measure.js` reports an overflow or the rasterised page shows a broken layout, fix it and measure again within this stage. Stage 7 waits for one clean page.
 
 ## Stage 7 — Deliverables [medium freedom]
 
@@ -283,6 +313,8 @@ Post to the QA release channel `<QA_RELEASE_CHANNEL_ID>` as bot `<QA_BOT_ID>` (t
 7. Times in the notify are `9 Sep 2026, 4:55 PM`. The Thai PDF keeps `16.55 น.` — two audiences, two
    conventions, both correct.
 
+**Go back:** If `GET /users/@me` returns a different id or a step-2 pre-check fails, stop the send, fix it, and return to step 2.1 — Pre-checks. If the counts disagree, return to Stage 7.5 — The numbers gate.
+
 Message shape:
 
 ```
@@ -320,6 +352,8 @@ grep -E '^\s+[0-9]+ (passed|failed|flaky|skipped)' <WORKDIR>/run.log   # what th
   or word it as `N cases · 0 failed`. Never let the wording outrun the file.
 - Confirm the report you are attaching came from the run you are quoting: `playwright-report/index.html`
   is overwritten by every run, so compare its mtime against the run's own log.
+
+**Go back:** If the three surfaces disagree, re-run from the exclusion registry (Stage 2.5) or reword as the second bullet says. If the report's mtime does not match the run log, return to Stage 7 — Deliverables and attach the report from the quoted run.
 
 ## MUST / NEVER
 

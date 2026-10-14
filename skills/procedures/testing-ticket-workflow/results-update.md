@@ -59,6 +59,8 @@ Approval of that popup covers G4–G7; there is no second approval.
 - For Jira comments: draft in chat; use v2 wiki vs v3 ADF per project guide if present. **The chat draft's markdown is not the posted body** — on the v2 path rewrite it as wiki markup and run both gates in [jira-wiki-vs-markdown.md](../../../references/jira-wiki-vs-markdown.md); markdown posts with HTTP 200 and renders wrong. The render and media check on the **final** body (render locally in the guide's format; every referenced image/clip resolves to an existing attachment) runs in F5 **before** the approval popup — a failure blocks the popup until fixed ([round-time-contract.md §6](../../../references/round-time-contract.md)).
 - If access fails (auth, 403, VPN) → report exactly what failed; **do not claim success.**
 
+**Go back:** If access fails, return to G2 — Destination details once the user supplies working access; nothing is written meanwhile.
+
 **Claim the scope (layer 1 — hard gate).** Snapshot the destination, then classify every target
 row: untested (empty / `NOT STARTED`, no result text, no links) or written by an earlier run of
 yours = **yours to write**; anything a person filled in = **not yours**. Drop the not-yours rows
@@ -150,6 +152,8 @@ Before telling the user updates are done:
          that was there is still a formula, no new `#REF!/#NAME?/#VALUE!/#N/A` anywhere, and the
          header row is unchanged.
 3. If any mismatch → fix and re-check. **Maximum 3 fix rounds** — then report specific failures with best available workaround (see [jira-comment-post-review.md](../../../references/jira-comment-post-review.md)).
+
+**Go back:** If a G6 check fails, fix and return to G5 — Apply updates for the failing rows, then run G6 again from item 1 (max 3 rounds). A layer-3 diff failure restores from the G4 snapshot and stops. G7 waits.
 
 ### G7 — Close
 

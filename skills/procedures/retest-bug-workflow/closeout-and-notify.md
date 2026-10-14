@@ -42,6 +42,8 @@ An action that was not listed in that bundle is not run without asking.
 
 If any item fails — including when evidence **cannot** be embedded (e.g. no Jira-auth upload path) — **STOP. Do NOT transition.** Report the specific gap to the user and resolve it (or get an explicit user waiver) first. Never move a bug's status on an evidence-incomplete comment.
 
+**Go back:** If any 8·0 item fails, fix the posted comment in place (same comment id) and return to Step 7d — re-verify, then run this gate again. 8a waits.
+
 ### 8a. Transition
 
 Read transition names from the workspace `*-retest-guide.md` (see [project-config-template.md](references/project-config-template.md)). If missing, ask once for the **PASSED** and **FAILED** transition names in the 6d decisions popup (before approval) and save them to the guide immediately ([round-time-contract.md §2](../../../references/round-time-contract.md)); never ask after the bundle was approved.
@@ -167,6 +169,8 @@ Run this checklist on the **dry-run output** before every real send — no excep
 4. **Result link** opens the correct issue and `focusedCommentId` = the retest comment ID just posted.
 5. **Recipient**: re-read the QA Owner field value fetched in this session for THIS ticket; confirm the resolved `<@id>` maps to that name in the roster, and the label matches the field source.
 6. Only after all 5 pass → send. The dry-run text and resolved recipient are already listed in the 6d approval popup; any doubt found here → stop and report it, never send a message the user did not see in that bundle.
+
+**Go back:** If any of checks 1–5 fails, stop (item 6) — fix the dry-run and run this gate again from check 1 before any send.
 
 Skip if the project has no notify channel configured.
 

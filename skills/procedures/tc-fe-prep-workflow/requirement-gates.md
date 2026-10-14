@@ -150,6 +150,8 @@ Then handle user decisions in chat:
 
 **If conflicts, gaps, or Step 2a issues found:** generate the HTML, open in Chrome, then handle each set of issues in chat. Do NOT start Step 3 until all issues are resolved — TCs built on contradictory or inconsistent requirements must be redesigned.
 
+**Go back:** If an issue is resolved by changing the ticket's AC/EC (Step 2a.3 option 3), return to Step 2 — Extract requirements and run Step 2a and Step 2.5 again on the updated ticket.
+
 ---
 
 ## Step 2.6 — TC glossary re-check (mandatory gate) [medium freedom]
@@ -198,5 +200,7 @@ Scan **only the terms this ticket's test cases will use** — do not interrogate
 Writing a guess and tagging it *provisional* / *pending confirmation* / *documented fallback* is **not** asking. See the red flags in [tc-glossary.md](../../../references/tc-glossary.md).
 
 Do NOT proceed to Step 3 until Step 2.6 gaps are resolved.
+
+**Go back:** If a later Step 2a or 2.5 decision changes the surviving AC/EC set, return to 2.6.3 and scan again — the scan covers only the surviving terms.
 
 ---

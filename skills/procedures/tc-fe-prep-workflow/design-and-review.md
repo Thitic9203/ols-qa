@@ -310,4 +310,6 @@ These terms appear in the test cases. Thai follows the glossary first, then ร�
 - Only after the user confirms (or after applying their adjustments) proceed to Step 5 and use the confirmed terms in every cell.
 - Do NOT write any TC content to a deliverable file (Step 6) until this gate is confirmed. The only file allowed earlier is the Step 4f reviewer working draft, outside the repo.
 
+**Go back:** If the user changes a term, apply it and return to the top of this gate — re-post the changed rows and wait again. Step 5 starts only after confirmation.
+
 ---

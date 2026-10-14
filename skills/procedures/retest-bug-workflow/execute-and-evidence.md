@@ -136,6 +136,8 @@ Follow [defect-report-completeness.md](../../../references/defect-report-complet
 2. **Settle after every state change.** After a fixture step that changes server state (publish / unpublish / approve / delete / role change), hard-reload each surface before observing it. A view that was already open holds pre-change data; recording it is reporting your own test timing as the product's behavior. A stale window worth reporting is a **separate timing note** with the measured delay — not a verdict row.
 3. **Resolve contradictions before drafting.** If two of your observations of the same surface disagree, name the contradiction, re-run that surface cleanly, and record which observation was the artifact and why. Never resolve it in favour of the verdict you already have. Unresolvable after a clean re-run → that item is **BLOCKED**, not FAILED.
 
+**Go back:** If an entry point was not exercised or a contradiction is still open, return to Step 4 — Login and test for that surface; Step 6 does not start on it.
+
 ### 4h. Root-cause investigation (mandatory for every non-PASSED item — run it before Step 6)
 
 Follow [root-cause-investigation.md](../../../references/root-cause-investigation.md) end to end — the
@@ -181,6 +183,8 @@ decide from evidence: read every source, apply precedent and standing decisions,
 data, and write the decision log. BLOCKED only for the layer-17 causes, with the layer-18 record.
 Test-side cause → fix and re-run; confirmed defect → draft the comment as normal. Only what no layer
 can resolve is queued; unattended runs put it in the run's report.
+
+**Go back:** A test-side cause returns the item to Step 4 — Login and test (fix and re-run); a **B re-test** answer in the Step 6d popup returns to Step 2c — a new round.
 
 ---
 
@@ -236,6 +240,8 @@ the workspace's `references/qa-capture-tooling.md`; a tool that cannot run is a
 **stop**, never a silent pass. A file the reconciler cannot find is a BLOCKED row with its reason,
 never a row quietly dropped.
 
+**Go back:** If the reconciler exits non-zero or a planned file is missing, return to Step 5 — Evidence and capture it, or record the BLOCKED row with its reason. The Step 6 draft waits for a clean reconcile.
+
 ---
 
 ## Result quality gate (mandatory before the comment is drafted) [low freedom]
@@ -247,6 +253,8 @@ judgement layers, and paste the checker's last output line (or the counted hand 
 round's record. A red layer blocks that case's verdict: report the case as what it really is
 (usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
 is a claim — the main thread re-runs the gate itself (layer 20).
+
+**Go back:** A layer red for missing or wrong evidence returns that case to Step 5 — Evidence (Step 4 — Login and test when the case must be re-run); if it cannot be fixed, report the case as BLOCKED with the reason.
 
 **Source sweep before any BLOCKED, FAILED or "ask the PO / reporter" outcome** (layer 14 of
 [result-quality-gate.md](../../../references/result-quality-gate.md)): read the product code at the default

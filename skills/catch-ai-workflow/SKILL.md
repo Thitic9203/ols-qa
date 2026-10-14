@@ -18,6 +18,7 @@ proactive_triggers:
 
 ## Contents
 
+- [Progress checklist](#progress-checklist)
 - [Discipline](#discipline)
 - [The Iron Law](#the-iron-law)
 - [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
@@ -36,6 +37,27 @@ Audit finished work the way a senior QA engineer does: every claim traced to the
 **Core principle: a defect is "actual differs from a *confirmed* expected".** Actual differing from what you assumed, translated, or inferred is not a defect — it is a question.
 
 Claude Code shortcut: `/catch-ai` → [commands/catch-ai.md](../../commands/catch-ai.md).
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+Catch AI progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Procedure 1 — Fix the scope
+- [ ] Procedure 2 — Enumerate
+- [ ] Procedure 3 — Name the governing source for each
+- [ ] Procedure 4 — Inspect the actual side directly
+- [ ] Procedure 5 — Compare character-exact
+- [ ] Procedure 6 — Map coverage
+- [ ] Procedure 7 — Find the root cause of each defect
+- [ ] Procedure 8 — Propose the fix and the prevention
+- [ ] Procedure 9 — Report and give the verdict
+- [ ] Result quality gate (mandatory before an audited verdict is confirmed)
+- [ ] QA closing (mandatory before "done")
+```
 
 ## Discipline
 
@@ -116,6 +138,8 @@ registry, and the report template: [reference.md](reference.md).
 - A finding with no prevention step — nothing stops it coming back.
 - The report proposes rewrites nobody asked for.
 
+**Go back:** Any red flag returns you to Procedure step 1 — Fix the scope, and the audit runs again from there.
+
 ## Result quality gate (mandatory before an audited verdict is confirmed) [low freedom]
 
 Run [result-quality-gate.md](../../references/result-quality-gate.md) — all 20 layers, every case, PASSED
@@ -125,6 +149,8 @@ judgement layers, and paste the checker's last output line (or the counted hand 
 round's record. A red layer blocks that case's verdict: report the case as what it really is
 (usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
 is a claim — the main thread re-runs the gate itself (layer 20).
+
+**Go back:** A red layer returns that case to Procedure step 4 — Inspect the actual side directly; if it still cannot be confirmed, the case is BLOCKED with the reason.
 
 ## QA closing (mandatory before "done") [low freedom]
 
@@ -137,6 +163,8 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + this work
 - [ ] Every defect carries a prevention layer.
 - [ ] Coverage gaps listed separately from defects.
 - [ ] Verdict stated: PASSED / FAILED / BLOCKED / No issue found.
+
+**Go back:** An unchecked item returns to its Procedure step — scope → 1; defect fields → 4–5; Question vs defect → 5; fix source or prevention → 8; coverage gaps → 6; verdict → 9.
 
 ## MUST / NEVER
 

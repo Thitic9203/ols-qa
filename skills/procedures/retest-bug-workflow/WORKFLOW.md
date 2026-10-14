@@ -20,6 +20,7 @@ exactly what was covered without reading the chat.
 
 ## Contents
 
+- [Progress checklist](#progress-checklist)
 - [Discipline](#discipline)
 - [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
 - [Step 0 — Get the ticket \[high freedom\]](#step-0--get-the-ticket-high-freedom)
@@ -41,6 +42,32 @@ exactly what was covered without reading the chat.
 - [Skill composition](#skill-composition)
 - [Out of scope](#out-of-scope)
 - [MUST / NEVER](#must--never)
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+Retest bug progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Step 0 — Get the ticket
+- [ ] Step 1 — Project config
+- [ ] Step 2 — Fetch Jira ticket
+- [ ] Step 2b — Fix claim vs verification plan (mandatory)
+- [ ] Step 2c — Build the retest case list (mandatory — bug and task alike)
+- [ ] Step 2d — Design reference gate (mandatory before any UI verdict)
+- [ ] Step 3 — Bug type and comment format (decide once)
+- [ ] Step 4 — Login and test
+- [ ] Step 5 — Evidence
+- [ ] Result quality gate (mandatory before the comment is drafted)
+- [ ] Step 6 — Draft Jira comment
+- [ ] Step 7 — Post comment
+- [ ] Step 8 — Close out (after successful post; no second approval unless user asked)
+- [ ] Step 9 — QA result notify (if the project configures a channel)
+- [ ] QA closing (mandatory before "done")
+- [ ] Step 10 — A question arrives after the comment was posted
+```
 
 ## Discipline
 
@@ -279,6 +306,8 @@ from an earlier round is **never carried forward** — every in-scope case is ru
 
 The same list, with each case's outcome, goes into the `Case (Role)` cell of every row it covers in the Step 6 comment's single table.
 
+**Go back:** If the Step 6d decisions popup corrects this case list or the round-N scope, return to Step 2c — the correction starts a new round.
+
 ---
 
 ## Step 2d — Design reference gate (mandatory before any UI verdict) [low freedom]
@@ -300,6 +329,8 @@ Follow [figma-design-comparison.md](../../../references/figma-design-comparison.
 - **Attended runs apply the same default** — mark the visual points BLOCKED + remark and carry on, and
   **queue the design question** for the Step 6d decisions popup instead of waiting for a reply mid-run
   ([round-time-contract.md](../../../references/round-time-contract.md) §2).
+
+**Go back:** When the node link or visual contract arrives (Step 6d popup), return to Step 4d for the visual points held BLOCKED.
 
 ---
 
@@ -362,6 +393,8 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] Bug landed in Done → **Step 8d** run: stories it blocked either moved to ready-for-QA or left with their remaining blockers reported.
 - [ ] Step 9 QA notify sent if the project configures a channel (retest verdict + Jira comment link + @mention) — **sent regardless of who invoked the retest** (owner, another QA, slash command, bot/trigger) and regardless of whether they asked for one.
 - [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (Retest section).
+
+**Go back:** If any item above is unchecked, return to the step it names and redo from there; do not report done.
 
 ---
 
