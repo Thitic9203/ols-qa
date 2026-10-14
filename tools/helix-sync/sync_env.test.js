@@ -21,7 +21,13 @@ const HELPER = path.join(ROOT, 'scripts', 'git-env-clean.sh');
 const SHARED = 'references/qa-closing-shared.md';
 
 // This suite may itself run under a hook; its fixtures must never inherit that repository.
-const CLEAN_ENV = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('GIT_')));
+// Nor the caller's sync switches: lanes commit with HELIX_SYNC=0 exported, which turns the
+// fixture's post-commit hook off, and HELIX_SYNC_PUSH / HELIX_SYNC_NEW / HELIX_REPO change the run.
+// Each check sets the HELIX_* values it needs explicitly.
+function fixtureEnv(src) {
+  return Object.fromEntries(Object.entries(src).filter(([k]) => !/^(GIT_|HELIX_)/.test(k)));
+}
+const CLEAN_ENV = fixtureEnv(process.env);
 
 let failed = 0;
 let ran = 0;
@@ -111,10 +117,10 @@ function fixture({ gate = true } = {}) {
   return { helix, helixOrigin, olsqa };
 }
 
-function commitShared(fx, cwd, content) {
+function commitShared(fx, cwd, content, baseEnv = CLEAN_ENV) {
   fs.writeFileSync(path.join(cwd, SHARED), content);
   git(cwd, 'add', SHARED);
-  const r = run('git', ['commit', '-qm', `change ${content.trim()}`], { cwd, env: { ...CLEAN_ENV, HELIX_REPO: fx.helix } });
+  const r = run('git', ['commit', '-qm', `change ${content.trim()}`], { cwd, env: { ...baseEnv, HELIX_REPO: fx.helix } });
   assert.strictEqual(r.status, 0, `the ols-qa commit itself failed: ${r.stderr}`);
   return `${r.stdout}${r.stderr}`;
 }
@@ -130,6 +136,19 @@ function assertDeployed(fx, content, out) {
 check('a commit from the main checkout reaches helix', () => {
   const fx = fixture();
   assertDeployed(fx, 'from-main\n', commitShared(fx, fx.olsqa, 'from-main\n'));
+});
+
+check('a caller that exports HELIX_SYNC=0 (as lanes do) gets the same deploy from the fixtures', () => {
+  const caller = { ...process.env, HELIX_SYNC: '0', HELIX_SYNC_PUSH: '0', HELIX_SYNC_NEW: '1', HELIX_REPO: '/nonexistent', GIT_DIR: '/nowhere/.git' };
+  const env = fixtureEnv(caller);
+  const leaked = Object.keys(env).filter((k) => /^(GIT_|HELIX_)/.test(k));
+  assert.deepStrictEqual(leaked, [], `caller variables reached the fixture env: ${leaked.join(', ')}`);
+  // known answer: the raw caller env does switch the hook off, so this check can see the leak
+  const raw = fixture();
+  const rawOut = commitShared(raw, raw.olsqa, 'raw-caller\n', { ...CLEAN_ENV, HELIX_SYNC: '0' });
+  assert.ok(!/pushed helix/.test(rawOut), `HELIX_SYNC=0 no longer disables the hook, so this check proves nothing:\n${rawOut}`);
+  const fx = fixture();
+  assertDeployed(fx, 'filtered-caller\n', commitShared(fx, fx.olsqa, 'filtered-caller\n', env));
 });
 
 function assertHelixUntouched(fx, headBefore, out) {
