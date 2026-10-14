@@ -80,6 +80,8 @@ All preconditions and refusal rules are in WORKFLOW.md. MUST NOT start without a
 
 All close-out gates are in WORKFLOW.md and [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Retest section). MUST NOT claim PASSED/FAILED without evidence in the comment, and MUST NOT post a retest comment — bug or task — without its **case list** — ONE table only (No. · ER/AC · Case (Role) · Expected Result · Actual Result · Evidence · Status, a row per ER/AC with its covering cases as `• TC_nn title (role)` inside the row; never a separate `Test cases run` table). No `Scope: FULL` line; multi-point header fields and cells as bullets; after posting set column widths and centre every clip/image with `tools/retest-guard/adf_colwidth.js`. The design reference goes on the header's `Design ref:` line, never as a per-row column.
 
+**Before any comment draft is written to disk or shown as final** — including "draft only" requests — run `node tools/retest-guard/retest_guard.js --body <draft> --format v2 --bug-type FE` (for other bug types use the `--format`/`--bug-type` values the WORKFLOW comment step names) and keep fixing the draft until it exits 0. If the guard fails, return to the comment step in WORKFLOW.md; never hand over a draft the guard has not passed.
+
 ## Dependencies
 
 Run the check for each of these before step 1 — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
