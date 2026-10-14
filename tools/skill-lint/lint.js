@@ -28,6 +28,9 @@
  *   MUST  else if the context matches follow|read|load|open|run|apply|per|governed by|must|
  *         mandatory|required|full rule|full procedure|before|ทำตาม|อ่าน|ตาม
  *   INFO  otherwise. Only MUST edges count for must-read-depth.
+ *   A MUST link to another loaded skill's SKILL.md is a hand-off: it is not counted and not
+ *   followed (that skill is checked from its own SKILL.md). Links into skills/procedures/<other>/
+ *   are reads of that skill's internals and are followed like any other MUST edge.
  */
 const fs = require('fs');
 const path = require('path');
@@ -163,6 +166,10 @@ function mustDepths(root, start, cache) {
     const u = queue.shift();
     for (const e of edges(root, u, cache)) {
       if (e.cls !== 'MUST' || dist.has(e.to)) continue;
+      // A link to ANOTHER loaded skill's SKILL.md is a hand-off ("go run skill X"), not a read of
+      // X's internals: X is loaded on its own and its depth is checked from its own SKILL.md.
+      // Links into another skill's procedures/ files are still real reads and still count.
+      if (isLoadedSkill(e.to) && e.to !== start) continue;
       dist.set(e.to, dist.get(u) + 1);
       queue.push(e.to);
     }

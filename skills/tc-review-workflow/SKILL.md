@@ -18,6 +18,7 @@ proactive_triggers:
 
 ## Contents
 
+- [Progress checklist](#progress-checklist)
 - [Discipline](#discipline)
 - [The Iron Law](#the-iron-law)
 - [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
@@ -31,12 +32,31 @@ proactive_triggers:
 - [Skill composition](#skill-composition)
 - [Out of scope](#out-of-scope)
 - [MUST / NEVER](#must--never)
+- [Must-read files](#must-read-files)
+- [Dependencies](#dependencies)
 
 Judge a test case document that someone has **already written** — this workflow never designs or edits
 test cases itself. It answers one question: *does this document, as written, prove the ticket's AC/EC and
 business rules will be checked?*
 
 Claude Code shortcut: `/tc-review` → [commands/tc-review.md](../../commands/tc-review.md).
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+TC review progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Step 1 — Load both sources verbatim
+- [ ] Step 2 — Build the traceability matrix
+- [ ] Step 3 — Row-quality check
+- [ ] Source sweep before "ask the PO / reporter" (mandatory)
+- [ ] Step 4 — Report Good vs Need Improve
+- [ ] Step 5 — Optional: share the review externally
+- [ ] QA closing (mandatory before "done")
+```
 
 ## Discipline
 
@@ -215,6 +235,8 @@ channel, thread, or mention id.
    for "ticket" in the destination's language) — check the workspace's own rules before sending; do not
    invent new wording.
 
+**Go back:** If the item-2 read-back shows the wrong destination, return to item 3 (delete and resend); wrong content or an unresolved mention → edit in place (item 5) and read back again. The send is not done before a clean read-back.
+
 ---
 
 ## QA closing (mandatory before "done") [low freedom]
@@ -227,6 +249,8 @@ channel, thread, or mention id.
       quoted from the AC/EC, or the line says who confirms it. No suggestion contains a made-up value.
 - [ ] Any design-source (Figma/PRD) claim states plainly whether it was actually opened this session.
 - [ ] If sent externally: destination and mentions verified from the read-back response, not assumed.
+
+**Go back:** A matrix item unchecked returns to Step 2; an unanchored finding or a missing "→ Suggest:" line returns to Step 4; a design-source claim not opened returns to Step 1 item 3; an unverified send returns to Step 5 item 2.
 
 See also [qa-evidence-gates.md](../../references/qa-evidence-gates.md).
 
@@ -266,3 +290,42 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST read back an external send's response and confirm destination + mentions before saying it is done | "Sent" without a read-back is an unverified claim |
 | MUST fix a wrong-destination send by delete-and-resend, and a wrong-content send by edit-in-place | A channel/thread cannot be changed by editing; deleting a correctly-placed message to fix wording destroys its position in the thread for no reason |
 | MUST NOT post to Jira/Confluence/GitHub or send an external message before the user has seen the review in chat | The review is the deliverable to approve first — an external send is not the review itself |
+
+## Must-read files
+
+Every file this skill's procedure requires, one hop from here. Read each at the point its line names.
+
+- Read [agent-rationalizations.md](../../references/agent-rationalizations.md) when tempted to skip a step; each excuse has its correct action.
+- Read [bug-priority-matrix.md](../../references/bug-priority-matrix.md) before setting any priority or a PWMI / FAILED verdict.
+- Read [customer-escape-prevention.md](../../references/customer-escape-prevention.md) before any QA run; the gates that stop shipped defects.
+- Read [defect-report-completeness.md](../../references/defect-report-completeness.md) before writing up any defect or non-pass.
+- Read [figma-design-comparison.md](../../references/figma-design-comparison.md) before judging any UI or visual result against the design.
+- Read [helix-session-constraints.md](../../references/helix-session-constraints.md) once at session start.
+- Read [jira-comment-post-review.md](../../references/jira-comment-post-review.md) after posting a Jira comment, before saying done.
+- Read [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) before posting a Jira table with multi-line cells.
+- Read [long-workflow-todos.md](../../references/long-workflow-todos.md) when the workflow has many steps; keep the todo list.
+- Read [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) before recording any result that is not PASSED.
+- Read [playwright-preflight.md](../../references/playwright-preflight.md) before any Playwright run.
+- Read [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) when a QA follow-up could be suggested.
+- Read [qa-closing-shared.md](../../references/qa-closing-shared.md) before saying done; shared closing checklist.
+- Read [qa-debug-discipline.md](../../references/qa-debug-discipline.md) when a test is flaky or a tool errors.
+- Read [qa-evidence-gates.md](../../references/qa-evidence-gates.md) before any completion claim.
+- Read [resilient-selectors.md](../../references/resilient-selectors.md) when writing or fixing Playwright selectors.
+- Read [root-cause-investigation.md](../../references/root-cause-investigation.md) before naming a cause for any failure.
+- Read [round-time-contract.md](../../references/round-time-contract.md) when a round starts and before reporting times.
+- Read [session-closing.md](../../references/session-closing.md) at session end.
+- Read [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) before invoking or switching skills.
+- Read [skill-routing.md](../../references/skill-routing.md) when choosing which skill handles a request.
+- Read [test-through-real-steps.md](../../references/test-through-real-steps.md) before testing an action; no API shortcut for the action under test.
+- Read [verify-closing-checklist.md](../../references/verify-closing-checklist.md) before reporting a verify or retest done.
+
+## Dependencies
+
+Run the check for each of these before step 1 — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
+
+- Atlassian MCP
+- Figma (only when a design cross-check is asked)
+- clone of the product repo (`{MONOREPO}`) for the source sweep
+- Node.js + in-repo guard tools (`tools/result-gate`)
+- notify channel webhook / bot (only on a share request)
+- `superpowers:systematic-debugging`

@@ -14,6 +14,7 @@ Prepare **frontend manual test cases** from a Jira **story** (acceptance criteri
 
 ## Contents
 
+- [Progress checklist](#progress-checklist)
 - [Discipline](#discipline)
 - [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
 - [Prerequisites (read before Step 0)](#prerequisites-read-before-step-0)
@@ -35,6 +36,32 @@ Prepare **frontend manual test cases** from a Jira **story** (acceptance criteri
 - [Reference files](#reference-files)
 - [Out of scope](#out-of-scope)
 - [MUST / NEVER](#must--never)
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+TC FE prep progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Prerequisites (read before Step 0)
+- [ ] Step 0 — Obtain the story
+- [ ] Step 1 — Load or create project config
+- [ ] Step 2 — Extract requirements
+- [ ] Step 2a — AC/EC internal consistency check
+- [ ] Step 2.5 — Conflict check against PRD and Figma (pre-design gate)
+- [ ] Step 2.6 — TC glossary re-check (mandatory gate)
+- [ ] Step 3 — Design test cases
+- [ ] Step 4 — Coverage & quality review (mandatory; loop until zero comments, report EVERY round)
+- [ ] Step 4.5 — Thai↔English term confirmation (mandatory gate)
+- [ ] Step 5 — HTML draft in Chrome (approval gate)
+- [ ] Step 6 — Save artifacts in the user's workspace
+- [ ] Step 7 — Publish to Jira (story only)
+- [ ] Step 7.5 — Final TC review report (mandatory before "done")
+- [ ] QA closing (mandatory before "done")
+- [ ] Step 8 — Session closing
+```
 
 ## Discipline
 
@@ -120,6 +147,8 @@ Do NOT post the TC table as markdown in chat. Instead:
 **Language rule:** All content is Thai per Step 3b, using the terms confirmed at the Step 4.5 gate. Keep terms in English only where Step 4.5 marked them kept-English.
 
 **Wait for approval** or edit requests. Apply edits → regenerate HTML → re-open Chrome. Repeat until approved.
+
+**Go back:** Step 6 starts only on approval; each edit request returns to item 1 of this step (regenerate, re-open).
 
 **Header rule (Jira comment only):** Every column header MUST be wrapped in `**bold**` in the Jira comment and the markdown `.md` file (Step 7 / Step 6). The HTML file uses plain `<th>` — no `**` needed.
 
@@ -276,6 +305,8 @@ Verify ALL of the following are present in the ADF body before calling the Jira 
 
 Shortcut check: scroll to bottom of the ADF `content` array — last node MUST be the Disclaimer paragraph. Second-to-last MUST be the Remark block (if applicable). If you are only fixing TC text, you MUST still rebuild the full ADF with all 5 elements intact.
 
+**Go back:** If any row of this re-check is missing, add it to the ADF and run the re-check again from row 1 before calling the comment API.
+
 ---
 
 **Publish method — ADF-direct (single JS call):**
@@ -302,6 +333,8 @@ Run the **full review checklist** from [jira-comment-post-review.md](../../../re
 
 If any check fails → fix and re-post → re-verify on Jira UI (max 3 rounds).
 
+**Go back:** If a post-publish check fails, fix and return to *Publish method* item 1 to re-post, then run this checklist again — max 3 rounds. Step 7.5 waits.
+
 **MUST NOT tell user "commented" or "done" until all checks pass.** See [jira-comment-post-review.md](../../../references/jira-comment-post-review.md) for fix procedures and reporting templates.
 
 ---
@@ -318,6 +351,8 @@ Follow [tc-final-review-report.md](references/tc-final-review-report.md):
 4. Overall **PASS** required before Step 8. On **FAIL** → fix TC → re-publish or re-show draft → re-run (max 2 rounds).
 
 **MUST NOT** say TC prep is complete, post the Step 8 `Verdict:` block, or offer the next workflow until this report is posted with overall **PASS**.
+
+**Go back:** On **FAIL**, fix the TC and return to Step 7 (published) or Step 5 (draft-only), then run Step 7.5 again — max 2 rounds.
 
 ---
 
@@ -349,6 +384,8 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] Publish fix-verify (Step 7) completed — at least one Jira UI re-read.
 - [ ] **Fresh-eyes:** re-read full draft before publish when table **> 15 rows**.
 - [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (TC FE section).
+
+**Go back:** If any item above is unchecked, return to the step it names and redo from there; do not report done.
 
 ---
 
@@ -401,7 +438,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST write all TC content in Thai (Step 3b) — there is no English-only mode | Workspace standard; English mode is not offered for FE TC |
 | MUST re-fetch the TC glossary from its published sheet at Step 2.6 every run, and post the source URL, row count, and diff in chat before designing TCs | The team edits the sheet between runs; a cached CSV is not evidence of the current words |
 | MUST treat the glossary as the first authority for Thai wording — above the Step 3b fallback table, above remembered wording, above the UI-label exception | Two sources of truth guarantee drift; the sheet is the one the team maintains |
-| MUST NOT normalise, spell-fix, dedupe, or sort [`references/tc-glossary.csv`](https://github.com/Thitic9203/ols-qa-evidence/blob/main/references/tc-glossary.csv) — it is a verbatim mirror; typos are fixed in the sheet by its owner | A CSV that differs from the sheet is a silent drift bug |
+| MUST NOT normalise, spell-fix, dedupe, or sort `{EVIDENCE_REPO}/references/tc-glossary.csv` — it is a verbatim mirror; typos are fixed in the sheet by its owner | A CSV that differs from the sheet is a silent drift bug |
 | MUST stop and ask the user when a glossary Thai cell is empty, or when one English key carries conflicting Thai meanings across rows | The agent has no authority to coin project terminology |
 | MUST NOT write a guessed term and tag it "provisional", "pending confirmation", or "documented fallback" instead of asking | Tagging a guess is not asking; the guess still reaches the deliverable |
 | MUST use ราชบัณฑิตยสภา approved Thai term first (Step 3b); fall back to English only when no official term exists or the UI label is English | Authoritative Thai is more professional than ad-hoc transliteration or unnecessary English |

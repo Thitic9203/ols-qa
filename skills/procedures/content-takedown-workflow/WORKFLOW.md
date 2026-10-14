@@ -19,6 +19,7 @@ accusatory one is tried first, and so no attempt destroys the next.
 
 ## Contents
 
+- [Progress checklist](#progress-checklist)
 - [Discipline](#discipline)
 - [Refusal-first (preconditions)](#refusal-first-preconditions)
 - [Step 0 — Intake, in one message \[medium freedom\]](#step-0--intake-in-one-message-medium-freedom)
@@ -31,6 +32,25 @@ accusatory one is tried first, and so no attempt destroys the next.
 - [Step 7 — Report, evidence, and memory \[medium freedom\]](#step-7--report-evidence-and-memory-medium-freedom)
 - [Step 8 — Rollback readiness \[low freedom\]](#step-8--rollback-readiness-low-freedom)
 - [MUST NOT](#must-not)
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+Content takedown progress:
+- [ ] Refusal-first (preconditions)
+- [ ] Step 0 — Intake, in one message
+- [ ] Step 1 — Inventory the batch from the API, not from a screen
+- [ ] Step 2 — Prove the items are otherwise healthy first
+- [ ] Step 3 — Pick the mechanism, cleanest first
+- [ ] Step 4 — The traps that make this go wrong
+- [ ] Step 5 — Execute
+- [ ] Step 6 — Verify from the outside, five ways
+- [ ] Step 7 — Report, evidence, and memory
+- [ ] Step 8 — Rollback readiness
+```
 
 ## Discipline
 
@@ -116,6 +136,8 @@ you could not observe playback yourself rather than implying you did.
 
 Report what you found. If something is genuinely broken, stop and ask before hiding it.
 
+**Go back:** If a health check fails ("something is genuinely broken"), stop and ask. If the answer changes the batch, return to Step 1 — Inventory the batch from the API, not from a screen, because every later step keys off that file.
+
 ## Step 3 — Pick the mechanism, cleanest first [low freedom]
 
 Work down this ladder and **stop at the first rung that the accounts you hold can actually reach**.
@@ -185,6 +207,8 @@ do not let partially-hidden state be reported as done.
 - Tally the outcomes by status and print every item that did not reach the intended state. Zero
   silent drops.
 
+**Go back:** If the one-item dry-run fails its Step 6 check, return to Step 3 — Pick the mechanism, cleanest first: that rung does not work for the accounts you hold. If a precondition fails mid-batch, stop the batch (Step 4).
+
 ## Step 6 — Verify from the outside, five ways [low freedom]
 
 The write's own `201` proves nothing about what the public sees. All five, every time:
@@ -198,6 +222,8 @@ The write's own `201` proves nothing about what the public sees. All five, every
 | **5** | the real page as a guest, screenshotted | the empty-state string renders; send the image to the user |
 
 Layer 4 is the one that catches collateral damage, and it is the one people skip.
+
+**Go back:** If layer 1, 2, 3 or 5 fails, return to Step 5 — Execute for the items the tally shows short of the intended state, then run all five layers again. If layer 4 fails, something outside the batch moved: stop and report it first — a refusal must never read as a pass (Step 4).
 
 ## Step 7 — Report, evidence, and memory [medium freedom]
 
@@ -219,6 +245,8 @@ owner issuing `republish` — either way you need the per-item ids from Step 5 o
 
 If the batch cannot be restored by any call available to the accounts you hold, say that **before**
 executing, not after.
+
+**Go back:** If any item has no undo id in the Step 5 record, return to Step 5 — Execute and complete the per-item record before calling the job done.
 
 ## MUST NOT
 
