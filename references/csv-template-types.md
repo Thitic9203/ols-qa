@@ -21,10 +21,10 @@ Used by: `skills/procedures/tc-fe-prep-workflow/WORKFLOW.md`
 | Type | Language | Columns | Row structure | Summary footer | Typical row cap |
 |------|----------|---------|---------------|---------------|-----------------|
 | **Unit Test** | English | 13 | Function/SubFunction groupings | No | Open-ended |
-| **Integration Test** | Thai | 9 | Sequential numbered (blank) | Yes | ~330 |
-| **System Test** | Thai | 9 | Sequential numbered (blank) | Yes | ~800 |
+| **Integration Test** | Thai | 9 | Sequential numbered (one per TC) | No | Open-ended |
+| **System Test** | Thai | 9 | Sequential numbered (one per TC) | No | Open-ended |
 
-All types generate **blank templates** — row numbers and structure only, content columns empty.
+Each file holds only the TCs of its Type, with content mapped per the Step 6 column-mapping tables in `WORKFLOW.md` — only execution-result columns stay blank. Generate a file only when its Type has TCs.
 
 ---
 
@@ -46,7 +46,7 @@ Has **section header rows** mixed in (not data rows):
 |----------|---------|---------|
 | Function header | `Function : <function name>` | Groups test cases by TOR function |
 | Sub Function header | `Sub Function : <sub-feature name>` | Groups within a function |
-| Data row | `1, <empty x12>` | Numbered TC row (content blank) |
+| Data row | `1, <TC content>` | Numbered TC row (content mapped; execution-result columns blank) |
 
 Header rows: only col 1 populated, remaining 12 columns empty.  
 Data rows: numbered sequentially within each sub-function group.
@@ -67,9 +67,8 @@ Data rows: numbered sequentially within each sub-function group.
 
 ### Row structure
 
-- Sequential numbered rows from 1 to N (columns 2–9 empty)
+- One sequential numbered row per Integration Test TC (content mapped; execution-result columns blank)
 - No section grouping headers
-- Typical N: **330 rows**
 
 ### No summary footer
 
@@ -95,9 +94,8 @@ Same as Integration Test:
 
 ### Row structure
 
-- Sequential numbered rows from 1 to N (columns 2–9 empty)
+- One sequential numbered row per System Test TC (content mapped; execution-result columns blank)
 - No section grouping headers
-- Typical N: **800 rows**
 
 ### No summary footer
 

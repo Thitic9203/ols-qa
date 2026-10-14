@@ -594,8 +594,8 @@ After approval (and Suite confirmed), write **four files** inside the user's pro
 | `references/Import_Qase_{ISSUE_KEY}.csv` | always (unless xlsx requested) | **Qase import CSV** — schema per [qase-import-format.md](references/qase-import-format.md) |
 | `references/Draft_Jira_{ISSUE_KEY}.xlsx` / `references/Import_Qase_{ISSUE_KEY}.xlsx` | user explicitly requested Excel/xlsx | Excel versions of both files above |
 | `references/Unit_Test_{ISSUE_KEY}.csv` | only if Type = `Unit Test` TCs exist | **Typed content CSV** — 13 English columns; TCs filtered to Type = `Unit Test`, content mapped to Unit Test template columns (Step 6 mapping); Function/Sub Function groupings from ticket title + Services Impacted |
-| `references/Integration_Test_{ISSUE_KEY}.csv` | only if Type = `Integration Test` TCs exist | **Typed content CSV** — 9 Thai columns; TCs filtered to Type = `Integration Test`, content mapped to Integration Test template columns (Step 6 mapping); summary footer |
-| `references/System_Test_{ISSUE_KEY}.csv` | only if Type = `System Test` TCs exist | **Typed content CSV** — 9 Thai columns; TCs filtered to Type = `System Test`, content mapped to System Test template columns (Step 6 mapping); summary footer |
+| `references/Integration_Test_{ISSUE_KEY}.csv` | only if Type = `Integration Test` TCs exist | **Typed content CSV** — 9 Thai columns; TCs filtered to Type = `Integration Test`, content mapped to Integration Test template columns (Step 6 mapping); no summary footer |
+| `references/System_Test_{ISSUE_KEY}.csv` | only if Type = `System Test` TCs exist | **Typed content CSV** — 9 Thai columns; TCs filtered to Type = `System Test`, content mapped to System Test template columns (Step 6 mapping); no summary footer |
 
 Both CSV files (`Draft_Jira` + `Import_Qase`) are always produced together and both are uploaded to Jira (Step 7). Follow [csv-export-rules.md](../../../references/csv-export-rules.md) for cell cleaning (convert `<br>`, strip tags, preserve Thai) — applies to all CSV files. Never silently produce only one when both are required.
 
@@ -659,7 +659,7 @@ If no Unit Test TCs exist: **skip this file**. A skip-note will appear in the Ji
 | วันที่ทดสอบ | *(execution result)* | Leave blank — tester fills after running the test |
 | ผู้ทดสอบ | *(execution result)* | Leave blank — tester fills after running the test |
 
-Build 9-column Thai header; write sequential numbered rows from the filtered TC set. **No summary footer** — end after the last data row. Encoding: UTF-8 BOM (`utf-8-sig`).
+Build 9-column Thai header in this order: `ลำดับ, โมดูล, รายการทดสอบ, ขั้นตอนการทดสอบ, ผลการทดสอบที่คาดหวัง, ผลการทดสอบ, วันที่ทดสอบ, ผู้ทดสอบ, หมายเหตุ`; write sequential numbered rows from the filtered TC set. **No summary footer** — end after the last data row. Encoding: UTF-8 BOM (`utf-8-sig`).
 
 If no Integration Test TCs exist: **skip Integration_Test file**. If no System Test TCs exist: **skip System_Test file**. Skip-notes for each absent type appear in the Jira comment footer (Step 7, after attachment links, before Disclaimer).
 
