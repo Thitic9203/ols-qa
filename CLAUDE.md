@@ -42,6 +42,7 @@
 - pre-push รันเทสต์บน commit ที่จะขึ้น · ห้าม `--no-verify` ทุกกรณี · กวาดของคนอื่นติดไป = ห้าม force-push ให้คอมมิตเสริม+เขียนเหตุในข้อความ
 - งานยาว/ชนไฟล์ → `git worktree` ของตัวเองใต้ `.worktrees/` · push ตอนมีงานค้าง → worktree ชั่วคราว cherry-pick
 - สคริปต์จาก git hook ที่รัน git ที่อื่น ต้อง source `scripts/git-env-clean.sh` + `git_env_clean` และยืนยัน `--show-toplevel`
+- เคลม "push แล้ว / ขึ้น main แล้ว" ได้หลัง `bash scripts/verify-on-origin.sh <sha|branch>` พิมพ์ `ON-ORIGIN` เท่านั้น — `git log` ในเครื่องไม่นับ (#0190)
 - Pull main ก่อนเริ่มงาน · commit แบบ conventional (feat:/fix:/docs:) · แก้ `tools/**/*.js` ต้องเขียวก่อน commit + เพิ่ม test คู่กฎใหม่:
 
 ```bash
@@ -52,7 +53,7 @@ bash scripts/run-test-suites.sh
 - ห้าม commit: password/token/key · อีเมลบัญชีจริง · host ภายใน · Sheet/Drive/Figma/Confluence/Jira-tenant id · Discord id · ชื่อลูกค้า/พนักงาน · `/Users/<name>` — รวม commit message · ใช้ `<ORG>` `{ISSUE_KEY}` `<QA_TRACKING_SHEET_ID>` ฯลฯ ค่าจริงอยู่ `~/.ols-qa-secrets/` เท่านั้น
 - ลิงก์หลักฐานอยู่ในชีทเท่านั้น · secret หลุด = rewrite history + rotate + แจ้ง user ทันที · guard เป็นตาข่าย ไม่ใช่ใบอนุญาต
 - `ols-qa` public · `helix` + `ols-qa-evidence` private (ถือเหมือน public) · เอกสารที่มีข้อมูลลูกค้าอยู่ `ols-qa-evidence` ห้ามย้ายกลับ
-- helix sync: commit ไฟล์ร่วมใน `skills/` `references/` `commands/` → post-commit sync+deploy helix อัตโนมัติ · logic generic ลงไฟล์ร่วม โครงสร้าง OLS ลง guide เป็น placeholder · secret ใหม่: เติม `~/.helix-ols-denylist` → gen hash → `check-no-secrets.sh`
+- helix sync: ส่งเฉพาะจาก main หลัง merge (PR #24) — merge PR ที่แตะไฟล์ร่วมใน `skills/` `references/` `commands/` แล้ว รัน `bash scripts/sync-skills-to-helix.sh <files>` จาก main ล่าสุด (ไฟล์ใหม่ `HELIX_SYNC_NEW=1`) ตามด้วย `bash scripts/helix-parity.sh` · logic generic ลงไฟล์ร่วม โครงสร้าง OLS ลง guide เป็น placeholder · secret ใหม่: เติม `~/.helix-ols-denylist` → gen hash → `check-no-secrets.sh`
 
 ## 6. หลักฐาน / verdict
 - หลักฐานต้องเป็นหน้าจอ FE จริงเท่านั้น: ห้าม JSON ดิบ · DevTools/console · terminal · โปรแกรมอื่น · หน้าว่าง/โหลดค้าง (ตรวจเฟรมสุดท้ายทุกคลิป) · แก้คลิปเดิมด้วย `cliptool.py` ก่อน ตัดเกิน 60% หรือเนื้อหาหายค่อยอัดใหม่ · ชื่อ test data แนว QA = ผ่าน · แถบ URL ที่ตัวอัดฉีด = ผ่าน (`WEB_ADDRESS` เลิกใช้ตัดสิน) · ไม่มีจอรองรับ = BLOCKED ถาม PO
