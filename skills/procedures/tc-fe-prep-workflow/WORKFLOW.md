@@ -29,6 +29,7 @@ Prepare **frontend manual test cases** from a Jira **story** (acceptance criteri
 - [Step 4.5 — Thai↔English term confirmation (mandatory gate) \[medium freedom\]](design-and-review.md#step-45--thaienglish-term-confirmation-mandatory-gate-medium-freedom)
 - [Step 5 — HTML draft in Chrome (approval gate) \[medium freedom\]](#step-5--html-draft-in-chrome-approval-gate-medium-freedom)
 - [Step 6 — Save artifacts in the user's workspace \[medium freedom\]](#step-6--save-artifacts-in-the-users-workspace-medium-freedom)
+- [Step 6.5 — Create the ticket's TC tab in the tracking sheet \[low freedom\]](#step-65--create-the-tickets-tc-tab-in-the-tracking-sheet-low-freedom)
 - [Step 7 — Publish to Jira (story only) \[low freedom\]](#step-7--publish-to-jira-story-only-low-freedom)
 - [Step 7.5 — Final TC review report (mandatory before "done") \[low freedom\]](#step-75--final-tc-review-report-mandatory-before-done-low-freedom)
 - [QA closing (mandatory before "done") \[low freedom\]](#qa-closing-mandatory-before-done-low-freedom)
@@ -57,6 +58,7 @@ TC FE prep progress:
 - [ ] Step 4.5 — Thai↔English term confirmation (mandatory gate)
 - [ ] Step 5 — HTML draft in Chrome (approval gate)
 - [ ] Step 6 — Save artifacts in the user's workspace
+- [ ] Step 6.5 — Create the ticket's TC tab in the tracking sheet
 - [ ] Step 7 — Publish to Jira (story only)
 - [ ] Step 7.5 — Final TC review report (mandatory before "done")
 - [ ] QA closing (mandatory before "done")
@@ -252,6 +254,33 @@ Then report to user: "Files saved. ADF ready. Publishing..."
 
 ---
 
+## Step 6.5 — Create the ticket's TC tab in the tracking sheet [low freedom]
+
+Run this step only when the project guide has a **"Create the per-ticket TC tab"** row (OLS:
+[ols-project-guide.md](../../../references/ols-project-guide.md)). If the guide has no such row, skip it
+and say so in one line.
+
+**Gate:** the draft must be approved first: at Step 5 in chat, or, for an unattended run, by the
+owner's reply `passed` to the draft in a Slack DM. No approval means no tab.
+
+1. **Rows file.** Use `references/Draft_Jira_{ISSUE_KEY}.csv` as it is when no case is `BLOCKED`.
+   When Step 4e marked any case `BLOCKED`, write `references/Sheet_Tab_{ISSUE_KEY}.json` instead.
+   It is a JSON list with one object per approved row, keyed by the same column names. Each blocked
+   case adds `"Test Status": "BLOCKED"` and its Step 4e `"Remark"`. A case that is only noted in
+   chat is not on the sheet.
+2. **Dry run.** Run the guide's command with `--dry-run`. Show a summary in chat: the tab name, the
+   row count, the dropdown source and the existence check. Never print the sheet id.
+3. **Write.** Run the same command without `--dry-run`. Exit `0` with `"readback": "clean"` is the
+   only success.
+4. **Refusal.** On exit `3`, nothing was written. Report the reason verbatim and stop this step. If
+   the tab already exists, never write into it; tell the user. On exit `4`, the tab exists but is
+   incomplete. Report it and ask the user before anything else touches the sheet.
+
+The tracking sheet is written only through the guide's tool, never with a raw Sheets API call or a
+one-off script (guide row "Write scope").
+
+---
+
 ## Step 7 — Publish to Jira (story only) [low freedom]
 
 **Target:** `{ISSUE_KEY}` story the user specified.
@@ -376,6 +405,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] `Import_Qase_{ISSUE_KEY}.csv` uses Qase schema, `Status = Done` on every row, cut fields absent; rows sorted Unit Test → Integration Test → System Test, ACs then ECs within each group, TC IDs continuous 1,2,3; row count matches approved draft.
 - [ ] Both files uploaded to the Jira issue; both footer links verified working.
 - [ ] Typed CSVs generated only for Types that have TCs; each filtered and content mapped to its template columns; all generated files uploaded to Jira; footer links present only for uploaded files; skipped types noted in comment.
+- [ ] Step 6.5: the ticket's TC tab was created (exit `0`, `"readback": "clean"`), or the step was skipped because the project guide has no "Create the per-ticket TC tab" row, or a refusal was reported verbatim.
 - [ ] Disclaimer appended as **last line** of the Jira comment, after all attachment links (exact wording, not translated or shortened).
 - [ ] Jira UI matches approved draft (not MCP output alone).
 - [ ] Post-publish review passed per [jira-comment-post-review.md](../../../references/jira-comment-post-review.md) — no stray tags, numbered items on separate lines, attachment present.
