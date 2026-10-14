@@ -35,6 +35,9 @@ Claude Code shortcut: `/retest-bug` → [commands/retest-bug.md](../../commands/
 Every must-read file for this workflow, linked directly from here. References already linked above are not repeated.
 
 - [WORKFLOW.md](../procedures/retest-bug-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
+- [execute-and-evidence.md](../procedures/retest-bug-workflow/execute-and-evidence.md) — before Step 4 — read and follow Steps 4–5 and the result quality gate, end to end.
+- [comment-and-post.md](../procedures/retest-bug-workflow/comment-and-post.md) — before drafting the comment — read and follow Steps 6–7, end to end.
+- [closeout-and-notify.md](../procedures/retest-bug-workflow/closeout-and-notify.md) — right after the comment is posted — read and follow Steps 8–10, end to end.
 - [bug-priority-matrix.md](../../references/bug-priority-matrix.md) — whenever a Priority/Severity is named or judged.
 - [comment-template-v2.md](../procedures/retest-bug-workflow/references/comment-template-v2.md) — before drafting the v2 comment — render it from run.json per this template; never type the body.
 - [defect-candidates.md](../../references/output-templates/defect-candidates.md) — before reporting any defect found in the round — follow this exact table and the fixed owner question; never file without the owner.

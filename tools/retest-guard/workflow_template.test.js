@@ -17,7 +17,16 @@ const R = require('./retest_rules');
 const ROOT = path.join(__dirname, '..', '..');
 const WF = path.join(ROOT, 'skills', 'procedures', 'retest-bug-workflow', 'WORKFLOW.md');
 
-const wf = fs.readFileSync(WF, 'utf8');
+/** The workflow = WORKFLOW.md plus the part files it links in its own folder (D2 split, 2026-10-14). */
+function readWorkflow(abs) {
+  const dir = path.dirname(abs);
+  const main = fs.readFileSync(abs, 'utf8');
+  const parts = [...new Set([...main.matchAll(/\]\(([a-z0-9-]+\.md)(?:#[^)]*)?\)/g)].map((m) => m[1]))]
+    .filter((n) => n !== 'WORKFLOW.md' && fs.existsSync(path.join(dir, n)));
+  return [main, ...parts.map((n) => fs.readFileSync(path.join(dir, n), 'utf8'))].join('\n');
+}
+
+const wf = readWorkflow(WF);
 
 /** The v2 wiki template block the workflow prints. */
 function templateBlock() {

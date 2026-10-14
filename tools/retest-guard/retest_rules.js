@@ -606,8 +606,11 @@ function scanBody(body, opts = {}) {
  * a deliberate decision instead of a silent second copy of the rule.
  */
 const DRIFT_ALLOWLIST = Object.freeze([
-  // The workflow states the rule for a human reader, always negatively.
+  // The workflow states the rule for a human reader, always negatively. Since the D2 split
+  // (2026-10-14) those sentences live in the workflow's part files, moved verbatim.
   Object.freeze({ file: 'skills/procedures/retest-bug-workflow/WORKFLOW.md', needle: '|width=' }),
+  Object.freeze({ file: 'skills/procedures/retest-bug-workflow/comment-and-post.md', needle: '|width=' }),
+  Object.freeze({ file: 'skills/procedures/retest-bug-workflow/execute-and-evidence.md', needle: '|width=' }),
   // The syntax map has to name the wrong form to rule it out.
   Object.freeze({ file: 'references/jira-wiki-vs-markdown.md', needle: '|width=' }),
   // The worked example explains, in prose, why it no longer carries it.

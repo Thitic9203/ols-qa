@@ -34,6 +34,8 @@ Claude Code shortcut: `/testing-ticket` → [commands/testing-ticket.md](../../c
 Every must-read file for this workflow, linked directly from here. References already linked above are not repeated.
 
 - [WORKFLOW.md](../procedures/testing-ticket-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
+- [execute-and-summarize.md](../procedures/testing-ticket-workflow/execute-and-summarize.md) — before Phase E — read and follow Phase E, the result quality gate and Phase F, end to end.
+- [results-update.md](../procedures/testing-ticket-workflow/results-update.md) — before Phase G — read and follow it whenever results are updated outside this chat.
 - [bug-priority-matrix.md](../../references/bug-priority-matrix.md) — whenever a Priority/Severity is named or judged.
 - [defect-candidates.md](../../references/output-templates/defect-candidates.md) — before reporting any defect found in the round — follow this exact table and the fixed owner question; never file without the owner.
 - [defect-report-completeness.md](../../references/defect-report-completeness.md) — for any verdict that is not a clean PASSED — what the write-up must contain.

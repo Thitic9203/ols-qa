@@ -15,6 +15,14 @@ const { execFileSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+/** The workflow = WORKFLOW.md plus the part files it links in its own folder (D2 split, 2026-10-14). */
+function readWorkflow(abs) {
+  const dir = path.dirname(abs);
+  const main = fs.readFileSync(abs, 'utf8');
+  const parts = [...new Set([...main.matchAll(/\]\(([a-z0-9-]+\.md)(?:#[^)]*)?\)/g)].map((m) => m[1]))]
+    .filter((n) => n !== 'WORKFLOW.md' && fs.existsSync(path.join(dir, n)));
+  return [main, ...parts.map((n) => fs.readFileSync(path.join(dir, n), 'utf8'))].join('\n');
+}
 
 const A = require('./aggregate.js');
 const CLI = path.join(__dirname, 'aggregate.js');
@@ -583,7 +591,7 @@ t('markdown: a "Totals by skill" section lists both skills', () => {
 });
 
 t('drift: the testing-ticket WORKFLOW template marker carries the anchor and skill=testing-ticket', () => {
-  const wf = fs.readFileSync(path.join(__dirname, '..', '..', 'skills', 'procedures', 'testing-ticket-workflow', 'WORKFLOW.md'), 'utf8');
+  const wf = readWorkflow(path.join(__dirname, '..', '..', 'skills', 'procedures', 'testing-ticket-workflow', 'WORKFLOW.md'));
   const line = wf.split('\n').find((l) => l.includes('retestskillmarker') && l.includes('skill=testing-ticket'));
   assert.ok(line, 'testing-ticket WORKFLOW.md has no marker template line');
   assert.strictEqual(A.parseMarker(line).skill, 'testing-ticket');
