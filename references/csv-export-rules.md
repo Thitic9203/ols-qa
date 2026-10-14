@@ -33,12 +33,20 @@ Run these steps on every cell value **before** writing to any file:
    pattern: <br\s*/?>   (matches <br>, <br/>, <BR>, <BR/>, <br >, <BR />, etc.)
    replace with: \n
    ```
-2. Strip all remaining HTML tags — use a greedy strip:
+2. Strip the remaining **real HTML tags only** — a whitelist of tag names, case-insensitive, with an optional closing slash and optional attributes:
    ```
-   pattern: <[^>]+>
+   pattern: </?(?:a|b|br|code|div|em|h[1-6]|hr|i|li|ol|p|pre|span|strong|sub|sup|table|tbody|td|th|thead|tr|u|ul)(?=[\s/>])[^>]*>
    replace with: (empty string)
    ```
-   This removes `<b>`, `<strong>`, `<em>`, `<p>`, `<li>`, `<ul>`, etc.
+   This removes `<b>`, `<strong>`, `<em>`, `<p>`, `<li>`, `<ul>`, `<a href="...">`, etc. A bare `<[^>]+>` must not be used: it also deletes placeholders such as `<SUITE_PATH>` or `<ORG>`, which are not HTML and must survive into the cell.
+
+   Example (steps 1–3 together):
+   ```
+   input:  Run <b>suite</b> at <SUITE_PATH><br>then **check**
+   output: Run suite at <SUITE_PATH>
+           then check
+   ```
+   `<SUITE_PATH>` is kept; `<br>` is removed (turned into a line break by step 1); `<b>`/`</b>` and `**` are removed.
 3. Strip `**` markdown bold markers (replace `**` with empty string).
 4. **Do NOT alter, escape, or transliterate any Thai or non-ASCII characters** — preserve them exactly.
 
@@ -67,7 +75,7 @@ import re
 def clean_cell(text):
     text = str(text) if text is not None else ""
     text = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)  # <br> variants → newline
-    text = re.sub(r"<[^>]+>", "", text)                            # strip remaining HTML tags
+    text = re.sub(r"</?(?:a|b|br|code|div|em|h[1-6]|hr|i|li|ol|p|pre|span|strong|sub|sup|table|tbody|td|th|thead|tr|u|ul)(?=[\s/>])[^>]*>", "", text, flags=re.IGNORECASE)  # strip real HTML tags only; keeps <PLACEHOLDER>
     text = text.replace("**", "")                                  # strip markdown bold
     return text.strip()
 
@@ -123,7 +131,7 @@ from openpyxl.styles import Alignment, Font
 def clean_cell(text):
     text = str(text) if text is not None else ""
     text = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)  # <br> variants → newline
-    text = re.sub(r"<[^>]+>", "", text)                            # strip remaining HTML tags
+    text = re.sub(r"</?(?:a|b|br|code|div|em|h[1-6]|hr|i|li|ol|p|pre|span|strong|sub|sup|table|tbody|td|th|thead|tr|u|ul)(?=[\s/>])[^>]*>", "", text, flags=re.IGNORECASE)  # strip real HTML tags only; keeps <PLACEHOLDER>
     text = text.replace("**", "")                                  # strip markdown bold
     return text.strip()
 
