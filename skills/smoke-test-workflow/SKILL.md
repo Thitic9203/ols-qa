@@ -18,6 +18,7 @@ public: never write a resolved host, id, account or channel into any file here.
 
 ## Contents
 
+- [Contents (1 hop)](#contents-1-hop)
 - [Progress checklist](#progress-checklist)
 - [Round-time contract](#round-time-contract)
 - [Stage 0 — Intake (blocking) \[medium freedom\]](#stage-0--intake-blocking-medium-freedom)
@@ -33,6 +34,32 @@ public: never write a resolved host, id, account or channel into any file here.
 - [Stage 8 — Notify \[low freedom\]](#stage-8--notify-low-freedom)
 - [Stage 7.5 — The numbers gate (the trap that cost a round) \[low freedom\]](#stage-75--the-numbers-gate-the-trap-that-cost-a-round-low-freedom)
 - [MUST / NEVER](#must--never)
+- [Dependencies](#dependencies)
+
+## Contents (1 hop)
+
+Every must-read file this workflow reaches, linked directly from here.
+
+- [user-communication.md](../../references/user-communication.md) — read before any message to the owner.
+- [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — read before invoking or switching skills.
+- [skill-routing.md](../../references/skill-routing.md) — read when a request might belong to another skill (single ticket, retest, regression).
+- [long-workflow-todos.md](../../references/long-workflow-todos.md) — read at Stage 0; keep the progress checklist as a todo list.
+- [round-time-contract.md](../../references/round-time-contract.md) — read before logging in or reusing a session for the round.
+- [playwright-preflight.md](../../references/playwright-preflight.md) — read at Stage 1, before any Playwright run.
+- [resilient-selectors.md](../../references/resilient-selectors.md) — read when writing or fixing a Playwright selector in Stage 5.
+- [test-through-real-steps.md](../../references/test-through-real-steps.md) — read before running a case — drive the real screen, never a backend shortcut.
+- [figma-design-comparison.md](../../references/figma-design-comparison.md) — read when a smoke case judges a UI screen.
+- [root-cause-investigation.md](../../references/root-cause-investigation.md) — read at Stage 4, before calling any case FAILED or BLOCKED.
+- [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) — read at Stage 4, before recording any non-PASS.
+- [qa-debug-discipline.md](../../references/qa-debug-discipline.md) — read when a result is flaky or conflicts with expectations.
+- [bug-priority-matrix.md](../../references/bug-priority-matrix.md) — read before assigning a priority or verdict to a defect.
+- [defect-report-completeness.md](../../references/defect-report-completeness.md) — read before writing up a verified defect candidate.
+- [customer-escape-prevention.md](../../references/customer-escape-prevention.md) — read before grading a feature PASSED at the result quality gate.
+- [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — read before any completion claim or evidence verdict.
+- [agent-rationalizations.md](../../references/agent-rationalizations.md) — read when tempted to skip a step; each excuse has its correct action.
+- [verify-closing-checklist.md](../../references/verify-closing-checklist.md) — read before reporting the round done.
+- [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read at the end, when a QA follow-up could be suggested.
+- [session-closing.md](../../references/session-closing.md) — read at session end.
 
 ## Progress checklist
 
@@ -369,3 +396,17 @@ grep -E '^\s+[0-9]+ (passed|failed|flaky|skipped)' <WORKDIR>/run.log   # what th
 - **NEVER** touch anything whose title or description contains `RGS`; that is the customer's data.
 - **NEVER** publish the Playwright report publicly without the owner's explicit decision.
 - **NEVER** claim a version without the tag evidence from Stage 2.
+
+## Dependencies
+
+Run the check for each of these before Stage 1 — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
+
+- Node.js and Playwright (in the e2e repo `<E2E_REPO>`)
+- Python 3 + `pypdf` (PDF summary check)
+- git and GitHub CLI `gh` (deployed-version tag evidence)
+- curl
+- Clones of the product repo and the e2e repo (`<MONOREPO>`, `<E2E_REPO>`)
+- QA capture and verify tools and the smoke templates (`<QA_TOOLS_ROOT>`)
+- Secrets folder and token files (`<SECRETS_DIR>`)
+- `superpowers:systematic-debugging` (Stage 4 triage)
+- Notify channel webhook / bot (Stage 8)

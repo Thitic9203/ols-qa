@@ -1,27 +1,6 @@
 {
   "max-lines": {},
   "toc": [],
-  "must-read-depth": {
-    "skills/smoke-test-workflow/SKILL.md -> references/skill-routing.md": 2,
-    "skills/smoke-test-workflow/SKILL.md -> references/customer-escape-prevention.md": 2,
-    "skills/smoke-test-workflow/SKILL.md -> references/qa-evidence-gates.md": 2,
-    "skills/smoke-test-workflow/SKILL.md -> references/root-cause-investigation.md": 2,
-    "skills/smoke-test-workflow/SKILL.md -> references/non-pass-challenge-gate.md": 2,
-    "skills/smoke-test-workflow/SKILL.md -> references/proactive-qa-triggers.md": 3,
-    "skills/smoke-test-workflow/SKILL.md -> references/figma-design-comparison.md": 3,
-    "skills/smoke-test-workflow/SKILL.md -> references/bug-priority-matrix.md": 3,
-    "skills/smoke-test-workflow/SKILL.md -> references/verify-closing-checklist.md": 3,
-    "skills/smoke-test-workflow/SKILL.md -> references/test-through-real-steps.md": 3,
-    "skills/smoke-test-workflow/SKILL.md -> references/round-time-contract.md": 3,
-    "skills/smoke-test-workflow/SKILL.md -> references/playwright-preflight.md": 3,
-    "skills/smoke-test-workflow/SKILL.md -> references/agent-rationalizations.md": 3,
-    "skills/smoke-test-workflow/SKILL.md -> references/defect-report-completeness.md": 3,
-    "skills/smoke-test-workflow/SKILL.md -> references/session-closing.md": 4,
-    "skills/smoke-test-workflow/SKILL.md -> references/user-communication.md": 4,
-    "skills/smoke-test-workflow/SKILL.md -> references/resilient-selectors.md": 4,
-    "skills/smoke-test-workflow/SKILL.md -> references/qa-debug-discipline.md": 4,
-    "skills/smoke-test-workflow/SKILL.md -> references/skill-invocation-discipline.md": 4,
-    "skills/smoke-test-workflow/SKILL.md -> references/long-workflow-todos.md": 5
-  },
+  "must-read-depth": {},
   "description-person": []
 }
