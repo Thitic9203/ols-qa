@@ -28,10 +28,14 @@
 | 18 | helix: sync จาก branch ที่ยังไม่ merge → revert <code>500cfe1</code> → v1.5.123 · post-mortem #0190 #0191 (<code>2679cdf</code>) | ✅ | — |
 | 19 | final eval + helix sync (หลัง #25 → #20 ขึ้น main) | ✅ | final eval BASE 44/46 = FINAL 44/46 ไม่มี regression · helix-parity 0 จาก 131 ไฟล์ร่วมต่างกัน · ติดตั้ง = helix main v1.5.125 |
 | 20 | catch-ai audit ของแผนนี้ | ✅ | ดูหัวข้อ Audit (catch-ai) |
+| 21 | helix-parity: fetch ค้างไม่มีกำหนด → จำกัดเวลา + CANNOT-VERIFY | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/32" target="_blank" rel="noopener noreferrer">#32 ↗</a> · <code>3eafecd</code> |
+| 22 | follow-up: เมนู helix 11 skill · description "Use when" · regex CSV ไม่ลบ placeholder · lint `description-use-when` | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/33" target="_blank" rel="noopener noreferrer">#33 ↗</a> · <code>5c23d3a</code> · helix v1.5.126 |
+| 23 | ตัวตรวจลิงก์ภายใน (`tools/link-check`) | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/34" target="_blank" rel="noopener noreferrer">#34 ↗</a> · <code>dcdb91f</code> |
+| 24 | skill เฉพาะ OLS เป็นข้อความ "ols-qa workspace only" ไม่มีลิงก์ · แก้ anchor publish-options | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/35" target="_blank" rel="noopener noreferrer">#35 ↗</a> · <code>b1e8213</code> · helix v1.5.127 · LINK-CHECK OK |
 
 > **Status legend:** ✅ Done · 🟡 In progress · ⬜ To Do · ❌ Failed · 🚫 Blocked
 >
-> **Updated:** 14/10/2026, 22:03 (Bangkok)
+> **Updated:** 14/10/2026, 23:26 (Bangkok)
 
 **สถานะสรุป:** 🟡 D1–D13 ขึ้น main แล้ว — #21 #22 #23 #25 merge เข้า branch ของ #20 และ #20 merge เข้า main (<code>8640211</code>) · lint บน main (<code>13e527b</code>) = 0 ทุกเกณฑ์ baseline ว่าง · routing test ขึ้น main ใน #31 (<code>6043893</code>) · helix ที่ติดตั้ง = helix main (v1.5.125) · final eval (18 รัน = 9 scenario × BASE <code>5755557</code> / FINAL main หลัง #20) BASE 44/46 = FINAL 44/46 ไม่มี regression · retest guard: executor รันเอง BASE 1/3 → FINAL 3/3 · ERROR BASE 1/2/4 → FINAL 0/0/0 (n=1 ต่อฝั่ง = สัญญาณเท่านั้น) · ผลเต็มใน private evidence repo `evals/skill-authoring-2026-10-14/RESULTS.md` · เหลือ follow-ups ในหัวข้อ Audit
 
@@ -160,12 +164,12 @@
 - [x] ไฟล์ SKILL.md / WORKFLOW.md ที่เกิน 500 บรรทัด = 0 (baseline 3 · main: 0 — ใหญ่สุด 499 `retest-bug-workflow/WORKFLOW.md`)
 - [x] references > 100 บรรทัดที่มี ToC บนสุด = ทุกไฟล์ (main: lint toc 0 violation)
 - [x] ทุก reference "ต้องอ่าน" ห่างจาก skill file ที่ถูกโหลด 1 ชั้น ตามรูปแบบที่ D1 ตัดสิน (main: must-read-depth 0 · baseline ว่าง)
-- [ ] description 12/12 ไม่ใช้ I/You และมีทั้ง "ทำอะไร" + "Use when…" · routing test ผ่าน (main: description-person 0 · routing test 13/0 และ skill_routing_map 10/0 ผ่าน · ยังไม่ติ๊ก: 10/12 มีคำ "Use when" — testing-ticket และ test-data-prep ใช้ "Use for" ดู Follow-ups)
+- [x] description 12/12 ไม่ใช้ I/You และมีทั้ง "ทำอะไร" + "Use when…" · routing test ผ่าน (main @ <code>b1e8213</code>: description-person 0 · description-use-when 0 (กฎใหม่ใน <a href="https://github.com/Thitic9203/ols-qa/pull/33" target="_blank" rel="noopener noreferrer">#33 ↗</a>) · "Use when" 12/12 · `routing.test.js` 18/0)
 - [x] lint gate (D11) อยู่ใน `run-test-suites.sh` และเขียว (main: `tools/skill-lint/skill_lint.test.js` อยู่ในรายชื่อของ `scripts/list-test-suites.sh` · lint `OK — no new violations`)
 - [ ] eval ของ 3 skill หลักไม่แย่ลงเทียบ baseline ที่วัดก่อนแก้ (D10) — วัดบนไฟล์ที่ติดตั้งจริงใน `~/.helix/…` (final: BASE 44/46 = FINAL 44/46 · FAIL 0 ทั้งสองฝั่ง · TT-1/TT-2 ข้อ E1 ตัดสินไม่ได้ทั้งสองฝั่ง เพราะคลิป fixture ออฟไลน์ต่ำกว่ามาตรฐานวิดีโอ ไม่ใช่ไม่ผ่าน · ยังไม่ติ๊ก: วัดบน worktree ของ ols-qa ไม่ใช่ไฟล์ใน `~/.helix/…` ตามถ้อยคำเกณฑ์ และ n=1 ต่อฝั่ง)
-- [ ] helix ได้ไฟล์ร่วมและไฟล์ใหม่ที่แยกออกมาครบ — ไม่มีลิงก์ใน helix ที่ชี้ไปไฟล์ที่ไม่มี (ตรวจลิงก์ทุกไฟล์ใน helix = 0 พัง) (helix-parity: `HELIX-PARITY OK 0 of 131 shared files differ` · ยังไม่ติ๊ก: ยังไม่ได้รันตัวตรวจลิงก์ทุกไฟล์ใน helix)
-- [x] เวอร์ชันใน `~/.helix/tc-fe-prep` = helix main หลัง deploy (D12) (ติดตั้ง `VERSION` 1.5.125 · HEAD <code>c92d9e0</code> = helix origin/main <code>c92d9e0</code> · `plugin.json` บน helix main 1.5.125)
-- [ ] ค่าใช้จ่ายใหม่: NO · แตะ repo อื่นนอกจาก helix sync: NO (ยังไม่ติ๊ก: audit ไม่มีแหล่งที่วัดได้สำหรับ "ค่าใช้จ่าย" — ต้องให้เจ้าของงานยืนยันเป็นลายลักษณ์อักษร)
+- [x] helix ได้ไฟล์ร่วมและไฟล์ใหม่ที่แยกออกมาครบ — ไม่มีลิงก์ใน helix ที่ชี้ไปไฟล์ที่ไม่มี (`scripts/helix-link-check.sh` จาก <a href="https://github.com/Thitic9203/ols-qa/pull/34" target="_blank" rel="noopener noreferrer">#34 ↗</a>: `LINK-CHECK OK 1581 links in 171 files` หลัง <a href="https://github.com/Thitic9203/ols-qa/pull/35" target="_blank" rel="noopener noreferrer">#35 ↗</a> · `HELIX-PARITY OK 0 of 131 shared files differ`)
+- [x] เวอร์ชันใน `~/.helix/tc-fe-prep` = helix main หลัง deploy (D12) (ติดตั้ง `VERSION` 1.5.127 · HEAD <code>7d3890a</code> = helix origin/main <code>7d3890a</code> · ต้อง restart Claude Code จึงมีผล)
+- [x] ค่าใช้จ่ายใหม่: NO · แตะ repo อื่นนอกจาก helix sync: NO (เจ้าของงานยืนยัน 14/10/2026 ผ่าน AskUserQuestion · eval รันเป็น subagent ใน Claude Code ตามมติ D10 · repo หลักฐาน private ใช้เก็บผล eval ตามกฎ §5)
 
 
 ---
@@ -199,21 +203,22 @@
 
 ### Questions
 
-1. helix-parity ครั้งแรก: `git fetch` ของ ols-qa ใน `scripts/helix-parity.sh:37` ค้างเกิน 3 นาที 40 วินาทีจึงหยุด · รันซ้ำด้วย `GIT_TERMINAL_PROMPT=0` จบ exit 0 — ผลไม่คงที่ (CLAUDE.md global ข้อ 21) ยังไม่ได้สืบหาสาเหตุ · สคริปต์ไม่มี timeout ของ fetch
+1. helix-parity ครั้งแรก: `git fetch` ของ ols-qa ใน `scripts/helix-parity.sh:37` ค้างเกิน 3 นาที 40 วินาทีจึงหยุด · รันซ้ำด้วย `GIT_TERMINAL_PROMPT=0` จบ exit 0 — ผลไม่คงที่ (CLAUDE.md global ข้อ 21) ยังไม่ได้สืบหาสาเหตุ · สคริปต์ไม่มี timeout ของ fetch → ปิดแล้ว: หาสาเหตุ (fetch ไม่มี timeout บน ssh ผ่าน VPN) และแก้ใน #32 + เทสต์เคสค้าง
 2. R1 multisample (แถว 3: 8.3 vs 8.5) ไม่มีไฟล์ผลให้ตรวจ (หายตาม #0192) — ใช้เป็นประวัติได้ ห้ามใช้ตัดสิน
-3. Success Criteria "ค่าใช้จ่ายใหม่: NO" — ไม่มีแหล่งที่วัดได้ ต้องให้เจ้าของงานยืนยัน
+3. ~~Success Criteria "ค่าใช้จ่ายใหม่: NO"~~ — ปิดแล้ว: เจ้าของงานยืนยัน 14/10/2026
 
 ### Coverage gaps
 
-- ไม่มีตัวตรวจลิงก์ทุกไฟล์ใน helix (เกณฑ์ "0 ลิงก์พัง") — helix-parity เทียบแค่ไฟล์ร่วม 131 ไฟล์ ไม่ได้ตามลิงก์
+- ~~ไม่มีตัวตรวจลิงก์ทุกไฟล์ใน helix~~ → ปิดแล้ว: `tools/link-check` (#34) · helix LINK-CHECK OK
 - eval วัดบน worktree ของ ols-qa ไม่ใช่ไฟล์ที่ติดตั้งใน `~/.helix/…` · n=1 ต่อฝั่ง
-- routing test (13/0 · skill_routing_map 10/0) ไม่ได้ตรวจคำ "Use when" ใน description
+- ~~routing test ไม่ได้ตรวจคำ "Use when"~~ → ปิดแล้ว: lint `description-use-when` + routing A5 (#33)
 
-### Follow-ups (ยังไม่แก้ไฟล์ skill — บันทึกไว้)
+### Follow-ups — แก้แล้วใน #33 #35 (เหลือข้อสุดท้าย)
 
-- `skills/helix/SKILL.md:67-74` เมนูตัวเลขมี 7 จาก 11 skill — ขาด content-takedown · review-result · smoke-test · test-data-prep
-- description ใช้ "Use for" แทน "Use when": `skills/testing-ticket-workflow/SKILL.md:5` · `skills/test-data-prep-workflow/SKILL.md:5` · ใช้ "Do NOT use when": `skills/helix/SKILL.md:6`
-- regex ลบแท็ก `<[^>]+>` ใน `references/csv-export-rules.md:38,70,126` (ไฟล์ที่ tc-fe-prep ลิงก์จาก `skills/tc-fe-prep-workflow/SKILL.md:33`) ลบ placeholder ไปด้วย — ทดสอบ `re.sub(r"<[^>]+>","","Open <SUITE_PATH> then <b>x</b>")` ได้ `'Open  then x'` · พบใน eval FE-2 ทั้งสองฝั่ง
+- ✅ เมนู helix 11 skill (#33) · 4 skill เฉพาะ OLS เป็นข้อความ "ols-qa workspace only" (#35, มติเจ้าของงาน 14/10)
+- ✅ description ใช้ "Use when" ครบ 12/12 (#33)
+- ✅ regex CSV ลบเฉพาะแท็ก HTML ที่อยู่ในรายการ เก็บ placeholder (#33)
+- ⬜ ไฟล์ร่วมฝั่ง ols-qa มีลิงก์ที่ชี้ไปไฟล์ที่มีเฉพาะใน helix 6 จุด (`agent-entry.md:3` · `csv-export-rules.md:213` · `proactive-qa-triggers.md:52` · `test-md-format.md:5,94`) — ฝั่ง helix ไม่พัง · ฝั่ง ols-qa ยังพัง (รายชื่อเต็มใน repo หลักฐาน `evals/skill-authoring-2026-10-14/lane-K-olsqa.txt`) — งานถัดไป ไม่อยู่ในเกณฑ์ของแผนนี้
 
 ---
 
