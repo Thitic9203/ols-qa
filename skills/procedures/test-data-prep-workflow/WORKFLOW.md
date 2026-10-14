@@ -11,7 +11,7 @@ description: |
 End-to-end preparation of OLS test/training data from a request: confirm env + account → reuse existing published content → create only what is missing per the recipe → apply the cover / video / naming rules → pass every gate → get sample approval → report.
 
 **Single source of truth:** every recipe, formula, tool, and gate lives in
-**[ols-data-prep.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ols-data-prep.md)** (private) and this repo's `CLAUDE.md`. This workflow orchestrates them — it never re-invents a formula, a tool, or a cover style. Read the source first; follow it exactly.
+**`{EVIDENCE_REPO}/docs/ols-data-prep.md`** (private evidence repo; `{EVIDENCE_REPO}` = its local clone, from the workspace project guide) and this repo's `CLAUDE.md`. This workflow orchestrates them — it never re-invents a formula, a tool, or a cover style. Read the source first; follow it exactly.
 
 ## Contents
 
@@ -52,7 +52,7 @@ Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
 **Read before creating anything.** Open ols-data-prep.md and this repo's `CLAUDE.md` data-prep section (the 🔴 test-data rules + the **Cover corrections (2026-08-08)** 10-rule block) BEFORE the first login or creation. Both govern this workflow. Inventing a recipe, a cover style, or a tool is the single most common cause of rejected data — do not do it.
 
-**Reuse the real tools.** The working tools are off-repo in `~/ols-qa-testing-bot/` (`dt_client.js`, `thumb_ai.js`, `thumb_final.js`, `thai_wrap.js`, `cover_prompts.json`, `cover_photo_guard.js`, capture harness, upload). Reuse them as-is — never rewrite a divergent copy that drifts from the client-approved output.
+**Reuse the real tools.** The working tools are off-repo under `{QA_TOOLS_ROOT}/` (local clone root from the workspace project guide; `dt_client.js`, `thumb_ai.js`, `thumb_final.js`, `thai_wrap.js`, `cover_prompts.json`, `cover_photo_guard.js`, capture harness, upload). Reuse them as-is — never rewrite a divergent copy that drifts from the client-approved output.
 
 **Not-all-green = not usable.** Data that fails any gate layer is "ยังไม่เรียบร้อย": never upload it to Drive, never test with it, never call the job done, never report it silently. Fail a layer → root-cause → fix at source → restart from layer 1 (no partial pass, no workaround).
 
@@ -66,7 +66,7 @@ MUST NOT create, upload, or "seed" anything until:
 2. **Account + role is confirmed** for the create/verify surface.
 3. **ols-data-prep.md has been read** for the exact type + target status being produced.
 
-If any is missing → stop and ask (Gate 0). Covers additionally require Draft Things API `:7860` ON — if the app is not installed, the cover work is **BLOCKED**; say so in chat, do not fall back to a solid/gradient/PIL cover.
+If any is missing → stop and ask (Gate 0). Covers additionally require Draw Things API `:{IMAGE_API_PORT}` ON — if the app is not installed, the cover work is **BLOCKED**; say so in chat, do not fall back to a solid/gradient/PIL cover.
 
 ## Gate 0 — Intake (mandatory, wait for the user) [medium freedom]
 
@@ -76,7 +76,7 @@ Use the **AskUserQuestion** tool so each step is a real prompt the user answers 
 
 ### Intake 0.1 — Environment + spec source (ask first, wait)
 
-- **Environment** — `dev` / `pre-prod` / `training-*` (staging / prod only if the user names them). Never pick one yourself, even a more convenient one (per CLAUDE.md env-intake rule). **dev and pre-prod require VPN; training does NOT (public).** Do not pick an env just because training skips VPN — env choice is the user's. There is currently **one** training env; resolve its real host from `~/.ols-qa-secrets/` (never write the host into this public repo).
+- **Environment** — `dev` / `pre-prod` / `training-*` (staging / prod only if the user names them). Never pick one yourself, even a more convenient one (per CLAUDE.md env-intake rule). **dev and pre-prod require VPN; training does NOT (public).** Do not pick an env just because training skips VPN — env choice is the user's. There is currently **one** training env; resolve its real host from `{SECRETS_DIR}/` (from the workspace project guide) (never write the host into this public repo).
 - **Account / role** — offer the canonical OLS roles: **System Admin · Admin Content · Learner · Creator**. Capture which role each item is created with (Creator = the default owner for media/course/LP).
 - **Confluence (CF) URL** — the spec / reference page for the content to build. If the user has none, say so explicitly and note there is no CF spec (do not invent requirements).
 
@@ -141,7 +141,7 @@ Per CLAUDE.md §5.1 and the 2026-08-08 naming feedback. Every name and descripti
 
 ## Step 4 — Covers (the 10 Cover-correction rules + 5-level gate) [medium freedom]
 
-Cover source = ols-data-prep.md §5.7.2 (client-approved FINAL). **Prereq:** Draw Things API `HTTP:7860` ON — open it yourself first (check `curl :7860/sdapi/v1/options`; if not installed, BLOCK and tell the user, never fall back to a plain cover).
+Cover source = ols-data-prep.md §5.7.2 (client-approved FINAL). **Prereq:** Draw Things API `HTTP:{IMAGE_API_PORT}` ON (port from the workspace project guide) — open it yourself first (check `curl :{IMAGE_API_PORT}/sdapi/v1/options`; if not installed, BLOCK and tell the user, never fall back to a plain cover).
 
 Every cover = **a photograph** from Draw Things (SDXL, warm editorial, `seed=hash(id)`) + **Thai text overlaid by the program layer** (the model renders no text — negative prompt strips letters/logo/watermark/gibberish). Apply all 10 corrections (CLAUDE.md, 2026-08-08):
 
@@ -158,7 +158,7 @@ Every cover = **a photograph** from Draw Things (SDXL, warm editorial, `seed=has
 
 Tone (STYLE_TAIL) and sharpness are **separate levers** — "make it sharper" means push res/unsharp only, never change mood.
 
-**Sharpness + completeness are judged strictly against [ols-data-prep.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ols-data-prep.md) §5.7.2 — that doc is the authority, not this summary.** Open the rendered PNG and check it by eye; never assume from the pipeline.
+**Sharpness + completeness are judged strictly against `{EVIDENCE_REPO}/docs/ols-data-prep.md` §5.7.2 — that doc is the authority, not this summary.** Open the rendered PNG and check it by eye; never assume from the pipeline.
 
 **Cover gate — pass EVERY row, or regenerate (fail-closed, no partial pass):**
 
