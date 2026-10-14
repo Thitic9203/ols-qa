@@ -566,6 +566,32 @@ t('LANE_WITHOUT_LEASE: check.js on a real brief file exits non-zero, then 0 with
   }
 });
 
+// Report #0192 — eval evidence written only to the session scratchpad under /tmp; a reboot wiped it.
+const PM0192_BAD = 'Write the baseline run outputs and grader GRADE files to the scratchpad under /private/tmp/<session>/scratchpad/evals/.\n' + PERSIST_LINE;
+const PM0192_GOOD = 'Write the baseline run outputs and grader GRADE files to <evidence-repo>/evals/skill-authoring/ and commit them; ' +
+  'run bash scripts/check-evidence-durable.sh on that folder first.\n' + PERSIST_LINE;
+
+t('#0192 incident brief (eval outputs + grades to the /tmp scratchpad) is BLOCKED', () => {
+  const r = rules.assessBrief(PM0192_BAD);
+  assert.ok(r.findings.some((f) => f.code === 'EVIDENCE_IN_TEMP' && f.severity === rules.SEVERITY.BLOCK), 'got ' + r.findings.map((f) => f.code));
+  assert.ok(r.checks >= 13, 'the temp-evidence check must be counted');
+});
+
+t('#0192 brief writing the same evidence to a durable repo folder passes that check', () => {
+  const r = rules.assessBrief(PM0192_GOOD);
+  assert.ok(!r.findings.some((f) => f.code === 'EVIDENCE_IN_TEMP'), 'must not flag: ' + rules.formatAssessment(r));
+});
+
+t('#0192 a line that forbids /tmp for evidence is not flagged', () => {
+  const r = rules.assessBrief('Never write eval evidence to /tmp or the scratchpad.\n' + PERSIST_LINE);
+  assert.ok(!r.findings.some((f) => f.code === 'EVIDENCE_IN_TEMP'), 'must not flag: ' + rules.formatAssessment(r));
+});
+
+t('#0192 scratch files that are not evidence may still use /tmp', () => {
+  const r = rules.assessBrief('Write the downloaded zip to /tmp/unpack/ and delete it after extracting.\n' + PERSIST_LINE);
+  assert.ok(!r.findings.some((f) => f.code === 'EVIDENCE_IN_TEMP'), 'must not flag: ' + rules.formatAssessment(r));
+});
+
 // ------------------------------------------------------------------- harness
 
 let failed = 0;

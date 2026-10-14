@@ -168,6 +168,11 @@ const LANE_SIGNAL_RE = /\blanes?\b|\bL\d+\b|เลน|\bAccount lease\b/i;
 const LOGIN_FILE_RE = /\bstorageState\b|\bstate_[\w<>{}.-]*\.json\b|\blogin file\b|\bAccount lease\b/i;
 const LEASE_ACQUIRE_RE = /\bsession_lease(?:\.js)?\b[^\n]{0,40}\bacquire\b|\bacquire\b[^\n]{0,30}\blease\b|\blease\b[^\n]{0,10}\bacquire\b/i;
 const LEASE_RELEASE_RE = /\bsession_lease(?:\.js)?\b[^\n]{0,40}\brelease\b|\brelease\b[^\n]{0,30}\blease\b|\blease\b[^\n]{0,10}\brelease\b/i;
+// Check 13 (report #0192, repeat of #0008): a brief line that sends decision evidence (eval runs, grades,
+// baselines, scenarios, fixtures, ledgers) to a temp root. A reboot wipes it and the later comparison
+// the decision rested on can no longer be made. Same line = the write target of that evidence.
+const TEMP_ROOT_RE = /(?:^|[\s"'`(=])(?:\/private)?\/tmp\b|\/var\/folders\b|\bscratch-?pad\b|\$\{?TMPDIR\b|\bos\.tmpdir\(|\bmktemp\b/i;
+const DECISION_EVIDENCE_RE = /\bevals?\b|\bgrad(?:e|es|er|ers|ing)\b|\bbaselines?\b|\bmulti-?samples?\b|\bscenarios?\b|\bfixtures?\b|\bledgers?\b|\bevidence\b|\bverdicts?\b|หลักฐาน|คะแนน|ผลรัน/i;
 
 /**
  * Lines that gate on a file-freshness comparison against a clock time that is
@@ -422,6 +427,28 @@ function assessBrief(text) {
         'add: "before loading the login file, acquire the session lease (project guide: lease tool acquire <tag> ' +
         '--ttl-min N --holder \"<lane> <round id>\"), renew it on long runs, release it in finally" — or, when the parent ' +
         'holds the lease, put the literal token ' + LEASE_PARENT_MARKER + ' in the brief',
+    });
+  }
+
+  // Check 13 — decision evidence written to a temp root (report #0192, repeat of #0008).
+  checks += 1;
+  const tempEvidenceLine = text.split('\n').find((l) => {
+    const m = TEMP_ROOT_RE.exec(l);
+    if (!m || !DECISION_EVIDENCE_RE.test(l) || !WRITE_VERB_RE.test(l)) return false;
+    return !NEGATION_RE.test(l.slice(Math.max(0, m.index - 40), m.index));
+  });
+  if (tempEvidenceLine) {
+    findings.push({
+      code: 'EVIDENCE_IN_TEMP',
+      severity: SEVERITY.BLOCK,
+      message:
+        'the brief writes decision evidence (eval runs, grades, baselines, scenarios, fixtures, ledgers) under a temp root — ' +
+        'on 2026-10-14 a reboot wiped every eval output of the skill-authoring plan from the session scratchpad and the final ' +
+        'eval could no longer be compared to its baseline (report #0192, repeat of #0008). Line: ' + tempEvidenceLine.trim().slice(0, 160),
+      fix:
+        'write that evidence under a durable, version-controlled folder (the private evidence repo) and have the agent run ' +
+        '`bash scripts/check-evidence-durable.sh <folder>` (must print DURABLE) before its first write; keep temp roots for ' +
+        'files that can be regenerated in seconds',
     });
   }
 
