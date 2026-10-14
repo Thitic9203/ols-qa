@@ -27,6 +27,13 @@ When invoked:
 
 Claude Code shortcut: `/test-data-prep` → [commands/test-data-prep.md](../../commands/test-data-prep.md).
 
+## Contents (read on demand, 1 hop)
+
+Every must-read file for this workflow, linked directly from here. References already linked above are not repeated.
+
+- [WORKFLOW.md](../procedures/test-data-prep-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
+- [shared-preamble.md](../../references/shared-preamble.md) — at the start of every run, before the first reply (preamble, constraints, tone).
+
 ## Refusal-first (precondition gate)
 
 All preconditions and refusal rules are in WORKFLOW.md. MUST NOT create / upload / seed until the **full Gate 0 intake is confirmed** — asked in order via `AskUserQuestion` and all cleared before anything is built: **0.1** env + account + Confluence (CF) URL (never pick an env yourself), **0.2** data type(s) as a checkbox / multi-select + exact target status, **0.3** style / content shape + quantity + purpose, **0.4** the relevant detail questions (reuse policy, owner, cover/video needed, delivery, lot, clash handling, sample approval). Restate the whole spec and wait for "go". Covers require Draw Things API `:7860` ON — otherwise the cover work is BLOCKED (never fall back to a plain cover).

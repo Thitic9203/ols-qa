@@ -36,6 +36,13 @@ When invoked:
 
 Claude Code shortcut: `/content-takedown` → [commands/content-takedown.md](../../commands/content-takedown.md).
 
+## Contents (read on demand, 1 hop)
+
+Every must-read file for this workflow, linked directly from here. References already linked above are not repeated.
+
+- [WORKFLOW.md](../procedures/content-takedown-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
+- [shared-preamble.md](../../references/shared-preamble.md) — at the start of every run, before the first reply (preamble, constraints, tone).
+
 ## Refusal-first (precondition gate)
 
 All preconditions and refusal rules are in WORKFLOW.md. MUST NOT start without an explicit

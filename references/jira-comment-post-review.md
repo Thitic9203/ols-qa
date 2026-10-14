@@ -2,6 +2,14 @@
 
 After posting a TC comment to Jira, the agent MUST review the rendered comment on Jira UI, fix any issues, and re-verify — **before telling the user it's done.**
 
+## Contents
+
+- [Rule](#rule)
+- [Pre-post render + media check (before the approval popup)](#pre-post-render--media-check-before-the-approval-popup)
+- [Review checklist (all items must pass)](#review-checklist-all-items-must-pass)
+- [Fix procedure (when any check fails)](#fix-procedure-when-any-check-fails)
+- [Reporting to user](#reporting-to-user)
+
 ## Rule
 
 ```

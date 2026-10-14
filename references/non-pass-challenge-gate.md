@@ -1,5 +1,13 @@
 # Challenge a non-PASS before you record it — the "wait, really?" gate
 
+## Contents
+
+- [1. Pause and name the discrepancy — do not write "FAILED" yet](#1-pause-and-name-the-discrepancy--do-not-write-failed-yet)
+- [2. Re-verify the EXPECTED side against an authoritative source — including related tickets' AC/EC](#2-re-verify-the-expected-side-against-an-authoritative-source--including-related-tickets-acec)
+- [3. Rule out a test-side cause](#3-rule-out-a-test-side-cause)
+- [4. Surface it to the user and let them steer — before the verdict is committed or a bug is filed](#4-surface-it-to-the-user-and-let-them-steer--before-the-verdict-is-committed-or-a-bug-is-filed)
+- [MUST / NEVER](#must--never)
+
 Applies to **every** QA result that is not a clean PASSED — any test case, any ticket, in
 [testing-ticket-workflow](../skills/procedures/testing-ticket-workflow/WORKFLOW.md),
 [retest-bug-workflow](../skills/procedures/retest-bug-workflow/WORKFLOW.md), any per-case verdict

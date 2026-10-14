@@ -10,6 +10,15 @@ layer off.
 just strict", "it failed once, that is enough", "the role probably has access" — each of these is
 the exact sentence that preceded a recorded escape below.
 
+## Contents
+
+- [How to run it](#how-to-run-it)
+- [Result line](#result-line)
+- [The 20 layers](#the-20-layers)
+- [Required output when the round finds defects](#required-output-when-the-round-finds-defects)
+- [Red flags — stop, the verdict is not ready](#red-flags--stop-the-verdict-is-not-ready)
+- [Used by](#used-by)
+
 ## How to run it
 
 1. Write one result line per case (JSONL, fields in § Result line). A resumed or re-run lane does

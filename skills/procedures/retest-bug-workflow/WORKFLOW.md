@@ -18,6 +18,30 @@ exactly what was covered without reading the chat.
 
 **Project-agnostic:** Load URLs, credentials, and transitions from `references/*-retest-guide.md` in the user's workspace.
 
+## Contents
+
+- [Discipline](#discipline)
+- [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
+- [Step 0 — Get the ticket \[high freedom\]](#step-0--get-the-ticket-high-freedom)
+- [Step 1 — Project config \[medium freedom\]](#step-1--project-config-medium-freedom)
+- [Step 2 — Fetch Jira ticket \[high freedom\]](#step-2--fetch-jira-ticket-high-freedom)
+- [Step 2b — Fix claim vs verification plan (mandatory) \[medium freedom\]](#step-2b--fix-claim-vs-verification-plan-mandatory-medium-freedom)
+- [Step 2c — Build the retest case list (mandatory — bug and task alike) \[medium freedom\]](#step-2c--build-the-retest-case-list-mandatory--bug-and-task-alike-medium-freedom)
+- [Step 2d — Design reference gate (mandatory before any UI verdict) \[low freedom\]](#step-2d--design-reference-gate-mandatory-before-any-ui-verdict-low-freedom)
+- [Step 3 — Bug type and comment format (decide once) \[medium freedom\]](#step-3--bug-type-and-comment-format-decide-once-medium-freedom)
+- [Step 4 — Login and test \[low freedom\]](#step-4--login-and-test-low-freedom)
+- [Step 5 — Evidence \[medium freedom\]](#step-5--evidence-medium-freedom)
+- [Result quality gate (mandatory before the comment is drafted) \[low freedom\]](#result-quality-gate-mandatory-before-the-comment-is-drafted-low-freedom)
+- [Step 6 — Draft Jira comment \[medium freedom\]](#step-6--draft-jira-comment-medium-freedom)
+- [Step 7 — Post comment \[low freedom\]](#step-7--post-comment-low-freedom)
+- [QA closing (mandatory before "done") \[low freedom\]](#qa-closing-mandatory-before-done-low-freedom)
+- [Step 8 — Close out (after successful post; no second approval unless user asked) \[low freedom\]](#step-8--close-out-after-successful-post-no-second-approval-unless-user-asked-low-freedom)
+- [Step 9 — QA result notify (if the project configures a channel) \[low freedom\]](#step-9--qa-result-notify-if-the-project-configures-a-channel-low-freedom)
+- [Step 10 — A question arrives after the comment was posted \[low freedom\]](#step-10--a-question-arrives-after-the-comment-was-posted-low-freedom)
+- [Skill composition](#skill-composition)
+- [Out of scope](#out-of-scope)
+- [MUST / NEVER](#must--never)
+
 ## Discipline
 
 **Settle and strategize FIRST** — before Step 0 or any tool call, follow
@@ -107,7 +131,7 @@ On first response after constraints, follow [workspace-guide-discovery.md](../..
 
 ---
 
-## Step 0 — Get the ticket
+## Step 0 — Get the ticket [high freedom]
 
 If no key or URL was provided:
 
@@ -117,7 +141,7 @@ If no key or URL was provided:
 
 ---
 
-## Step 1 — Project config
+## Step 1 — Project config [medium freedom]
 
 ### 1a. Find existing config
 
@@ -144,7 +168,7 @@ All URLs, credentials, transition names, and Swagger URLs come from config — *
 
 ---
 
-## Step 2 — Fetch Jira ticket
+## Step 2 — Fetch Jira ticket [high freedom]
 
 **Round N (a ticket retested before) — fingerprint check first.** Read
 `references/helix-handoff-{KEY}.md` and fetch each source's fingerprint fresh: ticket `updated` +
@@ -209,7 +233,7 @@ severity/priority notion. Cheat-sheet (full matrix + hard rule at the link):
 
 ---
 
-## Step 2b — Fix claim vs verification plan (mandatory)
+## Step 2b — Fix claim vs verification plan (mandatory) [medium freedom]
 
 Follow [retest-fix-intake.md](../../../references/retest-fix-intake.md). Post the retest plan block before executing tests.
 **Show the plan, then run** — print it and start execution without waiting for an approval; the plan
@@ -218,7 +242,7 @@ rides again in the Step 6d decisions popup, where a correction starts a new roun
 
 ---
 
-## Step 2c — Build the retest case list (mandatory — bug and task alike)
+## Step 2c — Build the retest case list (mandatory — bug and task alike) [medium freedom]
 
 The comment posted at Step 6 must carry a **case list**: the cases this retest actually ran, one row
 each. Build it here, before testing, so the run has a defined scope instead of a stopping point.
@@ -257,7 +281,7 @@ The same list, with each case's outcome, goes into the `Case (Role)` cell of eve
 
 ---
 
-## Step 2d — Design reference gate (mandatory before any UI verdict)
+## Step 2d — Design reference gate (mandatory before any UI verdict) [low freedom]
 
 Follow [figma-design-comparison.md](../../../references/figma-design-comparison.md) §1–§2 and §4.
 
@@ -279,7 +303,7 @@ Follow [figma-design-comparison.md](../../../references/figma-design-comparison.
 
 ---
 
-## Step 3 — Bug type and comment format (decide once)
+## Step 3 — Bug type and comment format (decide once) [medium freedom]
 
 | Bug type | Screenshots | Comment format | API |
 |----------|-------------|----------------|-----|
@@ -299,7 +323,7 @@ Set flag `COMMENT_FORMAT=v2` or `v3` here. **Do not change later** — rewriting
 
 ---
 
-## Step 4 — Login and test
+## Step 4 — Login and test [low freedom]
 
 **The sub-steps are in the order they happen.** 4a–4d set up and observe **while the surface is
 still open** — a screen not compared while it was open cannot be compared later, and a boundary
@@ -457,7 +481,7 @@ can resolve is queued; unattended runs put it in the run's report.
 
 ---
 
-## Step 5 — Evidence
+## Step 5 — Evidence [medium freedom]
 
 ### API bugs
 
@@ -511,7 +535,7 @@ never a row quietly dropped.
 
 ---
 
-## Result quality gate (mandatory before the comment is drafted)
+## Result quality gate (mandatory before the comment is drafted) [low freedom]
 
 Run [result-quality-gate.md](../../../references/result-quality-gate.md) — all 20 layers, every case, PASSED
 ones included — **before the Step 6 draft, the Step 9 notify, or any status transition**. Write one final result line per case (older lines marked
@@ -539,7 +563,7 @@ manifest · Root cause `path:line` · Priority per
 Thai report "ยังไม่ได้เปิดบั๊ก"), holding only rows whose expected side is a confirmed spec; and
 **Needs PO decision** for spec conflicts, quoting both sources. Filing waits for the owner.
 
-## Step 6 — Draft Jira comment
+## Step 6 — Draft Jira comment [medium freedom]
 
 **Do not post until the user approves** (unless they explicitly waive approval) — through the single
 Step 6d approval popup.
@@ -845,7 +869,7 @@ Follow [round-time-contract.md](../../../references/round-time-contract.md) §3 
 
 ---
 
-## Step 7 — Post comment
+## Step 7 — Post comment [low freedom]
 
 ### Pre-post checklist
 
@@ -924,7 +948,7 @@ MUST NOT transition, assign, or report "done" until 7d passes — because stakeh
 
 ---
 
-## QA closing (mandatory before "done")
+## QA closing (mandatory before "done") [low freedom]
 
 Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific. **Run its [cross-ticket conflict check](../../../references/qa-closing-shared.md#cross-ticket-conflict-check) before the Step 6d approval popup** — a conflict found there can change the verdict, so its table is reported in chat and its *Investigate further* / *Close out now* question is **queued into the Step 6d decisions popup** rather than asked after posting ([round-time-contract.md](../../../references/round-time-contract.md) §2–§3); apply its unattended default (step 5) meanwhile. No post, Step 8 transition, or Step 9 notify goes out until that answer is in:
 
@@ -954,7 +978,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 
 ---
 
-## Step 8 — Close out (after successful post; no second approval unless user asked)
+## Step 8 — Close out (after successful post; no second approval unless user asked) [low freedom]
 
 Every action here — each 8a transition, 8c assign and 8d unblock — runs under the single Step 6d
 approval bundle, which listed it by name ([round-time-contract.md](../../../references/round-time-contract.md) §3).
@@ -1081,7 +1105,7 @@ never estimated:
 
 ---
 
-## Step 9 — QA result notify (if the project configures a channel)
+## Step 9 — QA result notify (if the project configures a channel) [low freedom]
 
 After the transition, if the project defines a **QA notify channel** (Discord/Slack/chat), post a **retest-result** notification so the reporter / QA owner sees the outcome. It runs under the Step 6d approval bundle, which named the channel and the resolved recipient — no second approval.
 
@@ -1117,7 +1141,7 @@ If a verdict changes after the notification was sent (e.g. PASSED→FAILED on re
 
 ---
 
-## Step 10 — A question arrives after the comment was posted
+## Step 10 — A question arrives after the comment was posted [low freedom]
 
 A follow-up question is a **defect in the comment**, not a normal step. Handle it in this order — see
 [defect-report-completeness.md](../../../references/defect-report-completeness.md) §6.

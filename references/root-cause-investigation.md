@@ -17,6 +17,17 @@ Related: [qa-debug-discipline.md](qa-debug-discipline.md) (flaky/environment tri
 
 ---
 
+## Contents
+
+- [0. Invoke the best available debugging skill FIRST — do not improvise](#0-invoke-the-best-available-debugging-skill-first--do-not-improvise)
+- [1. Phase 1 — Evidence sweep across every boundary (complete it; do not stop at the first hit)](#1-phase-1--evidence-sweep-across-every-boundary-complete-it-do-not-stop-at-the-first-hit)
+- [2. Phase 2 — Compare against something that works](#2-phase-2--compare-against-something-that-works)
+- [3. Phase 3 — One falsifiable hypothesis at a time](#3-phase-3--one-falsifiable-hypothesis-at-a-time)
+- [4. Confidence labels — the anti-fabrication rule](#4-confidence-labels--the-anti-fabrication-rule)
+- [5. Output — the investigation block (goes **in the report**, not only in chat)](#5-output--the-investigation-block-goes-in-the-report-not-only-in-chat)
+- [6. When to stop](#6-when-to-stop)
+- [MUST / NEVER](#must--never)
+
 ## 0. Invoke the best available debugging skill FIRST — do not improvise
 
 Before the first hypothesis, load a real debugging skill and follow it. Announce which one:

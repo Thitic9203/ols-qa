@@ -122,6 +122,7 @@ check('description-person must-not-find: third person, "Youtube"/"mystery"/"AI",
   const root = fixture({
     'skills/a/SKILL.md': stub('Use when the user asks for a Youtube mystery AI check.', 'You run this when you want.\n'),
     'skills/b/SKILL.md': '---\nname: b\ndescription: |\n  Reviews the TC sheet against AC/EC.\n---\n\nI and you appear only in the body.\n',
+    'skills/c/SKILL.md': stub('Use when the user says "check yourself" or “find your own mistakes”.'),
   });
   assert.deepStrictEqual(keys(lint(root), 'description-person'), []);
 });

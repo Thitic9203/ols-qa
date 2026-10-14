@@ -30,6 +30,29 @@ When invoked:
 
 Claude Code shortcut: `/retest-bug` → [commands/retest-bug.md](../../commands/retest-bug.md).
 
+## Contents (read on demand, 1 hop)
+
+Every must-read file for this workflow, linked directly from here. References already linked above are not repeated.
+
+- [WORKFLOW.md](../procedures/retest-bug-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
+- [bug-priority-matrix.md](../../references/bug-priority-matrix.md) — whenever a Priority/Severity is named or judged.
+- [defect-report-completeness.md](../../references/defect-report-completeness.md) — for any verdict that is not a clean PASSED — what the write-up must contain.
+- [intake-one-pager.md](../../references/intake-one-pager.md) — at intake, to show the one-page list of inputs the run needs.
+- [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — right after posting a Jira comment — full review checklist.
+- [jira-wiki-vs-markdown.md](../../references/jira-wiki-vs-markdown.md) — before and after posting any Jira body (v2 wiki vs v3 ADF).
+- [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) — before recording any non-PASSED verdict.
+- [portable-content.md](../../references/portable-content.md) — before writing any notify text or helper — no hardcoded webhooks, tokens, or machine paths.
+- [qa-closing-shared.md](../../references/qa-closing-shared.md) — before reporting done — shared QA closing gates, including the cross-ticket conflict check.
+- [qa-debug-discipline.md](../../references/qa-debug-discipline.md) — when results conflict with expectations, with dev claims, or look flaky.
+- [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — when recording or judging evidence clips and the AC/EC coverage gate.
+- [retest-fix-intake.md](../../references/retest-fix-intake.md) — when building the retest plan, before executing tests.
+- [root-cause-investigation.md](../../references/root-cause-investigation.md) — before calling any case FAILED or BLOCKED — investigate to a verified root cause.
+- [round-time-contract.md](../../references/round-time-contract.md) — before logging in or reusing a session for the round.
+- [shared-must-never.md](../../references/shared-must-never.md) — before any write or post — rules shared by every workflow.
+- [shared-preamble.md](../../references/shared-preamble.md) — at the start of every run, before the first reply (preamble, constraints, tone).
+- [test-through-real-steps.md](../../references/test-through-real-steps.md) — before executing any case — drive the real screen, never a backend shortcut.
+- [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) — on the first response, to locate the workspace project guide for this workflow.
+
 ## Refusal-first (precondition gate)
 
 All preconditions and refusal rules are in WORKFLOW.md. MUST NOT start without a Jira issue key/URL — a **Bug**, or a **Task / Story** whose fix is being re-verified — and reachable environment config.

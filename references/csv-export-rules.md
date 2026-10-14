@@ -4,6 +4,15 @@ Use when `tc-fe-prep-workflow` or `tc-api-prep-workflow` writes an export file n
 
 > **TC FE CSV types:** Three template formats exist (Unit Test / Integration Test / System Test), each with different columns and row structure. See [csv-template-types.md](csv-template-types.md) before generating a TC FE CSV.
 
+## Contents
+
+- [Format detection (decide before exporting)](#format-detection-decide-before-exporting)
+- [Cell text cleaning (apply to EVERY cell, both formats)](#cell-text-cleaning-apply-to-every-cell-both-formats)
+- [CSV export (default)](#csv-export-default)
+- [Excel / xlsx export (when user explicitly requests Excel)](#excel--xlsx-export-when-user-explicitly-requests-excel)
+- [Typed TC FE export (Unit / Integration / System)](#typed-tc-fe-export-unit--integration--system)
+- [Sibling format — Test.md (agent-native)](#sibling-format--testmd-agent-native)
+
 ## Format detection (decide before exporting)
 
 | User’s request contains… | Output format | File extension |

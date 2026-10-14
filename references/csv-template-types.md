@@ -7,6 +7,15 @@ Used by: `skills/procedures/tc-fe-prep-workflow/WORKFLOW.md`
 
 ---
 
+## Contents
+
+- [Overview](#overview)
+- [Template 1 — Unit Test](#template-1--unit-test)
+- [Template 2 — Integration Test](#template-2--integration-test)
+- [Template 3 — System Test](#template-3--system-test)
+- [Column mapping — Thai ↔ English](#column-mapping--thai--english)
+- [Python snippets](#python-snippets)
+
 ## Overview
 
 | Type | Language | Columns | Row structure | Summary footer | Typical row cap |

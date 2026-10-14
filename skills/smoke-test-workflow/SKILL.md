@@ -1,6 +1,6 @@
 ---
 name: smoke-test-workflow
-description: Run a post-deployment smoke test of the OLS core features on a named environment, triage every non-passing case to a verified root cause, produce a one-page A4-landscape PDF summary plus the Playwright per-case report, and post the result to the QA release channel. Use when asked to smoke test a build, confirm a deployed version is healthy, or decide whether a build can be promoted to the next environment.
+description: Run a post-deployment smoke test of the OLS core features on a named environment, triage every non-passing case to a verified root cause, produce a one-page A4-landscape PDF summary plus the Playwright per-case report, and post the result to the QA release channel. Use when asked to smoke test a build, confirm a deployed version is healthy, or decide whether a build can be promoted to the next environment. Do NOT use for testing a single ticket (testing-ticket-workflow), retesting a bug after a dev fix (retest-bug-workflow), preparing test data (test-data-prep-workflow), or a full regression run.
 ---
 
 # Smoke Test Workflow (OLS)
@@ -16,6 +16,23 @@ public: never write a resolved host, id, account or channel into any file here.
 
 ---
 
+## Contents
+
+- [Round-time contract](#round-time-contract)
+- [Stage 0 — Intake (blocking) \[medium freedom\]](#stage-0--intake-blocking-medium-freedom)
+- [Stage 1 — Preflight \[low freedom\]](#stage-1--preflight-low-freedom)
+- [Stage 2 — Identify the deployed version \[high freedom\]](#stage-2--identify-the-deployed-version-high-freedom)
+- [Stage 2.5 — The one-shot rule (read this before running anything) \[low freedom\]](#stage-25--the-one-shot-rule-read-this-before-running-anything-low-freedom)
+- [Stage 3 — Run \[low freedom\]](#stage-3--run-low-freedom)
+- [Stage 4 — Triage every non-passing case \[high freedom\]](#stage-4--triage-every-non-passing-case-high-freedom)
+- [Stage 5 — Fix what is ours, then re-verify \[medium freedom\]](#stage-5--fix-what-is-ours-then-re-verify-medium-freedom)
+- [Result quality gate (mandatory before the summary is built) \[low freedom\]](#result-quality-gate-mandatory-before-the-summary-is-built-low-freedom)
+- [Stage 6 — The one-page summary \[medium freedom\]](#stage-6--the-one-page-summary-medium-freedom)
+- [Stage 7 — Deliverables \[medium freedom\]](#stage-7--deliverables-medium-freedom)
+- [Stage 8 — Notify \[low freedom\]](#stage-8--notify-low-freedom)
+- [Stage 7.5 — The numbers gate (the trap that cost a round) \[low freedom\]](#stage-75--the-numbers-gate-the-trap-that-cost-a-round-low-freedom)
+- [MUST / NEVER](#must--never)
+
 ## Round-time contract
 
 This workflow follows the Helix round-time contract (Helix `references/round-time-contract.md`). The cap is **15 minutes of AGENT + EXEC time** per round. Human wait is not counted, and is reported on its own line.
@@ -24,7 +41,7 @@ This workflow follows the Helix round-time contract (Helix `references/round-tim
 - **The chat report ends with:** `Round time: AGENT+EXEC {n} min · human wait {h} min · overrun {max(0, n-15)} min`. Measure it from the session's timestamps.
 - **No mid-run waits.** Ask only at intake (Stage 0) and at the end-of-round bundle (Stage 8).
 
-## Stage 0 — Intake (blocking)
+## Stage 0 — Intake (blocking) [medium freedom]
 
 
 1. **Confirm the environment with the owner and wait.** Never default, never pick the one that is
@@ -34,7 +51,7 @@ This workflow follows the Helix round-time contract (Helix `references/round-tim
    workflow; know that before you start, not at the end.
 3. `git pull origin main` in `ols-qa`, and check `~/GitHub/ols-qa-e2e` is on a clean tree.
 
-## Stage 1 — Preflight
+## Stage 1 — Preflight [low freedom]
 
 | Check | How | Refuse if |
 |---|---|---|
@@ -45,7 +62,7 @@ This workflow follows the Helix round-time contract (Helix `references/round-tim
 `global-setup` re-checks all three and fails loudly. A preflight failure is a **harness** failure —
 never report it as a product verdict.
 
-## Stage 2 — Identify the deployed version
+## Stage 2 — Identify the deployed version [high freedom]
 
 The app exposes **no version endpoint**. Pin it by evidence, not by assumption:
 
@@ -59,7 +76,7 @@ The app exposes **no version endpoint**. Pin it by evidence, not by assumption:
 
 If no marker separates two candidate tags, say the version is a range. Do not name one.
 
-## Stage 2.5 — The one-shot rule (read this before running anything)
+## Stage 2.5 — The one-shot rule (read this before running anything) [low freedom]
 
 **A round must finish in ONE run invocation.** On 2026-09-09 it took eleven, and every extra one was
 avoidable. What makes it one:
@@ -98,7 +115,7 @@ product. Every case waits out its own timeout, so a dropped tunnel costs ~20s ×
 **A run whose failures are the tunnel is not a result.** Throw the whole round away and re-run —
 never report it, never triage it, never let it reach a deliverable.
 
-## Stage 3 — Run
+## Stage 3 — Run [low freedom]
 
 ```bash
 cd ~/GitHub/ols-qa-e2e
@@ -131,7 +148,7 @@ the full round's report — a deliverable — is gone (2026-10-08: a 15-case rer
 round's report and forced a whole new run before the notify). A case that passes on the rerun is
 unstable, not a defect.
 
-## Stage 4 — Triage every non-passing case
+## Stage 4 — Triage every non-passing case [high freedom]
 
 **Fan out at 2 or more flagged cases.** Each subagent owns one case end to end: the rerun, the error
 context, the spec lookup, and the verdict with its evidence. The main thread only merges the verdicts.
@@ -160,7 +177,7 @@ Useful moves, all cheap:
 - Open the failure's `error-context.md` — it holds the full accessibility snapshot at the moment of
   failure, which usually answers the question without re-running anything.
 
-## Stage 5 — Fix what is ours, then re-verify
+## Stage 5 — Fix what is ours, then re-verify [medium freedom]
 
 Fix stale expectations and test-code defects in `ols-qa-e2e` on a branch. Then:
 
@@ -174,7 +191,7 @@ Fix stale expectations and test-code defects in `ols-qa-e2e` on a branch. Then:
 **Known trap:** when adding paging to a list reader, honour a `page=` the caller already pinned.
 Appending a second one yields `page=1&page=1`, which the API parses as `NaN` and rejects with 400.
 
-## Result quality gate (mandatory before the summary is built)
+## Result quality gate (mandatory before the summary is built) [low freedom]
 
 Run [result-quality-gate.md](../../references/result-quality-gate.md) — all 20 layers, every case, PASSED
 ones included — **before the Stage 6 summary, Stage 7 deliverables, or Stage 8 notify**. Write one final result line per case (older lines marked
@@ -184,7 +201,7 @@ round's record. A red layer blocks that case's verdict: report the case as what 
 (usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
 is a claim — the main thread re-runs the gate itself (layer 20).
 
-## Stage 6 — The one-page summary
+## Stage 6 — The one-page summary [medium freedom]
 
 Template and renderer live off-repo at `~/ols-qa-testing-bot/smoke/`
 (`report-template.html`, `render-landscape.js`, `measure.js`).
@@ -208,7 +225,7 @@ measures *exactly* `avail` still spills — leave a few px of slack.
 **Always rasterise the finished PDF and look at it** before sending. A page-count check does not
 catch a broken layout.
 
-## Stage 7 — Deliverables
+## Stage 7 — Deliverables [medium freedom]
 
 | File | What |
 |---|---|
@@ -232,7 +249,7 @@ excluded** (`--grep-invert`), never by editing report data. Two things to know b
 - One or two cases usually pass only on the second attempt and are badged **flaky**, and it is rarely
   the same ones. **Say this out loud instead of re-running until it looks clean.**
 
-## Stage 8 — Notify
+## Stage 8 — Notify [low freedom]
 
 Post to the QA release channel `<QA_RELEASE_CHANNEL_ID>` as bot `<QA_BOT_ID>` (token at
 `~/ols-qa-testing-bot/.discord_bot_token`).
@@ -284,7 +301,7 @@ See the attached files for details:
 **This build is cleared to deploy to pre-production.** <@id>
 ```
 
-## Stage 7.5 — The numbers gate (the trap that cost a round)
+## Stage 7.5 — The numbers gate (the trap that cost a round) [low freedom]
 
 The PDF, the Discord text and the Playwright report are three surfaces showing the same run. **They
 must agree, and the report is the one nobody can edit.** On 2026-09-09 the text said "All 115 cases

@@ -2,6 +2,17 @@
 
 Audit dimensions, evidence standard, severity and verdict definitions, coverage matrix, and the report template. Load when running an audit; the discipline rules live in SKILL.md.
 
+## Contents
+
+- [Review targets and their governing source](#review-targets-and-their-governing-source)
+- [Evidence standard](#evidence-standard)
+- [Audit dimensions](#audit-dimensions)
+- [Coverage matrix](#coverage-matrix)
+- [Severity](#severity)
+- [Verdict](#verdict)
+- [Remediation and prevention](#remediation-and-prevention)
+- [Report template](#report-template)
+
 ## Review targets and their governing source
 
 | Target | What to audit | Governing source |

@@ -16,6 +16,22 @@ proactive_triggers:
 
 # TC Review Workflow
 
+## Contents
+
+- [Discipline](#discipline)
+- [The Iron Law](#the-iron-law)
+- [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
+- [Step 1 — Load both sources verbatim \[medium freedom\]](#step-1--load-both-sources-verbatim-medium-freedom)
+- [Step 2 — Build the traceability matrix \[medium freedom\]](#step-2--build-the-traceability-matrix-medium-freedom)
+- [Step 3 — Row-quality check \[medium freedom\]](#step-3--row-quality-check-medium-freedom)
+- [Source sweep before "ask the PO / reporter" (mandatory) \[high freedom\]](#source-sweep-before-ask-the-po--reporter-mandatory-high-freedom)
+- [Step 4 — Report Good vs Need Improve \[medium freedom\]](#step-4--report-good-vs-need-improve-medium-freedom)
+- [Step 5 — Optional: share the review externally \[low freedom\]](#step-5--optional-share-the-review-externally-low-freedom)
+- [QA closing (mandatory before "done") \[low freedom\]](#qa-closing-mandatory-before-done-low-freedom)
+- [Skill composition](#skill-composition)
+- [Out of scope](#out-of-scope)
+- [MUST / NEVER](#must--never)
+
 Judge a test case document that someone has **already written** — this workflow never designs or edits
 test cases itself. It answers one question: *does this document, as written, prove the ticket's AC/EC and
 business rules will be checked?*
@@ -58,7 +74,7 @@ a cloud id, never fall back to a browser login to read it.
 
 ---
 
-## Step 1 — Load both sources verbatim
+## Step 1 — Load both sources verbatim [medium freedom]
 
 1. **TC document** — read it as it actually is; do not retype, summarize, or "clean up" wording while
    loading it. Note the exact source (sheet id + tab/gid, file path, or URL) so every later citation can
@@ -72,7 +88,7 @@ a cloud id, never fall back to a browser login to read it.
 
 ---
 
-## Step 2 — Build the traceability matrix
+## Step 2 — Build the traceability matrix [medium freedom]
 
 For every AC and EC on the ticket, list which TC row(s) claim to cover it:
 
@@ -100,7 +116,7 @@ Flag, with the row/AC ids named:
 
 ---
 
-## Step 3 — Row-quality check
+## Step 3 — Row-quality check [medium freedom]
 
 Apply [tc-quality-standards.md](../../references/tc-quality-standards.md) to every row, reading for
 these review-specific failure shapes (distinct from authoring quality — this is about a document written
@@ -123,7 +139,7 @@ convention, column order, priority labels) unless the user asks for a style revi
 
 ---
 
-## Source sweep before "ask the PO / reporter" (mandatory)
+## Source sweep before "ask the PO / reporter" (mandatory) [high freedom]
 
 This workflow never decides a product verdict, but it does raise spec-level gaps and questions.
 Before any finding becomes "ask the PO / reporter" or "spec unclear", run the source sweep in
@@ -134,7 +150,7 @@ API, and tickets the commit messages name); regression results; and the design n
 was read beside the finding. A question the sources already answer is a finding with its source,
 not a question.
 
-## Step 4 — Report Good vs Need Improve
+## Step 4 — Report Good vs Need Improve [medium freedom]
 
 Two short lists, each bullet anchored to a row id, AC id, or quoted text — never an unanchored opinion.
 
@@ -173,7 +189,7 @@ message cannot be unsent the way a chat message can.
 
 ---
 
-## Step 5 — Optional: share the review externally
+## Step 5 — Optional: share the review externally [low freedom]
 
 Only on explicit request, and only to a destination and identity the user names — never invent a
 channel, thread, or mention id.
@@ -201,7 +217,7 @@ channel, thread, or mention id.
 
 ---
 
-## QA closing (mandatory before "done")
+## QA closing (mandatory before "done") [low freedom]
 
 - [ ] Every AC and EC on the ticket appears in the traceability matrix, covered or flagged as a gap.
 - [ ] Struck-through AC/EC appear nowhere in the matrix or the report.

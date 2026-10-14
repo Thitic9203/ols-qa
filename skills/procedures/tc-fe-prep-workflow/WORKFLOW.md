@@ -12,6 +12,30 @@ Prepare **frontend manual test cases** from a Jira **story** (acceptance criteri
 
 **Portable:** Works in any AI agent that can read this skill. **Project-agnostic:** No hardcoded repos, paths, or ticket numbers.
 
+## Contents
+
+- [Discipline](#discipline)
+- [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
+- [Prerequisites (read before Step 0)](#prerequisites-read-before-step-0)
+- [Step 0 — Obtain the story \[high freedom\]](#step-0--obtain-the-story-high-freedom)
+- [Step 1 — Load or create project config \[medium freedom\]](#step-1--load-or-create-project-config-medium-freedom)
+- [Step 2 — Extract requirements \[medium freedom\]](#step-2--extract-requirements-medium-freedom)
+- [Step 2a — AC/EC internal consistency check \[medium freedom\]](#step-2a--acec-internal-consistency-check-medium-freedom)
+- [Step 2.5 — Conflict check against PRD and Figma (pre-design gate) \[medium freedom\]](#step-25--conflict-check-against-prd-and-figma-pre-design-gate-medium-freedom)
+- [Step 2.6 — TC glossary re-check (mandatory gate) \[medium freedom\]](#step-26--tc-glossary-re-check-mandatory-gate-medium-freedom)
+- [Step 3 — Design test cases \[medium freedom\]](#step-3--design-test-cases-medium-freedom)
+- [Step 4 — Coverage & quality review (mandatory; loop until zero comments, report EVERY round) \[medium freedom\]](#step-4--coverage--quality-review-mandatory-loop-until-zero-comments-report-every-round-medium-freedom)
+- [Step 4.5 — Thai↔English term confirmation (mandatory gate) \[medium freedom\]](#step-45--thaienglish-term-confirmation-mandatory-gate-medium-freedom)
+- [Step 5 — HTML draft in Chrome (approval gate) \[medium freedom\]](#step-5--html-draft-in-chrome-approval-gate-medium-freedom)
+- [Step 6 — Save artifacts in the user's workspace \[medium freedom\]](#step-6--save-artifacts-in-the-users-workspace-medium-freedom)
+- [Step 7 — Publish to Jira (story only) \[low freedom\]](#step-7--publish-to-jira-story-only-low-freedom)
+- [Step 7.5 — Final TC review report (mandatory before "done") \[low freedom\]](#step-75--final-tc-review-report-mandatory-before-done-low-freedom)
+- [QA closing (mandatory before "done") \[low freedom\]](#qa-closing-mandatory-before-done-low-freedom)
+- [Step 8 — Session closing \[medium freedom\]](#step-8--session-closing-medium-freedom)
+- [Reference files](#reference-files)
+- [Out of scope](#out-of-scope)
+- [MUST / NEVER](#must--never)
+
 ## Discipline
 
 Follow [shared-preamble.md](../../../references/shared-preamble.md). Ask one focused question at a time when setup is missing.
@@ -32,7 +56,7 @@ On first response after constraints, follow [workspace-guide-discovery.md](../..
 
 ---
 
-## Step 0 — Obtain the story
+## Step 0 — Obtain the story [high freedom]
 
 If the user did not provide a ticket key or URL:
 
@@ -42,7 +66,7 @@ If the user did not provide a ticket key or URL:
 
 ---
 
-## Step 1 — Load or create project config
+## Step 1 — Load or create project config [medium freedom]
 
 If workspace-guide-discovery already loaded a guide → use it and go to Step 2.
 
@@ -55,7 +79,7 @@ Config should capture: Jira domain, default story vs sub-task policy, portal nam
 
 ---
 
-## Step 2 — Extract requirements
+## Step 2 — Extract requirements [medium freedom]
 
 From the Jira story, build a checklist:
 
@@ -70,7 +94,7 @@ From the Jira story, build a checklist:
 
 ---
 
-## Step 2a — AC/EC internal consistency check
+## Step 2a — AC/EC internal consistency check [medium freedom]
 
 **Must complete after Step 2 and before Step 2.5.** Catches duplicates, redundancies, and contradictions within the ticket's own AC/EC list — problems that waste TC effort or produce conflicting test cases.
 
@@ -116,7 +140,7 @@ Do NOT proceed past Step 2.6 until the user has decided on Step 2a issues (if an
 
 ---
 
-## Step 2.5 — Conflict check against PRD and Figma (pre-design gate)
+## Step 2.5 — Conflict check against PRD and Figma (pre-design gate) [medium freedom]
 
 **Must complete before Step 3.** Do not skip even if requirements look complete — conflicts caught here prevent rework after TCs are drafted.
 
@@ -202,7 +226,7 @@ Then handle user decisions in chat:
 
 ---
 
-## Step 2.6 — TC glossary re-check (mandatory gate)
+## Step 2.6 — TC glossary re-check (mandatory gate) [medium freedom]
 
 **Must complete after the Step 2a and Step 2.5 decisions are settled, and before Step 3.** Runs last among the pre-design gates because the gap scan below covers only the terms the *surviving* AC/EC will use — and which AC/EC survive is not known until the user answers Step 2a.3.
 
@@ -251,7 +275,7 @@ Do NOT proceed to Step 3 until Step 2.6 gaps are resolved.
 
 ---
 
-## Step 3 — Design test cases
+## Step 3 — Design test cases [medium freedom]
 
 ### 3a — Pre-design setup
 
@@ -420,7 +444,7 @@ Within each Type group: ACs ascending (AC_01, AC_02, …), then ECs ascending (E
 
 ---
 
-## Step 4 — Coverage & quality review (mandatory; loop until zero comments, report EVERY round)
+## Step 4 — Coverage & quality review (mandatory; loop until zero comments, report EVERY round) [medium freedom]
 
 MUST complete **before** Step 5. Do not skip because the first draft “looks fine.”
 
@@ -507,7 +531,7 @@ verdict, and every finding + how it was fixed. Do not proceed to Step 4.5 until 
 
 ---
 
-## Step 4.5 — Thai↔English term confirmation (mandatory gate)
+## Step 4.5 — Thai↔English term confirmation (mandatory gate) [medium freedom]
 
 Because content is Thai by default but some terms stay in English (Step 3b), the user MUST see and approve the term choices **before** any content is written to the real TC file.
 
@@ -538,7 +562,7 @@ These terms appear in the test cases. Thai follows the glossary first, then ร�
 
 ---
 
-## Step 5 — HTML draft in Chrome (approval gate)
+## Step 5 — HTML draft in Chrome (approval gate) [medium freedom]
 
 Do NOT post the TC table as markdown in chat. Instead:
 
@@ -557,7 +581,7 @@ Do NOT post the TC table as markdown in chat. Instead:
 
 ---
 
-## Step 6 — Save artifacts in the user's workspace
+## Step 6 — Save artifacts in the user's workspace [medium freedom]
 
 **Suite gate (do before writing the CSV):** The Qase CSV needs a **Suite** value per row. Inspect the OLS project's existing suite tree first (Qase web UI → Test cases → suite sidebar, or ask the user to paste the current suite list — there is no Qase MCP) and reuse a fitting suite; only propose a new suite (with user approval) when none fits. Never assign a suite blind, never create a duplicate. Full rules: [qase-import-format.md](references/qase-import-format.md) — Suite rules.
 
@@ -655,7 +679,7 @@ Then report to user: "Files saved. ADF ready. Publishing..."
 
 ---
 
-## Step 7 — Publish to Jira (story only)
+## Step 7 — Publish to Jira (story only) [low freedom]
 
 **Target:** `{ISSUE_KEY}` story the user specified.
 
@@ -736,7 +760,7 @@ If any check fails → fix and re-post → re-verify on Jira UI (max 3 rounds).
 
 ---
 
-## Step 7.5 — Final TC review report (mandatory before "done")
+## Step 7.5 — Final TC review report (mandatory before "done") [low freedom]
 
 After Step 7 post-publish review **passes** (or after final approved draft when publish was skipped), run the **four-axis final review** on the TC set the user will keep.
 
@@ -751,7 +775,7 @@ Follow [tc-final-review-report.md](references/tc-final-review-report.md):
 
 ---
 
-## QA closing (mandatory before "done")
+## QA closing (mandatory before "done") [low freedom]
 
 Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-specific:
 
@@ -782,7 +806,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 
 ---
 
-## Step 8 — Session closing
+## Step 8 — Session closing [medium freedom]
 
 **Prerequisite:** Step 7.5 final review report posted with overall **PASS**.
 

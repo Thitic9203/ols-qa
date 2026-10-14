@@ -2,6 +2,14 @@
 
 Used in **Phase G** after test summary in chat.
 
+## Contents
+
+- [Write-scope guard — only ever touch this run's own work (3 layers, mandatory)](#write-scope-guard--only-ever-touch-this-runs-own-work-3-layers-mandatory)
+- [Read before write](#read-before-write)
+- [Common destinations](#common-destinations)
+- [Verification](#verification)
+- [Failure](#failure)
+
 ## Write-scope guard — only ever touch this run's own work (3 layers, mandatory)
 
 **The one rule: work someone else already did is off limits.** In a shared results sheet or a

@@ -10,6 +10,15 @@
 **Bug:** `PROJ-204` — API returns 500 when end date is before start date
 **Result:** FAILED ❌ (fix incomplete)
 
+## Contents
+
+- [Inputs](#inputs)
+- [Repro — agent steps (abbreviated)](#repro--agent-steps-abbreviated)
+- [Output snippet — API bug, markdown/ADF body](#output-snippet--api-bug-markdownadf-body)
+- [Lessons](#lessons)
+- [Worked example 2 (anonymized) — PASSED, FE, tight format](#worked-example-2-anonymized--passed-fe-tight-format)
+- [Lessons (example 2)](#lessons-example-2)
+
 ## Inputs
 
 - Issue key from user: `PROJ-204`

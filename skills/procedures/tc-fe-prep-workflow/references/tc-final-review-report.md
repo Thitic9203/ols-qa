@@ -8,6 +8,14 @@ Pair with [ac-ec-coverage-review.md](ac-ec-coverage-review.md) (pre-draft gate) 
 
 ---
 
+## Contents
+
+- [When to run](#when-to-run)
+- [Review dimensions (four axes)](#review-dimensions-four-axes)
+- [Verification procedure](#verification-procedure)
+- [User-facing report (mandatory before "done")](#user-facing-report-mandatory-before-done)
+- [Relation to other gates](#relation-to-other-gates)
+
 ## When to run
 
 | Trigger | Source to review |

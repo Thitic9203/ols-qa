@@ -201,8 +201,11 @@ function description(lines) {
 function rulePerson(root, files) {
   const out = [];
   for (const p of files.filter((f) => f.startsWith('skills/') && f.endsWith('/SKILL.md'))) {
-    const d = description(readLines(path.join(root, p)));
-    if (d == null) continue;
+    const raw = description(readLines(path.join(root, p)));
+    if (raw == null) continue;
+    // Quoted trigger phrases are the user's words ("find your own mistakes"), not the
+    // description's own voice — drop them before looking for first/second person.
+    const d = raw.replace(/"[^"\n]*"|“[^”\n]*”/g, '""');
     // Case matters for "I" (a pronoun); every other word is matched case-insensitively.
     const hitI = /(^|[^A-Za-z'])(I|I'm|I'll|I've|I'd)(?![A-Za-z'])/.exec(d);
     const hitOther = /\b(me|my|mine|myself|you|your|yours|yourself|you're|you'll|you've|you'd)\b/i.exec(d);

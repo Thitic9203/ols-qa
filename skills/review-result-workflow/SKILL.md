@@ -30,6 +30,17 @@ When invoked:
 
 Claude Code shortcut: `/review-result` → [commands/review-result.md](../../commands/review-result.md).
 
+## Contents (read on demand, 1 hop)
+
+Every must-read file for this workflow, linked directly from here. References already linked above are not repeated.
+
+- [WORKFLOW.md](../procedures/review-result-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
+- [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — when recording or judging evidence clips and the AC/EC coverage gate.
+- [shared-must-never.md](../../references/shared-must-never.md) — before any write or post — rules shared by every workflow.
+- [shared-preamble.md](../../references/shared-preamble.md) — at the start of every run, before the first reply (preamble, constraints, tone).
+- [skill-rules-style.md](../../references/skill-rules-style.md) — when stopping for missing input, and for the fresh-eyes re-read of long drafts.
+- [test-through-real-steps.md](../../references/test-through-real-steps.md) — before executing any case — drive the real screen, never a backend shortcut.
+
 ## Refusal-first (precondition gate)
 
 All preconditions and refusal rules are in WORKFLOW.md. MUST NOT start without the result sheet (or equivalent case list) that names each case, its tab, and its expected results, **and** the recorded evidence for those cases. Reviewing clips with no case list behind them produces an opinion, not a verdict.

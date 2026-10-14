@@ -13,6 +13,20 @@ End-to-end preparation of OLS test/training data from a request: confirm env + a
 **Single source of truth:** every recipe, formula, tool, and gate lives in
 **[ols-data-prep.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ols-data-prep.md)** (private) and this repo's `CLAUDE.md`. This workflow orchestrates them — it never re-invents a formula, a tool, or a cover style. Read the source first; follow it exactly.
 
+## Contents
+
+- [Discipline](#discipline)
+- [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
+- [Gate 0 — Intake (mandatory, wait for the user) \[medium freedom\]](#gate-0--intake-mandatory-wait-for-the-user-medium-freedom)
+- [Step 1 — Reuse first \[high freedom\]](#step-1--reuse-first-high-freedom)
+- [Step 2 — Create only what is missing, at the exact target status \[low freedom\]](#step-2--create-only-what-is-missing-at-the-exact-target-status-low-freedom)
+- [Step 3 — Names + descriptions = real content for real users \[medium freedom\]](#step-3--names--descriptions--real-content-for-real-users-medium-freedom)
+- [Step 4 — Covers (the 10 Cover-correction rules + 5-level gate) \[medium freedom\]](#step-4--covers-the-10-cover-correction-rules--5-level-gate-medium-freedom)
+- [Step 5 — Videos (motion-graphics) \[medium freedom\]](#step-5--videos-motion-graphics-medium-freedom)
+- [Step 6 — Gates (pass every layer before use) \[low freedom\]](#step-6--gates-pass-every-layer-before-use-low-freedom)
+- [Step 7 — Report \[high freedom\]](#step-7--report-high-freedom)
+- [MUST / NEVER](#must--never)
+
 ## Discipline
 
 Follow [shared-preamble.md](../../../references/shared-preamble.md).
@@ -35,7 +49,7 @@ MUST NOT create, upload, or "seed" anything until:
 
 If any is missing → stop and ask (Gate 0). Covers additionally require Draft Things API `:7860` ON — if the app is not installed, the cover work is **BLOCKED**; say so in chat, do not fall back to a solid/gradient/PIL cover.
 
-## Gate 0 — Intake (mandatory, wait for the user)
+## Gate 0 — Intake (mandatory, wait for the user) [medium freedom]
 
 Per ols-data-prep.md §0.0 and CLAUDE.md's env-intake rule. **Gather EVERY requirement below and get the user's confirmation BEFORE any login, reuse check, or creation.** Ask in the three ordered steps below — do not skip ahead, do not start on a partial answer. Skip a question only if the user already answered it explicitly this session (then state the value back and let them confirm with a short "ok", never re-ask).
 
@@ -83,15 +97,15 @@ Keep it lean: skip a detail question if the selected types make it irrelevant, o
 
 **Confirmation gate:** restate the full captured spec (env · account · CF URL · types+status · style · quantity · purpose · any 0.4 details) back to the user in one block and wait for a clear "go" before Step 1. Nothing is created until this is confirmed.
 
-## Step 1 — Reuse first
+## Step 1 — Reuse first [high freedom]
 
 Before creating, list what already exists on the target env — `GET /api/media|courses|learning-paths`. If a published item already covers the need, use it. Do not create a duplicate.
 
-## Step 2 — Create only what is missing, at the exact target status
+## Step 2 — Create only what is missing, at the exact target status [low freedom]
 
 Follow the ols-data-prep.md §5–6 recipe for the type. Produce the **exact** status requested — `PUBLISHED · UNPUBLISHED · DRAFT · REJECTED · FLAGGED · PENDING_EDIT` — not "all published". For each status, follow the recipe's create → transition chain (see the LP state model + test-data recipes in `references/ols-project-guide.md` for which ticket/role produces which state).
 
-## Step 3 — Names + descriptions = real content for real users
+## Step 3 — Names + descriptions = real content for real users [medium freedom]
 
 Per CLAUDE.md §5.1 and the 2026-08-08 naming feedback. Every name and description is what a real user sees — it must read as genuine content.
 
@@ -104,7 +118,7 @@ Per CLAUDE.md §5.1 and the 2026-08-08 naming feedback. Every name and descripti
 
 **Duplicate-name clash → stop and ask the user.** Never silently create a second item with a colliding name. Report which item it clashes with (name / id / status) and let the user decide skip / rename / proceed.
 
-## Step 4 — Covers (the 10 Cover-correction rules + 5-level gate)
+## Step 4 — Covers (the 10 Cover-correction rules + 5-level gate) [medium freedom]
 
 Cover source = ols-data-prep.md §5.7.2 (client-approved FINAL). **Prereq:** Draw Things API `HTTP:7860` ON — open it yourself first (check `curl :7860/sdapi/v1/options`; if not installed, BLOCK and tell the user, never fall back to a plain cover).
 
@@ -144,11 +158,11 @@ Tone (STYLE_TAIL) and sharpness are **separate levers** — "make it sharper" me
 - the image looks soft / not matching the approved lot's sharpness
 - you are about to accept it from the pipeline **without opening the PNG and looking**
 
-## Step 5 — Videos (motion-graphics)
+## Step 5 — Videos (motion-graphics) [medium freedom]
 
 VIDEO type = motion-graphics (ols-data-prep.md §5.7.2F, client-approved FINAL): Ken Burns + kinetic text, warm editorial, Thai male voice `th-TH-NiwatNeural` +4%, ≤25MB. **Never** a static slideshow / PowerPoint / plain-colour background.
 
-## Step 6 — Gates (pass every layer before use)
+## Step 6 — Gates (pass every layer before use) [low freedom]
 
 - **§7 — 3-layer** (correct / complete / thorough): readback field-by-field after create.
 - **§8 — 5-layer media** (publish chain + guest verify): confirm each field survives the publish chain and a guest session sees it.
@@ -156,7 +170,7 @@ VIDEO type = motion-graphics (ols-data-prep.md §5.7.2F, client-approved FINAL):
 
 Fail any layer → root-cause → fix at source → **restart from layer 1**. No partial pass, no silence.
 
-## Step 7 — Report
+## Step 7 — Report [high freedom]
 
 Report to the user: what was **reused**, what was **created** (type · id · final status · name), every **gate result**, and any **clash / block** encountered. Record any new user correction into `CLAUDE.md` + ols-data-prep.md.
 

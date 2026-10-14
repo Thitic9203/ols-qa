@@ -9,6 +9,17 @@ and the defect list / external result write (testing-ticket-workflow Phase F3, P
 
 ---
 
+## Contents
+
+- [1. The report answers five questions before they are asked](#1-the-report-answers-five-questions-before-they-are-asked)
+- [2. Repro matrix — REQUIRED for every non-PASSED item](#2-repro-matrix--required-for-every-non-passed-item)
+- [3. Two gates that must pass before you draft](#3-two-gates-that-must-pass-before-you-draft)
+- [4. Resolution options — REQUIRED when actual ≠ expected but the reported symptom is gone](#4-resolution-options--required-when-actual--expected-but-the-reported-symptom-is-gone)
+- [5. Pre-post dev-question gate (mandatory, before the FIRST post)](#5-pre-post-dev-question-gate-mandatory-before-the-first-post)
+- [6. If a question still arrives after you posted](#6-if-a-question-still-arrives-after-you-posted)
+- [7. Answer shape in chat during the workflow](#7-answer-shape-in-chat-during-the-workflow)
+- [MUST / NEVER](#must--never)
+
 ## 1. The report answers five questions before they are asked
 
 Write these five, in this order. A FAILED or BLOCKED report missing any one of them is **not ready to

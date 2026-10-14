@@ -1,8 +1,8 @@
 ---
 name: catch-ai-workflow
 description: |
-  Audit work that is already finished — your own prior output, a document or report, a test artifact, or a feature under test — by tracing every claim to the source that governs it, separating confirmed defects from open questions, and closing each defect with a sourced fix and a prevention layer.
-  Use when the user says CatchAI, /catch-ai, claims mistakes exist in something already delivered, asks you to review your own work again, check yourself, find your own mistakes, QA or audit a deliverable, or says ตรวจงานตัวเองอีกรอบ. Also use before reporting that a check passed, that a defect exists, or that work is complete.
+  Audit work that is already finished — the agent's own prior output, a document or report, a test artifact, or a feature under test — by tracing every claim to the source that governs it, separating confirmed defects from open questions, and closing each defect with a sourced fix and a prevention layer.
+  Use when the user says CatchAI, /catch-ai, claims mistakes exist in something already delivered, asks the agent to review its own work again, says "check yourself" or "find your own mistakes", QA or audit a deliverable, or says ตรวจงานตัวเองอีกรอบ. Also use before reporting that a check passed, that a defect exists, or that work is complete.
   Do NOT use for retesting a Jira bug after a dev fix (retest-bug-workflow), for drafting new TC tables (tc-fe-prep-workflow / tc-api-prep-workflow), for running a ticket's Playwright pass (testing-ticket-workflow), or for filing the bug once a defect is confirmed (create-bug-workflow).
 proactive_triggers:
   - /catch-ai
@@ -15,6 +15,19 @@ proactive_triggers:
 ---
 
 # Catch AI
+
+## Contents
+
+- [Discipline](#discipline)
+- [The Iron Law](#the-iron-law)
+- [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
+- [Procedure \[high freedom\]](#procedure-high-freedom)
+- [Quick reference](#quick-reference)
+- [Rationalizations — STOP](#rationalizations--stop)
+- [Red flags — start over](#red-flags--start-over)
+- [Result quality gate (mandatory before an audited verdict is confirmed) \[low freedom\]](#result-quality-gate-mandatory-before-an-audited-verdict-is-confirmed-low-freedom)
+- [QA closing (mandatory before "done") \[low freedom\]](#qa-closing-mandatory-before-done-low-freedom)
+- [MUST / NEVER](#must--never)
 
 Audit finished work the way a senior QA engineer does: every claim traced to the source that governs it, every defect reproducible, every gap named, nothing invented.
 
@@ -46,7 +59,7 @@ guess, a translation, or a feature name — that is the OLS-315 failure, recorde
 this workflow; a confirmed defect hands off to `create-bug-workflow`, and Priority comes from the
 [Bug Priority & Severity Matrix](../../references/bug-priority-matrix.md), never invented.
 
-## Procedure
+## Procedure [high freedom]
 
 1. **Fix the scope.** Name what is under audit and what is out.
 2. **Enumerate** every claim, number, file, screen, endpoint, and section in scope.
@@ -101,7 +114,7 @@ registry, and the report template: [reference.md](reference.md).
 - A finding with no prevention step — nothing stops it coming back.
 - The report proposes rewrites nobody asked for.
 
-## Result quality gate (mandatory before an audited verdict is confirmed)
+## Result quality gate (mandatory before an audited verdict is confirmed) [low freedom]
 
 Run [result-quality-gate.md](../../references/result-quality-gate.md) — all 20 layers, every case, PASSED
 ones included — **before this audit confirms or rejects any test verdict in the audited work**. Write one final result line per case (older lines marked
@@ -111,7 +124,7 @@ round's record. A red layer blocks that case's verdict: report the case as what 
 (usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
 is a claim — the main thread re-runs the gate itself (layer 20).
 
-## QA closing (mandatory before "done")
+## QA closing (mandatory before "done") [low freedom]
 
 Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + this workflow:
 

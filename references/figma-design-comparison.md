@@ -20,6 +20,17 @@ in the same ticket — a full round wasted on a bug that did not exist.
 
 ---
 
+## Contents
+
+- [1. What counts as the design source of record](#1-what-counts-as-the-design-source-of-record)
+- [2. Opening the design (both paths, in order)](#2-opening-the-design-both-paths-in-order)
+- [3. What to compare — five points, every UI case](#3-what-to-compare--five-points-every-ui-case)
+- [4. No design reference → report back to the person who assigned the run](#4-no-design-reference--report-back-to-the-person-who-assigned-the-run)
+- [5. When app and design disagree — three outcomes, never "just file it"](#5-when-app-and-design-disagree--three-outcomes-never-just-file-it)
+- [6. Accepted limitation — an AC changed to match the build must be recorded, not absorbed](#6-accepted-limitation--an-ac-changed-to-match-the-build-must-be-recorded-not-absorbed)
+- [7. Evidence](#7-evidence)
+- [MUST / NEVER](#must--never)
+
 ## 1. What counts as the design source of record
 
 In order of authority. Take the **first** one that exists and covers the screen under test:
