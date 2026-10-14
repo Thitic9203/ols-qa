@@ -132,17 +132,70 @@ check('a commit from the main checkout reaches helix', () => {
   assertDeployed(fx, 'from-main\n', commitShared(fx, fx.olsqa, 'from-main\n'));
 });
 
-check('a commit from a linked worktree reaches helix and leaves ols-qa as the commit left it', () => {
+function assertHelixUntouched(fx, headBefore, out) {
+  assert.ok(!/pushed helix/.test(out), `sync deployed unmerged content:\n${out}`);
+  assert.strictEqual(git(fx.helix, 'rev-parse', 'HEAD'), headBefore, 'helix gained a commit');
+  assert.strictEqual(git(fx.helixOrigin, 'show', `main:${SHARED}`), 'old', 'helix origin changed');
+  assert.strictEqual(git(fx.helix, 'status', '--porcelain'), '', 'helix was left dirty');
+}
+
+check('a commit on a linked-worktree branch leaves helix untouched (2026-10-14: two unmerged branch commits shipped)', () => {
   const fx = fixture();
   git(fx.olsqa, 'worktree', 'add', '-q', '-b', 'wt', '.worktrees/wt', 'main');
   const wt = path.join(fx.olsqa, '.worktrees', 'wt');
+  const helixBefore = git(fx.helix, 'rev-parse', 'HEAD');
   const refsBefore = git(fx.olsqa, 'for-each-ref', '--format=%(refname) %(objectname)', 'refs/heads/main');
   const out = commitShared(fx, wt, 'from-worktree\n');
-  assertDeployed(fx, 'from-worktree\n', out);
+  assertHelixUntouched(fx, helixBefore, out);
   assert.strictEqual(git(fx.olsqa, 'for-each-ref', '--format=%(refname) %(objectname)', 'refs/heads/main'), refsBefore, 'ols-qa main moved');
   assert.strictEqual(git(wt, 'log', '--format=%s', '-1'), 'change from-worktree', 'the worktree branch gained or lost commits');
   assert.strictEqual(git(wt, 'status', '--porcelain'), '', 'the ols-qa worktree was left dirty');
-  assert.strictEqual(git(fx.helix, 'log', '--format=%s', '-1').split('\n')[0], 'chore(sync): pull shared skill updates from ols-qa');
+});
+
+check('a commit on a feature branch of the main checkout leaves helix untouched', () => {
+  const fx = fixture();
+  git(fx.olsqa, 'checkout', '-q', '-b', 'feature');
+  const helixBefore = git(fx.helix, 'rev-parse', 'HEAD');
+  assertHelixUntouched(fx, helixBefore, commitShared(fx, fx.olsqa, 'from-feature\n'));
+});
+
+check('a main commit still deploys after the branch gate (worktree branch first, then main)', () => {
+  const fx = fixture();
+  git(fx.olsqa, 'worktree', 'add', '-q', '-b', 'wt', '.worktrees/wt', 'main');
+  const wt = path.join(fx.olsqa, '.worktrees', 'wt');
+  const helixBefore = git(fx.helix, 'rev-parse', 'HEAD');
+  assertHelixUntouched(fx, helixBefore, commitShared(fx, wt, 'unmerged\n'));
+  assertDeployed(fx, 'merged\n', commitShared(fx, fx.olsqa, 'merged\n'));
+});
+
+check('the sync script refuses to run off main, even when called directly (must refuse)', () => {
+  const fx = fixture();
+  git(fx.olsqa, 'worktree', 'add', '-q', '-b', 'wt', '.worktrees/wt', 'main');
+  const wt = path.join(fx.olsqa, '.worktrees', 'wt');
+  fs.writeFileSync(path.join(wt, SHARED), 'direct\n');
+  git(wt, 'add', SHARED);
+  git(wt, '-c', 'core.hooksPath=/dev/null', 'commit', '-qm', 'direct');
+  const helixBefore = git(fx.helix, 'rev-parse', 'HEAD');
+  const r = run('bash', [path.join(wt, 'scripts', 'sync-skills-to-helix.sh'), SHARED], { cwd: wt, env: { ...CLEAN_ENV, HELIX_REPO: fx.helix } });
+  const out = `${r.stdout}${r.stderr}`;
+  assert.notStrictEqual(r.status, 0, `the script exited 0 off main:\n${out}`);
+  assert.ok(/not main/.test(out), `the refusal does not say ols-qa is not on main:\n${out}`);
+  assertHelixUntouched(fx, helixBefore, out);
+  // detached HEAD is refused too
+  git(wt, 'checkout', '-q', '--detach');
+  const d = run('bash', [path.join(wt, 'scripts', 'sync-skills-to-helix.sh'), SHARED], { cwd: wt, env: { ...CLEAN_ENV, HELIX_REPO: fx.helix } });
+  assert.notStrictEqual(d.status, 0, `the script exited 0 on a detached HEAD:\n${d.stdout}${d.stderr}`);
+  assertHelixUntouched(fx, helixBefore, `${d.stdout}${d.stderr}`);
+});
+
+check('the sync ships the committed content, never uncommitted edits in the working tree', () => {
+  const fx = fixture();
+  fs.writeFileSync(path.join(fx.olsqa, SHARED), 'committed\n');
+  git(fx.olsqa, 'add', SHARED);
+  git(fx.olsqa, '-c', 'core.hooksPath=/dev/null', 'commit', '-qm', 'committed');
+  fs.writeFileSync(path.join(fx.olsqa, SHARED), 'uncommitted-edit\n');
+  const r = run('bash', [path.join(fx.olsqa, 'scripts', 'sync-skills-to-helix.sh')], { cwd: fx.olsqa, env: { ...CLEAN_ENV, HELIX_REPO: fx.helix } });
+  assertDeployed(fx, 'committed\n', `${r.stdout}${r.stderr}`);
 });
 
 check('a helix that cannot be read is reported as unreadable, never as uncommitted changes', () => {
