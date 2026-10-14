@@ -15,8 +15,8 @@
 - [MUST / NEVER](#must--never)
 
 Applies to **every** QA run in
-[testing-ticket-workflow](../skills/procedures/testing-ticket-workflow/WORKFLOW.md) and
-[retest-bug-workflow](../skills/procedures/retest-bug-workflow/WORKFLOW.md).
+[testing-ticket-workflow](../skills/testing-ticket-workflow/SKILL.md) and
+[retest-bug-workflow](../skills/retest-bug-workflow/SKILL.md).
 
 These are not general good practice. Each section below is a mechanism that let a real defect reach
 the customer after our own run reported the surface green, taken from the root-cause review of **25

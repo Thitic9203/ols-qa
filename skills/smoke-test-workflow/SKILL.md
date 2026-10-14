@@ -11,7 +11,7 @@ artefacts a team acts on: a one-page summary and a clickable per-case report.
 **This is a release-gate workflow, not a per-ticket test.** It grades main features. Never expand it
 into ticket-by-ticket verification — that is `testing-ticket-workflow`.
 
-Resolve every `<PLACEHOLDER>` from `~/.ols-qa-secrets/ols-secrets.md` at runtime. This repo is
+Resolve every `<PLACEHOLDER>` from `<SECRETS_DIR>/ols-secrets.md` at runtime; `<SECRETS_DIR>`, `<E2E_REPO>`, `<MONOREPO>` and `<QA_TOOLS_ROOT>` (local clone roots) come from the workspace project guide, else ask once. This repo is
 public: never write a resolved host, id, account or channel into any file here.
 
 ---
@@ -49,15 +49,15 @@ This workflow follows the Helix round-time contract (Helix `references/round-tim
    on — do not ask twice.
 2. **Read `docs/post-mortem/PENDING.md`.** An `OPEN` row blocks every commit later in this
    workflow; know that before you start, not at the end.
-3. `git pull origin main` in `ols-qa`, and check `~/GitHub/ols-qa-e2e` is on a clean tree.
+3. `git pull origin main` in `ols-qa`, and check `<E2E_REPO>` is on a clean tree.
 
 ## Stage 1 — Preflight [low freedom]
 
 | Check | How | Refuse if |
 |---|---|---|
 | VPN | `scutil --nc list` — the tunnel for dev/pre-prod must read `Connected` | not connected |
-| Host reachable | `command curl -s -o /dev/null -w '%{http_code}' --cacert ~/.ols-qa-secrets/ca-bundle-with-bitdefender.pem https://<ENV_HOST>/` | not `200` |
-| Secrets store | `~/.ols-qa-secrets/ols-secrets.md` present | missing |
+| Host reachable | `command curl -s -o /dev/null -w '%{http_code}' --cacert <SECRETS_DIR>/ca-bundle-with-bitdefender.pem https://<ENV_HOST>/` | not `200` |
+| Secrets store | `<SECRETS_DIR>/ols-secrets.md` present | missing |
 
 `global-setup` re-checks all three and fails loudly. A preflight failure is a **harness** failure —
 never report it as a product verdict.
@@ -70,7 +70,7 @@ The app exposes **no version endpoint**. Pin it by evidence, not by assumption:
    fingerprint (`shasum -a 256`).
 2. Find a **UI marker unique to one release** — a label a known commit introduced. Read the live DOM
    or a Playwright failure snapshot for it.
-3. `cd ~/GitHub/ols-monorepo && git fetch -q origin && git tag --contains <commit> --sort=-creatordate`
+3. `cd <MONOREPO> && git fetch -q origin && git tag --contains <commit> --sort=-creatordate`
    — the earliest tag containing that commit is the deployed release, and the previous tag must
    **not** contain it. State both facts in the report.
 
@@ -82,12 +82,12 @@ If no marker separates two candidate tags, say the version is a range. Do not na
 avoidable. What makes it one:
 
 **Start from the exclusion registry, not from the full set.**
-`~/ols-qa-testing-bot/smoke/excluded-cases.json` holds the cases that cannot produce a clean pass on
+`<QA_TOOLS_ROOT>/smoke/excluded-cases.json` holds the cases that cannot produce a clean pass on
 this environment, grouped by *why* — external identity, live broadcast, irreversible fixture, fixture
 not yet built, awaiting design, spec gap, unstable. Build `--grep-invert` from it:
 
 ```bash
-EXCL=$(python3 -c "import json;d=json.load(open('$HOME/ols-qa-testing-bot/smoke/excluded-cases.json'));print('|'.join(sorted(c for g in d['groups'].values() for c in g['cases'])))")
+EXCL=$(python3 -c "import json;d=json.load(open('<QA_TOOLS_ROOT>/smoke/excluded-cases.json'));print('|'.join(sorted(c for g in d['groups'].values() for c in g['cases'])))")
 ```
 
 Verified 2026-09-09 on dev: excluding those 22 leaves **111 cases that pass clean, exit 0, zero flaky,
@@ -118,7 +118,7 @@ never report it, never triage it, never let it reach a deliverable.
 ## Stage 3 — Run [low freedom]
 
 ```bash
-cd ~/GitHub/ols-qa-e2e
+cd <E2E_REPO>
 E2E_JSON_OUT=<WORKDIR>/run.json TARGET_ENV=<env> rtk proxy npx playwright test \
   --grep @safe \
   --project=guest --project=learner --project=creator --project=admin-content --project=admin-user \
@@ -135,7 +135,7 @@ E2E_JSON_OUT=<WORKDIR>/run.json TARGET_ENV=<env> rtk proxy npx playwright test \
   reporter, and that report is a deliverable. Overriding it silently loses the artefact. (Partial runs
   are the opposite — see below.)
 - `@safe` is read-only. Anything that writes is out of scope for this workflow.
-- `<WORKDIR>` is a **permanent** folder — `~/ols-qa-testing-bot/out/<env>-smoke-<YYYY-MM-DD>/`.
+- `<WORKDIR>` is a **permanent** folder — `<QA_TOOLS_ROOT>/out/<env>-smoke-<YYYY-MM-DD>/`.
   Never `/tmp`: it is wiped and takes the round's evidence with it.
 - **Copy the HTML report into `<WORKDIR>` the moment the full run ends**
   (`cp playwright-report/index.html <WORKDIR>/playwright-report-full.html`). The config pins the HTML
@@ -172,7 +172,7 @@ Useful moves, all cheap:
 - `git log -S "<the exact string the test expects>"` in `ols-monorepo` — finds the commit that
   removed a label and names the ticket that ordered it.
 - Read the Jira description via REST (read-only is fine):
-  `command curl -s --cacert <CA> -u "$(head -1 ~/ols-qa-testing-bot/.jira_token)" "https://<JIRA_DOMAIN>/rest/api/2/issue/<KEY>?fields=summary,status,description"`
+  `command curl -s --cacert <CA> -u "$(head -1 <QA_TOOLS_ROOT>/.jira_token)" "https://<JIRA_DOMAIN>/rest/api/2/issue/<KEY>?fields=summary,status,description"`
   OLS bugs keep their content in **custom fields**, not `description`.
 - Open the failure's `error-context.md` — it holds the full accessibility snapshot at the moment of
   failure, which usually answers the question without re-running anything.
@@ -203,7 +203,7 @@ is a claim — the main thread re-runs the gate itself (layer 20).
 
 ## Stage 6 — The one-page summary [medium freedom]
 
-Template and renderer live off-repo at `~/ols-qa-testing-bot/smoke/`
+Template and renderer live off-repo at `<QA_TOOLS_ROOT>/smoke/`
 (`report-template.html`, `render-landscape.js`, `measure.js`).
 
 Fixed design decisions — do not redesign them each round:
@@ -252,7 +252,7 @@ excluded** (`--grep-invert`), never by editing report data. Two things to know b
 ## Stage 8 — Notify [low freedom]
 
 Post to the QA release channel `<QA_RELEASE_CHANNEL_ID>` as bot `<QA_BOT_ID>` (token at
-`~/ols-qa-testing-bot/.discord_bot_token`).
+`<QA_TOOLS_ROOT>/.discord_bot_token`).
 
 1. **Verify the bot first** — `GET /users/@me` must return the expected id. Never send as a different
    bot because the expected one did not resolve.

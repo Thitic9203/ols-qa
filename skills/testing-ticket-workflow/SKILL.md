@@ -29,7 +29,7 @@ When invoked:
 
 Claude Code shortcut: `/testing-ticket` → [commands/testing-ticket.md](../../commands/testing-ticket.md).
 
-## Contents (read on demand, 1 hop)
+## Contents
 
 Every must-read file for this workflow, linked directly from here. References already linked above are not repeated.
 
@@ -45,7 +45,7 @@ Every must-read file for this workflow, linked directly from here. References al
 - [playwright-preflight.md](../../references/playwright-preflight.md) — before starting the Playwright run — must end with Ready to run: YES.
 - [qa-closing-shared.md](../../references/qa-closing-shared.md) — before reporting done — shared QA closing gates, including the cross-ticket conflict check.
 - [qa-debug-discipline.md](../../references/qa-debug-discipline.md) — when results conflict with expectations, with dev claims, or look flaky.
-- [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — when recording or judging evidence clips and the AC/EC coverage gate.
+- [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — read when recording or judging evidence clips and the AC/EC coverage gate.
 - [root-cause-investigation.md](../../references/root-cause-investigation.md) — before calling any case FAILED or BLOCKED — investigate to a verified root cause.
 - [round-time-contract.md](../../references/round-time-contract.md) — before logging in or reusing a session for the round.
 - [shared-must-never.md](../../references/shared-must-never.md) — before any write or post — rules shared by every workflow.
@@ -53,6 +53,19 @@ Every must-read file for this workflow, linked directly from here. References al
 - [test-execution-plan-template.md](../../references/test-execution-plan-template.md) — when writing the test execution plan shown before the run.
 - [test-through-real-steps.md](../../references/test-through-real-steps.md) — before executing any case — drive the real screen, never a backend shortcut.
 - [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) — on the first response, to locate the workspace project guide for this workflow.
+- [agent-rationalizations.md](../../references/agent-rationalizations.md) — read when tempted to skip a step; each excuse has its correct action.
+- [helix-session-constraints.md](../../references/helix-session-constraints.md) — read once at session start.
+- [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — read after posting a Jira comment, before saying done.
+- [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) — read before posting a Jira table with multi-line cells.
+- [long-workflow-todos.md](../../references/long-workflow-todos.md) — read when the workflow has many steps; keep the todo list.
+- [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read when a QA follow-up could be suggested.
+- [resilient-selectors.md](../../references/resilient-selectors.md) — read when writing or fixing Playwright selectors.
+- [session-closing.md](../../references/session-closing.md) — read at session end.
+- [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — read before invoking or switching skills.
+- [skill-routing.md](../../references/skill-routing.md) — read when choosing which skill handles a request.
+- [skill-rules-style.md](../../references/skill-rules-style.md) — read before asking the user or stopping on a missing input.
+- [user-communication.md](../../references/user-communication.md) — read before any message to the user.
+- [result-update-discipline.md](../procedures/testing-ticket-workflow/references/result-update-discipline.md) — read before updating a results destination.
 
 ## Refusal-first (precondition gate)
 
@@ -61,3 +74,18 @@ All preconditions and refusal rules are in WORKFLOW.md. MUST NOT run Playwright 
 ## QA closing (mandatory before "done")
 
 All close-out gates are in WORKFLOW.md and [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Testing ticket section). MUST NOT claim tests passed without fresh runner output, without a design node (or its BLOCKED-with-reason) on every UI row, or with passed rows that carry no evidence.
+
+## Dependencies
+
+Run the check for each of these before step 1 — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
+
+- Playwright (in the project under test)
+- Node.js + in-repo guard tools (`tools/lane-lease-check`, `tools/adoption-check`)
+- Figma
+- browser automation MCP
+- QA capture and verify tools (`{QA_TOOLS_ROOT}`)
+- Python 3
+- ffmpeg / ffprobe
+- curl + Jira REST credentials
+- `engineering:testing-strategy`
+- `superpowers:systematic-debugging`
