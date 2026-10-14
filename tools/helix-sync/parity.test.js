@@ -160,6 +160,38 @@ check('no shared files, missing helix, or failed fetch is CANNOT-VERIFY exit 2',
   assert.match(r.lines[0], /^CANNOT-VERIFY fetch of helix/);
 });
 
+check('a fetch that never answers is CANNOT-VERIFY within the bound, never OK, and leaves no process behind', () => {
+  // Known-hang: the transport connects and then carries nothing — what a dropped VPN tunnel
+  // leaves ssh holding. The fake ssh never returns; only the script's own bound can end it.
+  const f = fixture({ olsFiles: BASE_OLS, helixFiles: { ...BASE_HELIX, 'references/drifted.md': 'ols-qa main\n' } });
+  const fakeSsh = path.join(f.base, 'stalled-ssh.sh');
+  fs.writeFileSync(fakeSsh, '#!/bin/sh\nsleep 600\n', { mode: 0o755 });
+  git(f.helix, 'remote', 'set-url', 'origin', 'git@stalled.example.invalid:owner/helix.git');
+  const started = Date.now();
+  const r = run('/bin/bash', [SCRIPT], {
+    env: { ...CLEAN_ENV, OLS_REPO: f.ols, HELIX_REPO: f.helix, GIT_SSH_COMMAND: fakeSsh, HELIX_PARITY_FETCH_TIMEOUT: '2' },
+    timeout: 30000,
+  });
+  const secs = (Date.now() - started) / 1000;
+  assert.ok(!r.signal, `script itself had to be killed (${r.signal}) — the hang is not bounded`);
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+  assert.ok(!r.stdout.includes('HELIX-PARITY OK'), 'a fetch that never finished printed OK');
+  assert.match(r.stdout, /^CANNOT-VERIFY fetch of helix origin\/main timed out after 2s/);
+  assert.ok(secs < 15, `took ${secs}s for a 2s bound`);
+  const left = run('pgrep', ['-f', fakeSsh]);
+  assert.strictEqual(left.stdout.trim(), '', `orphaned transport still running: pids ${left.stdout.trim()}`);
+});
+
+check('a non-numeric or zero fetch bound is refused as CANNOT-VERIFY', () => {
+  const f = fixture({ olsFiles: BASE_OLS, helixFiles: BASE_HELIX });
+  for (const bad of ['0', 'abc', '']) {
+    const r = run('/bin/bash', [SCRIPT], { env: { ...CLEAN_ENV, OLS_REPO: f.ols, HELIX_REPO: f.helix, HELIX_PARITY_FETCH_TIMEOUT: bad } });
+    if (bad === '') { assert.strictEqual(r.status, 1, `empty falls back to the default: ${r.stdout}`); continue; }
+    assert.strictEqual(r.status, 2, r.stdout);
+    assert.match(r.stdout, /^CANNOT-VERIFY HELIX_PARITY_FETCH_TIMEOUT must be/);
+  }
+});
+
 for (const d of tmpDirs) fs.rmSync(d, { recursive: true, force: true });
 if (ran === 0) {
   console.log('\nno checks ran — refusing');
