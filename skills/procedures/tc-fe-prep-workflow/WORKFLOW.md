@@ -256,28 +256,9 @@ Then report to user: "Files saved. ADF ready. Publishing..."
 
 ## Step 6.5 — Create the ticket's TC tab in the tracking sheet [low freedom]
 
-Run this step only when the project guide has a **"Create the per-ticket TC tab"** row (OLS:
-[ols-project-guide.md](../../../references/ols-project-guide.md)). If the guide has no such row, skip it
-and say so in one line.
+**Gate:** the draft is approved (Step 5 in chat; for an unattended run, the owner's reply `passed` to the draft in a Slack DM), and the project guide loaded in Step 1 has a **"Create the per-ticket TC tab"** row. Without that row, skip this step and say so in one line. The tracking sheet is written only through the guide's tool, never with a raw Sheets API call or a one-off script (guide row "Write scope").
 
-**Gate:** the draft must be approved first: at Step 5 in chat, or, for an unattended run, by the
-owner's reply `passed` to the draft in a Slack DM. No approval means no tab.
-
-1. **Rows file.** Use `references/Draft_Jira_{ISSUE_KEY}.csv` as it is when no case is `BLOCKED`.
-   When Step 4e marked any case `BLOCKED`, write `references/Sheet_Tab_{ISSUE_KEY}.json` instead.
-   It is a JSON list with one object per approved row, keyed by the same column names. Each blocked
-   case adds `"Test Status": "BLOCKED"` and its Step 4e `"Remark"`. A case that is only noted in
-   chat is not on the sheet.
-2. **Dry run.** Run the guide's command with `--dry-run`. Show a summary in chat: the tab name, the
-   row count, the dropdown source and the existence check. Never print the sheet id.
-3. **Write.** Run the same command without `--dry-run`. Exit `0` with `"readback": "clean"` is the
-   only success.
-4. **Refusal.** On exit `3`, nothing was written. Report the reason verbatim and stop this step. If
-   the tab already exists, never write into it; tell the user. On exit `4`, the tab exists but is
-   incomplete. Report it and ask the user before anything else touches the sheet.
-
-The tracking sheet is written only through the guide's tool, never with a raw Sheets API call or a
-one-off script (guide row "Write scope").
+**Rows and run:** for `--rows`, use `references/Draft_Jira_{ISSUE_KEY}.csv` as it is. When Step 4e marked any case `BLOCKED`, write `references/Sheet_Tab_{ISSUE_KEY}.json` instead: a JSON list with one object per approved row, keyed by the same column names, where each blocked case adds `"Test Status": "BLOCKED"` and its Step 4e `"Remark"`. First run the guide's command with `--dry-run` and summarise it in chat (tab name, row count, dropdown source, existence check; never the sheet id). Then run it without `--dry-run`. Only exit `0` with `"readback": "clean"` counts as success. Exit `3` means nothing was written: report the reason verbatim and stop (never write into a tab that already exists). Exit `4` means the tab exists but is incomplete: report it and ask the user before anything else touches the sheet.
 
 ---
 
