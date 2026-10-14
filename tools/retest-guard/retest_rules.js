@@ -551,8 +551,22 @@ function scanBody(body, opts = {}) {
         out.push(finding('non-pass-block-missing', 0, `non-PASSED comment has no "${b}" block`, 'Step 6a requires both blocks'));
       }
     });
+    // Text quoted from the ticket is the contract, not QA's cause: skip `(from ticket…)`
+    // header lines and the verdict table's Expected Result cells (a hedge in the expected
+    // side is the Step 4i challenge gate's job, not this rule's).
+    const hedgeLines = lines.map((l) => {
+      const m = labelLine.exec(l.trim());
+      return m && VERBATIM_LABEL.test(m[1]) ? '' : l;
+    });
+    const erCol = verdict ? verdict.headers.indexOf('Expected Result') : -1;
+    if (erCol >= 0) {
+      verdict.rows.forEach((r) => {
+        const cell = r.cells[erCol];
+        if (cell && r.line >= 1) hedgeLines[r.line - 1] = hedgeLines[r.line - 1].replace(cell, '');
+      });
+    }
     HEDGE_WORDS.forEach((w) => {
-      const idx = lines.findIndex((l) => l.toLowerCase().includes(w.toLowerCase()));
+      const idx = hedgeLines.findIndex((l) => l.toLowerCase().includes(w.toLowerCase()));
       if (idx >= 0) {
         out.push(finding('hedge-as-cause', idx + 1, `hedge word "${w}" in a non-PASSED comment`,
           'a cause cites a captured artifact and carries Confirmed / Suspected / Unknown', 'warn'));

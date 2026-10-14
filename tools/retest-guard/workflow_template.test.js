@@ -137,5 +137,34 @@ check('the workflow tells the reader to measure the run time with the tool, neve
   assert.ok(/never estimate/i.test(wf), 'the workflow does not forbid estimating');
 });
 
+/** A minimal clean body whose Design ref value is `value` — only header-inline-list matters here. */
+const designRefFindings = (value) => R.scanBody([
+  '*Retest Result: PASSED* ✅', '', '*Env:* dev', `*Design ref:* ${value}`, '',
+].join('\n'), {}).filter((f) => f.rule === 'header-inline-list');
+
+check('the template\'s "no design node" fallback passes header-inline-list (eval RB-1..3)', () => {
+  const line = tpl.split('\n').find((l) => l.startsWith('*Design ref:*')) || '';
+  const m = /or "([^"]+)"/.exec(line);
+  assert.ok(m, 'the Design ref line no longer shows a quoted fallback: ' + line);
+  const filled = m[1].replace('{who}', 'PO').replace('{YYYY-MM-DD}', '2026-10-14');
+  assert.deepStrictEqual(designRefFindings(filled), [], 'the template fallback is refused by the guard: ' + filled);
+  // must-find: the retired " — " form really is a multipoint value
+  assert.strictEqual(designRefFindings('none — asked PO 2026-10-14').length, 1);
+});
+
+check('the template summary line names every verdict SUMMARY_VERDICTS accepts, and each is accepted', () => {
+  const line = tpl.split('\n').find((l) => l.startsWith('*Retest Result:')) || '';
+  R.SUMMARY_VERDICTS.forEach((v) => {
+    assert.ok(line.includes(v), `the template summary line does not offer ${v}: ${line}`);
+    assert.ok(R.SUMMARY_LINE.test(`*Retest Result: ${v}*`), `${v} is not accepted by SUMMARY_LINE`);
+  });
+  assert.ok(!R.SUMMARY_LINE.test('*Retest Result: DONE*'), 'must-find: an unknown verdict is refused');
+});
+
+check('no workflow line restricts the summary line to PASSED / FAILED only', () => {
+  const bad = wf.split('\n').filter((l) => /\*\*PASSED ✅\*\* or \*\*FAILED ❌\*\*/.test(l));
+  assert.deepStrictEqual(bad, [], 'stale PASSED-or-FAILED-only wording: ' + bad.join(' | '));
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);
