@@ -96,6 +96,33 @@ check('must-read-depth must-not-find: see-also and informational links, and a 1-
   assert.deepStrictEqual(keys(lint(fixture(flat)), 'must-read-depth'), []);
 });
 
+const handoff = {
+  'skills/a/SKILL.md': stub('Runs a.', 'Follow [w](../procedures/a/WORKFLOW.md).\nRead [shared](../../references/shared.md).\n'),
+  'skills/procedures/a/WORKFLOW.md': '# W\n',
+  'skills/b/SKILL.md': stub('Runs b.', 'Follow [w](../procedures/b/WORKFLOW.md).\n'),
+  'skills/procedures/b/WORKFLOW.md': '# W\n\nRead [b-gates](../../../references/b-gates.md) first.\n',
+  'references/b-gates.md': '# B\n',
+};
+
+check('must-read-depth must-not-find: hand-off to another skill\'s SKILL.md does not pull in its internals', () => {
+  const root = fixture(Object.assign({}, handoff, {
+    'references/shared.md': '# S\n\nThen read and follow [b](../skills/b/SKILL.md).\n',
+  }));
+  // b's own 2-hop read is still reported from b; nothing leaks into a.
+  assert.deepStrictEqual(keys(lint(root), 'must-read-depth'), ['skills/b/SKILL.md -> references/b-gates.md']);
+});
+
+check('must-read-depth must-find: a real read of another skill\'s procedures file still counts', () => {
+  const root = fixture(Object.assign({}, handoff, {
+    'references/shared.md': '# S\n\nRead and follow [b workflow](../skills/procedures/b/WORKFLOW.md).\n',
+  }));
+  assert.deepStrictEqual(keys(lint(root), 'must-read-depth').sort(), [
+    'skills/a/SKILL.md -> references/b-gates.md',
+    'skills/a/SKILL.md -> skills/procedures/b/WORKFLOW.md',
+    'skills/b/SKILL.md -> references/b-gates.md',
+  ]);
+});
+
 check('must-read-depth must-not-find: links inside code fences and to missing files', () => {
   const root = fixture({
     'skills/a/SKILL.md': stub('Runs a.', 'Follow [w](../procedures/a/WORKFLOW.md).\n'),

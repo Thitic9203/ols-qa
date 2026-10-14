@@ -1,8 +1,8 @@
 # Figma comparison gate — every UI test is judged against the design, or it is not judged
 
 Applies to **every** UI/visual verification in
-[testing-ticket-workflow](../skills/procedures/testing-ticket-workflow/WORKFLOW.md) and
-[retest-bug-workflow](../skills/procedures/retest-bug-workflow/WORKFLOW.md) — a story run, a bug
+[testing-ticket-workflow](../skills/testing-ticket-workflow/SKILL.md) and
+[retest-bug-workflow](../skills/retest-bug-workflow/SKILL.md) — a story run, a bug
 retest, a task retest, a regression case, any per-case verdict written to a comment, sheet, or notify.
 
 ```
@@ -41,8 +41,11 @@ In order of authority. Take the **first** one that exists and covers the screen 
 | 2 | Design spec / PRD / Confluence page that states the layout, order, wording | Only when there is no Figma frame for that screen. |
 | 3 | The ticket's own Expected Result / AC, when it states the visual contract in words | Weakest — it usually says "shows X", which is what this gate exists to catch. |
 
-An **assumption**, a sibling screen, a previous build, a screenshot in a chat thread, or a
-transliteration of an English feature name is **never** the design source of record.
+An **assumption**, a sibling screen, a previous build, a screenshot in a chat thread, a
+transliteration of an English feature name, or **product code and its code comments** is **never**
+the design source of record. Code shows code intent only. Never write "as designed" / "by design" /
+"not a defect" unless the design node was opened and shows it; when only code speaks for the
+expected, the outcome is a spec conflict — **Needs PO decision**, the case BLOCKED.
 
 ---
 
@@ -100,8 +103,9 @@ Do this, in order:
 
 1. **Say it in the run's own channel, to the person who assigned it** — the chat when a person is
    driving, the thread/channel that triggered the run when it is unattended. State:
-   `Ticket {KEY} · screen {name} · no design reference found (searched: ticket links, parent story,
-   project guide, design file) · I cannot judge layout/wording/order without it.`
+   `Ticket {KEY} · screen {name} · no design reference found (searched: ticket links, every ticket
+   comment, every linked ticket and its comments, parent story, project guide, design file — {n}
+   sources read) · I cannot judge layout/wording/order without it.`
 2. **Ask for exactly one of three things:** the Figma node link · a written visual contract (PO/spec
    owner) · or an explicit "this screen has no design — verify function only, skip visual".
 3. **Meanwhile, do not stall the rest of the run.** Everything that does not depend on the design

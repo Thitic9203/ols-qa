@@ -14,6 +14,7 @@ Prepare **API manual test cases** from an **API spec** and **Swagger/OpenAPI**, 
 
 ## Contents
 
+- [Progress checklist](#progress-checklist)
 - [Discipline](#discipline)
 - [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
 - [Phase A — API sources (mandatory) \[medium freedom\]](#phase-a--api-sources-mandatory-medium-freedom)
@@ -27,6 +28,24 @@ Prepare **API manual test cases** from an **API spec** and **Swagger/OpenAPI**, 
 - [Out of scope](#out-of-scope)
 - [References](#references)
 - [MUST / NEVER](#must--never)
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+TC API prep progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Phase A — API sources (mandatory)
+- [ ] Phase B — Test case table format (mandatory)
+- [ ] Phase C — Where to deliver (mandatory)
+- [ ] Phase D — Scope and design
+- [ ] Phase E — Coverage & quality review (mandatory; 1–2 rounds)
+- [ ] Phase F — Draft in chat (approval gate)
+- [ ] Phase G — Deliver (after approval only)
+- [ ] QA closing (mandatory before "done")
+```
 
 ## Discipline
 
@@ -198,6 +217,8 @@ State clearly: **Not posted / no file written yet.**
 
 **Wait for approval** or edits. Re-show changed rows after feedback.
 
+**Go back:** If the user asks for edits, apply them and return to the start of Phase F — re-show the changed rows and wait. Phase G starts only after approval.
+
 ---
 
 ## Phase G — Deliver (after approval only) [low freedom]
@@ -254,6 +275,8 @@ After G1 and/or G2, run the **full review checklist** from [jira-comment-post-re
 
 MUST NOT run G3 close until post-publish review passes — because first export/post is often wrong.
 
+**Go back:** If any G-verify check fails, fix and return to G2 (comment) or G1 (file) to re-post, then run G-verify again — max 3 rounds. G3 waits.
+
 **Fresh-eyes:** MUST re-read the full draft table before G2/G1 when **> 15 rows** ([skill-rules-style.md](../../../references/skill-rules-style.md)).
 
 ### G3 — Close
@@ -276,6 +299,8 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] Close-out includes `Verified:` and test case count.
 - [ ] G-verify completed (at least one re-read of destination).
 - [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (TC API section).
+
+**Go back:** If any item above is unchecked, return to the phase it names (E, B or G) and redo from there; do not report done.
 
 ---
 

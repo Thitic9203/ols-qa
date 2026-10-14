@@ -15,6 +15,15 @@ const { METHOD } = require('./measure');
 
 const ROOT = path.join(__dirname, '..', '..');
 const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
+/** The workflow = WORKFLOW.md plus the part files it links in its own folder (D2 split, 2026-10-14). */
+function readWorkflow(abs) {
+  const dir = path.dirname(abs);
+  const main = fs.readFileSync(abs, 'utf8');
+  const parts = [...new Set([...main.matchAll(/\]\(([a-z0-9-]+\.md)(?:#[^)]*)?\)/g)].map((m) => m[1]))]
+    .filter((n) => n !== 'WORKFLOW.md' && fs.existsSync(path.join(dir, n)));
+  return [main, ...parts.map((n) => fs.readFileSync(path.join(dir, n), 'utf8'))].join('\n');
+}
+
 const WORKFLOWS = [
   'skills/procedures/retest-bug-workflow/WORKFLOW.md',
   'skills/procedures/testing-ticket-workflow/WORKFLOW.md',
@@ -27,7 +36,7 @@ function check(name, fn) {
 }
 
 WORKFLOWS.forEach((rel) => {
-  const wf = read(rel);
+  const wf = readWorkflow(path.join(ROOT, rel));
   check(rel + ': documents the measure command, the method id, and never estimating', () => {
     assert.ok(/node tools\/run-time\/measure\.js --dirs/.test(wf), 'measure command missing');
     assert.ok(wf.includes(METHOD), 'method id missing');

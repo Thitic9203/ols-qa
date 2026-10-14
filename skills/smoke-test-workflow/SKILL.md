@@ -11,13 +11,15 @@ artefacts a team acts on: a one-page summary and a clickable per-case report.
 **This is a release-gate workflow, not a per-ticket test.** It grades main features. Never expand it
 into ticket-by-ticket verification — that is `testing-ticket-workflow`.
 
-Resolve every `<PLACEHOLDER>` from `~/.ols-qa-secrets/ols-secrets.md` at runtime. This repo is
+Resolve every `<PLACEHOLDER>` from `<SECRETS_DIR>/ols-secrets.md` at runtime; `<SECRETS_DIR>`, `<E2E_REPO>`, `<MONOREPO>` and `<QA_TOOLS_ROOT>` (local clone roots) come from the workspace project guide, else ask once. This repo is
 public: never write a resolved host, id, account or channel into any file here.
 
 ---
 
 ## Contents
 
+- [Contents (1 hop)](#contents-1-hop)
+- [Progress checklist](#progress-checklist)
 - [Round-time contract](#round-time-contract)
 - [Stage 0 — Intake (blocking) \[medium freedom\]](#stage-0--intake-blocking-medium-freedom)
 - [Stage 1 — Preflight \[low freedom\]](#stage-1--preflight-low-freedom)
@@ -32,6 +34,53 @@ public: never write a resolved host, id, account or channel into any file here.
 - [Stage 8 — Notify \[low freedom\]](#stage-8--notify-low-freedom)
 - [Stage 7.5 — The numbers gate (the trap that cost a round) \[low freedom\]](#stage-75--the-numbers-gate-the-trap-that-cost-a-round-low-freedom)
 - [MUST / NEVER](#must--never)
+- [Dependencies](#dependencies)
+
+## Contents (1 hop)
+
+Every must-read file this workflow reaches, linked directly from here.
+
+- [user-communication.md](../../references/user-communication.md) — read before any message to the owner.
+- [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — read before invoking or switching skills.
+- [skill-routing.md](../../references/skill-routing.md) — read when a request might belong to another skill (single ticket, retest, regression).
+- [long-workflow-todos.md](../../references/long-workflow-todos.md) — read at Stage 0; keep the progress checklist as a todo list.
+- [round-time-contract.md](../../references/round-time-contract.md) — read before logging in or reusing a session for the round.
+- [playwright-preflight.md](../../references/playwright-preflight.md) — read at Stage 1, before any Playwright run.
+- [resilient-selectors.md](../../references/resilient-selectors.md) — read when writing or fixing a Playwright selector in Stage 5.
+- [test-through-real-steps.md](../../references/test-through-real-steps.md) — read before running a case — drive the real screen, never a backend shortcut.
+- [figma-design-comparison.md](../../references/figma-design-comparison.md) — read when a smoke case judges a UI screen.
+- [root-cause-investigation.md](../../references/root-cause-investigation.md) — read at Stage 4, before calling any case FAILED or BLOCKED.
+- [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) — read at Stage 4, before recording any non-PASS.
+- [qa-debug-discipline.md](../../references/qa-debug-discipline.md) — read when a result is flaky or conflicts with expectations.
+- [bug-priority-matrix.md](../../references/bug-priority-matrix.md) — read before assigning a priority or verdict to a defect.
+- [defect-report-completeness.md](../../references/defect-report-completeness.md) — read before writing up a verified defect candidate.
+- [customer-escape-prevention.md](../../references/customer-escape-prevention.md) — read before grading a feature PASSED at the result quality gate.
+- [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — read before any completion claim or evidence verdict.
+- [agent-rationalizations.md](../../references/agent-rationalizations.md) — read when tempted to skip a step; each excuse has its correct action.
+- [verify-closing-checklist.md](../../references/verify-closing-checklist.md) — read before reporting the round done.
+- [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read at the end, when a QA follow-up could be suggested.
+- [session-closing.md](../../references/session-closing.md) — read at session end.
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+Smoke test progress:
+- [ ] Stage 0 — Intake (blocking)
+- [ ] Stage 1 — Preflight
+- [ ] Stage 2 — Identify the deployed version
+- [ ] Stage 2.5 — The one-shot rule (read this before running anything)
+- [ ] Stage 3 — Run
+- [ ] Stage 4 — Triage every non-passing case
+- [ ] Stage 5 — Fix what is ours, then re-verify
+- [ ] Result quality gate (mandatory before the summary is built)
+- [ ] Stage 6 — The one-page summary
+- [ ] Stage 7 — Deliverables
+- [ ] Stage 7.5 — The numbers gate (the trap that cost a round)
+- [ ] Stage 8 — Notify
+```
 
 ## Round-time contract
 
@@ -49,18 +98,20 @@ This workflow follows the Helix round-time contract (Helix `references/round-tim
    on — do not ask twice.
 2. **Read `docs/post-mortem/PENDING.md`.** An `OPEN` row blocks every commit later in this
    workflow; know that before you start, not at the end.
-3. `git pull origin main` in `ols-qa`, and check `~/GitHub/ols-qa-e2e` is on a clean tree.
+3. `git pull origin main` in `ols-qa`, and check `<E2E_REPO>` is on a clean tree.
 
 ## Stage 1 — Preflight [low freedom]
 
 | Check | How | Refuse if |
 |---|---|---|
 | VPN | `scutil --nc list` — the tunnel for dev/pre-prod must read `Connected` | not connected |
-| Host reachable | `command curl -s -o /dev/null -w '%{http_code}' --cacert ~/.ols-qa-secrets/ca-bundle-with-bitdefender.pem https://<ENV_HOST>/` | not `200` |
-| Secrets store | `~/.ols-qa-secrets/ols-secrets.md` present | missing |
+| Host reachable | `command curl -s -o /dev/null -w '%{http_code}' --cacert <SECRETS_DIR>/ca-bundle-with-bitdefender.pem https://<ENV_HOST>/` | not `200` |
+| Secrets store | `<SECRETS_DIR>/ols-secrets.md` present | missing |
 
 `global-setup` re-checks all three and fails loudly. A preflight failure is a **harness** failure —
 never report it as a product verdict.
+
+**Go back:** If any preflight check fails, fix the harness (VPN, host, secrets store) and return to the top of Stage 1. Stage 3 does not start, and the failure is never a product verdict.
 
 ## Stage 2 — Identify the deployed version [high freedom]
 
@@ -70,7 +121,7 @@ The app exposes **no version endpoint**. Pin it by evidence, not by assumption:
    fingerprint (`shasum -a 256`).
 2. Find a **UI marker unique to one release** — a label a known commit introduced. Read the live DOM
    or a Playwright failure snapshot for it.
-3. `cd ~/GitHub/ols-monorepo && git fetch -q origin && git tag --contains <commit> --sort=-creatordate`
+3. `cd <MONOREPO> && git fetch -q origin && git tag --contains <commit> --sort=-creatordate`
    — the earliest tag containing that commit is the deployed release, and the previous tag must
    **not** contain it. State both facts in the report.
 
@@ -82,12 +133,12 @@ If no marker separates two candidate tags, say the version is a range. Do not na
 avoidable. What makes it one:
 
 **Start from the exclusion registry, not from the full set.**
-`~/ols-qa-testing-bot/smoke/excluded-cases.json` holds the cases that cannot produce a clean pass on
+`<QA_TOOLS_ROOT>/smoke/excluded-cases.json` holds the cases that cannot produce a clean pass on
 this environment, grouped by *why* — external identity, live broadcast, irreversible fixture, fixture
 not yet built, awaiting design, spec gap, unstable. Build `--grep-invert` from it:
 
 ```bash
-EXCL=$(python3 -c "import json;d=json.load(open('$HOME/ols-qa-testing-bot/smoke/excluded-cases.json'));print('|'.join(sorted(c for g in d['groups'].values() for c in g['cases'])))")
+EXCL=$(python3 -c "import json;d=json.load(open('<QA_TOOLS_ROOT>/smoke/excluded-cases.json'));print('|'.join(sorted(c for g in d['groups'].values() for c in g['cases'])))")
 ```
 
 Verified 2026-09-09 on dev: excluding those 22 leaves **111 cases that pass clean, exit 0, zero flaky,
@@ -118,7 +169,7 @@ never report it, never triage it, never let it reach a deliverable.
 ## Stage 3 — Run [low freedom]
 
 ```bash
-cd ~/GitHub/ols-qa-e2e
+cd <E2E_REPO>
 E2E_JSON_OUT=<WORKDIR>/run.json TARGET_ENV=<env> rtk proxy npx playwright test \
   --grep @safe \
   --project=guest --project=learner --project=creator --project=admin-content --project=admin-user \
@@ -135,7 +186,7 @@ E2E_JSON_OUT=<WORKDIR>/run.json TARGET_ENV=<env> rtk proxy npx playwright test \
   reporter, and that report is a deliverable. Overriding it silently loses the artefact. (Partial runs
   are the opposite — see below.)
 - `@safe` is read-only. Anything that writes is out of scope for this workflow.
-- `<WORKDIR>` is a **permanent** folder — `~/ols-qa-testing-bot/out/<env>-smoke-<YYYY-MM-DD>/`.
+- `<WORKDIR>` is a **permanent** folder — `<QA_TOOLS_ROOT>/out/<env>-smoke-<YYYY-MM-DD>/`.
   Never `/tmp`: it is wiped and takes the round's evidence with it.
 - **Copy the HTML report into `<WORKDIR>` the moment the full run ends**
   (`cp playwright-report/index.html <WORKDIR>/playwright-report-full.html`). The config pins the HTML
@@ -172,7 +223,7 @@ Useful moves, all cheap:
 - `git log -S "<the exact string the test expects>"` in `ols-monorepo` — finds the commit that
   removed a label and names the ticket that ordered it.
 - Read the Jira description via REST (read-only is fine):
-  `command curl -s --cacert <CA> -u "$(head -1 ~/ols-qa-testing-bot/.jira_token)" "https://<JIRA_DOMAIN>/rest/api/2/issue/<KEY>?fields=summary,status,description"`
+  `command curl -s --cacert <CA> -u "$(head -1 <QA_TOOLS_ROOT>/.jira_token)" "https://<JIRA_DOMAIN>/rest/api/2/issue/<KEY>?fields=summary,status,description"`
   OLS bugs keep their content in **custom fields**, not `description`.
 - Open the failure's `error-context.md` — it holds the full accessibility snapshot at the moment of
   failure, which usually answers the question without re-running anything.
@@ -188,6 +239,8 @@ Fix stale expectations and test-code defects in `ols-qa-e2e` on a branch. Then:
    8 others is a net loss, and only a full run shows it.
 4. Commit with a message that names the ticket and the source line behind each change.
 
+**Go back:** If `tsc` or `eslint` is not clean, fix and return to item 1. If the full re-run shows any new failure, return to Stage 4 — Triage every non-passing case for it.
+
 **Known trap:** when adding paging to a list reader, honour a `page=` the caller already pinned.
 Appending a second one yields `page=1&page=1`, which the API parses as `NaN` and rejects with 400.
 
@@ -201,9 +254,11 @@ round's record. A red layer blocks that case's verdict: report the case as what 
 (usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
 is a claim — the main thread re-runs the gate itself (layer 20).
 
+**Go back:** A red layer returns that case to Stage 4 — Triage every non-passing case for a verdict with evidence; if it cannot be fixed, report the case as BLOCKED with the reason.
+
 ## Stage 6 — The one-page summary [medium freedom]
 
-Template and renderer live off-repo at `~/ols-qa-testing-bot/smoke/`
+Template and renderer live off-repo at `<QA_TOOLS_ROOT>/smoke/`
 (`report-template.html`, `render-landscape.js`, `measure.js`).
 
 Fixed design decisions — do not redesign them each round:
@@ -224,6 +279,8 @@ measures *exactly* `avail` still spills — leave a few px of slack.
 
 **Always rasterise the finished PDF and look at it** before sending. A page-count check does not
 catch a broken layout.
+
+**Go back:** If `measure.js` reports an overflow or the rasterised page shows a broken layout, fix it and measure again within this stage. Stage 7 waits for one clean page.
 
 ## Stage 7 — Deliverables [medium freedom]
 
@@ -252,7 +309,7 @@ excluded** (`--grep-invert`), never by editing report data. Two things to know b
 ## Stage 8 — Notify [low freedom]
 
 Post to the QA release channel `<QA_RELEASE_CHANNEL_ID>` as bot `<QA_BOT_ID>` (token at
-`~/ols-qa-testing-bot/.discord_bot_token`).
+`<QA_TOOLS_ROOT>/.discord_bot_token`).
 
 1. **Verify the bot first** — `GET /users/@me` must return the expected id. Never send as a different
    bot because the expected one did not resolve.
@@ -282,6 +339,8 @@ Post to the QA release channel `<QA_RELEASE_CHANNEL_ID>` as bot `<QA_BOT_ID>` (t
    `edited_timestamp`, the attachment list and the mention list before saying it is done.
 7. Times in the notify are `9 Sep 2026, 4:55 PM`. The Thai PDF keeps `16.55 น.` — two audiences, two
    conventions, both correct.
+
+**Go back:** If `GET /users/@me` returns a different id or a step-2 pre-check fails, stop the send, fix it, and return to step 2.1 — Pre-checks. If the counts disagree, return to Stage 7.5 — The numbers gate.
 
 Message shape:
 
@@ -321,6 +380,8 @@ grep -E '^\s+[0-9]+ (passed|failed|flaky|skipped)' <WORKDIR>/run.log   # what th
 - Confirm the report you are attaching came from the run you are quoting: `playwright-report/index.html`
   is overwritten by every run, so compare its mtime against the run's own log.
 
+**Go back:** If the three surfaces disagree, re-run from the exclusion registry (Stage 2.5) or reword as the second bullet says. If the report's mtime does not match the run log, return to Stage 7 — Deliverables and attach the report from the quoted run.
+
 ## MUST / NEVER
 
 - **MUST** confirm the environment with the owner before touching anything.
@@ -335,3 +396,17 @@ grep -E '^\s+[0-9]+ (passed|failed|flaky|skipped)' <WORKDIR>/run.log   # what th
 - **NEVER** touch anything whose title or description contains `RGS`; that is the customer's data.
 - **NEVER** publish the Playwright report publicly without the owner's explicit decision.
 - **NEVER** claim a version without the tag evidence from Stage 2.
+
+## Dependencies
+
+Run the check for each of these before Stage 1 — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
+
+- Node.js and Playwright (in the e2e repo `<E2E_REPO>`)
+- Python 3 + `pypdf` (PDF summary check)
+- git and GitHub CLI `gh` (deployed-version tag evidence)
+- curl
+- Clones of the product repo and the e2e repo (`<MONOREPO>`, `<E2E_REPO>`)
+- QA capture and verify tools and the smoke templates (`<QA_TOOLS_ROOT>`)
+- Secrets folder and token files (`<SECRETS_DIR>`)
+- `superpowers:systematic-debugging` (Stage 4 triage)
+- Notify channel webhook / bot (Stage 8)

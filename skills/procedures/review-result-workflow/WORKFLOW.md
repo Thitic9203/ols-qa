@@ -10,6 +10,7 @@ description: |
 
 ## Contents
 
+- [Progress checklist](#progress-checklist)
 - [Discipline](#discipline)
 - [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
 - [Step 1 — Working directory (before the first file) \[medium freedom\]](#step-1--working-directory-before-the-first-file-medium-freedom)
@@ -43,6 +44,28 @@ exist; it never changes the criteria or the statuses.
 **Project-agnostic.** Environment names, hands-off environments, customer-owned content markers, board
 template location, and the account/session store all come from the workspace's own
 `references/*-guide.md` — never from a value written into this skill.
+
+## Progress checklist
+
+Copy this block into your response when the run starts and tick each line as it completes. A
+failed gate sends you back to the step its **Go back:** line names — untick from there.
+
+```text
+Review result progress:
+- [ ] Refusal-first (precondition gate)
+- [ ] Step 1 — Working directory (before the first file)
+- [ ] Step 2 — Build the run manifest from the case list
+- [ ] Step 3 — One contact sheet per clip
+- [ ] Step 4 — Per-case brief, before looking at pixels
+- [ ] Step 5 — The ten criteria
+- [ ] Step 6 — Zoom only where the contact sheet cannot decide
+- [ ] Result quality gate (mandatory before verdicts are recorded)
+- [ ] Step 7 — Record the verdict
+- [ ] Step 8 — Live board (mandatory for every review round)
+- [ ] Step 9 — Lanes and dispatch
+- [ ] Step 10 — Fix ordering, cheapest first
+- [ ] Step 11 — Final review (mandatory before "done")
+```
 
 ## Discipline
 
@@ -107,6 +130,8 @@ every time — that closes the whole class rather than one instance of it.
 Reconcile before reviewing anything: every case in scope has an evidence file, every evidence file maps to
 a case. An unmatched file on either side is reported now, not discovered at the end.
 
+**Go back:** If reconciliation finds an unmatched case or evidence file, report it now and return to the start of Step 2 once the case list or evidence set is corrected.
+
 ## Step 3 — One contact sheet per clip [medium freedom]
 
 For each clip, extract **frames evenly spread across the whole clip plus the real last frame**, and tile
@@ -164,6 +189,8 @@ backend check is recorded beside it, never inside it.
 wrong role, and it is counted in the wrong total. It is moved — see Step 9 group A — and the fix never
 involves renaming its clip.
 
+**Go back:** A criterion the contact sheet cannot settle goes to Step 6. A failed case goes to Step 10 for its fix group, and a re-recorded clip returns to Step 3 as `AWAITING RE-REVIEW`.
+
 ## Step 6 — Zoom only where the contact sheet cannot decide [high freedom]
 
 Zoom is the exception, not the method. When a criterion genuinely cannot be settled from the sheet, crop
@@ -184,6 +211,8 @@ judgement layers, and paste the checker's last output line (or the counted hand 
 round's record. A red layer blocks that case's verdict: report the case as what it really is
 (usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
 is a claim — the main thread re-runs the gate itself (layer 20).
+
+**Go back:** A red layer returns that case to the step that produced the failing input — Step 2 (manifest), Step 3 (contact sheet) or Step 5 (criteria). If it cannot be fixed, report the case as BLOCKED with the reason.
 
 **Source sweep before any BLOCKED, FAILED or "ask the PO / reporter" outcome** (layer 14 of
 [result-quality-gate.md](../../../references/result-quality-gate.md)): read the product code at the default
@@ -251,6 +280,8 @@ Every review round has a **one-page live board** that reads its numbers from the
 - **Never claim the board was published without reading the live version back** and confirming the new
   content is there and the old content is gone.
 
+**Go back:** If the live read-back does not show the new content, regenerate the payload from the verdict files and publish again from the top of Step 8.
+
 ## Step 9 — Lanes and dispatch [high freedom]
 
 **A lane is a role or a tab — never a slice of the raw file count.** Splitting by file count puts two
@@ -312,6 +343,8 @@ Two checks that are easy to skip and expensive to miss, plus the status sweep:
 - [ ] **No case carries an interim status** — every case reads `PASSED`, `FAILED`, or `AWAITING RE-REVIEW`.
 - [ ] **Board numbers match the recorded verdicts** — regenerated from the verdict files, read back live.
 - [ ] **Every case flagged for a question has been raised** with the owner, not left on the board.
+
+**Go back:** A broken sequence returns to Step 10 group A (renumber); a changed filename returns to Step 10 (restore it); an interim status returns to Step 7; a board mismatch returns to Step 8; an unraised question returns to the Step 7 three-layer gate.
 
 ---
 

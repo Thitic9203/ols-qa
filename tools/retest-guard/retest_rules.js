@@ -202,8 +202,20 @@ const RUN_TIME_LABEL = 'Test run time:';
 const RUN_TIME_METHOD = 'evidence-burst-v1';
 /** Bold label, a measured number with one decimal, then "min". */
 const RUN_TIME_LINE = /^\*{1,2}Test run time:\*{1,2}\s+\d+(\.\d)?\s+min\b/;
+/**
+ * The one allowed non-number: a round in which every case is BLOCKED ran nothing, so there is
+ * nothing to measure (owner, 2026-10-14). Allowed only with a BLOCKED summary and a Case coverage
+ * line of 0 passed / 0 failed; anywhere else it is an estimate dodge and is refused.
+ */
+const RUN_TIME_NOT_MEASURED = 'not measured — no case ran';
+const RUN_TIME_NOT_MEASURED_LINE = /^\*{1,2}Test run time:\*{1,2}\s+not measured — no case ran$/;
+const ALL_BLOCKED_CASE_COVERAGE = /^\*{1,2}Case coverage:\*{1,2}.*—\s*0 passed \/ 0 failed( \/ 0 PWMI)? \/ [1-9]\d* blocked\s*$/;
 
 function runTimeLine(t, format = FORMATS.WIKI) {
+  if (t && t.notMeasured === true) {
+    const lbl = format === FORMATS.ADF ? `**${RUN_TIME_LABEL}**` : `*${RUN_TIME_LABEL}*`;
+    return `${lbl} ${RUN_TIME_NOT_MEASURED}`;
+  }
   const what = t && t.hasVideo ? 'screenshots and video' : 'screenshots';
   const label = format === FORMATS.ADF ? `**${RUN_TIME_LABEL}**` : `*${RUN_TIME_LABEL}*`;
   return `${label} ${Number(t.minutes).toFixed(1)} min — includes evidence capture (${what}); excludes re-checks, design lookup and comment drafting`;
@@ -388,7 +400,16 @@ function scanBody(body, opts = {}) {
 
   let rtIdx = lastIdx - 1;
   while (rtIdx >= 0 && lines[rtIdx].trim() === '') rtIdx -= 1;
-  if (rtIdx < 0 || !RUN_TIME_LINE.test(lines[rtIdx].trim())) {
+  const rtText = rtIdx >= 0 ? lines[rtIdx].trim() : '';
+  if (RUN_TIME_NOT_MEASURED_LINE.test(rtText)) {
+    const summaryBlocked = summaryIdx >= 0 && /Retest Result:\s*BLOCKED\b/.test(lines[summaryIdx]);
+    const allBlocked = lines.some((l) => ALL_BLOCKED_CASE_COVERAGE.test(l.trim()));
+    if (!summaryBlocked || !allBlocked) {
+      out.push(finding('run-time-not-measured-with-cases', rtIdx + 1,
+        '"not measured — no case ran" is allowed only when every case is BLOCKED (summary BLOCKED, 0 passed / 0 failed)',
+        'a case ran, so measure it with tools/run-time/measure.js and print the minutes'));
+    }
+  } else if (rtIdx < 0 || !RUN_TIME_LINE.test(rtText)) {
     out.push(finding('run-time-line-missing', rtIdx + 1,
       'the line above the usage marker is not a measured test-run-time line',
       `measure with tools/run-time/measure.js and put "${RUN_TIME_LABEL} {minutes} min — …" one blank line above the marker`));
@@ -551,8 +572,22 @@ function scanBody(body, opts = {}) {
         out.push(finding('non-pass-block-missing', 0, `non-PASSED comment has no "${b}" block`, 'Step 6a requires both blocks'));
       }
     });
+    // Text quoted from the ticket is the contract, not QA's cause: skip `(from ticket…)`
+    // header lines and the verdict table's Expected Result cells (a hedge in the expected
+    // side is the Step 4i challenge gate's job, not this rule's).
+    const hedgeLines = lines.map((l) => {
+      const m = labelLine.exec(l.trim());
+      return m && VERBATIM_LABEL.test(m[1]) ? '' : l;
+    });
+    const erCol = verdict ? verdict.headers.indexOf('Expected Result') : -1;
+    if (erCol >= 0) {
+      verdict.rows.forEach((r) => {
+        const cell = r.cells[erCol];
+        if (cell && r.line >= 1) hedgeLines[r.line - 1] = hedgeLines[r.line - 1].replace(cell, '');
+      });
+    }
     HEDGE_WORDS.forEach((w) => {
-      const idx = lines.findIndex((l) => l.toLowerCase().includes(w.toLowerCase()));
+      const idx = hedgeLines.findIndex((l) => l.toLowerCase().includes(w.toLowerCase()));
       if (idx >= 0) {
         out.push(finding('hedge-as-cause', idx + 1, `hedge word "${w}" in a non-PASSED comment`,
           'a cause cites a captured artifact and carries Confirmed / Suspected / Unknown', 'warn'));
@@ -571,8 +606,11 @@ function scanBody(body, opts = {}) {
  * a deliberate decision instead of a silent second copy of the rule.
  */
 const DRIFT_ALLOWLIST = Object.freeze([
-  // The workflow states the rule for a human reader, always negatively.
+  // The workflow states the rule for a human reader, always negatively. Since the D2 split
+  // (2026-10-14) those sentences live in the workflow's part files, moved verbatim.
   Object.freeze({ file: 'skills/procedures/retest-bug-workflow/WORKFLOW.md', needle: '|width=' }),
+  Object.freeze({ file: 'skills/procedures/retest-bug-workflow/comment-and-post.md', needle: '|width=' }),
+  Object.freeze({ file: 'skills/procedures/retest-bug-workflow/execute-and-evidence.md', needle: '|width=' }),
   // The syntax map has to name the wrong form to rule it out.
   Object.freeze({ file: 'references/jira-wiki-vs-markdown.md', needle: '|width=' }),
   // The worked example explains, in prose, why it no longer carries it.
@@ -635,6 +673,9 @@ module.exports = {
   RUN_TIME_LABEL,
   RUN_TIME_METHOD,
   RUN_TIME_LINE,
+  RUN_TIME_NOT_MEASURED,
+  RUN_TIME_NOT_MEASURED_LINE,
+  ALL_BLOCKED_CASE_COVERAGE,
   runTimeLine,
   DRIFT_ALLOWLIST,
   OPEN_QUESTIONS,

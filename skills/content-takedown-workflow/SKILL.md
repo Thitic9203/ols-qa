@@ -36,12 +36,39 @@ When invoked:
 
 Claude Code shortcut: `/content-takedown` → [commands/content-takedown.md](../../commands/content-takedown.md).
 
-## Contents (read on demand, 1 hop)
+## Contents
 
 Every must-read file for this workflow, linked directly from here. References already linked above are not repeated.
 
 - [WORKFLOW.md](../procedures/content-takedown-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
 - [shared-preamble.md](../../references/shared-preamble.md) — at the start of every run, before the first reply (preamble, constraints, tone).
+- [agent-rationalizations.md](../../references/agent-rationalizations.md) — read when tempted to skip a step; each excuse has its correct action.
+- [bug-priority-matrix.md](../../references/bug-priority-matrix.md) — read before setting any priority or a PWMI / FAILED verdict.
+- [customer-escape-prevention.md](../../references/customer-escape-prevention.md) — read before any QA run; the gates that stop shipped defects.
+- [defect-report-completeness.md](../../references/defect-report-completeness.md) — read before writing up any defect or non-pass.
+- [figma-design-comparison.md](../../references/figma-design-comparison.md) — read before judging any UI or visual result against the design.
+- [helix-session-constraints.md](../../references/helix-session-constraints.md) — read once at session start.
+- [long-workflow-todos.md](../../references/long-workflow-todos.md) — read when the workflow has many steps; keep the todo list.
+- [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) — read before recording any result that is not PASSED.
+- [ols-project-guide.md](../../references/ols-project-guide.md) — read when working on OLS; grep the section you need.
+- [playwright-preflight.md](../../references/playwright-preflight.md) — read before any Playwright run.
+- [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read when a QA follow-up could be suggested.
+- [qa-closing-shared.md](../../references/qa-closing-shared.md) — read before saying done; shared closing checklist.
+- [qa-debug-discipline.md](../../references/qa-debug-discipline.md) — read when a test is flaky or a tool errors.
+- [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — read before any completion claim.
+- [resilient-selectors.md](../../references/resilient-selectors.md) — read when writing or fixing Playwright selectors.
+- [result-quality-gate.md](../../references/result-quality-gate.md) — read before any verdict leaves the round.
+- [root-cause-investigation.md](../../references/root-cause-investigation.md) — read before naming a cause for any failure.
+- [round-time-contract.md](../../references/round-time-contract.md) — read when a round starts and before reporting times.
+- [session-closing.md](../../references/session-closing.md) — read at session end.
+- [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — read before invoking or switching skills.
+- [skill-routing.md](../../references/skill-routing.md) — read when choosing which skill handles a request.
+- [skill-rules-style.md](../../references/skill-rules-style.md) — read before asking the user or stopping on a missing input.
+- [tc-glossary.md](../../references/tc-glossary.md) — read when choosing test-case terms.
+- [test-through-real-steps.md](../../references/test-through-real-steps.md) — read before testing an action; no API shortcut for the action under test.
+- [user-communication.md](../../references/user-communication.md) — read before any message to the user.
+- [verify-closing-checklist.md](../../references/verify-closing-checklist.md) — read before reporting a verify or retest done.
+- [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) — read at the start; find the workspace project guide.
 
 ## Refusal-first (precondition gate)
 
@@ -64,3 +91,16 @@ Five-layer guest-side verification in WORKFLOW.md Step 6 — write responses, pu
 **every** item id refused, whole-catalogue count down by exactly the batch size, and a guest
 screenshot sent in chat. MUST NOT claim done from write responses alone or from a sampled subset,
 and MUST state the rollback call with the ids needed to run it.
+
+## Dependencies
+
+Run the check for each of these before step 1 — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
+
+- Node.js
+- Python 3 + `requests`
+- ffmpeg / ffprobe
+- Playwright
+- macOS-only tools (`scutil`)
+- browser automation MCP or `superpowers-chrome:browsing`
+- secrets folder
+- `superpowers:systematic-debugging`
