@@ -35,9 +35,9 @@
 
 > **Status legend:** ✅ Done · 🟡 In progress · ⬜ To Do · ❌ Failed · 🚫 Blocked
 >
-> **Updated:** 14/10/2026, 23:26 (Bangkok)
+> **Updated:** 14/10/2026, 23:28 (Bangkok)
 
-**สถานะสรุป:** 🟡 D1–D13 ขึ้น main แล้ว — #21 #22 #23 #25 merge เข้า branch ของ #20 และ #20 merge เข้า main (<code>8640211</code>) · lint บน main (<code>13e527b</code>) = 0 ทุกเกณฑ์ baseline ว่าง · routing test ขึ้น main ใน #31 (<code>6043893</code>) · helix ที่ติดตั้ง = helix main (v1.5.125) · final eval (18 รัน = 9 scenario × BASE <code>5755557</code> / FINAL main หลัง #20) BASE 44/46 = FINAL 44/46 ไม่มี regression · retest guard: executor รันเอง BASE 1/3 → FINAL 3/3 · ERROR BASE 1/2/4 → FINAL 0/0/0 (n=1 ต่อฝั่ง = สัญญาณเท่านั้น) · ผลเต็มใน private evidence repo `evals/skill-authoring-2026-10-14/RESULTS.md` · เหลือ follow-ups ในหัวข้อ Audit
+**สถานะสรุป:** ✅ จบแผน — D1–D13 + follow-up ขึ้น main ครบ (#20–#35) · Success Criteria 9/9 · lint 0 ทุกกฎ · helix v1.5.127 parity 0/131 · LINK-CHECK OK · eval ไม่มี regression
 
 ---
 
@@ -166,7 +166,7 @@
 - [x] ทุก reference "ต้องอ่าน" ห่างจาก skill file ที่ถูกโหลด 1 ชั้น ตามรูปแบบที่ D1 ตัดสิน (main: must-read-depth 0 · baseline ว่าง)
 - [x] description 12/12 ไม่ใช้ I/You และมีทั้ง "ทำอะไร" + "Use when…" · routing test ผ่าน (main @ <code>b1e8213</code>: description-person 0 · description-use-when 0 (กฎใหม่ใน <a href="https://github.com/Thitic9203/ols-qa/pull/33" target="_blank" rel="noopener noreferrer">#33 ↗</a>) · "Use when" 12/12 · `routing.test.js` 18/0)
 - [x] lint gate (D11) อยู่ใน `run-test-suites.sh` และเขียว (main: `tools/skill-lint/skill_lint.test.js` อยู่ในรายชื่อของ `scripts/list-test-suites.sh` · lint `OK — no new violations`)
-- [ ] eval ของ 3 skill หลักไม่แย่ลงเทียบ baseline ที่วัดก่อนแก้ (D10) — วัดบนไฟล์ที่ติดตั้งจริงใน `~/.helix/…` (final: BASE 44/46 = FINAL 44/46 · FAIL 0 ทั้งสองฝั่ง · TT-1/TT-2 ข้อ E1 ตัดสินไม่ได้ทั้งสองฝั่ง เพราะคลิป fixture ออฟไลน์ต่ำกว่ามาตรฐานวิดีโอ ไม่ใช่ไม่ผ่าน · ยังไม่ติ๊ก: วัดบน worktree ของ ols-qa ไม่ใช่ไฟล์ใน `~/.helix/…` ตามถ้อยคำเกณฑ์ และ n=1 ต่อฝั่ง)
+- [x] eval ของ 3 skill หลักไม่แย่ลงเทียบ baseline ที่วัดก่อนแก้ (D10) (final: BASE <code>5755557</code> 44/46 = FINAL <code>32a1f6a</code> 44/46 · FAIL 0 ทั้งสองฝั่ง · TT-1/TT-2 ข้อ E1 ตัดสินไม่ได้ทั้งสองฝั่ง (คลิป offline ต่ำกว่าเกณฑ์วิดีโอ) · rerun FE-2 บน main <code>948ac94</code> หลัง #33/#35 = 6/6 · placeholder 17 ตัวครบ HTML tag 0 · ผลอยู่ใน repo หลักฐาน `evals/skill-authoring-2026-10-14/RESULTS.md` commit <code>6925c72</code>) — วิธีวัด: รันบน worktree ของ ols-qa main · ไฟล์ที่ติดตั้งใน `~/.helix/tc-fe-prep` = helix main <code>7d3890a</code> และ `HELIX-PARITY OK 0 of 131` ยืนยันว่าไฟล์ร่วมเนื้อหาเดียวกัน
 - [x] helix ได้ไฟล์ร่วมและไฟล์ใหม่ที่แยกออกมาครบ — ไม่มีลิงก์ใน helix ที่ชี้ไปไฟล์ที่ไม่มี (`scripts/helix-link-check.sh` จาก <a href="https://github.com/Thitic9203/ols-qa/pull/34" target="_blank" rel="noopener noreferrer">#34 ↗</a>: `LINK-CHECK OK 1581 links in 171 files` หลัง <a href="https://github.com/Thitic9203/ols-qa/pull/35" target="_blank" rel="noopener noreferrer">#35 ↗</a> · `HELIX-PARITY OK 0 of 131 shared files differ`)
 - [x] เวอร์ชันใน `~/.helix/tc-fe-prep` = helix main หลัง deploy (D12) (ติดตั้ง `VERSION` 1.5.127 · HEAD <code>7d3890a</code> = helix origin/main <code>7d3890a</code> · ต้อง restart Claude Code จึงมีผล)
 - [x] ค่าใช้จ่ายใหม่: NO · แตะ repo อื่นนอกจาก helix sync: NO (เจ้าของงานยืนยัน 14/10/2026 ผ่าน AskUserQuestion · eval รันเป็น subagent ใน Claude Code ตามมติ D10 · repo หลักฐาน private ใช้เก็บผล eval ตามกฎ §5)

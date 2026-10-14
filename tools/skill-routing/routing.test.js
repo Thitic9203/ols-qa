@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-/* Skill routing consistency (plan: docs/plans/to-do/skill-authoring-2026-alignment.md, D3).
+/* Skill routing consistency (plan: docs/plans/done/skill-authoring-2026-alignment.md, D3).
  *
  * Changing a skill's frontmatter description, or the routing map, changes which skill gets
  * picked. This suite keeps four things in step and fails the pre-push gate when they drift:
