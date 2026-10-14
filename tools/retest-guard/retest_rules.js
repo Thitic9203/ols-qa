@@ -202,8 +202,20 @@ const RUN_TIME_LABEL = 'Test run time:';
 const RUN_TIME_METHOD = 'evidence-burst-v1';
 /** Bold label, a measured number with one decimal, then "min". */
 const RUN_TIME_LINE = /^\*{1,2}Test run time:\*{1,2}\s+\d+(\.\d)?\s+min\b/;
+/**
+ * The one allowed non-number: a round in which every case is BLOCKED ran nothing, so there is
+ * nothing to measure (owner, 2026-10-14). Allowed only with a BLOCKED summary and a Case coverage
+ * line of 0 passed / 0 failed; anywhere else it is an estimate dodge and is refused.
+ */
+const RUN_TIME_NOT_MEASURED = 'not measured — no case ran';
+const RUN_TIME_NOT_MEASURED_LINE = /^\*{1,2}Test run time:\*{1,2}\s+not measured — no case ran$/;
+const ALL_BLOCKED_CASE_COVERAGE = /^\*{1,2}Case coverage:\*{1,2}.*—\s*0 passed \/ 0 failed( \/ 0 PWMI)? \/ [1-9]\d* blocked\s*$/;
 
 function runTimeLine(t, format = FORMATS.WIKI) {
+  if (t && t.notMeasured === true) {
+    const lbl = format === FORMATS.ADF ? `**${RUN_TIME_LABEL}**` : `*${RUN_TIME_LABEL}*`;
+    return `${lbl} ${RUN_TIME_NOT_MEASURED}`;
+  }
   const what = t && t.hasVideo ? 'screenshots and video' : 'screenshots';
   const label = format === FORMATS.ADF ? `**${RUN_TIME_LABEL}**` : `*${RUN_TIME_LABEL}*`;
   return `${label} ${Number(t.minutes).toFixed(1)} min — includes evidence capture (${what}); excludes re-checks, design lookup and comment drafting`;
@@ -388,7 +400,16 @@ function scanBody(body, opts = {}) {
 
   let rtIdx = lastIdx - 1;
   while (rtIdx >= 0 && lines[rtIdx].trim() === '') rtIdx -= 1;
-  if (rtIdx < 0 || !RUN_TIME_LINE.test(lines[rtIdx].trim())) {
+  const rtText = rtIdx >= 0 ? lines[rtIdx].trim() : '';
+  if (RUN_TIME_NOT_MEASURED_LINE.test(rtText)) {
+    const summaryBlocked = summaryIdx >= 0 && /Retest Result:\s*BLOCKED\b/.test(lines[summaryIdx]);
+    const allBlocked = lines.some((l) => ALL_BLOCKED_CASE_COVERAGE.test(l.trim()));
+    if (!summaryBlocked || !allBlocked) {
+      out.push(finding('run-time-not-measured-with-cases', rtIdx + 1,
+        '"not measured — no case ran" is allowed only when every case is BLOCKED (summary BLOCKED, 0 passed / 0 failed)',
+        'a case ran, so measure it with tools/run-time/measure.js and print the minutes'));
+    }
+  } else if (rtIdx < 0 || !RUN_TIME_LINE.test(rtText)) {
     out.push(finding('run-time-line-missing', rtIdx + 1,
       'the line above the usage marker is not a measured test-run-time line',
       `measure with tools/run-time/measure.js and put "${RUN_TIME_LABEL} {minutes} min — …" one blank line above the marker`));
@@ -649,6 +670,9 @@ module.exports = {
   RUN_TIME_LABEL,
   RUN_TIME_METHOD,
   RUN_TIME_LINE,
+  RUN_TIME_NOT_MEASURED,
+  RUN_TIME_NOT_MEASURED_LINE,
+  ALL_BLOCKED_CASE_COVERAGE,
   runTimeLine,
   DRIFT_ALLOWLIST,
   OPEN_QUESTIONS,

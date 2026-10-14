@@ -418,5 +418,25 @@ check('testRunTime: method must equal the measure tool id', () => {
   assert.strictEqual(require('../run-time/measure').METHOD, 'evidence-burst-v1');
 });
 
+check('testRunTime.notMeasured: refused while any case or result is not BLOCKED (must-find)', () => {
+  const m = base(); m.testRunTime = { notMeasured: true, reason: 'no-case-ran' };
+  assert.ok(M.validate(m).some((f) => f.field === 'testRunTime.notMeasured'));
+});
+
+check('testRunTime.notMeasured: accepted field-wise when every case and result is BLOCKED (must-not-find)', () => {
+  const m = base(); m.testRunTime = { notMeasured: true, reason: 'no-case-ran' };
+  m.cases.forEach((c) => { c.status = 'BLOCKED'; });
+  m.results.forEach((r) => { r.status = 'BLOCKED'; });
+  const fields = M.validate(m).map((f) => f.field);
+  assert.ok(!fields.some((x) => /^testRunTime/.test(x)), fields.join(', '));
+});
+
+check('testRunTime.notMeasured: needs reason "no-case-ran"', () => {
+  const m = base(); m.testRunTime = { notMeasured: true };
+  m.cases.forEach((c) => { c.status = 'BLOCKED'; });
+  m.results.forEach((r) => { r.status = 'BLOCKED'; });
+  assert.ok(M.validate(m).some((f) => f.field === 'testRunTime.reason'));
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);

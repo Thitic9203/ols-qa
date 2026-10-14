@@ -518,6 +518,10 @@ verdict, and every finding + how it was fixed. Do not proceed to Step 4.5 until 
    surface, count, severity, or EC the ticket never states); scope honored (per the user's Step 2a/2.5
    decisions); char-exact seed text; correct Thai/glossary terms; Type classification; testability. For
    a thorough/"2 rounds"/"superpowers" request, run ≥2 independent reviewers per round.
+   **Working-draft file for reviewers (owner, 2026-10-14):** the draft may be handed to reviewers as a
+   file written **outside the repo** (the session scratchpad or a temp directory) — never inside the
+   repository or the deliverable folder. It is review input only: not a deliverable, never attached,
+   never committed. This is the one exception to the Step 4.5 no-file rule.
 2. **Reviewer output is binary per round:** `CLEAN` (zero actionable defects) or `HAS-COMMENTS` (a
    numbered defect list). Nitpicks/optional polish are not defects — only genuine defects against the
    ticket count.
@@ -558,7 +562,7 @@ These terms appear in the test cases. Thai follows the glossary first, then ร�
 - For each kept-English term, state the reason (no official Thai term / UI label is English / acronym or standard like API, URL, OTP).
 - **Wait for the user's response.** If the user asks to change any term, apply it and re-post the changed rows.
 - Only after the user confirms (or after applying their adjustments) proceed to Step 5 and use the confirmed terms in every cell.
-- Do NOT write any TC content to a file (Step 6) until this gate is confirmed.
+- Do NOT write any TC content to a deliverable file (Step 6) until this gate is confirmed. The only file allowed earlier is the Step 4f reviewer working draft, outside the repo.
 
 ---
 
@@ -683,6 +687,8 @@ Then report to user: "Files saved. ADF ready. Publishing..."
 
 **Target:** `{ISSUE_KEY}` story the user specified.
 
+**Draft-only request (owner, 2026-10-14):** when the user asked for the comment without posting, do not publish — save it as `Jira_comment_{ISSUE_KEY}.adf.json` plus a readable `Jira_comment_{ISSUE_KEY}.preview.md` per [jira-comment-adf-template.md](references/jira-comment-adf-template.md), report both paths, and stop before the post.
+
 ADF is already built from Step 6 — proceed directly to fast publish. Full JS patterns: [jira-fast-publish.md](../../../references/jira-fast-publish.md).
 
 **Comment content:**
@@ -787,7 +793,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] Step 4 review block posted with **Ready for draft: YES** and traceability matrix complete.
 - [ ] Step 4f independent reviewer-agent loop run; **every round's verdict reported to the user**; loop exited only on a clean (zero-comment) round.
 - [ ] AC/EC coverage complete; quality checklist PASS per tc-quality-standards.
-- [ ] Step 4.5 Thai↔English term table posted with glossary source line and a `ที่มา` value on every row; user confirmed (or adjustments applied) **before** any file write.
+- [ ] Step 4.5 Thai↔English term table posted with glossary source line and a `ที่มา` value on every row; user confirmed (or adjustments applied) **before** any deliverable file write (the Step 4f working draft outside the repo is the only earlier file).
 - [ ] Every Thai term in the final TC matches the Step 2.6 glossary verbatim where a non-empty row exists; no term was invented, and none tagged "provisional".
 - [ ] All content is Thai per ราชบัณฑิตยสภา (Step 3b); English kept only where the Step 4.5 gate marked it kept-English.
 - [ ] Suite gate done — every CSV row uses an existing OLS suite, or a new suite was user-approved; no duplicate suites.
@@ -859,7 +865,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST stop and ask the user when a glossary Thai cell is empty, or when one English key carries conflicting Thai meanings across rows | The agent has no authority to coin project terminology |
 | MUST NOT write a guessed term and tag it "provisional", "pending confirmation", or "documented fallback" instead of asking | Tagging a guess is not asking; the guess still reaches the deliverable |
 | MUST use ราชบัณฑิตยสภา approved Thai term first (Step 3b); fall back to English only when no official term exists or the UI label is English | Authoritative Thai is more professional than ad-hoc transliteration or unnecessary English |
-| MUST post the Step 4.5 Thai↔English term table and get user confirmation BEFORE writing any TC content to a file | User must approve term choices before they are committed to the real TC file |
+| MUST post the Step 4.5 Thai↔English term table and get user confirmation BEFORE writing any TC content to a deliverable file — the Step 4f reviewer working draft, outside the repo, is the only exception | User must approve term choices before they are committed to the real TC file |
 | MUST use formal Thai language level throughout | TCs are delivered to internal and external teams |
 | MUST keep Type to exactly `System Test` / `Unit Test` / `Integration Test` (Step 3d) | These are the OLS Qase Type values; other values break import |
 | MUST set Status = `Done` on every Qase CSV row | Workspace rule for OLS Qase import |

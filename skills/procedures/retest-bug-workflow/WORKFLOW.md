@@ -468,6 +468,10 @@ What is specific to retest:
   recommendation (A adjust the expected/TC · B re-test · C confirm defect)` and queue it for the Step 6d
   decisions popup ([round-time-contract.md](../../../references/round-time-contract.md) §2). Picking
   **B re-test** there starts a new round (§1).
+- **Superseded bug ER → no "confirm defect" option (owner, 2026-10-14).** When the bug's own Expected
+  Result was superseded by a later ticket, comment or design (quote the superseding source char-exact),
+  the end menu offers only **A adjust the expected/TC · B re-test** — never **C confirm defect**, because
+  there is no confirmed spec left for the defect to differ from.
 - **Never edit the ticket's expected-result field** to match the app on your own — QA reports the
   conflict and names the owner.
 
@@ -640,6 +644,11 @@ measure (a lane directory is missing, or no evidence files) — fix the director
 number instead. When the workspace has no such tool, measure by the same method by hand (list every
 evidence file's modification time across all lanes, split at gaps over 120 s, sum the bursts) and say in
 the chat report that it was measured by hand.
+
+**All-BLOCKED round (owner, 2026-10-14):** when every case and every result is BLOCKED, nothing ran and
+there is nothing to measure. Put `testRunTime: {notMeasured: true, reason: "no-case-ran"}` in `run.json`;
+the renderer prints `*Test run time:* not measured — no case ran`. The manifest check and the guard refuse
+this line in any round where a case passed, failed or was PWMI (`run-time-not-measured-with-cases`).
 
 **This block is the shape the renderer produces, not something to hand-type.** Build `run.json` and
 render it (Step 6·0); the guard rejects a body that drifts from this shape, including one typed from
@@ -1230,7 +1239,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST resolve any disagreement between your own observations with one clean re-run before drafting, and record which was the artifact; unresolvable → BLOCKED, not FAILED | Resolving it in favour of the verdict you already reached is how the wrong repro path shipped |
 | MUST include the Step 6a blocks on every non-PASSED comment — **root cause** and **resolution options** (two options, each a named **role** owner, ending `Decided by: <role>`); NO separate repro-matrix / why-failed block (that content is the `Fixture` line + the verdict-table row and its `Evidence` screenshot) | These answer the dev's next questions without bloating the comment; the failing behaviour + evidence already sit in the table row |
 | MUST run the Step 4h root-cause investigation for EVERY non-PASSED item (FAILED and BLOCKED alike), starting by invoking `superpowers:systematic-debugging` (Phases 1–3) and naming it in the comment | Improvised reasoning is where guessing enters; the process is also faster than guess-and-check |
-| MUST run the Step 4i challenge gate for EVERY non-PASSED item — re-verify the expected side char-exact against an authoritative source **including related/linked tickets' AC/EC**, then surface expected-vs-observed + the AC/EC finding + a recommendation (adjust expected/TC / re-test / confirm defect) to the user in chat before drafting the comment ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)) | A non-PASS against a stale, superseded, or misread expected is a phantom FAILED; the expected side must be earned, and adjusting a spec or re-testing is the user's call (PM-006) |
+| MUST run the Step 4i challenge gate for EVERY non-PASSED item — re-verify the expected side char-exact against an authoritative source **including related/linked tickets' AC/EC**, then surface expected-vs-observed + the AC/EC finding + a recommendation (adjust expected/TC / re-test / confirm defect — the last only while the bug's ER is not superseded) to the user in chat before drafting the comment ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)) | A non-PASS against a stale, superseded, or misread expected is a phantom FAILED; the expected side must be earned, and adjusting a spec or re-testing is the user's call (PM-006) |
 | MUST NOT post a FAILED whose expected turned out wrong, superseded, or unclear — that is an expected/TC adjustment or a BLOCKED question, never a FAILED; unattended bots resolve it as BLOCKED + remark, never a phantom bug and never a halt | Filing the app against an unverified expected is exactly how a phantom bug ships (PM-006, OLS-315) |
 | MUST complete the 8-boundary sweep while the environment is still open, writing `not checked` where a boundary was not reached | A boundary not captured during the run cannot be reconstructed later — reconstruction is fabrication |
 | MUST attach a captured artifact to every cause statement and label it `Confirmed` / `Suspected` / `Unknown — not investigated`, carrying the label wherever the sentence is copied (comment, sheet, notify) | A `Suspected` cause read as `Confirmed` sends a developer to the wrong layer |

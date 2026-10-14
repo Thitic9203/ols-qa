@@ -354,5 +354,41 @@ check('run-time-line-missing: fires when absent, not when present', () => {
   assert.ok(has(R.scanBody(without, {}), 'run-time-line-missing'));
 });
 
+/* Owner, 2026-10-14: an all-BLOCKED round may print "not measured — no case ran". */
+function withRunTime(body, line) {
+  const lines = body.split('\n');
+  const i = lines.findIndex((l) => l.startsWith('*Test run time:*'));
+  lines[i] = line;
+  return lines.join('\n');
+}
+const ALL_BLOCKED = withRunTime(GOOD, '*Test run time:* not measured — no case ran')
+  .replace('*Retest Result: PASSED* ✅', '*Retest Result: BLOCKED* ⛔')
+  .replace('*Case coverage:* 1 / 1 cases run — 1 passed / 0 failed / 0 blocked', '*Case coverage:* 0 / 1 cases run — 0 passed / 0 failed / 1 blocked');
+
+check('runTimeLine prints the not-measured line when notMeasured is set', () => {
+  assert.strictEqual(R.runTimeLine({ notMeasured: true }), '*Test run time:* not measured — no case ran');
+  assert.strictEqual(R.runTimeLine({ notMeasured: true }, R.FORMATS.ADF), '**Test run time:** not measured — no case ran');
+});
+
+check('must-not-find: "not measured — no case ran" in an all-BLOCKED round', () => {
+  assert.ok(!has(R.scanBody(ALL_BLOCKED, {}), 'run-time-not-measured-with-cases'));
+  assert.ok(!has(R.scanBody(ALL_BLOCKED, {}), 'run-time-line-missing'));
+});
+
+check('must-find: "not measured" when a case passed', () => {
+  const body = withRunTime(GOOD, '*Test run time:* not measured — no case ran');
+  assert.ok(has(R.scanBody(body, {}), 'run-time-not-measured-with-cases'));
+});
+
+check('must-find: "not measured" with a BLOCKED summary but a case that failed', () => {
+  const body = ALL_BLOCKED.replace('0 passed / 0 failed / 1 blocked', '0 passed / 1 failed / 0 blocked');
+  assert.ok(has(R.scanBody(body, {}), 'run-time-not-measured-with-cases'));
+});
+
+check('must-find: any other non-number run time is still run-time-line-missing', () => {
+  const body = withRunTime(ALL_BLOCKED, '*Test run time:* about 10 min');
+  assert.ok(has(R.scanBody(body, {}), 'run-time-line-missing'));
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);

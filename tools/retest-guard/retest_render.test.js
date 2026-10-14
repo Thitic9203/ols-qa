@@ -200,6 +200,34 @@ check('a fully BLOCKED round renders as BLOCKED and still passes the rules', () 
   assert.deepStrictEqual(found, [], JSON.stringify(found.map((f) => f.rule)));
 });
 
+function fullyBlocked() {
+  const m = feManifest();
+  m.results.forEach((r) => { r.status = 'BLOCKED'; });
+  m.cases.forEach((c) => { c.status = 'BLOCKED'; });
+  m.verdict = 'BLOCKED';
+  m.symptomGone = false;
+  m.rootCause = { text: 'the queue fixture could not be created here', label: 'Unknown — not investigated' };
+  m.resolutionOptions = [{ text: 'provide the fixture', owner: 'dev' }, { text: 'descope', owner: 'spec owner' }];
+  m.decidedBy = 'spec owner';
+  m.testRunTime = { notMeasured: true, reason: 'no-case-ran' };
+  return m;
+}
+
+check('must-not-find: an all-BLOCKED round renders "not measured — no case ran" and passes (owner, 2026-10-14)', () => {
+  const m = fullyBlocked();
+  assert.deepStrictEqual(M.validate(m), []);
+  const body = RENDER.render(m);
+  assert.ok(body.includes('*Test run time:* not measured — no case ran'), 'not-measured line missing');
+  const found = errorsOnly(R.scanBody(body, { format: R.FORMATS.WIKI, bugType: 'FE' }));
+  assert.deepStrictEqual(found, [], JSON.stringify(found.map((f) => f.rule)));
+});
+
+check('must-find: a round where a case ran cannot render "not measured"', () => {
+  const m = feManifest();
+  m.testRunTime = { notMeasured: true, reason: 'no-case-ran' };
+  assert.ok(M.validate(m).some((f) => f.field === 'testRunTime.notMeasured'));
+});
+
 /* ---- Owner format, 2026-09-24 ------------------------------------------------ */
 
 function multiCaseManifest() {
