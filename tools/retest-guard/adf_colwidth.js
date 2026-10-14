@@ -76,6 +76,30 @@ function centreIndexes(headers) {
   return headers.map((h, i) => (R.CENTERED_COLUMNS.includes(h) ? i : -1)).filter((i) => i >= 0);
 }
 
+/**
+ * A paragraph holding nothing but spaces / hard breaks. The tracker's wiki->ADF
+ * step turns the separator between two media in one cell (`[^a.mp4] !b.png!`,
+ * `[^a.mp4] \\ [^b.mp4]`) into one of these. Harmless while the tracker keeps the
+ * wiki source, but after the v3 PUT it re-derives wiki from ADF, the paragraph
+ * becomes a whitespace-only line, and that line ends the wiki table: the
+ * rendered comment splits into several tables with "|PASSED ✅|" as text
+ * (OLS-527 c91723, 2026-10-14).
+ */
+function isBlankParagraph(n) {
+  return n && n.type === 'paragraph'
+    && (n.content || []).every((x) => x.type === 'hardBreak' || (x.type === 'text' && !(x.text || '').trim()));
+}
+
+/** Drop blank paragraphs from a cell that has other blocks; a cell keeps at least one block. */
+function dropBlankParagraphs(cell) {
+  const all = cell.content || [];
+  if (all.length < 2) return 0;
+  const kept = all.filter((n) => !isBlankParagraph(n));
+  if (!kept.length) return 0;
+  cell.content = kept;
+  return all.length - kept.length;
+}
+
 function centreParagraph(n) {
   n.marks = (n.marks || []).filter((m) => m.type !== 'alignment').concat([JSON.parse(JSON.stringify(CENTER_MARK))]);
 }
@@ -99,6 +123,7 @@ function applyLayout(doc) {
   const centre = new Set(centreIndexes(headers));
   t.attrs = Object.assign({}, t.attrs, { isNumberColumnEnabled: false, layout: 'default' });
   let converted = 0;
+  let blankDropped = 0;
   (t.content || []).forEach((row, ri) => {
     const cells = row.content || [];
     if (cells.length !== widths.length) {
@@ -108,6 +133,7 @@ function applyLayout(doc) {
     }
     cells.forEach((c, ci) => {
       c.attrs = Object.assign({}, c.attrs, { colwidth: [widths[ci]] });
+      blankDropped += dropBlankParagraphs(c);
       if (!centre.has(ci)) return;
       const next = [];
       (c.content || []).forEach((n) => {
@@ -125,14 +151,14 @@ function applyLayout(doc) {
       c.content = next;
     });
   });
-  return { widths, centredColumns: [...centre].map((i) => headers[i]), convertedMediaGroups: converted };
+  return { widths, centredColumns: [...centre].map((i) => headers[i]), convertedMediaGroups: converted, blankParagraphsDropped: blankDropped };
 }
 
 /** Check a doc (normally the tracker's readback) against rules 5–6. */
 function verify(doc) {
   const problems = [];
   const tables = tablesOf(doc);
-  const report = { tables: tables.length, widths: null, mediaGroup: 0, mediaSingle: 0, nonCenterSingle: 0, uncenteredParagraphs: 0, mediaNodes: 0 };
+  const report = { tables: tables.length, widths: null, mediaGroup: 0, mediaSingle: 0, nonCenterSingle: 0, uncenteredParagraphs: 0, blankParagraphs: 0, mediaNodes: 0 };
   JSON.stringify(doc, (k, v) => { if (v && v.type === 'media') report.mediaNodes += 1; return v; });
   if (tables.length !== 1) {
     problems.push(`expected exactly one table, found ${tables.length}`);
@@ -150,6 +176,7 @@ function verify(doc) {
       if (!(want instanceof Error) && !(Array.isArray(cw) && cw.length === 1 && cw[0] === want[ci])) {
         problems.push(`row ${ri} col ${ci + 1} colwidth ${JSON.stringify(cw)} ≠ [${want[ci]}]`);
       }
+      if ((c.content || []).length > 1) report.blankParagraphs += c.content.filter(isBlankParagraph).length;
       (c.content || []).forEach((n) => {
         if (n.type === 'mediaGroup') report.mediaGroup += 1;
         if (n.type === 'mediaSingle') {
@@ -165,6 +192,7 @@ function verify(doc) {
   });
   if (report.mediaGroup) problems.push(`${report.mediaGroup} mediaGroup node(s) left — clips must be centred mediaSingle`);
   if (report.nonCenterSingle) problems.push(`${report.nonCenterSingle} mediaSingle node(s) not layout "center"`);
+  if (report.blankParagraphs) problems.push(`${report.blankParagraphs} whitespace-only paragraph(s) beside other blocks in a cell — the re-derived wiki splits the table there`);
   if (report.uncenteredParagraphs) problems.push(`${report.uncenteredParagraphs} paragraph(s) in No./Evidence/Status not centred`);
   if (report.mediaSingle === 0 && headers.includes('Evidence')) problems.push('no mediaSingle in the table — nothing was measured, so nothing passed');
   return Object.assign(report, { ok: problems.length === 0, problems });

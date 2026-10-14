@@ -104,6 +104,51 @@ check('rule 6: a readback that kept one file card is refused', () => {
   assert.ok(r.problems.some((x) => /mediaGroup/.test(x)));
 });
 
+/* Real readback (OLS-527 c91723, 2026-10-14): the wiki separators between two
+ * media in one Evidence cell (`[^a.mp4] !b.png!` and `[^a.mp4] \\ [^b.mp4]`)
+ * come back as whitespace-only paragraphs between the media nodes. Once the v3
+ * PUT replaces the wiki source, the tracker re-derives wiki from ADF and each of
+ * those paragraphs becomes a whitespace-only line, which ends a wiki table:
+ * renderedBody showed 3 tables and the literal text "|PASSED ✅|". */
+const wsPara = (...content) => ({ type: 'paragraph', content });
+function twoMediaDoc() {
+  const d = doc();
+  const rows = d.content.find((n) => n.type === 'table').content;
+  rows[1].content[5].content = [{ type: 'mediaGroup', content: [file('clip1')] }, wsPara({ type: 'text', text: ' ' }), still('png1')];
+  rows[2].content[5].content = [{ type: 'mediaGroup', content: [file('clip2a')] },
+    wsPara({ type: 'text', text: ' ' }, { type: 'hardBreak' }, { type: 'text', text: ' ' }),
+    { type: 'mediaGroup', content: [file('clip2b')] }];
+  return d;
+}
+
+check('two media in one cell: the whitespace-only separator paragraphs are removed, every media kept', () => {
+  const d = twoMediaDoc();
+  A.applyLayout(d);
+  const rows = d.content.find((n) => n.type === 'table').content;
+  assert.deepStrictEqual(rows[1].content[5].content.map((n) => n.type), ['mediaSingle', 'mediaSingle']);
+  assert.deepStrictEqual(rows[2].content[5].content.map((n) => n.type), ['mediaSingle', 'mediaSingle']);
+  const r = A.verify(d);
+  assert.strictEqual(r.mediaNodes, 4, 'no media node may be lost (clip1 + png1 + clip2a + clip2b)');
+  assert.ok(r.ok, r.problems.join('; '));
+});
+
+check('a readback with a whitespace-only paragraph beside other blocks in a cell is refused', () => {
+  const d = twoMediaDoc();
+  const r = A.verify(d);
+  assert.strictEqual(r.ok, false);
+  assert.strictEqual(r.blankParagraphs, 2);
+  assert.ok(r.problems.some((x) => /whitespace-only paragraph/.test(x)), r.problems.join('; '));
+});
+
+check('a cell whose only block is a blank paragraph is left alone (a cell needs one block)', () => {
+  const d = doc();
+  const rows = d.content.find((n) => n.type === 'table').content;
+  rows[1].content[3].content = [wsPara({ type: 'text', text: ' ' })];
+  A.applyLayout(d);
+  assert.strictEqual(rows[1].content[3].content.length, 1);
+  assert.ok(A.verify(d).ok);
+});
+
 check('a body with two tables is refused, not guessed at', () => {
   const d = doc();
   d.content.push(JSON.parse(JSON.stringify(d.content[1])));
