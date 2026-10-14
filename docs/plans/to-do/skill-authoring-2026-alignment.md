@@ -10,27 +10,28 @@
 | :---: | :--- | :---: | :--- |
 | 1 | แผนนี้ (map + decision tickets) | ✅ | — |
 | 2 | รีวิวแผนแบบหาจุดอ่อน — แก้ 6 จุด | ✅ | — |
-| 3 | D10 — eval: ร่าง 9 scenario ✅ · รัน baseline | 🟡 | — |
+| 3 | D10 — eval: baseline 9/9 ✅ · after 9/9 ✅ · ตรวจผลเทียบ 🟡 | 🟡 | — |
 | 4 | D12 — ไฟล์ที่ Claude โหลดจริง | ✅ | ดู Decisions so far |
 | 5 | D13 — พิสูจน์เครื่องมือวัด + baseline ใหม่ | ✅ | ดู Decisions so far |
-| 6 | D1 — โครงสร้างลิงก์ 1 ชั้น | ✅ ตัดสินแล้ว · ร่าง patch 🟡 | — |
-| 7 | D2 — แยก WORKFLOW 3 ไฟล์ที่เกิน 500 บรรทัด + ส่งไฟล์ใหม่เข้า helix | 🚫 | รอ D10 baseline, แก้ helix auto-update |
-| 8 | D3 — ตรวจ description: ผ่าน 8/12 · ร่าง patch 4 ใบ | 🟡 | — |
-| 9 | D4 — degrees of freedom | ✅ ตัดสินแล้ว · ร่าง patch 🟡 | — |
+| 6 | D1 — stub ลิงก์ตรง (must-read depth 549 → 488 · ลิงก์ ref→ref ยังเหลือ) | 🟡 | <a href="https://github.com/Thitic9203/ols-qa/pull/20" target="_blank" rel="noopener noreferrer">#20 ↗</a> |
+| 7 | D2 — แยก WORKFLOW 3 ไฟล์ที่เกิน 500 บรรทัด + ส่งไฟล์ใหม่เข้า helix | ⬜ | — |
+| 8 | D3 — description: แก้ 4 ใบ · person-check 1 → 0 | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/20" target="_blank" rel="noopener noreferrer">#20 ↗</a> |
+| 9 | D4 — ป้าย freedom 108 หัวข้อ (low 59 · medium 37 · high 12) | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/20" target="_blank" rel="noopener noreferrer">#20 ↗</a> |
 | 10 | D5 — checklist + go-back line | 🚫 | รอ D2, D10 |
 | 11 | D6 — feedback loop / validator | ✅ | ดู Decisions so far |
 | 12 | D7 — template + ตัวอย่าง input/output | ⬜ | — |
 | 13 | D8 — inventory dependencies | ✅ | ดู Decisions so far |
 | 14 | D9 — audit hook + อัตราติดธงผิด | ✅ | ดู Decisions so far |
-| 15 | D11 — lint gate กันถอยหลัง | 🟡 | branch `feat/skill-lint` |
-| 16 | ใส่ ToC ในไฟล์ที่ยาวเกิน 100 บรรทัด | 🟡 ร่าง patch | — |
-| 17 | แก้ helix auto-update ที่ค้างตั้งแต่ 8/10 | 🟡 สืบสาเหตุ | — |
+| 15 | D11 — skill-lint gate (ratchet baseline · test 19/19) | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/20" target="_blank" rel="noopener noreferrer">#20 ↗</a> |
+| 16 | Contents ในไฟล์ที่ยาวเกิน 100 บรรทัด (31 → 0) | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/20" target="_blank" rel="noopener noreferrer">#20 ↗</a> |
+| 17 | แก้ helix auto-update ค้าง (run-hook.cmd ไม่มี exec bit) · release v1.5.120 · อัปเดตเครื่องแล้ว | ✅ | <a href="https://github.com/Thitic9203/helix/pull/10" target="_blank" rel="noopener noreferrer">helix #10 ↗</a> |
+| 18 | แก้จุดขัด skill ↔ guard ที่ eval เจอ (retest-bug · testing-ticket · tc-fe-prep) | 🟡 | PR แยก ซ้อนบน #20 |
 
 > **Status legend:** ✅ Done · 🟡 In progress · ⬜ To Do · ❌ Failed · 🚫 Blocked
 >
-> **Updated:** 14/10/2026, 15:51 (Bangkok)
+> **Updated:** 14/10/2026, 16:51 (Bangkok)
 
-**สถานะสรุป:** 🟡 research ครบ 7 ใบ · ตัดสินแล้ว D1 D4 D10 · กำลังรัน eval baseline + ร่าง patch (ยังไม่แก้ไฟล์ skill) · พบ helix บนเครื่องค้าง v1.5.107 กำลังสืบ
+**สถานะสรุป:** 🟡 PR #20 CI เขียว รอผลเทียบ eval ก่อน merge · helix ค้างแก้แล้ว (v1.5.120) · กำลังแก้จุดขัด skill ↔ guard 3 skill · เหลือ D2 D5 D7
 
 ---
 
