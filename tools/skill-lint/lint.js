@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-/* Lint gate for skill files (plan D11). Four rules:
+/* Lint gate for skill files (plan D11). Five rules:
  *
  *   max-lines           skills/**\/SKILL.md and skills/**\/WORKFLOW.md are at most 500 lines.
  *   toc                 any skills/**\/*.md or references/*.md longer than 100 lines has a
@@ -9,6 +9,10 @@
  *                       (skills/<name>/SKILL.md) is linked from that SKILL.md directly (1 hop).
  *   description-person  the frontmatter description of skills/**\/SKILL.md has no first or
  *                       second person (I / me / my / you / your ...).
+ *   description-use-when  the frontmatter description of skills/**\/SKILL.md says when to use it
+ *                       with "Use when ..." and never with "Use for ..." (Anthropic skill
+ *                       authoring best practice). Negative clauses ("Do NOT use for ...") are
+ *                       not counted either way.
  *
  * A baseline (baseline.json next to this file) lists today's known violations so the gate can
  * be on now and fail only on NEW ones. It is a ratchet: a baselined file may not grow past its
@@ -39,7 +43,7 @@ const MAX_LINES = 500;
 const TOC_MIN_LINES = 100; // a file needs a ToC when it has MORE than this many lines
 const TOC_WINDOW = 25;
 
-const RULES = ['max-lines', 'toc', 'must-read-depth', 'description-person'];
+const RULES = ['max-lines', 'toc', 'must-read-depth', 'description-person', 'description-use-when'];
 
 // ---------- files
 
@@ -222,10 +226,28 @@ function rulePerson(root, files) {
   return out;
 }
 
+// ---------- rule: description-use-when
+
+// "Use when" / "Use for" as the description's own trigger clause — not the negative
+// "Do NOT use for/when" clause, which says when the skill is the wrong pick.
+const USE_WHEN = /(?<!NOT )\bUse when\b/;
+const USE_FOR = /(?<!NOT )\bUse for\b/;
+
+function ruleUseWhen(root, files) {
+  const out = [];
+  for (const p of files.filter((f) => f.startsWith('skills/') && f.endsWith('/SKILL.md'))) {
+    const d = description(readLines(path.join(root, p)));
+    if (d == null) continue;
+    if (USE_FOR.test(d)) out.push({ key: p, msg: `${p}: description says "Use for" (write "Use when ...")` });
+    else if (!USE_WHEN.test(d)) out.push({ key: p, msg: `${p}: description has no "Use when ..." trigger clause` });
+  }
+  return out;
+}
+
 // ---------- baseline
 
 function emptyBaseline() {
-  return { 'max-lines': {}, toc: [], 'must-read-depth': {}, 'description-person': [] };
+  return { 'max-lines': {}, toc: [], 'must-read-depth': {}, 'description-person': [], 'description-use-when': [] };
 }
 
 function loadBaseline(file) {
@@ -240,6 +262,7 @@ function toBaseline(found) {
   b.toc = found.toc.map((v) => v.key).sort();
   for (const v of found['must-read-depth']) b['must-read-depth'][v.key] = v.value;
   b['description-person'] = found['description-person'].map((v) => v.key).sort();
+  b['description-use-when'] = found['description-use-when'].map((v) => v.key).sort();
   return b;
 }
 
@@ -272,6 +295,7 @@ function lint(root) {
     toc: ruleToc(root, files),
     'must-read-depth': ruleMustReadDepth(root, files),
     'description-person': rulePerson(root, files),
+    'description-use-when': ruleUseWhen(root, files),
   };
 }
 

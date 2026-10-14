@@ -154,6 +154,27 @@ check('description-person must-not-find: third person, "Youtube"/"mystery"/"AI",
   assert.deepStrictEqual(keys(lint(root), 'description-person'), []);
 });
 
+// ---------- description-use-when
+
+check('description-use-when must-find: "Use for", no trigger clause, and only a negative "Do NOT use when"', () => {
+  const root = fixture({
+    'skills/a/SKILL.md': stub('Runs a. Use for /a.'),
+    'skills/b/SKILL.md': stub('Runs b.'),
+    'skills/c/SKILL.md': '---\nname: c\ndescription: |\n  Routes c.\n  Do NOT use when the user already chose.\n---\n',
+    'skills/d/SKILL.md': stub('Runs d. Use when asked. Use for /d.'),
+  });
+  assert.deepStrictEqual(keys(lint(root), 'description-use-when'),
+    ['skills/a/SKILL.md', 'skills/b/SKILL.md', 'skills/c/SKILL.md', 'skills/d/SKILL.md']);
+});
+
+check('description-use-when must-not-find: "Use when" (single-line and block) beside a "Do NOT use for" clause', () => {
+  const root = fixture({
+    'skills/a/SKILL.md': stub('Runs a. Use when the user says /a. Do NOT use for b.'),
+    'skills/b/SKILL.md': '---\nname: b\ndescription: |\n  Runs b.\n  Use when the user asks for b.\n  Do NOT use for a.\n---\n\nUse for anything in the body.\n',
+  });
+  assert.deepStrictEqual(keys(lint(root), 'description-use-when'), []);
+});
+
 // ---------- baseline ratchet
 
 check('baseline: known violations pass, new ones fail, growth fails, fixed entries are stale', () => {
@@ -194,7 +215,7 @@ check('cli: exit 1 with NEW lines on a violation, exit 0 when baselined, exit 2 
 });
 
 check('emptyBaseline has every rule', () => {
-  assert.deepStrictEqual(Object.keys(emptyBaseline()).sort(), ['description-person', 'max-lines', 'must-read-depth', 'toc']);
+  assert.deepStrictEqual(Object.keys(emptyBaseline()).sort(), ['description-person', 'description-use-when', 'max-lines', 'must-read-depth', 'toc']);
 });
 
 // ---------- the gate on this repo
