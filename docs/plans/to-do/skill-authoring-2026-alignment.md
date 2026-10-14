@@ -1,6 +1,6 @@
 # Skill Authoring Alignment (ols-qa + helix) — Master Plan
 
-> Owner: @<owner> · Updated: 14/10/2026 · Scope: ปรับ `skills/` `references/` `commands/` ของ ols-qa ให้ตรงแนวทาง skill authoring ของ Anthropic — helix ได้รับผ่าน `scripts/sync-skills-to-helix.sh` (ไฟล์ร่วมเท่านั้น) · ไม่แตะ env ทดสอบใดๆ
+> Owner: @<owner> · Updated: 2026-10-14 · Scope: ปรับ `skills/` `references/` `commands/` ของ ols-qa ให้ตรงแนวทาง skill authoring ของ Anthropic — helix ได้รับผ่าน `scripts/sync-skills-to-helix.sh` (ไฟล์ร่วมเท่านั้น) · ไม่แตะ env ทดสอบใดๆ
 
 ---
 
@@ -13,12 +13,12 @@
 | 3 | D10 — eval: baseline ✅ · after ✅ · R1 multisample n=6/ฝั่ง: guard error baseline 8.3 (2–17) vs after 8.5 (4–12) = ความแปรปรวน · ร่าง 0/13 รัน guard → แก้ใน #30 (ตัวเลขจากสรุปในแชท — ไฟล์ผลหายจาก scratchpad หลังเครื่องรีบูต · post-mortem PM-2026-10-14-03) | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/30" target="_blank" rel="noopener noreferrer">#30 ↗</a> |
 | 4 | D12 — ไฟล์ที่ Claude โหลดจริง | ✅ | ดู Decisions so far |
 | 5 | D13 — พิสูจน์เครื่องมือวัด + baseline ใหม่ | ✅ | ดู Decisions so far |
-| 6 | D11 lint gate + Contents (31 → 0) + D3 description + D4 ป้าย freedom | 🟡 | <a href="https://github.com/Thitic9203/ols-qa/pull/20" target="_blank" rel="noopener noreferrer">#20 ↗</a> · เปิดอยู่ ฐาน main |
-| 7 | จุดขัด skill ↔ guard: testing-ticket | 🟡 | <a href="https://github.com/Thitic9203/ols-qa/pull/21" target="_blank" rel="noopener noreferrer">#21 ↗</a> · เปิดอยู่ |
-| 8 | จุดขัด skill ↔ guard: tc-fe-prep (CSV Integration/System) | 🟡 | <a href="https://github.com/Thitic9203/ols-qa/pull/22" target="_blank" rel="noopener noreferrer">#22 ↗</a> · เปิดอยู่ |
-| 9 | จุดขัด skill ↔ guard: retest-bug (S1 S3 S4 S5) | 🟡 | <a href="https://github.com/Thitic9203/ols-qa/pull/23" target="_blank" rel="noopener noreferrer">#23 ↗</a> · เปิดอยู่ |
+| 6 | D11 lint gate + Contents (31 → 0) + D3 description + D4 ป้าย freedom | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/20" target="_blank" rel="noopener noreferrer">#20 ↗</a> · merge เข้า main (<code>8640211</code>) |
+| 7 | จุดขัด skill ↔ guard: testing-ticket | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/21" target="_blank" rel="noopener noreferrer">#21 ↗</a> · merge เข้า branch ของ #20 (<code>178c954</code>) |
+| 8 | จุดขัด skill ↔ guard: tc-fe-prep (CSV Integration/System) | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/22" target="_blank" rel="noopener noreferrer">#22 ↗</a> · merge เข้า branch ของ #20 (<code>88a1015</code>) |
+| 9 | จุดขัด skill ↔ guard: retest-bug (S1 S3 S4 S5) | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/23" target="_blank" rel="noopener noreferrer">#23 ↗</a> · merge เข้า branch ของ #20 (<code>aec5874</code>) |
 | 10 | helix sync ส่งเฉพาะจาก main | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/24" target="_blank" rel="noopener noreferrer">#24 ↗</a> · <code>526491e</code> |
-| 11 | D7 template 4 ชนิด + D2 แยก WORKFLOW ตาม phase (ใหญ่สุด 499 บรรทัด) + มติเจ้าของงาน 14/10 | 🟡 | <a href="https://github.com/Thitic9203/ols-qa/pull/25" target="_blank" rel="noopener noreferrer">#25 ↗</a> · เปิดอยู่ ฐาน #20 |
+| 11 | D7 template 4 ชนิด + D2 แยก WORKFLOW ตาม phase (ใหญ่สุด 499 บรรทัด) + มติเจ้าของงาน 14/10 | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/25" target="_blank" rel="noopener noreferrer">#25 ↗</a> · merge เข้า branch ของ #20 (<code>6686155</code>) |
 | 12 | แยก fixture ของ sync_env test ออกจาก HELIX_* ของผู้เรียก | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/26" target="_blank" rel="noopener noreferrer">#26 ↗</a> · <code>a448977</code> |
 | 13 | verify-on-origin + helix-parity (post-mortem #0190 #0191) | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/27" target="_blank" rel="noopener noreferrer">#27 ↗</a> · <code>39f81be</code> |
 | 14 | D5 checklist 11 workflow · go-back 64 บรรทัด | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/28" target="_blank" rel="noopener noreferrer">#28 ↗</a> · merge เข้า branch ของ #25 (<code>726cb77</code>) |
@@ -26,13 +26,14 @@
 | 16 | ปิดช่องว่างสุดท้าย: smoke-test contents/deps · path เครื่อง → placeholder · retest_guard ก่อนส่งร่าง (<code>786ccbc</code>) · lint 0/0/0/0 | ✅ | <a href="https://github.com/Thitic9203/ols-qa/pull/30" target="_blank" rel="noopener noreferrer">#30 ↗</a> · merge เข้า branch ของ #25 (<code>8e38384</code>) |
 | 17 | helix: run-hook.cmd ไม่มี exec bit → v1.5.120 | ✅ | <a href="https://github.com/Thitic9203/helix/pull/10" target="_blank" rel="noopener noreferrer">helix #10 ↗</a> |
 | 18 | helix: sync จาก branch ที่ยังไม่ merge → revert <code>500cfe1</code> → v1.5.123 · post-mortem #0190 #0191 (<code>2679cdf</code>) | ✅ | — |
-| 19 | final eval + helix sync (หลัง #25 → #20 ขึ้น main) | 🟡 | — |
+| 19 | final eval + helix sync (หลัง #25 → #20 ขึ้น main) | ✅ | final eval BASE 44/46 = FINAL 44/46 ไม่มี regression · helix-parity 0 จาก 131 ไฟล์ร่วมต่างกัน · ติดตั้ง = helix main v1.5.125 |
+| 20 | catch-ai audit ของแผนนี้ | ✅ | ดูหัวข้อ Audit (catch-ai) |
 
 > **Status legend:** ✅ Done · 🟡 In progress · ⬜ To Do · ❌ Failed · 🚫 Blocked
 >
-> **Updated:** 14/10/2026, 21:34 (Bangkok)
+> **Updated:** 14/10/2026, 22:03 (Bangkok)
 
-**สถานะสรุป:** 🟡 D1–D13 ทำครบใน PR แล้ว · #28 #29 #30 merge เข้า branch ของ #25 แล้ว · #25 → #20 → main ยังเปิดอยู่ (กำลัง merge) · lint บน head ของ #25 (<code>8e38384</code>) = 0 ทุกเกณฑ์ baseline ว่าง · เหลือ final eval + helix sync หลังขึ้น main · final eval ยังรันไม่ได้: fixture และ GRADE-after ของรอบ baseline/after หายจาก scratchpad หลังรีบูต (PM-2026-10-14-03) ต้องสร้างชุดเทียบใหม่
+**สถานะสรุป:** 🟡 D1–D13 ขึ้น main แล้ว — #21 #22 #23 #25 merge เข้า branch ของ #20 และ #20 merge เข้า main (<code>8640211</code>) · lint บน main (<code>13e527b</code>) = 0 ทุกเกณฑ์ baseline ว่าง · routing test ขึ้น main ใน #31 (<code>6043893</code>) · helix ที่ติดตั้ง = helix main (v1.5.125) · final eval (18 รัน = 9 scenario × BASE <code>5755557</code> / FINAL main หลัง #20) BASE 44/46 = FINAL 44/46 ไม่มี regression · retest guard: executor รันเอง BASE 1/3 → FINAL 3/3 · ERROR BASE 1/2/4 → FINAL 0/0/0 (n=1 ต่อฝั่ง = สัญญาณเท่านั้น) · ผลเต็มใน private evidence repo `evals/skill-authoring-2026-10-14/RESULTS.md` · เหลือ follow-ups ในหัวข้อ Audit
 
 ---
 
@@ -154,17 +155,65 @@
 
 ## Success Criteria
 
-> ติ๊กเมื่อพิสูจน์บน `main` แล้วเท่านั้น · ค่าในวงเล็บวัด 14/10 21:3x บน head ของ #25 (<code>8e38384</code>) ด้วย `node tools/skill-lint/lint.js` + `wc -l` · ยังไม่ขึ้น main
+> ติ๊กเมื่อพิสูจน์บน `main` แล้วเท่านั้น · ค่าในวงเล็บวัดใหม่ 14/10 22:0x บน `main` @ <code>13e527b</code> ด้วย `node tools/skill-lint/lint.js --no-baseline` + `wc -l` (catch-ai audit)
 
-- [ ] ไฟล์ SKILL.md / WORKFLOW.md ที่เกิน 500 บรรทัด = 0 (baseline 3 · บน #25: 0 — ใหญ่สุด 499)
-- [ ] references > 100 บรรทัดที่มี ToC บนสุด = ทุกไฟล์ (บน #25: lint toc 0 violation)
-- [ ] ทุก reference "ต้องอ่าน" ห่างจาก skill file ที่ถูกโหลด 1 ชั้น ตามรูปแบบที่ D1 ตัดสิน (บน #25: must-read-depth 0 · baseline ว่าง)
-- [ ] description 12/12 ไม่ใช้ I/You และมีทั้ง "ทำอะไร" + "Use when…" · routing test ผ่าน (บน #25: description-person 0 · routing test ยังไม่วัด)
-- [ ] lint gate (D11) อยู่ใน `run-test-suites.sh` และเขียว (บน #25: `OK — no new violations`)
-- [ ] eval ของ 3 skill หลักไม่แย่ลงเทียบ baseline ที่วัดก่อนแก้ (D10) — วัดบนไฟล์ที่ติดตั้งจริงใน `~/.helix/…` (R1: 8.3 vs 8.5 อยู่ในช่วงแปรปรวน · final eval ยังไม่ได้รัน)
-- [ ] helix ได้ไฟล์ร่วมและไฟล์ใหม่ที่แยกออกมาครบ — ไม่มีลิงก์ใน helix ที่ชี้ไปไฟล์ที่ไม่มี (ตรวจลิงก์ทุกไฟล์ใน helix = 0 พัง) (ยังไม่ sync)
-- [ ] เวอร์ชันใน `~/.helix/tc-fe-prep` = helix main หลัง deploy (D12) (ยังไม่ deploy)
-- [ ] ค่าใช้จ่ายใหม่: NO · แตะ repo อื่นนอกจาก helix sync: NO
+- [x] ไฟล์ SKILL.md / WORKFLOW.md ที่เกิน 500 บรรทัด = 0 (baseline 3 · main: 0 — ใหญ่สุด 499 `retest-bug-workflow/WORKFLOW.md`)
+- [x] references > 100 บรรทัดที่มี ToC บนสุด = ทุกไฟล์ (main: lint toc 0 violation)
+- [x] ทุก reference "ต้องอ่าน" ห่างจาก skill file ที่ถูกโหลด 1 ชั้น ตามรูปแบบที่ D1 ตัดสิน (main: must-read-depth 0 · baseline ว่าง)
+- [ ] description 12/12 ไม่ใช้ I/You และมีทั้ง "ทำอะไร" + "Use when…" · routing test ผ่าน (main: description-person 0 · routing test 13/0 และ skill_routing_map 10/0 ผ่าน · ยังไม่ติ๊ก: 10/12 มีคำ "Use when" — testing-ticket และ test-data-prep ใช้ "Use for" ดู Follow-ups)
+- [x] lint gate (D11) อยู่ใน `run-test-suites.sh` และเขียว (main: `tools/skill-lint/skill_lint.test.js` อยู่ในรายชื่อของ `scripts/list-test-suites.sh` · lint `OK — no new violations`)
+- [ ] eval ของ 3 skill หลักไม่แย่ลงเทียบ baseline ที่วัดก่อนแก้ (D10) — วัดบนไฟล์ที่ติดตั้งจริงใน `~/.helix/…` (final: BASE 44/46 = FINAL 44/46 · FAIL 0 ทั้งสองฝั่ง · TT-1/TT-2 ข้อ E1 ตัดสินไม่ได้ทั้งสองฝั่ง เพราะคลิป fixture ออฟไลน์ต่ำกว่ามาตรฐานวิดีโอ ไม่ใช่ไม่ผ่าน · ยังไม่ติ๊ก: วัดบน worktree ของ ols-qa ไม่ใช่ไฟล์ใน `~/.helix/…` ตามถ้อยคำเกณฑ์ และ n=1 ต่อฝั่ง)
+- [ ] helix ได้ไฟล์ร่วมและไฟล์ใหม่ที่แยกออกมาครบ — ไม่มีลิงก์ใน helix ที่ชี้ไปไฟล์ที่ไม่มี (ตรวจลิงก์ทุกไฟล์ใน helix = 0 พัง) (helix-parity: `HELIX-PARITY OK 0 of 131 shared files differ` · ยังไม่ติ๊ก: ยังไม่ได้รันตัวตรวจลิงก์ทุกไฟล์ใน helix)
+- [x] เวอร์ชันใน `~/.helix/tc-fe-prep` = helix main หลัง deploy (D12) (ติดตั้ง `VERSION` 1.5.125 · HEAD <code>c92d9e0</code> = helix origin/main <code>c92d9e0</code> · `plugin.json` บน helix main 1.5.125)
+- [ ] ค่าใช้จ่ายใหม่: NO · แตะ repo อื่นนอกจาก helix sync: NO (ยังไม่ติ๊ก: audit ไม่มีแหล่งที่วัดได้สำหรับ "ค่าใช้จ่าย" — ต้องให้เจ้าของงานยืนยันเป็นลายลักษณ์อักษร)
+
+
+---
+
+## Audit (catch-ai) 14/Oct/2026
+
+> วัด 14/10/2026 22:0x (Bangkok) บน ols-qa `main` @ <code>13e527b</code> · ledger ต่อข้อ (claim · source · command · actual · class) อยู่ใน private evidence repo `evals/skill-authoring-2026-10-14/catch-ai-ledger.jsonl`
+
+**Verdict:** FAILED ก่อนแก้ (สถานะ PR ผิด 5 แถว = Major) → แก้ในไฟล์นี้แล้วทุกข้อ · หลังแก้ไม่มี Defect ค้าง เหลือ Questions 3 ข้อ
+
+**ตรวจแล้ว 37 ข้ออ้าง** (ทุกข้อที่เป็นสถานะ · PR · commit · ตัวเลข lint · helix · post-mortem · eval · Success Criteria) — ไม่ได้ตรวจ: ตัวเลขในตาราง "ที่มา" และ Baseline (วัดก่อน D13 และเป็นค่าประวัติ) · ตัวเลขใน Decisions so far ของ D3 D6 D9 D12 D13 · D5 checklist 11 / go-back 64 · D8 71 dependencies (ตัวนับของ audit ยังไม่ผ่านตัวอย่างที่รู้คำตอบ จึงไม่ใช้ตัดสิน)
+
+| ข้ออ้าง | แหล่งที่ใช้ตัดสิน | ผล |
+| :--- | :--- | :---: |
+| PR #20–#31 + helix #10 สถานะ/merge commit | `gh pr view <n> --json state,mergeCommit` | 13/13 MERGED |
+| commit ที่อ้างในแผน 14 ตัว (ols-qa) + <code>500cfe1</code> (helix) | `git merge-base --is-ancestor <sha> origin/main` · helix `git show 500cfe1:VERSION` = 1.5.123 · `eb005bd:VERSION` = 1.5.120 | ตรง |
+| lint 0 ทุกเกณฑ์ · baseline ว่าง | `node tools/skill-lint/lint.js --no-baseline` · `tools/skill-lint/baseline.json` | ตรง |
+| lint gate อยู่ในชุดเทสต์ | `scripts/list-test-suites.sh` มี `tools/skill-lint/skill_lint.test.js` | ตรง |
+| ไฟล์ใหญ่สุด 499 | `wc -l` ทุก SKILL.md/WORKFLOW.md | ตรง |
+| PM-2026-10-14-01/02/03 → #0190/#0191/#0192 | `docs/post-mortem/PENDING.md:25-27` DONE ทั้ง 3 · `node tools/postmortem-guard/check.js` 192 รายงาน 0 open | ตรง |
+| helix ติดตั้ง = main | `~/.helix/tc-fe-prep/VERSION` 1.5.125 · HEAD = origin/main <code>c92d9e0</code> | ตรง |
+| final eval | `RESULTS.md` (evidence repo commit <code>a1c4635</code> บน origin/main) บรรทัด 15-16, 21-23, 31-38 | ตรง |
+
+### Defects (แก้แล้วในไฟล์นี้)
+
+| # | Severity | Expected (แหล่ง) | Actual ก่อนแก้ | Root cause / การป้องกัน |
+| :---: | :---: | :--- | :--- | :--- |
+| 1 | Major | #20 MERGED เข้า main <code>8640211</code> · #21 #22 #23 #25 MERGED เข้า `feat/skill-lint` (`gh pr view`) | แถว 6–9, 11 และสถานะสรุป = "เปิดอยู่" | ข้อเท็จจริง: แผนลง Updated 21:34 · #20 merge 21:34:44 (14:34:44Z) · commit แผน <code>492a50e</code> 21:54:55 — สถานะไม่ได้วัดใหม่ก่อน commit — Judgment: วัดสถานะ PR ใหม่ด้วย `gh pr view` ในคำสั่งเดียวกับ commit แผน (ยังเป็นแค่ข้อตกลง ไม่มี gate) |
+| 2 | Major | `~/.helix/tc-fe-prep` = helix main (VERSION + rev-parse) | Success Criteria ข้อ helix version ไม่ติ๊ก "(ยังไม่ deploy)" | เหตุเดียวกับข้อ 1 — ติ๊กแล้วพร้อมหลักฐาน |
+| 3 | Minor | merit `docs/md_template.md` บรรทัด 3: `Updated: YYYY-MM-DD` | `Updated: 14/10/2026` | แก้เป็น 2026-10-14 |
+
+### Questions
+
+1. helix-parity ครั้งแรก: `git fetch` ของ ols-qa ใน `scripts/helix-parity.sh:37` ค้างเกิน 3 นาที 40 วินาทีจึงหยุด · รันซ้ำด้วย `GIT_TERMINAL_PROMPT=0` จบ exit 0 — ผลไม่คงที่ (CLAUDE.md global ข้อ 21) ยังไม่ได้สืบหาสาเหตุ · สคริปต์ไม่มี timeout ของ fetch
+2. R1 multisample (แถว 3: 8.3 vs 8.5) ไม่มีไฟล์ผลให้ตรวจ (หายตาม #0192) — ใช้เป็นประวัติได้ ห้ามใช้ตัดสิน
+3. Success Criteria "ค่าใช้จ่ายใหม่: NO" — ไม่มีแหล่งที่วัดได้ ต้องให้เจ้าของงานยืนยัน
+
+### Coverage gaps
+
+- ไม่มีตัวตรวจลิงก์ทุกไฟล์ใน helix (เกณฑ์ "0 ลิงก์พัง") — helix-parity เทียบแค่ไฟล์ร่วม 131 ไฟล์ ไม่ได้ตามลิงก์
+- eval วัดบน worktree ของ ols-qa ไม่ใช่ไฟล์ที่ติดตั้งใน `~/.helix/…` · n=1 ต่อฝั่ง
+- routing test (13/0 · skill_routing_map 10/0) ไม่ได้ตรวจคำ "Use when" ใน description
+
+### Follow-ups (ยังไม่แก้ไฟล์ skill — บันทึกไว้)
+
+- `skills/helix/SKILL.md:67-74` เมนูตัวเลขมี 7 จาก 11 skill — ขาด content-takedown · review-result · smoke-test · test-data-prep
+- description ใช้ "Use for" แทน "Use when": `skills/testing-ticket-workflow/SKILL.md:5` · `skills/test-data-prep-workflow/SKILL.md:5` · ใช้ "Do NOT use when": `skills/helix/SKILL.md:6`
+- regex ลบแท็ก `<[^>]+>` ใน `references/csv-export-rules.md:38,70,126` (ไฟล์ที่ tc-fe-prep ลิงก์จาก `skills/tc-fe-prep-workflow/SKILL.md:33`) ลบ placeholder ไปด้วย — ทดสอบ `re.sub(r"<[^>]+>","","Open <SUITE_PATH> then <b>x</b>")` ได้ `'Open  then x'` · พบใน eval FE-2 ทั้งสองฝั่ง
 
 ---
 
