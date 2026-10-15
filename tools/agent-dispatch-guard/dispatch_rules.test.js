@@ -48,6 +48,7 @@ const GOOD_BRIEF = [
   'Check 12 cases on pre-prod.',
   'Append one JSON line per case to out/round-9/lane1.jsonl before calling the next tool.',
   'Do not hold results in your head.',
+  rules.NO_ADVISOR_MARKER, // check 14 (docs/sdd/no-advisor-in-subagent) — fixtures that expect ok carry the token
 ].join('\n');
 
 const BAD_BRIEF = [
@@ -75,7 +76,7 @@ t('a brief with no persistence contract is BLOCKED', () => {
 });
 
 t('the canonical marker alone satisfies the persistence rule', () => {
-  const r = rules.assessBrief('Do the work. ' + rules.PERSIST_MARKER);
+  const r = rules.assessBrief('Do the work. ' + rules.PERSIST_MARKER + ' ' + rules.NO_ADVISOR_MARKER);
   assert.strictEqual(r.ok, true);
 });
 
@@ -94,7 +95,7 @@ t('naming a cadence without naming a file does NOT satisfy the rule', () => {
 
 t('a Thai brief with file, verb and cadence passes', () => {
   const r = rules.assessBrief(
-    'ตรวจ 10 เคส แล้วเขียนผลลง out/rnd/lane2.jsonl ทุกเคส ก่อนเรียกเครื่องมือตัวถัดไป'
+    'ตรวจ 10 เคส แล้วเขียนผลลง out/rnd/lane2.jsonl ทุกเคส ก่อนเรียกเครื่องมือตัวถัดไป ห้ามเรียก advisor'
   );
   assert.strictEqual(r.ok, true);
 });
@@ -118,7 +119,7 @@ t('an unbounded sweep is a NOTE; a bounded one is not flagged', () => {
   // The persistence half is satisfied by the marker so this case carries no
   // digits of its own — otherwise the count in GOOD_BRIEF ("12 cases") is
   // itself the stated bound and the case would test nothing.
-  const base = rules.PERSIST_MARKER + '\n';
+  const base = rules.PERSIST_MARKER + ' ' + rules.NO_ADVISOR_MARKER + '\n';
   const loose = rules.assessBrief(base + 'Go through every transcript on the machine.');
   assert.ok(
     loose.findings.some((f) => f.code === 'UNBOUNDED_SCAN'),
@@ -153,7 +154,7 @@ t('the rendered report always states how many checks ran', () => {
 // ------------------------------------------- proxy preload (#0121) rules layer
 
 // The incident's env line, placeholders only (repo is public).
-const PERSIST_LINE = 'Append one JSON line per case to out/round-9/laneE.jsonl before calling the next tool.';
+const PERSIST_LINE = 'Append one JSON line per case to out/round-9/laneE.jsonl before calling the next tool. ' + rules.NO_ADVISOR_MARKER;
 const INCIDENT_BRIEF = [
   'Env: training69 only (OLS=<T69_OLS>). Every node run needs',
   'PW_PROXY=http://127.0.0.1:18723 NODE_EXTRA_CA_CERTS=<CA_BUNDLE> HANDS_OFF_EXCEPTION="<reason>" HANDS_OFF_EXCEPTION_TARGET=$OLS.',
@@ -590,6 +591,44 @@ t('#0192 a line that forbids /tmp for evidence is not flagged', () => {
 t('#0192 scratch files that are not evidence may still use /tmp', () => {
   const r = rules.assessBrief('Write the downloaded zip to /tmp/unpack/ and delete it after extracting.\n' + PERSIST_LINE);
   assert.ok(!r.findings.some((f) => f.code === 'EVIDENCE_IN_TEMP'), 'must not flag: ' + rules.formatAssessment(r));
+});
+
+// ------------------------------------------- check 14: no advisor in subagents
+// Spec: docs/sdd/no-advisor-in-subagent/spec.md — measured 2026-10-15: a lane sat 9.3 min on cut-off
+// advisor calls (ols-qa-evidence runs/sdd-mint-2026-10-15/sdd.jsonl) while its brief said nothing about it.
+
+t('R1 a brief that never forbids the advisor is BLOCKED', () => {
+  const r = rules.assessBrief('Do the work. ' + rules.PERSIST_MARKER);
+  assert.strictEqual(r.ok, false, rules.formatAssessment(r));
+  assert.ok(r.findings.some((f) => f.code === 'ADVISOR_ALLOWED_IN_SUBAGENT' && f.severity === rules.SEVERITY.BLOCK));
+});
+
+t('R1 the NO-ADVISOR token satisfies the rule', () => {
+  const r = rules.assessBrief('Do the work. ' + rules.PERSIST_MARKER + ' ' + rules.NO_ADVISOR_MARKER);
+  assert.ok(!r.findings.some((f) => f.code === 'ADVISOR_ALLOWED_IN_SUBAGENT'), rules.formatAssessment(r));
+});
+
+t('R1 an English or Thai prohibition sentence satisfies the rule', () => {
+  for (const line of ['Do not call the advisor; the main thread reviews.', 'never use the advisor tool', 'ห้ามเรียก advisor']) {
+    const r = rules.assessBrief('Do the work. ' + rules.PERSIST_MARKER + '\n' + line);
+    assert.ok(!r.findings.some((f) => f.code === 'ADVISOR_ALLOWED_IN_SUBAGENT'), line + ' → ' + rules.formatAssessment(r));
+  }
+});
+
+t('R2 a brief that tells the agent to call the advisor is BLOCKED even with the token', () => {
+  const r = rules.assessBrief('Call the advisor before writing the spec.\n' + rules.PERSIST_MARKER + ' ' + rules.NO_ADVISOR_MARKER);
+  assert.ok(r.findings.some((f) => f.code === 'ADVISOR_ALLOWED_IN_SUBAGENT'), rules.formatAssessment(r));
+});
+
+t('R3 the finding names the measured stall and the one-line fix', () => {
+  const f = rules.assessBrief('Do the work. ' + rules.PERSIST_MARKER).findings.find((x) => x.code === 'ADVISOR_ALLOWED_IN_SUBAGENT');
+  assert.ok(f && /9\.3 min/.test(f.message), 'message must name the 9.3 min stall');
+  assert.ok(f.fix.includes(rules.NO_ADVISOR_MARKER), 'fix must name the token');
+});
+
+t('R5 --explain lists ADVISOR_ALLOWED_IN_SUBAGENT', () => {
+  const r = runCheck(null, ['--explain']);
+  assert.ok(r.out.includes('ADVISOR_ALLOWED_IN_SUBAGENT'), 'explain must name the new check');
 });
 
 // ------------------------------------------------------------------- harness
