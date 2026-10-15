@@ -29,6 +29,7 @@ Prepare **frontend manual test cases** from a Jira **story** (acceptance criteri
 - [Step 4.5 — Thai↔English term confirmation (mandatory gate) \[medium freedom\]](design-and-review.md#step-45--thaienglish-term-confirmation-mandatory-gate-medium-freedom)
 - [Step 5 — HTML draft in Chrome (approval gate) \[medium freedom\]](#step-5--html-draft-in-chrome-approval-gate-medium-freedom)
 - [Step 6 — Save artifacts in the user's workspace \[medium freedom\]](#step-6--save-artifacts-in-the-users-workspace-medium-freedom)
+- [Step 6.5 — Create the ticket's TC tab in the tracking sheet \[low freedom\]](#step-65--create-the-tickets-tc-tab-in-the-tracking-sheet-low-freedom)
 - [Step 7 — Publish to Jira (story only) \[low freedom\]](#step-7--publish-to-jira-story-only-low-freedom)
 - [Step 7.5 — Final TC review report (mandatory before "done") \[low freedom\]](#step-75--final-tc-review-report-mandatory-before-done-low-freedom)
 - [QA closing (mandatory before "done") \[low freedom\]](#qa-closing-mandatory-before-done-low-freedom)
@@ -57,6 +58,7 @@ TC FE prep progress:
 - [ ] Step 4.5 — Thai↔English term confirmation (mandatory gate)
 - [ ] Step 5 — HTML draft in Chrome (approval gate)
 - [ ] Step 6 — Save artifacts in the user's workspace
+- [ ] Step 6.5 — Create the ticket's TC tab in the tracking sheet
 - [ ] Step 7 — Publish to Jira (story only)
 - [ ] Step 7.5 — Final TC review report (mandatory before "done")
 - [ ] QA closing (mandatory before "done")
@@ -252,6 +254,14 @@ Then report to user: "Files saved. ADF ready. Publishing..."
 
 ---
 
+## Step 6.5 — Create the ticket's TC tab in the tracking sheet [low freedom]
+
+**Gate:** the draft is approved, and the project guide loaded in Step 1 has a **"Create the per-ticket TC tab"** row. Approval is Step 5 in chat. For an unattended run, a Slack reply is approval only when all four hold: it comes from the owner's own Slack user (matched by user ID, not display name), it is in the DM thread that carried **this** draft, it was posted after the draft, and its text is exactly `passed` once leading and trailing spaces are trimmed, in any letter case. Anything else (another person, another thread or draft, an earlier message, `passed!`, `ok`, `passed but …`) is not approval: keep waiting and write nothing. Without the guide row, skip this step and say so in one line. `--create-tab` exists only after ols-qa-testing-bot PR #5 is merged; until then the command ends in a usage error (exit `2`), so report that and stop. The tracking sheet is written only through the guide's tool, never with a raw Sheets API call or a one-off script (guide row "Write scope").
+
+**Rows and run:** for `--rows`, use `references/Draft_Jira_{ISSUE_KEY}.csv` as it is. When Step 4e marked any case `BLOCKED`, write `references/Sheet_Tab_{ISSUE_KEY}.json` instead: a JSON list with one object per approved row, keyed by the same column names, where each blocked case adds `"Test Status": "BLOCKED"` and its Step 4e `"Remark"`. For `--qa-owner`, take the ticket's QA Owner (Summary tab, column QA Owner) and pass its dropdown alias (`QA Owner A`–`QA Owner D`), not the Summary tab's full `Name (Nick, ไทย)` form (guide row "QA Owner dropdown = Table-managed"); real names live only in `~/.ols-qa-secrets/`. First run the guide's command with `--dry-run` and summarise it in chat (tab name, row count, dropdown source, existence check; never the sheet id). Then run it without `--dry-run`. Only exit `0` with `"readback": "clean"` counts as success. Exit `3` means nothing was written: report the reason verbatim and stop (never write into a tab that already exists). The tab, its rows and its Table are created in one all-or-nothing request, so exit `4` means only that the tab may exist but is not proven right (the read-back failed or did not match). Report the output, including its `next_step`, and ask the user before anything else touches the sheet. Recovery: open the tab and check that its gid is the one in the message, compare it with the dry-run, and if it is wrong the ticket's QA Owner agrees, the user deletes that tab by hand, then this step reruns (the rerun refuses while the tab exists, and `progress_build.py` rolls the tab into Test Progress every 5 minutes until then).
+
+---
+
 ## Step 7 — Publish to Jira (story only) [low freedom]
 
 **Target:** `{ISSUE_KEY}` story the user specified.
@@ -376,6 +386,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] `Import_Qase_{ISSUE_KEY}.csv` uses Qase schema, `Status = Done` on every row, cut fields absent; rows sorted Unit Test → Integration Test → System Test, ACs then ECs within each group, TC IDs continuous 1,2,3; row count matches approved draft.
 - [ ] Both files uploaded to the Jira issue; both footer links verified working.
 - [ ] Typed CSVs generated only for Types that have TCs; each filtered and content mapped to its template columns; all generated files uploaded to Jira; footer links present only for uploaded files; skipped types noted in comment.
+- [ ] Step 6.5: the ticket's TC tab was created (exit `0`, `"readback": "clean"`), or the step was skipped because the project guide has no "Create the per-ticket TC tab" row, or a refusal (exit `2` or `3`) or an exit `4` with its `next_step` was reported verbatim; the gate counted only an exact `passed` from the owner in this draft's DM thread.
 - [ ] Disclaimer appended as **last line** of the Jira comment, after all attachment links (exact wording, not translated or shortened).
 - [ ] Jira UI matches approved draft (not MCP output alone).
 - [ ] Post-publish review passed per [jira-comment-post-review.md](../../../references/jira-comment-post-review.md) — no stray tags, numbered items on separate lines, attachment present.
