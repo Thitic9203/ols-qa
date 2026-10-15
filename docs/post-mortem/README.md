@@ -226,6 +226,7 @@
 | 0190 | 2026-10-14 | บอกว่าคอมมิตแผนขึ้น main แล้ว ทั้งที่ `git push -q` ถูกปฏิเสธ (release bump เข้า origin ก่อน) และตรวจแค่ `git log` ฝั่ง local | Low | [20261014-post-mortem-report-0190-claimed-plan-commit-on-main-after-quiet-push-was-rejected.md](20261014-post-mortem-report-0190-claimed-plan-commit-on-main-after-quiet-push-was-rejected.md) |
 | 0191 | 2026-10-14 | **ผิดซ้ำจาก #0063** — commit บน branch ของ PR ที่ยังไม่ merge ถูก post-commit sync ขึ้น helix main และออก release v1.5.121/v1.5.122 ถึงเครื่องที่ auto-update | High | [20261014-post-mortem-report-0191-unmerged-pr-branch-commits-synced-and-released-to-helix.md](20261014-post-mortem-report-0191-unmerged-pr-branch-commits-synced-and-released-to-helix.md) |
 | 0192 | 2026-10-14 | **ผิดซ้ำจาก #0008** — หลักฐาน eval ของแผน skill authoring (scenario · fixture · ผลรัน · คะแนน grader · log เลน) อยู่แค่ใน scratchpad ใต้ /tmp แล้วหายเมื่อเครื่องรีบูต · final eval เทียบ baseline ไม่ได้ | Medium | [20261014-post-mortem-report-0192-skill-eval-evidence-in-tmp-wiped-by-reboot.md](20261014-post-mortem-report-0192-skill-eval-evidence-in-tmp-wiped-by-reboot.md) |
+| 0193 | 2026-10-15 | **ผิดซ้ำจาก #0098 · #0102** — รันเลน guest บน dev ระหว่างรอเจ้าของงานรัน setup เอง · fixture self-heal `mintState()` ล็อกอินด้วยรหัสที่เก็บไว้ 5 บัญชี (17:28–17:30) · หยุดด้วย pid 17:33 | High | [20261015-post-mortem-report-0193-guest-lane-run-triggered-stored-password-mint.md](20261015-post-mortem-report-0193-guest-lane-run-triggered-stored-password-mint.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
