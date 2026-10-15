@@ -83,7 +83,7 @@
 
 | # | มาตรการ | ชนิด | สถานะ |
 |---|---------|------|-------|
-| P1 | fixture ปฏิเสธ `mintState()` นอก setup project ทุก env (ไม่ผูกกับ training) เว้นแต่ผู้รันตั้ง `E2E_ALLOW_MINT=1` เอง · session ตาย = เคสล้มดังพร้อมข้อความ "ให้เจ้าของงานรัน setup" + gate known-answer | เครื่องมือ + เทส (ชั้นใหม่ ผูกที่ "ใครล็อกอิน" ไม่ใช่ env) | ค้าง — งานแยก |
+| P1 | fixture ปฏิเสธ `mintState()` นอก setup project ทุก env (ไม่ผูกกับ training) เว้นแต่ผู้รันตั้ง `E2E_ALLOW_MINT=1` เอง · session ตาย = เคสล้มดังพร้อมข้อความ "ให้เจ้าของงานรัน setup" + gate known-answer | เครื่องมือ + เทส (ชั้นใหม่ ผูกที่ "ใครล็อกอิน" ไม่ใช่ env) | ทำแล้วใน PR #45 ของ `ols-qa-e2e` (`dba105a` · `gate:agentmint` แดงบน main exit=1 → เขียว 12/12 บน branch) — รอ merge |
 | P2 | ด่าน `preflight:sessions` ใน runner ทั้งสองตัว (PR #43) หยุดรอบก่อนเฟสแรกถ้ามี session ตาย | เครื่องมือ + gate:preflight | ทำแล้วใน PR #43 (รอ merge) |
 | P3 | ก่อนสั่ง `playwright test` เองทุกครั้ง agent ต้องรัน probe/preflight ก่อน และห้ามรันถ้ามีบัญชีใดตาย | กฎ (memory) | ทำแล้ว |
 
@@ -113,7 +113,7 @@
 
 | # | Action | ผู้รับผิดชอบ | ความสำคัญ | สถานะ |
 |---|--------|--------------|-----------|-------|
-| 1 | P1: fixture ปฏิเสธ mint นอก setup ทุก env + gate | Claude (PR ใน `ols-qa-e2e`) | High | Open |
+| 1 | P1: fixture ปฏิเสธ mint นอก setup ทุก env + gate | Claude (PR #45 ใน `ols-qa-e2e`) | High | Done — รอเจ้าของงาน merge |
 | 2 | merge PR #43 (preflight) หลังเจ้าของงานรีวิว | เจ้าของงาน | Medium | Open |
 
 ---
