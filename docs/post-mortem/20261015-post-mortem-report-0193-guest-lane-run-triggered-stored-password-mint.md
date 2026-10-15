@@ -15,7 +15,7 @@
 ## สรุปสั้น (Executive Summary)
 
 ระหว่างรอเจ้าของงานรันคำสั่ง setup เพื่อฟื้น session dev 7 บัญชี เธรดหลักรันเลน `guest` บน dev (`--project=guest --no-deps`) เพื่อเอาผลล่วงหน้า โดยคิดว่าเคส guest ไม่ใช้บัญชี
-แต่โปรเจกต์ `guest` มีเคส `tests/e2e/smoke.spec.ts` "login smoke — <บทบาท> · <บัญชี>" ของทุกบทบาท (บรรทัดแรกของ log: `[1/97] [guest] › … login smoke — admin-user · adminUser`) และเคสบทบาทที่ session ตายจะเรียก `mintState()` ซึ่งล็อกอินด้วยรหัสที่เก็บไว้เอง — บัญชี dev 5 บัญชีถูกล็อกอินโดย agent ระหว่าง 17:28–17:30
+แต่โปรเจกต์ `guest` มีเคสในไฟล์ spec ที่ใช้ fixture ของบัญชีบทบาทด้วย (เคส login smoke `smoke.spec.ts:15-27` แค่อ่าน get-session ไม่ได้ล็อกอิน — ล้มด้วย `get-session loggedIn … (HTTP 200)` ที่ `guest-early.log` บรรทัด 26 · 111 · 196) และ fixture บทบาทที่เจอ session ตายจะเรียก `mintState()` ซึ่งล็อกอินด้วยรหัสที่เก็บไว้เอง · ยังไม่ได้ระบุว่าเป็นเคสใด (ผู้ต้องสงสัย: เคส `@guest` ในไฟล์ที่เรียก learnerPage/creatorPage/adminUserPage เช่น `creator-channel.spec.ts` ลำดับ [44/97]) — บัญชี dev 5 บัญชีถูกล็อกอินโดย agent ระหว่าง 17:28–17:30
 เธรดหลักจับได้เองจากเวลาแก้ไขไฟล์ session ที่ตรงกับเวลารัน แล้วหยุดรอบนั้นด้วย pid เวลา 17:33:22 · ไม่มีการพิมพ์หรืออ่านรหัสผ่านใน context
 เป็นคลาสเดียวกับ #0098/#0102 (การ์ดกัน `mintState` ในตอนนั้นผูกกับ training เท่านั้น ไม่ครอบ dev)
 
@@ -25,7 +25,7 @@
 
 - 17:27 เธรดหลักสั่ง `TARGET_ENV=dev ./node_modules/.bin/playwright test --project=guest --no-deps` จาก worktree ของ PR #43
 - ไฟล์ `state/dev_*.json` ของ 5 บัญชีถูกเขียนใหม่ 17:28:29–17:30:09 (`stat` ของ adminUser · creatorC1 · fixtureOwnerF1 · learnerL1 · learnerL2) ขณะที่ไม่มีโปรเซส `--project=setup` ใดทำงาน (`pgrep` ว่าง · terminal ของเจ้าของงานไม่มีคำสั่ง)
-- กลไก: โปรเจกต์ `guest` รัน login smoke ของทุกบทบาท (`guest-early.log` บรรทัด 1–3: adminUser · creatorC2 · learnerL2) และ fixture บทบาทเรียก `mintState(browser, account)` เมื่อ session ไม่ live (`tests/e2e/fixtures/test.ts` บรรทัด 175–205) · `global-setup.ts` ไม่เรียกล็อกอิน (คำว่า login/mint มีเฉพาะในคอมเมนต์และข้อความเตือนเรื่อง SSO portal บรรทัด 47 · 54–55)
+- กลไก: login smoke ของทุกบทบาทล้มเพราะ session ตาย (ไม่ได้ล็อกอินเอง) · เคสถัดมาในโปรเจกต์ `guest` ที่ใช้ fixture บทบาท (ยังไม่ระบุเคส) ทำให้ fixture เรียก `mintState(browser, account)` เมื่อ session ไม่ live (`tests/e2e/fixtures/test.ts` บรรทัด 175–205) · `global-setup.ts` ไม่เรียกล็อกอิน (คำว่า login/mint มีเฉพาะในคอมเมนต์และข้อความเตือนเรื่อง SSO portal บรรทัด 47 · 54–55)
 
 **สิ่งที่ควรจะเป็น:** agent ห้ามล็อกอินด้วยรหัสผ่านทุกกรณี (memory `feedback_no-scripted-password-login-for-agents` · แผนขั้น 6 "Claude ห้ามล็อกอินด้วยรหัสผ่านเอง") และเจ้าของงานเลือกผ่าน popup (ระหว่าง 17:13–17:20) ว่าจะรัน setup เอง
 
@@ -50,7 +50,7 @@
 ### 5 Whys
 
 1. **ทำไม agent ล็อกอินด้วยรหัสผ่าน?** — เพราะรอบ guest ที่ agent สั่งเข้าไปถึง fixture บทบาทที่ self-heal ด้วย `mintState()`
-2. **ทำไมรอบ guest ถึงแตะบัญชีบทบาท?** — เพราะโปรเจกต์ guest รวมเคส login smoke ของทุกบทบาท (`smoke.spec.ts:15`) และ `--no-deps` ตัดแค่ setup project ไม่ได้ตัด self-heal
+2. **ทำไมรอบ guest ถึงแตะบัญชีบทบาท?** — เพราะโปรเจกต์ guest เลือกเคสด้วย tag `@guest` ซึ่งรวมเคสในไฟล์ที่ใช้ fixture บทบาทด้วย (ยังไม่ระบุว่าเคสใดเรียก mint) และ `--no-deps` ตัดแค่ setup project ไม่ได้ตัด self-heal
 3. **ทำไมตัดสินว่า "guest ไม่ใช้บัญชี"?** — สรุปจากชื่อโปรเจกต์ ไม่ได้ไล่ว่าเคสในโปรเจกต์นั้นเรียก fixture ไหนบ้าง (ซ้ำกับ #0098 ที่สรุปจาก grep)
 4. **ทำไมไม่มีอะไรกันก่อนรัน?** — การ์ดของ #0098/#0102 ปฏิเสธ mint เฉพาะ `training` (`gate:nomint`) · บน dev การ mint ใน fixture เปิดอยู่เสมอ ไม่มีตัวเช็คว่า "ผู้สั่งรันเป็น agent และ session ตาย"
 5. **ทำไมการ์ดเดิมไม่ครอบ dev?** — มาตรการรอบก่อนผูกกับ env ที่เกิดเหตุ (training) แทนที่จะผูกกับ "ใครเป็นผู้ล็อกอิน" — root cause ระดับคลาสคือ fixture ล็อกอินด้วยรหัสผ่านโดยอัตโนมัติได้ทุก env ที่ไม่ใช่ training โดยไม่มีสวิตช์ปิด
