@@ -89,6 +89,12 @@ function explain() {
     'loading it AND release it in finally (e.g. session_lease acquire … /',
     'session_lease release …), or carry the literal token ' + rules.LEASE_PARENT_MARKER,
     'when the parent acquired the lease. See references/parallel-test-lanes.md §5.',
+    '',
+    'ADVISOR_ALLOWED_IN_SUBAGENT (BLOCK, owner 2026-10-15): every brief must forbid',
+    'advisor calls — the literal token ' + rules.NO_ADVISOR_MARKER + ' or a sentence such as',
+    '"do not call the advisor" — and no line may ask the agent to call it. Measured',
+    '2026-10-15: a lane sat 9.3 min on cut-off advisor calls. The main thread reviews',
+    'the agent\'s work instead. See docs/sdd/no-advisor-in-subagent/spec.md.',
   ].join('\n');
 }
 

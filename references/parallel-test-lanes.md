@@ -160,6 +160,8 @@ run — renew the lease before it expires, and release the lease with the same h
 error too). Never load a login file without a lease. If acquire is refused because another holder has
 the account, use a different account or wait — never force or delete another lane's lease. (When the
 parent already holds it: LEASE-HELD-BY-PARENT — do not acquire or release it yourself.)
+NO-ADVISOR: do not call the advisor tool — the parent reviews your work. A cut-off advisor call can
+stall a lane for minutes with nothing written.
 Time limit: run every driver or browser script under a hard time limit — `timeout {seconds} node …`,
 or the script's own overall deadline that closes the browser and exits. Never leave a script without
 one. Before you return, make sure no process you started is still running (driver, browser, shell);

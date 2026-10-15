@@ -173,6 +173,12 @@ const LEASE_RELEASE_RE = /\bsession_lease(?:\.js)?\b[^\n]{0,40}\brelease\b|\brel
 // the decision rested on can no longer be made. Same line = the write target of that evidence.
 const TEMP_ROOT_RE = /(?:^|[\s"'`(=])(?:\/private)?\/tmp\b|\/var\/folders\b|\bscratch-?pad\b|\$\{?TMPDIR\b|\bos\.tmpdir\(|\bmktemp\b/i;
 const DECISION_EVIDENCE_RE = /\bevals?\b|\bgrad(?:e|es|er|ers|ing)\b|\bbaselines?\b|\bmulti-?samples?\b|\bscenarios?\b|\bfixtures?\b|\bledgers?\b|\bevidence\b|\bverdicts?\b|หลักฐาน|คะแนน|ผลรัน/i;
+// Check 14 (docs/sdd/no-advisor-in-subagent/spec.md): subagents get the advisor tool by default and are told to
+// call it; on 2026-10-15 a lane sat 9.3 min on cut-off advisor calls. The brief must forbid it (token or sentence),
+// and no line may ask for it.
+const NO_ADVISOR_MARKER = 'NO-ADVISOR';
+const ADVISOR_FORBID_RE = /(?:never|do not|don't|must not|no)\s+(?:call|use|consult|ask)?\s*(?:the\s+)?advisor|ห้าม(?:เรียก|ใช้|ถาม)?\s*advisor/i;
+const ADVISOR_CALL_RE = /\b(?:call|use|consult|ask|run)\s+(?:the\s+)?advisor\b|เรียก\s*advisor/i;
 
 /**
  * Lines that gate on a file-freshness comparison against a clock time that is
@@ -452,6 +458,25 @@ function assessBrief(text) {
     });
   }
 
+  // Check 14 — the advisor allowed inside a subagent (docs/sdd/no-advisor-in-subagent/spec.md R1–R3).
+  checks += 1;
+  const forbidsAdvisor = text.includes(NO_ADVISOR_MARKER) || ADVISOR_FORBID_RE.test(text);
+  const asksAdvisorLine = text.split('\n').find((l) => ADVISOR_CALL_RE.test(l.replace(ADVISOR_FORBID_RE, '')));
+  if (!forbidsAdvisor || asksAdvisorLine) {
+    findings.push({
+      code: 'ADVISOR_ALLOWED_IN_SUBAGENT',
+      severity: SEVERITY.BLOCK,
+      message:
+        (asksAdvisorLine
+          ? 'the brief tells the agent to call the advisor (line: ' + asksAdvisorLine.trim().slice(0, 120) + ') — '
+          : 'the brief never forbids advisor calls, and subagents get the advisor tool with instructions to call it — ') +
+        'on 2026-10-15 a lane sat 9.3 min on cut-off advisor calls (ols-qa-evidence runs/sdd-mint-2026-10-15/sdd.jsonl)',
+      fix:
+        'add the literal token ' + NO_ADVISOR_MARKER + ' (or "do not call the advisor") to the brief, drop any line ' +
+        'that asks for it, and have the main thread review the agent\'s work instead',
+    });
+  }
+
   if (checks === 0) {
     throw new Error('assessBrief: ran zero checks — refusing rather than reporting clean');
   }
@@ -487,6 +512,7 @@ module.exports = {
   SEVERITY,
   PERSIST_MARKER,
   LEASE_PARENT_MARKER,
+  NO_ADVISOR_MARKER,
   hasPersistenceContract,
   unsourcedTimeGates,
   assessBrief,
