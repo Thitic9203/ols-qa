@@ -5,3 +5,4 @@
 3. **T3 (R1–R4, R6, R7)** — Rewrite Step 5, checklist, description, MUST/NEVER in `SKILL.md`; update `commands/tc-review.md`. Done: no "Optional"/"explicit request" left in Step 5; portable check passes.
 4. **T4 (R2)** — Placeholder section in `references/ols-project-guide.md`; real values in local secrets. Done: `scripts/check-no-secrets.sh` passes.
 5. **T5** — `bash scripts/run-test-suites.sh` green → PR → merge → confirm auto-version bump on origin → helix sync + parity.
+6. **T6 (R1, R2, R4, R5 amended)** — failing tests: CP ticket which-group → not fixed-destination; OLS key from invocation args → deny. Then scope the guard by project, rewrite Step 5 "per project", re-run suites, PR, merge, helix sync.
