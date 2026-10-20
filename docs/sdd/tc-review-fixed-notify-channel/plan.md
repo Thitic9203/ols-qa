@@ -29,3 +29,8 @@
 
 - A false block on a thread question that also says "ห้องไหน". Mitigation: tests; the deny message says to ask only for the thread.
 - No new cost; no other repo touched except the helix sync of the skill file after merge.
+
+## Amendment 20/Oct/2026 — channel per project
+
+- Guard: `FIXED_CHANNEL_PROJECTS = ['OLS']` (project keys only, no ids). Project read from a `<KEY>-<n>` ticket key in the question text, else the latest tc-review `Skill` input `args` / `<command-args>` in the transcript. Not found or not in the list → R5 does not fire.
+- Skill Step 5: channel = the ticket project's config entry; missing → search history/memory → ask once for that project → record it.

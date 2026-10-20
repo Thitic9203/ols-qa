@@ -164,18 +164,18 @@ const ask = (question, header = 'h', options = []) => ({
 
 // ============================================================ fixed TC-review destination (spec tc-review-fixed-notify-channel R5)
 {
-  const skillUse = (skill) =>
+  const skillUse = (skill, args) =>
     JSON.stringify({
       type: 'assistant',
-      message: { role: 'assistant', content: [{ type: 'tool_use', id: 't9', name: 'Skill', input: { skill } }] },
+      message: { role: 'assistant', content: [{ type: 'tool_use', id: 't9', name: 'Skill', input: args ? { skill, args } : { skill } }] },
     });
   const d = (q, lines) => rules.decide({ toolName: 'AskUserQuestion', toolInput: ask(q), transcriptLines: lines, override: null });
 
-  let r = d('จะให้ส่งโนติผลรีวิวเทสเคสไปที่กลุ่มไหนครับ', [prompt('go'), toolUse(SEARCH)]);
-  ok('R5: Thai which-group + TC review → deny even after a search', r.decision === 'deny' && r.state === 'fixed-destination', JSON.stringify(r));
+  let r = d('OLS-914 จะให้ส่งโนติผลรีวิวเทสเคสไปที่กลุ่มไหนครับ', [prompt('go'), toolUse(SEARCH)]);
+  ok('R5: Thai which-group + TC review + OLS key → deny even after a search', r.decision === 'deny' && r.state === 'fixed-destination', JSON.stringify(r));
 
-  r = d('Which Discord channel should the review go to?', [prompt('go'), skillUse('helix:tc-review'), toolUse(SEARCH)]);
-  ok('R5: English which-channel in a session that ran tc-review → deny', r.decision === 'deny' && r.state === 'fixed-destination', JSON.stringify(r));
+  r = d('Which Discord channel should the review go to?', [prompt('go'), skillUse('helix:tc-review', 'https://x/sheet OLS-914'), toolUse(SEARCH)]);
+  ok('R5: English which-channel, tc-review ran for an OLS ticket → deny', r.decision === 'deny' && r.state === 'fixed-destination', JSON.stringify(r));
 
   r = d('ส่งโนติห้องไหนครับ', [prompt('/tc-review OLS-1'), skillUse('tc-review-workflow'), toolUse(SEARCH)]);
   ok('R5: which-room with no TC word, tc-review-workflow ran → deny', r.decision === 'deny' && r.state === 'fixed-destination', JSON.stringify(r));
@@ -188,7 +188,16 @@ const ask = (question, header = 'h', options = []) => ({
 
   const quick = d('ส่งโนติกลุ่มไหนครับ', []);
   ok('R5: a which-group question is not waved through before the transcript is read', quick.state !== 'no-signal', JSON.stringify(quick));
-  const fixed = d('ส่งโนติรีวิวเทสเคสกลุ่มไหน', []);
+  r = d('ส่งโนติกลุ่มไหนครับ', [prompt('/tc-review CP-14519'), skillUse('tc-review-workflow', 'CP-14519'), toolUse(SEARCH)]);
+  ok('R5: which-group for a CP ticket → not this rule (each project has its own group)', r.state !== 'fixed-destination', JSON.stringify(r));
+
+  r = d('รีวิวเทสเคส: ส่งกลุ่มไหนครับ', [prompt('go'), toolUse(SEARCH)]);
+  ok('R5: TC review but the project cannot be read → not this rule', r.state !== 'fixed-destination', JSON.stringify(r));
+
+  r = d('ส่งกลุ่มไหนครับ', [prompt('/tc-review OLS-1'), skillUse('tc-review-workflow', 'OLS-1'), prompt('/tc-review CP-2'), skillUse('tc-review-workflow', 'CP-2'), toolUse(SEARCH)]);
+  ok('R5: the LATEST tc-review invocation decides the project (CP after OLS → not this rule)', r.state !== 'fixed-destination', JSON.stringify(r));
+
+  const fixed = d('OLS-1 ส่งโนติรีวิวเทสเคสกลุ่มไหน', []);
   ok('R5: deny message says the channel is fixed and to ask only for the thread',
     fixed.state === 'fixed-destination' && /เธรด/.test(rules.denyMessage(fixed)), JSON.stringify(fixed));
 }
