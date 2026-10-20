@@ -1,7 +1,7 @@
 ---
 name: tc-review-workflow
 description: |
-  Review a test case document that already exists — written by anyone, in any sheet/CSV/markdown format — against the acceptance criteria (AC), edge cases (EC) and business rules on its governing ticket. Build a traceability matrix, judge coverage and row quality, and report findings as Good vs Need Improve, each anchored to a quoted source. Always notify the finished review to the project's fixed TC-review channel, asking only which thread.
+  Review a test case document that already exists — written by anyone, in any sheet/CSV/markdown format — against the acceptance criteria (AC), edge cases (EC) and business rules on its governing ticket. Build a traceability matrix, judge coverage and row quality, and report findings as Good vs Need Improve, each anchored to a quoted source. Always notify the finished review to the ticket project's own TC-review channel, asking only which thread.
   Use when the user asks to review test cases, review a TC sheet, check TC quality or coverage before execution, audit someone else's test case document, compare TCs against AC/EC, or wants feedback on a TC document without executing it. Also use for /tc-review.
   Do NOT use for drafting new test cases from a story (tc-fe-prep-workflow / tc-api-prep-workflow), executing a ticket's Playwright pass (testing-ticket-workflow), reviewing already-recorded execution evidence/clips (review-result-workflow), or retesting a bug after a dev fix (retest-bug-workflow).
 proactive_triggers:
@@ -27,7 +27,7 @@ proactive_triggers:
 - [Step 3 — Row-quality check \[medium freedom\]](#step-3--row-quality-check-medium-freedom)
 - [Source sweep before "ask the PO / reporter" (mandatory) \[high freedom\]](#source-sweep-before-ask-the-po--reporter-mandatory-high-freedom)
 - [Step 4 — Report Good vs Need Improve \[medium freedom\]](#step-4--report-good-vs-need-improve-medium-freedom)
-- [Step 5 — Notify the fixed TC-review channel \[low freedom\]](#step-5--notify-the-fixed-tc-review-channel-low-freedom)
+- [Step 5 — Notify the project's TC-review channel \[low freedom\]](#step-5--notify-the-projects-tc-review-channel-low-freedom)
 - [QA closing (mandatory before "done") \[low freedom\]](#qa-closing-mandatory-before-done-low-freedom)
 - [Skill composition](#skill-composition)
 - [Out of scope](#out-of-scope)
@@ -54,7 +54,7 @@ TC review progress:
 - [ ] Step 3 — Row-quality check
 - [ ] Source sweep before "ask the PO / reporter" (mandatory)
 - [ ] Step 4 — Report Good vs Need Improve
-- [ ] Step 5 — Notify the fixed TC-review channel (ask only the thread)
+- [ ] Step 5 — Notify the project's TC-review channel (ask only the thread)
 - [ ] QA closing (mandatory before "done")
 ```
 
@@ -209,19 +209,20 @@ message can. The Step 5 thread question is the go-ahead; do not add a separate "
 
 ---
 
-## Step 5 — Notify the fixed TC-review channel [low freedom]
+## Step 5 — Notify the project's TC-review channel [low freedom]
 
-Every run sends the finished review to the project's **fixed TC-review notify channel** — whoever
-invoked the skill, and whether or not they asked for a share. The channel comes from the project config
-(the "TC review notify" entry of the project guide; the real id and webhook live in local secrets, never
-in the repo).
+Every run sends the finished review to the TC-review notify channel **of the ticket's project** —
+whoever invoked the skill, and whether or not they asked for a share. Each project has its own channel;
+never post one project's review in another project's channel. The channel comes from that project's
+config (its "TC review notify" entry; the real id and webhook live in local secrets, never in the repo).
 
-- **NEVER ask which server, group, or channel to send to.** The channel is fixed. A guard blocks that
-  question (`tools/ask-guard`, state `fixed-destination`) where one is installed.
-- **Ask exactly one question: which thread of that channel to post in.** Offer the threads already used
-  for this ticket or recorded in the config as options. The answer is the go-ahead to send.
-- **No fixed channel in the project config → stop Step 5** and tell the user the config entry is missing.
-  Do not fall back to asking for a channel.
+- **Project has a channel in config → NEVER ask which server, group, or channel.** Ask exactly one
+  question: which thread of that channel to post in. Offer the threads already used for this ticket or
+  recorded in the config as options. The answer is the go-ahead to send. A guard blocks the channel
+  question for such projects (`tools/ask-guard`, state `fixed-destination`) where one is installed.
+- **Project has no channel in config →** search conversation history and memory for that project's
+  destination first. Found → use it and record it in that project's config. Not found → ask once for that
+  project's channel and thread, then record the answer so it is never asked again.
 
 Then:
 
@@ -298,8 +299,8 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | MUST give every Need Improve item a sourced "→ Suggest:" fix, and NEVER invent a value for it | A problem without a fix leaves the author guessing. An invented number gets copied into the TC as if it were spec |
 | MUST edit an already-posted review in place and keep it within the platform's length limit | A second copy splits the thread. An over-limit post is rejected or cut off |
 | NEVER invent a channel, thread, or mention id for an external send | A wrong id either reaches nobody or reaches the wrong person |
-| MUST send every review to the project's fixed TC-review channel, whoever invoked the skill | The owner fixed one destination so every review reaches the same team |
-| NEVER ask which server, group, or channel to notify — ask only which thread | The channel is already fixed in the project config; asking again is a repeat question (#0059) |
+| MUST send every review to the ticket project's own TC-review channel, whoever invoked the skill | Each project's team reads its own channel; a review in another project's channel reaches the wrong people |
+| NEVER ask which server, group, or channel when the project's config has one — ask only which thread | The answer is already in config; asking again is a repeat question (#0059) |
 | MUST read back an external send's response and confirm destination + mentions before saying it is done | "Sent" without a read-back is an unverified claim |
 | MUST fix a wrong-destination send by delete-and-resend, and a wrong-content send by edit-in-place | A channel/thread cannot be changed by editing; deleting a correctly-placed message to fix wording destroys its position in the thread for no reason |
 | MUST NOT post to Jira/Confluence/GitHub or send an external message before the user has seen the review in chat | The review is the deliverable to approve first — an external send is not the review itself |
@@ -340,5 +341,5 @@ Run the check for each of these before step 1 — check commands and install hin
 - Figma (only when a design cross-check is asked)
 - clone of the product repo (`{MONOREPO}`) for the source sweep
 - Node.js + in-repo guard tools (`tools/result-gate`)
-- fixed TC-review notify channel + its webhook (project config / local secrets)
+- the ticket project's TC-review notify channel + its webhook (project config / local secrets)
 - `superpowers:systematic-debugging`

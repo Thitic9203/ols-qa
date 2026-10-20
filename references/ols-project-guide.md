@@ -708,7 +708,7 @@ After a retest-bug close-out (retest-bug-workflow Step 9), post a **retest-resul
 
 ## TC review notify
 
-Fixed destination for **every** TC review (tc-review-workflow Step 5), whoever runs the skill — owner decision 2026-10-20.
+Fixed destination for every **OLS** TC review (tc-review-workflow Step 5), whoever runs the skill — owner decision 2026-10-20. **OLS only** — other projects use their own group.
 
 - Channel: `<TC_REVIEW_NOTIFY_CHANNEL>` in guild `<DISCORD_GUILD_ID>` — real ids in local secrets §6. **Never ask which group/channel**; `tools/ask-guard` blocks that question (state `fixed-destination`).
 - Ask only: which thread of that channel. Post with the channel's webhook + `?wait=true&thread_id=<thread>`; read back `channel_id` = the thread id.

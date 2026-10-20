@@ -42,18 +42,32 @@ const SIGNALS = [
   { id: 'endpoint', re: /\bendpoints?\b|\bhosts?\b/i },
 ];
 
-// Fixed TC-review destination (docs/sdd/tc-review-fixed-notify-channel R5). The owner fixed the
-// channel a TC review is sent to; the only question allowed is which thread. A question that asks
-// WHICH group/room/channel/server is blocked outright — searching history does not unlock it,
-// because the answer is already in the project config.
+// Fixed TC-review destination (docs/sdd/tc-review-fixed-notify-channel R5). Each project has its
+// own TC-review channel; the projects below have theirs fixed in config, so for their tickets the
+// only question allowed is which thread. A question that asks WHICH group/room/channel/server is
+// blocked outright for them — searching history does not unlock it. Other projects (or a project
+// that cannot be read) are left to the search rule: their group is different and may be unknown.
+const FIXED_CHANNEL_PROJECTS = ['OLS'];
 const WHICH_GROUP_RE =
   /(?:กลุ่ม|ห้อง|แชนแนล|ช่อง(?!ทาง)|เซิร์ฟเวอร์|เซิฟ|server|channel|guild)\s*(?:ไหน|อะไร|ใด)|\b(?:which|what)\s+(?:discord\s+)?(?:channels?|servers?|groups?|guilds?)\b/i;
 const TC_REVIEW_RE = /tc[\s_-]*review|รีวิว\s*(?:เทส|test)\s*(?:เคส|case)|รีวิว\s*tc/i;
+const TICKET_KEY_RE = /\b([A-Z][A-Z0-9]+)-\d+\b/;
 
-/** True when any transcript line shows the tc-review skill or its slash command in this session. */
-function tcReviewRan(lines) {
-  if (!Array.isArray(lines)) return false;
-  for (const line of lines) {
+function projectOf(text) {
+  const m = typeof text === 'string' ? TICKET_KEY_RE.exec(text) : null;
+  return m ? m[1] : null;
+}
+
+/**
+ * Walks the transcript backwards over tc-review invocations (Skill tool calls and slash commands).
+ * ran = any invocation exists; project = the ticket-key project of the latest invocation that
+ * names one (null when none does).
+ */
+function tcReviewContext(lines) {
+  const out = { ran: false, project: null };
+  if (!Array.isArray(lines)) return out;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const line = lines[i];
     if (typeof line !== 'string' || !/tc-review/.test(line)) continue;
     let o;
     try {
@@ -62,16 +76,24 @@ function tcReviewRan(lines) {
       continue;
     }
     const parts = contentParts(o) || [];
-    if (o.type === 'assistant' && parts.some((p) => p.type === 'tool_use' && p.name === 'Skill' && /tc-review/.test(String(p.input && p.input.skill)))) {
-      return true;
-    }
-    if (o.type === 'user') {
+    let text = null;
+    if (o.type === 'assistant') {
+      const use = parts.find((p) => p.type === 'tool_use' && p.name === 'Skill' && /tc-review/.test(String(p.input && p.input.skill)));
+      if (use) text = String((use.input && use.input.args) || '');
+    } else if (o.type === 'user') {
       const c = o.message && o.message.content;
-      const text = typeof c === 'string' ? c : parts.filter((p) => p.type === 'text').map((p) => p.text).join('\n');
-      if (/<command-name>\/?[\w:-]*tc-review/.test(text) || /^\s*\/[\w:-]*tc-review\b/.test(text)) return true;
+      const t = typeof c === 'string' ? c : parts.filter((p) => p.type === 'text').map((p) => p.text).join('\n');
+      if (/<command-name>\/?[\w:-]*tc-review/.test(t) || /^\s*\/[\w:-]*tc-review\b/.test(t)) text = t;
+    }
+    if (text === null) continue;
+    out.ran = true;
+    const project = projectOf(text);
+    if (project) {
+      out.project = project;
+      return out;
     }
   }
-  return false;
+  return out;
 }
 
 /**
@@ -186,12 +208,14 @@ function decide(ctx) {
   }
   const signals = findSignals(text);
   const whichGroup = WHICH_GROUP_RE.test(text);
-  if (whichGroup && (TC_REVIEW_RE.test(text) || tcReviewRan(ctx.transcriptLines))) {
+  const tcCtx = whichGroup ? tcReviewContext(ctx.transcriptLines) : { ran: false, project: null };
+  const project = projectOf(text) || tcCtx.project;
+  if (whichGroup && (TC_REVIEW_RE.test(text) || tcCtx.ran) && FIXED_CHANNEL_PROJECTS.includes(project)) {
     return {
       decision: 'deny',
       state: 'fixed-destination',
       signals: [...signals, 'group'],
-      why: 'the TC-review notify channel is fixed in the project config — only the thread may be asked',
+      why: `the ${project} TC-review notify channel is fixed in the project config — only the thread may be asked`,
     };
   }
   if (signals.length === 0) {
@@ -221,10 +245,9 @@ function decide(ctx) {
 function denyMessage(result) {
   if (result.state === 'fixed-destination') {
     return (
-      '[ask-guard] บล็อกคำถามนี้ — ห้องส่งโนติผล TC review ถูกกำหนดตายตัวแล้ว ห้ามถามว่าส่งกลุ่ม/ห้อง/channel ไหน\n\n' +
+      '[ask-guard] บล็อกคำถามนี้ — ' + result.why + '\nห้องส่งโนติผล TC review ของโปรเจกต์นี้ถูกกำหนดแล้ว ห้ามถามว่าส่งกลุ่ม/ห้อง/channel ไหน (โปรเจกต์อื่นใช้กลุ่มของตัวเอง)\n\n' +
       'ห้องอยู่ใน config ของโปรเจกต์ (หัวข้อ TC review notify ใน project guide → ค่าจริงใน local secrets)\n' +
       '  · ถามได้เพียงข้อเดียว: จะให้ส่งใน "เธรด" ไหนของห้องนั้น\n' +
-      '  · config ไม่มีห้อง = หยุด Step 5 และแจ้งว่า config ขาด ห้ามถามหาห้องแทน\n' +
       'ที่มา: docs/sdd/tc-review-fixed-notify-channel/spec.md R2–R5'
     );
   }
@@ -266,5 +289,7 @@ module.exports = {
   denyMessage,
   WHICH_GROUP_RE,
   TC_REVIEW_RE,
-  tcReviewRan,
+  tcReviewContext,
+  projectOf,
+  FIXED_CHANNEL_PROJECTS,
 };
