@@ -23,8 +23,10 @@ unanchored impression. Every Need Improve item carries a "→ Suggest:" fix, sou
 data or the AC/EC wording, or marked "confirm with dev/PO". Never put an invented value in a suggestion. State plainly when a design source (Figma/PRD) could not be opened rather than
 guessing what it shows.
 
-Post the review in chat and get the user's go-ahead before sending it anywhere external. For an
-external send: never invent a channel, thread, or mention id — ask for the exact one; read the response
+Post the review in chat, then always notify it to the project's fixed TC-review channel (project config),
+whoever invoked the command. Never ask which server, group, or channel — ask only which thread of that
+channel; that answer is the go-ahead. No fixed channel in the config = stop and say so. For the send:
+never invent a thread or mention id; read the response
 back to confirm the destination and mentions before saying it is done; fix a wrong destination by
 delete-and-resend, and wrong content (correct destination) by editing in place.
 
