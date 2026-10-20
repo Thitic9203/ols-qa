@@ -706,6 +706,15 @@ After a retest-bug close-out (retest-bug-workflow Step 9), post a **retest-resul
 - Retest mode = single verdict headline + link to the Jira retest comment — **no** "pending review" wording, no Sheet tab (a retest bug is not tracked in the QA sheet).
 - Thread, webhook location, name→Discord-ID roster, and the @mention + User-Agent rules: reuse [ai-assisted-testing-template.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ai-assisted-testing-template.md) Stage 6 and local agent memory `reference_ols-discord-qa-notify`. **Webhook URL is a secret — never commit it here.**
 
+## TC review notify
+
+Fixed destination for **every** TC review (tc-review-workflow Step 5), whoever runs the skill — owner decision 2026-10-20.
+
+- Channel: `<TC_REVIEW_NOTIFY_CHANNEL>` in guild `<DISCORD_GUILD_ID>` — real ids in local secrets §6. **Never ask which group/channel**; `tools/ask-guard` blocks that question (state `fixed-destination`).
+- Ask only: which thread of that channel. Post with the channel's webhook + `?wait=true&thread_id=<thread>`; read back `channel_id` = the thread id.
+- Webhook URL: local secrets file `discord_webhook_tc_review_<thread>` (bound to `<TC_REVIEW_NOTIFY_CHANNEL>`; any thread of that channel works by changing `thread_id`). Never commit it.
+- Mention = the ticket's QA Owner (sheet tab `QA Owner` column → Discord id roster), never a fixed id.
+
 ## TC glossary (terminology source of truth)
 
 Thai wording used inside test case content. Rules: [tc-glossary.md](tc-glossary.md).

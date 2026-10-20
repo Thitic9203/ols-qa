@@ -42,6 +42,38 @@ const SIGNALS = [
   { id: 'endpoint', re: /\bendpoints?\b|\bhosts?\b/i },
 ];
 
+// Fixed TC-review destination (docs/sdd/tc-review-fixed-notify-channel R5). The owner fixed the
+// channel a TC review is sent to; the only question allowed is which thread. A question that asks
+// WHICH group/room/channel/server is blocked outright — searching history does not unlock it,
+// because the answer is already in the project config.
+const WHICH_GROUP_RE =
+  /(?:กลุ่ม|ห้อง|แชนแนล|ช่อง(?!ทาง)|เซิร์ฟเวอร์|เซิฟ|server|channel|guild)\s*(?:ไหน|อะไร|ใด)|\b(?:which|what)\s+(?:discord\s+)?(?:channels?|servers?|groups?|guilds?)\b/i;
+const TC_REVIEW_RE = /tc[\s_-]*review|รีวิว\s*(?:เทส|test)\s*(?:เคส|case)|รีวิว\s*tc/i;
+
+/** True when any transcript line shows the tc-review skill or its slash command in this session. */
+function tcReviewRan(lines) {
+  if (!Array.isArray(lines)) return false;
+  for (const line of lines) {
+    if (typeof line !== 'string' || !/tc-review/.test(line)) continue;
+    let o;
+    try {
+      o = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    const parts = contentParts(o) || [];
+    if (o.type === 'assistant' && parts.some((p) => p.type === 'tool_use' && p.name === 'Skill' && /tc-review/.test(String(p.input && p.input.skill)))) {
+      return true;
+    }
+    if (o.type === 'user') {
+      const c = o.message && o.message.content;
+      const text = typeof c === 'string' ? c : parts.filter((p) => p.type === 'text').map((p) => p.text).join('\n');
+      if (/<command-name>\/?[\w:-]*tc-review/.test(text) || /^\s*\/[\w:-]*tc-review\b/.test(text)) return true;
+    }
+  }
+  return false;
+}
+
 /**
  * Everything the owner reads in the popup: header, question, option labels and descriptions.
  * Returns null when the input does not have the documented shape — "cannot read the question"
@@ -153,7 +185,21 @@ function decide(ctx) {
     };
   }
   const signals = findSignals(text);
+  const whichGroup = WHICH_GROUP_RE.test(text);
+  if (whichGroup && (TC_REVIEW_RE.test(text) || tcReviewRan(ctx.transcriptLines))) {
+    return {
+      decision: 'deny',
+      state: 'fixed-destination',
+      signals: [...signals, 'group'],
+      why: 'the TC-review notify channel is fixed in the project config — only the thread may be asked',
+    };
+  }
   if (signals.length === 0) {
+    // A which-group question needs the transcript (did tc-review run?) before it can be allowed,
+    // so it must not report "no-signal", which check.js allows without reading the transcript.
+    if (whichGroup) {
+      return { decision: 'allow', state: 'group-unrelated', signals, why: 'which-group question outside TC review' };
+    }
     return { decision: 'allow', state: 'no-signal', signals, why: 'the question asks for no reference' };
   }
   const turn = scanTurn(ctx.transcriptLines);
@@ -173,6 +219,15 @@ function decide(ctx) {
 }
 
 function denyMessage(result) {
+  if (result.state === 'fixed-destination') {
+    return (
+      '[ask-guard] บล็อกคำถามนี้ — ห้องส่งโนติผล TC review ถูกกำหนดตายตัวแล้ว ห้ามถามว่าส่งกลุ่ม/ห้อง/channel ไหน\n\n' +
+      'ห้องอยู่ใน config ของโปรเจกต์ (หัวข้อ TC review notify ใน project guide → ค่าจริงใน local secrets)\n' +
+      '  · ถามได้เพียงข้อเดียว: จะให้ส่งใน "เธรด" ไหนของห้องนั้น\n' +
+      '  · config ไม่มีห้อง = หยุด Step 5 และแจ้งว่า config ขาด ห้ามถามหาห้องแทน\n' +
+      'ที่มา: docs/sdd/tc-review-fixed-notify-channel/spec.md R2–R5'
+    );
+  }
   const found = result.signals.length ? result.signals.join(', ') : '—';
   const head =
     `[ask-guard] บล็อกคำถามนี้ไว้ก่อน — คำถามขอข้อมูลอ้างอิงจากเจ้าของงาน (พบ: ${found}) ` +
@@ -209,4 +264,7 @@ module.exports = {
   scanTurn,
   decide,
   denyMessage,
+  WHICH_GROUP_RE,
+  TC_REVIEW_RE,
+  tcReviewRan,
 };

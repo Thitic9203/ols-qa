@@ -162,6 +162,37 @@ const ask = (question, header = 'h', options = []) => ({
   ok('#0059 replay: the same question passes once the history was searched', after.decision === 'allow');
 }
 
+// ============================================================ fixed TC-review destination (spec tc-review-fixed-notify-channel R5)
+{
+  const skillUse = (skill) =>
+    JSON.stringify({
+      type: 'assistant',
+      message: { role: 'assistant', content: [{ type: 'tool_use', id: 't9', name: 'Skill', input: { skill } }] },
+    });
+  const d = (q, lines) => rules.decide({ toolName: 'AskUserQuestion', toolInput: ask(q), transcriptLines: lines, override: null });
+
+  let r = d('จะให้ส่งโนติผลรีวิวเทสเคสไปที่กลุ่มไหนครับ', [prompt('go'), toolUse(SEARCH)]);
+  ok('R5: Thai which-group + TC review → deny even after a search', r.decision === 'deny' && r.state === 'fixed-destination', JSON.stringify(r));
+
+  r = d('Which Discord channel should the review go to?', [prompt('go'), skillUse('helix:tc-review'), toolUse(SEARCH)]);
+  ok('R5: English which-channel in a session that ran tc-review → deny', r.decision === 'deny' && r.state === 'fixed-destination', JSON.stringify(r));
+
+  r = d('ส่งโนติห้องไหนครับ', [prompt('/tc-review OLS-1'), skillUse('tc-review-workflow'), toolUse(SEARCH)]);
+  ok('R5: which-room with no TC word, tc-review-workflow ran → deny', r.decision === 'deny' && r.state === 'fixed-destination', JSON.stringify(r));
+
+  r = d('TC review: ส่งในเธรดไหนของห้องรีวิวครับ', [prompt('go'), toolUse(SEARCH)]);
+  ok('R5: a thread question is not blocked by the fixed-destination rule', r.state !== 'fixed-destination' && r.decision === 'allow', JSON.stringify(r));
+
+  r = d('ส่งผล smoke ไปช่องไหนครับ', [prompt('go'), toolUse(SEARCH)]);
+  ok('R5: which-channel with no TC review anywhere → not this rule', r.state !== 'fixed-destination', JSON.stringify(r));
+
+  const quick = d('ส่งโนติกลุ่มไหนครับ', []);
+  ok('R5: a which-group question is not waved through before the transcript is read', quick.state !== 'no-signal', JSON.stringify(quick));
+  const fixed = d('ส่งโนติรีวิวเทสเคสกลุ่มไหน', []);
+  ok('R5: deny message says the channel is fixed and to ask only for the thread',
+    fixed.state === 'fixed-destination' && /เธรด/.test(rules.denyMessage(fixed)), JSON.stringify(fixed));
+}
+
 // ============================================================ on disk: check.js --gate
 const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'ask-guard-test-'));
 try {
@@ -196,6 +227,10 @@ try {
 
   r = gate(payload({ tool_name: 'Bash', tool_input: { command: 'ls' } }));
   ok('gate on disk: other tool → exit 0', r.status === 0, `status=${r.status}`);
+
+  fs.writeFileSync(transcript, [prompt('/tc-review OLS-1'), JSON.stringify({ type: 'assistant', message: { role: 'assistant', content: [{ type: 'tool_use', id: 'k', name: 'Skill', input: { skill: 'tc-review-workflow' } }] } }), toolUse(SEARCH), ''].join('\n'));
+  r = gate(payload({ tool_input: ask('ส่งโนติกลุ่มไหนครับ') }));
+  ok('gate on disk: which-group after tc-review ran → exit 2 (fixed destination)', r.status === 2 && /เธรด/.test(r.stderr), `status=${r.status}`);
 
   r = gate(payload({ tool_input: ask('จะให้แก้ไหมครับ'), transcript_path: path.join(TMP, 'missing.jsonl') }));
   ok('gate on disk: no-signal question never touches the transcript → exit 0', r.status === 0, `status=${r.status}`);
