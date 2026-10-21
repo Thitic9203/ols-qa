@@ -12,10 +12,10 @@ Collect these before any Playwright run.
 - Full base URL for the environment under test (e.g. `https://portal.example.com`).
 - Not the Jira URL — the **application** URL.
 
-## User / Password
+## User (account only — no password)
 
-- Portal login. Use `guest` + `—` when the ticket is explicitly unauthenticated.
-- Never echo the password back in summaries; show `password provided (not shown)`.
+- The test account (username/email). Use `guest` when the ticket is explicitly unauthenticated.
+- Never ask for, accept, store, or fill a password. If the user pastes one, do not use or echo it. A fresh login is the main thread's one login window with the email prefilled — the person types the password ([WORKFLOW.md](../WORKFLOW.md) *Login reuse*).
 
 ## VPN
 
@@ -35,4 +35,4 @@ Collect these before any Playwright run.
 
 ## Confirmation gate
 
-The agent must show all seven fields (or explicit `none`) plus a derived test plan and receive **confirm** before Playwright starts.
+The agent must show all six fields (or explicit `none`) plus a derived test plan and receive **confirm** before Playwright starts.

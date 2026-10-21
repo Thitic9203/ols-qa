@@ -30,9 +30,9 @@ Save as `references/{project-name}-retest-guide.md` in the **user's workspace**.
 
 > Test/staging only — never production secrets in committed files.
 
-| Portal | Username | Password |
-|--------|----------|----------|
-| Admin | `test@example.com` | *(from env or user)* |
+| Portal | Username | Session |
+|--------|----------|---------|
+| Admin | `test@example.com` | saved login file; a fresh login is one prefilled-email window — the person types the password, it is never stored or filled |
 
 ## API architecture
 

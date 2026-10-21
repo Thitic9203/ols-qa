@@ -7,7 +7,7 @@
 
 - Ticket: `PROJ-501`
 - URL: `https://app.staging.example.com`
-- User / password: test role (session-only)
+- User: test role account (saved session; no password collected)
 - VPN: Not required
 - Confluence / Swagger: none
 
