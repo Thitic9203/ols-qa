@@ -26,8 +26,8 @@ log ของ keepalive แสดง `e2e-touch summary ok=7` ตอน VPN ต�
 
 | เวลา (+07) | เหตุการณ์ |
 |---|---|
-| 2026-10-21 ~10:00 | `grep -c "state/dev_" session_keepalive_dev.sh` = 0 → รายงานว่า "ไม่มี" |
-| ~13:00 | เจ้าของงานใส่ข้อนี้ในเป้าหมาย · เปิดไฟล์จะแก้ เห็น `e2e_state_touch.js` และ log `ok=7` · แก้ข้อความในแชท |
+| 2026-10-21 10:02:50 | `grep -c "state/dev_" session_keepalive_dev.sh` = 0 → รายงานว่า "ไม่มี" |
+| 13:00:12 | เจ้าของงานใส่ข้อนี้ในเป้าหมาย · เปิดไฟล์จะแก้ เห็น `e2e_state_touch.js` และ log `ok=7` · แก้ข้อความในแชท |
 
 ## 3. สาเหตุโดยละเอียด (Root Cause Analysis)
 
