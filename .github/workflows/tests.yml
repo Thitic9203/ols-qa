@@ -86,3 +86,20 @@ jobs:
           # starts erroring, four layers go quiet at once and nothing else would say so.
           test -x .claude/hooks/postmortem-debt.sh
           CLAUDE_PROJECT_DIR="$PWD" bash .claude/hooks/postmortem-debt.sh
+
+  sdd-gate:
+    # Spec: docs/sdd/sdd-commit-gate — every feat/fix/test/refactor commit on a PR must cite
+    # docs/sdd/<slug>/ with spec.md, plan.md and tasks.md already on the base branch.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: SDD commit gate
+        run: node tools/sdd-gate/check.js --base "origin/${{ github.base_ref }}"
