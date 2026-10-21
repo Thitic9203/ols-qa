@@ -137,7 +137,7 @@ verdict (§8); preflight the session before believing any result (§9).
 
 MUST refuse to reach Phase B until **Ticket** and **URL** are provided — because the test plan has no target.
 
-**Pre-flight login smoke gate (mandatory before Phase B).** Before running any scenario, verify that login **actually succeeds** for **only the role(s)/credential set(s) this run's scenarios will actually use** — not every role the project has. Read the run's scenarios to determine which roles are in scope; a single-role run logs in that one role, a multi-role run logs in each role it uses, nothing more. Reuse the saved login file per role first ([round-time-contract.md §5](../../../references/round-time-contract.md)); drive the real login (headless where supported) only when the file is missing or fails the session check, and confirm an authenticated signal (redirect to an authed area, a session/`me` endpoint, or a logged-in UI marker). Produce a pass/fail table for the in-scope roles.
+**Pre-flight login smoke gate (mandatory before Phase B).** Before running any scenario, verify that login **actually succeeds** for **only the role(s)/credential set(s) this run's scenarios will actually use** — not every role the project has. Read the run's scenarios to determine which roles are in scope; a single-role run logs in that one role, a multi-role run logs in each role it uses, nothing more. Reuse the saved login file per role first ([round-time-contract.md §5](../../../references/round-time-contract.md)); when the file is missing or fails the session check, restore it by ready-to-run command (*Fresh login* below), never by opening a login window, and confirm an authenticated signal (redirect to an authed area, a session/`me` endpoint, or a logged-in UI marker). Produce a pass/fail table for the in-scope roles.
 - **All in-scope roles pass →** proceed to Phase B.
 - **Any in-scope role fails →** 🛑 stop, report which role failed and why (backend error, VPN, bad creds), and do **not** start testing until it is cleared or the user explicitly says to skip the failing role. Never mark scenarios PASSED when auth was never verified.
 
@@ -163,7 +163,7 @@ Collect these **six** items (one grouped message when possible; skip fields alre
 |-------|----------|-----------------|
 | **Ticket** | Yes | Jira key or browse URL |
 | **URL** | Yes | Application under test |
-| **User** | Yes* | Test account — username/email only (*`guest` if no login). Never ask for or accept a password: a fresh login is the one prefilled-email window where the person types it (*Login reuse*) |
+| **User** | Yes* | Test account — username/email only (*`guest` if no login). Never ask for or accept a password: a dead session is restored by ready-to-run relink/mint commands the user runs (*Fresh login*). Also record the relink/mint command templates when the project guide names none |
 | **VPN** | Yes | `Required` / `Not required` + note |
 | **Confluence** | No | Page URL or `none` |
 | **Swagger** | No | OpenAPI URL or `none` |
@@ -243,7 +243,7 @@ end decisions popup, where the user can correct it; a correction there starts a 
 ━━━ Testing ticket — plan (running now) ━━━
 Ticket:      {KEY} — {one-line summary}
 URL:         {url}
-Login:       {user} — saved session; fresh login = one prefilled-email window, the person types the password
+Login:       {user} — saved session; dead session = ready-to-run relink/mint commands the user runs, then Claude probes
 VPN:         {required|not required} — {note}
 Confluence:  {url or none}
 Swagger:     {url or none}
@@ -290,12 +290,19 @@ redirect to login, or a different user, a lane stops that account's cases and re
 `SESSION-DEAD {account tag}` — it never logs in itself. One account belongs to one lane and is never
 shared across concurrent sessions.
 
-**Fresh login = main thread, one login window at a time**
-([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3 *Dead session*): pick lane
-accounts whose sessions are live first; for a dead account try the no-password recovery from the
-project guide; only if it is still dead and needed, open a single window for that one account with
-the email already filled — the person types only the password — and verify and save it before any
-other window. Never a window per lane, per row range, or for an account the run does not use.
+**Fresh login = main thread, login by command**
+([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3 *Dead session*). Pick lane accounts whose sessions are live first.
+Claude never opens a browser, login window or sign-in page, and never drives a login form, for any test account, whether on the main thread or in a lane (spec: login-by-command). Instead the main thread gives the user **ready-to-run commands** in chat, **one `bash` block per command**, built from the intake answers (`<project-dir>`, `<env>`, `<account>` and the relink/mint command names from the project guide or intake). The user presses Run, and Claude never runs them itself:
+
+1. **Relink.** One block per needed account whose session is not live. This step uses no password:
+   ```bash
+   cd <project-dir> && <relink-command> --env <env> --account <account>
+   ```
+2. **Setup/mint.** Only for each account whose relink came back **FAILED**, one block for that account alone. The user types any secret in their own terminal:
+   ```bash
+   cd <project-dir> && <mint-command> --env <env> --account <account>
+   ```
+3. **Probe.** When the user says the commands have run, Claude calls the session endpoint for each account, expects that account's user id, and reports account → OK / FAILED with the reason. An account still FAILED blocks only its cases, which are reported BLOCKED ("session not restored") and never PASSED.
 
 **In a parallel run the session preflight runs per lane**, inside each lane, and records the
 authenticated user id — the parent accepts a lane's results only when that id matches the lane's
@@ -404,7 +411,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 |------|---------|
 | MUST NOT open Jira/GitHub bugs in this workflow | Use create-bug-workflow |
 | MUST run the plan in parallel lanes whenever it has 2+ units, one leased account per lane, lane count = min(units, leasable accounts) with no fixed cap, unless a [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §4 predicate is named | Shortest run time with no shared login — a shared account ends sessions and shares state, producing false defects |
-| NEVER let a lane open a login window — it returns `SESSION-DEAD`; the main thread tries no-password recovery, then opens one login window at a time, email prefilled ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3) | Lanes that logged in by themselves popped a chain of login windows at the person (owner 2026-10-21) |
+| NEVER open a browser or login window for a test account (main thread or lane) — a lane returns `SESSION-DEAD`; the main thread gives ready-to-run commands, one `bash` block each (relink every needed account → setup/mint only the FAILED ones), then probes ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3) | Login windows popped a chain of windows at the person; owner order 2026-10-21: login by command, as in the e2e suite |
 | MUST enumerate **every** AC/EC line char-exact in Phase B, map each id 1:1 to a scenario, and reconcile `enumerated ids == rowed-and-verdicted rows` before Phase F ends (7-layer coverage gate in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md)) | The run's scope is the ticket's AC/EC contract; an unenumerated or unmapped AC is silently untested |
 | MUST record **every** AC/EC result as its own row in F2 — NEVER park an untested/failing AC/EC point in a remark, Notes cell, note under the table, or chat while the case reads PASSED | A card was passed on partial AC/EC coverage with the gap footnoted in a remark; coverage is proven by rows, not prose beside them |
 | MUST NOT mark a case PASSED on partial coverage — an AC/EC id **observed to differ** is a FAILED/PWMI row (severity per the matrix); an **unrun/unreachable** id is a BLOCKED row (a coverage gap, never a product FAILED); neither is a PASS and neither is dropped | "Works except one point" hidden as a caveat reads as a clean pass to everyone downstream; and calling a merely-untested item FAILED contradicts "a coverage gap is not a defect" |

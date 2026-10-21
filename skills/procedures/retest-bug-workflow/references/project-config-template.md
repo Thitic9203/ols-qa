@@ -32,7 +32,17 @@ Save as `references/{project-name}-retest-guide.md` in the **user's workspace**.
 
 | Portal | Username | Session |
 |--------|----------|---------|
-| Admin | `test@example.com` | saved login file; a fresh login is one prefilled-email window — the person types the password, it is never stored or filled |
+| Admin | `test@example.com` | saved login file; a dead session is restored by the relink / mint commands below, which the user runs. A password is never stored or filled |
+
+### Session restore commands (login by command)
+
+Claude never opens a login window. It shows each command to the user as its own `bash` block, and the user presses Run.
+
+| Step | Template |
+|------|----------|
+| Relink (no password; every needed account) | `cd <project-dir> && <relink-command> --env <env> --account <account>` |
+| Setup/mint (only accounts whose relink FAILED) | `cd <project-dir> && <mint-command> --env <env> --account <account>` |
+| Probe (Claude runs it) | `<session endpoint>` returns the account's user id |
 
 ## API architecture
 

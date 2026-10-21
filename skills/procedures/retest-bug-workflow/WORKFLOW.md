@@ -181,7 +181,7 @@ Ask **one question at a time** using `references/project-config-template.md` sec
 - Jira domain, ticket prefix
 - Environments + base URLs + Swagger paths
 - Portals, login URLs, login method
-- Test accounts (username/email only — a password is never collected, stored, or filled; the person types it in the one login window)
+- Test accounts (username/email only — a password is never collected, stored, or filled; a dead session is restored by ready-to-run relink/mint commands the user runs; record their templates (`<project-dir>`, `<env>`, `<account>`) when the guide names none)
 - Optional error docs, transitions, gotchas
 
 Write `references/{project}-retest-guide.md` in the user's repo and tell them where it was saved.
@@ -433,7 +433,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 |------|---------|
 | MUST read project config before testing | No hardcoded env URLs |
 | MUST run the case list in parallel lanes, one leased account per lane, unless a [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §4 predicate is named | Shortest retest time with no shared login — a shared account ends sessions and shares state, producing false defects |
-| NEVER let a lane open a login window — it returns `SESSION-DEAD`; the main thread tries no-password recovery, then opens one login window at a time, email prefilled ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3) | Lanes that logged in by themselves popped a chain of login windows at the person (owner 2026-10-21) |
+| NEVER open a browser or login window for a test account (main thread or lane) — a lane returns `SESSION-DEAD`; the main thread gives ready-to-run commands, one `bash` block each (relink every needed account → setup/mint only the FAILED ones), then probes ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3) | Login windows popped a chain of windows at the person; owner order 2026-10-21: login by command, as in the e2e suite |
 | MUST include full cURL/response per API case | Evidence must stand alone |
 | MUST treat Swagger (+ error docs) over stale ticket text | Ticket may be wrong |
 | MUST use exactly one of **PASSED ✅** / **FAILED ❌** / **BLOCKED ⛔** / **PWMI ⚠️** in the summary line — the round's real verdict; a round nobody could reach reads BLOCKED, never FAILED | Scanability for dev/QA; a coverage gap is not a defect (`SUMMARY_VERDICTS` in `retest_rules.js`) |

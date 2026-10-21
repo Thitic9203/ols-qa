@@ -34,7 +34,7 @@ Terms used across Helix skills. For install, menu, and versioning see [README.md
 
 | Term | Meaning |
 |------|---------|
-| **Intake** | Ticket, URL, User, Password, VPN, Confluence, Swagger |
+| **Intake** | Ticket, URL, User (account only, never a password), VPN, Confluence, Swagger |
 | **Confirm gate** | User approves summary before Playwright |
 | **Result update** | Optional destination link + columns + verify |
 
