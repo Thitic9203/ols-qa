@@ -2,7 +2,7 @@
 'use strict';
 
 /**
- * Tests for the login-window rule lint (docs/sdd/single-login-window R1–R4).
+ * Tests for the login-window rule lint (docs/sdd/single-login-window R2/R10/R11, login-by-command R11).
  * Known-answer pairs first (must find · must not find), then the real repo files.
  *
  *   node tools/login-window-rule/check.test.js
@@ -19,7 +19,7 @@ function t(name, fn) {
   catch (e) { failed++; console.log(`  FAIL ${name} — ${e.message}`); }
 }
 const ids = (fs) => fs.map((f) => f.id).sort();
-const GOOD = 'On 401 return SESSION-DEAD <tag> to the parent. The main thread opens one login window at a time.';
+const GOOD = 'On 401 return SESSION-DEAD <tag> to the parent. The main thread gives a ready-to-run command per account and never opens a login window.';
 
 t('old lane text "log in fresh and overwrite the file" is found (must find)', () => {
   const f = checkText(GOOD + '\non 401/403, a login redirect, or another user, log in fresh and\noverwrite the file.', 'x.md');
@@ -50,12 +50,29 @@ t('R10 compliant wording is not flagged (must not find)', () => {
   assert.deepStrictEqual(checkText(ok, 'x.md', { required: false }), []);
 });
 
+t('login-by-command: "opens one login window" is found (must find)', () => {
+  assert.deepStrictEqual(ids(checkText('The main thread opens a single login window for that account.', 'x.md', { required: false })), ['OPENS_LOGIN_WINDOW']);
+});
+t('login-by-command: "open the sign-in page" is found (must find)', () => {
+  assert.deepStrictEqual(ids(checkText('Then open the sign-in page and wait.', 'x.md', { required: false })), ['OPENS_LOGIN_WINDOW']);
+});
+t('login-by-command: negated "never opens a login window" is not flagged (must not find)', () => {
+  assert.deepStrictEqual(checkText('Claude never opens a login window. A lane does not open a sign-in page.', 'x.md', { required: false }), []);
+});
+t('login-by-command: old one-window rule, prefilled window, drive login are found (must find)', () => {
+  const txt = 'opens nothing\nKeep one login window at a time.\nA prefilled-email window.\nDrive the real login when missing.';
+  assert.deepStrictEqual(ids(checkText(txt, 'x.md', { required: false })), ['DRIVE_LOGIN', 'OLD_ONE_WINDOW_RULE', 'PREFILLED_WINDOW']);
+});
+t('login-by-command: missing ready-to-run command marker is reported (must find)', () => {
+  assert.deepStrictEqual(ids(checkText('SESSION-DEAD only', 'x.md')), ['NO_LOGIN_BY_COMMAND']);
+});
+
 t('compliant text has no finding (must not find)', () => {
   assert.deepStrictEqual(checkText(GOOD, 'x.md'), []);
 });
 
 t('missing SESSION-DEAD and one-window rule are both reported', () => {
-  assert.deepStrictEqual(ids(checkText('nothing here', 'x.md')), ['NO_ONE_WINDOW_RULE', 'NO_SESSION_DEAD']);
+  assert.deepStrictEqual(ids(checkText('nothing here', 'x.md')), ['NO_LOGIN_BY_COMMAND', 'NO_SESSION_DEAD']);
 });
 
 t('unreadable root is reported as unreadable, not a pass', () => {
@@ -63,7 +80,7 @@ t('unreadable root is reported as unreadable, not a pass', () => {
   assert.ok(r.unreadable, 'expected unreadable');
 });
 
-t('repo skill files follow the one-login-window rule', () => {
+t('repo skill files follow the login-by-command rule', () => {
   const r = checkRepo(path.resolve(__dirname, '..', '..'));
   assert.ok(!r.unreadable, r.unreadable);
   assert.deepStrictEqual(r.findings.map((f) => `${f.file}:${f.line} ${f.id}`), []);
