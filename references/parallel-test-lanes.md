@@ -102,10 +102,26 @@ shared, a rate limit trips, a one-time code is consumed by the other lane.
 | Two units need the same role, pool has two accounts of that role | Two lanes, one account each |
 | Two units need the same role, pool has **one** account | Both units go in **one** lane, run in order |
 | Accounts share one OTP inbox / phone | **Parent pre-login:** before dispatch, the parent logs each of those leased accounts in one at a time (reading only the code issued after that request), saves each account's login file `{env}-{role}-{alias}.json` in the guide's auth dir (named by account, not by lane), then dispatches all lanes at once — each lane points at its leased account's file |
-| Saved login file exists from an earlier run | Load it, call the session endpoint, expect the leased user id. On 401/403, a redirect to login, or a different user → log in fresh and overwrite the file ([round-time-contract.md §5](round-time-contract.md#5-login-reuse-per-operator-across-runs)) |
+| Saved login file exists from an earlier run | Load it, call the session endpoint, expect the leased user id. On 401/403, a redirect to login, or a different user → the lane hands back `SESSION-DEAD {account tag}` and the parent recovers it (*Dead session* below; [round-time-contract.md §5](round-time-contract.md#5-login-reuse-per-operator-across-runs)) |
 | App is single-session per account | Already covered by the lease — never re-use a leased account in a second context |
 | Scenario needs a fresh / pre-first-use account | That account is leased to that lane only and is consumed — record it in the lease table |
 | Pool too small for the plan | Fewer lanes, never shared accounts. Ask the user for more accounts only if it changes the lane count |
+
+**Dead session → one login window at a time, main thread only.** A lane never opens a login window,
+types credentials, or runs the login tool — lanes logging in by themselves pop a chain of windows at
+the person. On 401/403, a redirect to login, or a different user, the lane stops that account's cases
+and returns `SESSION-DEAD {account tag}`. The parent then:
+
+1. tries the workspace's no-password recovery first (the session relink named in the project guide);
+2. only if the account is still dead **and** the run still needs it, opens **one login window at a
+   time**: one account, email already filled, cursor in the password field — the person types only
+   the password. It waits until that sign-in is verified (session endpoint returns the expected user
+   id) and the login file is saved before opening any other window. Never a window per row range, per
+   lane, or for an account the run does not use;
+3. re-dispatches that lane's remaining cases.
+
+When choosing lane accounts, prefer accounts whose sessions are live now, so the run needs as few
+windows as possible — none when enough live accounts exist.
 
 **Proof of isolation (mandatory per lane).** Each lane's session preflight records the authenticated
 user id from the app's own session endpoint — **one id per leased account** when the lane holds more
@@ -152,8 +168,9 @@ these accounts. Do not log in with any other.
 Browser context: own context, started from the leased account's login file
 {auth dir}/{env}-{role}-{alias}.json (pre-logged-in by the parent when the account shares an OTP
 inbox — start from it, do not request a new code). Before any result counts, call the session
-endpoint and expect {user id}; on 401/403, a login redirect, or another user, log in fresh and
-overwrite the file.
+endpoint and expect {user id}; on 401/403, a login redirect, or another user, STOP that account's
+cases and return SESSION-DEAD {account tag}. Never open a login window, type credentials, or run the
+login tool yourself — the parent opens one login window at a time.
 Session lease: if the workspace provides a session-lease tool ({lease tool from guide}), acquire the
 lease on {account tag} BEFORE loading the login file — holder "{Lx} {round id}", TTL longer than the
 run — renew the lease before it expires, and release the lease with the same holder in finally (on
@@ -224,6 +241,7 @@ Then continue with the calling workflow's summary / comment step as a single mer
 | Rule | Because |
 |------|---------|
 | MUST default to parallel lanes and name a §4 predicate to run serial | Serial-by-habit is the main cost of long ticket runs |
+| NEVER let a lane open a login window — it returns `SESSION-DEAD`; the parent tries no-password recovery, then opens one login window at a time, email prefilled | Lanes that logged in by themselves popped a chain of login windows at the person (owner 2026-10-21) |
 | MUST lease each account to exactly one lane | A shared login ends sessions and shares state — false defects |
 | MUST keep shared-record and multi-role scenarios in one lane, in order | Concurrent edits of one record race |
 | MUST check each lane's authenticated user id against the lease | Proves no collision happened |

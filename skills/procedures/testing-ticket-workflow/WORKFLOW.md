@@ -287,14 +287,22 @@ results.
 **Login reuse** ([round-time-contract.md §5](../../../references/round-time-contract.md)): load the saved
 login file for the account (`{auth dir from guide}/{env}-{role}-{alias}.json`, named by account, not by
 lane, gitignored), then call the session endpoint and expect the account's user id. On 401/403, a
-redirect to login, or a different user → log in fresh and overwrite the file. One account belongs to
-one lane and is never shared across concurrent sessions.
+redirect to login, or a different user, a lane stops that account's cases and returns
+`SESSION-DEAD {account tag}` — it never logs in itself. One account belongs to one lane and is never
+shared across concurrent sessions.
+
+**Fresh login = main thread, one login window at a time**
+([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3 *Dead session*): pick lane
+accounts whose sessions are live first; for a dead account try the no-password recovery from the
+project guide; only if it is still dead and needed, open a single window for that one account with
+the email already filled — the person types only the password — and verify and save it before any
+other window. Never a window per lane, per row range, or for an account the run does not use.
 
 **In a parallel run the session preflight runs per lane**, inside each lane, and records the
 authenticated user id — the parent accepts a lane's results only when that id matches the lane's
 leased account ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3).
 
-**Go back:** If **Ready to run** is not YES — session user, build id or environment missing — fix the cause and return to the start of Phase D. A lane whose authenticated user id does not match its leased account logs in fresh (*Login reuse*) and re-runs its preflight before its results count.
+**Go back:** If **Ready to run** is not YES — session user, build id or environment missing — fix the cause and return to the start of Phase D. A lane whose authenticated user id does not match its leased account returns `SESSION-DEAD` (*Login reuse*); the main thread recovers that account and the lane re-runs its preflight before its results count.
 
 ---
 
@@ -397,6 +405,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 |------|---------|
 | MUST NOT open Jira/GitHub bugs in this workflow | Use create-bug-workflow |
 | MUST run the plan in parallel lanes whenever it has 2+ units, one leased account per lane, lane count = min(units, leasable accounts) with no fixed cap, unless a [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §4 predicate is named | Shortest run time with no shared login — a shared account ends sessions and shares state, producing false defects |
+| NEVER let a lane open a login window — it returns `SESSION-DEAD`; the main thread tries no-password recovery, then opens one login window at a time, email prefilled ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3) | Lanes that logged in by themselves popped a chain of login windows at the person (owner 2026-10-21) |
 | MUST enumerate **every** AC/EC line char-exact in Phase B, map each id 1:1 to a scenario, and reconcile `enumerated ids == rowed-and-verdicted rows` before Phase F ends (7-layer coverage gate in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md)) | The run's scope is the ticket's AC/EC contract; an unenumerated or unmapped AC is silently untested |
 | MUST record **every** AC/EC result as its own row in F2 — NEVER park an untested/failing AC/EC point in a remark, Notes cell, note under the table, or chat while the case reads PASSED | A card was passed on partial AC/EC coverage with the gap footnoted in a remark; coverage is proven by rows, not prose beside them |
 | MUST NOT mark a case PASSED on partial coverage — an AC/EC id **observed to differ** is a FAILED/PWMI row (severity per the matrix); an **unrun/unreachable** id is a BLOCKED row (a coverage gap, never a product FAILED); neither is a PASS and neither is dropped | "Works except one point" hidden as a caveat reads as a clean pass to everyone downstream; and calling a merely-untested item FAILED contradicts "a coverage gap is not a defect" |

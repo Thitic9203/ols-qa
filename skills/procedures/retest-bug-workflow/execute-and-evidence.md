@@ -58,13 +58,20 @@ From config: base URL, portal, login URL for the env on the ticket.
 
 ### 4b. Login
 
-Use browser automation: navigate to login URL, fill credentials from config (or env vars the user provides). OTP/SSO per config. If blocked → ask user for a bearer token.
+**Main thread only, one login window at a time**
+([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3 *Dead session*). Pick lane
+accounts whose sessions are live first. When an account needs a fresh login, try the no-password
+recovery from the project guide first; only if it is still dead and needed, open a single window for
+that one account with the email already filled — the person types only the password — and verify
+and save it before any other window. Never a window per lane, per row range, or for an account the
+run does not use. OTP/SSO per config. If blocked → ask user for a bearer token.
 
 **Login reuse** ([round-time-contract.md](../../../references/round-time-contract.md) §5): first load
 the saved login file `{auth dir from guide}/{env}-{role}-{alias}.json` — named by account, not by lane,
 gitignored — and call the session endpoint **before any result counts**; it must return the expected
-user id. On 401/403, a redirect to login, or a different user → log in fresh as above and overwrite the
-file. One account belongs to one lane, never shared across concurrent sessions.
+user id. On 401/403, a redirect to login, or a different user, a lane stops that account's cases and
+returns `SESSION-DEAD {account tag}` — it never logs in itself; the main thread recovers the account as
+above and overwrites the file. One account belongs to one lane, never shared across concurrent sessions.
 
 ### 4c. Test data
 
