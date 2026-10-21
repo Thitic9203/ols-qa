@@ -1,5 +1,7 @@
 # Spec — Story/Bug test skills: one login window at a time, email prefilled
 
+> **Superseded in part (21/Oct/2026):** R1 (window part), R3 (window part), R4 and the window clause of R10 are replaced by [login-by-command](../login-by-command/spec.md). Claude never opens a login window. It gives ready-to-run relink/mint commands and then probes the session.
+
 **Owner request:** 21/Oct/2026 — "แก้สกิลเทส story, bug ให้เด้ง login แค่หน้าเดียวและใส่อีเมลให้ รอผู้ใช้ใส่แค่รหัสผ่าน ไม่ใช่เด้งวนลูปมาหลายอัน". Scope chosen the same turn: fix both the skills (ols-qa) and the login tool (ols-qa-testing-bot).
 
 ## Why (measured 21/Oct/2026)
