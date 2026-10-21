@@ -31,6 +31,25 @@ t('"log in fresh as above and overwrite the file" is found (must find)', () => {
   assert.deepStrictEqual(ids(f), ['LANE_LOGS_IN']);
 });
 
+t('R10 password intake row is found (must find)', () => {
+  assert.deepStrictEqual(ids(checkText('| **Password** | Yes* | (*`—` if no login) |', 'x.md', { required: false })), ['PASSWORD_INTAKE']);
+});
+t('R10 "Fill login from intake" is found (must find)', () => {
+  assert.deepStrictEqual(ids(checkText('- Fill login from Phase A intake only.', 'x.md', { required: false })), ['FILL_LOGIN']);
+});
+t('R10 Password column and User / Password heading are found (must find)', () => {
+  assert.deepStrictEqual(ids(checkText('## User / Password\n| Portal | Username | Password |', 'x.md', { required: false })),
+    ['PASSWORD_COLUMN', 'USER_PASSWORD_HEADING']);
+});
+t('R10 "collect … credentials" is found (must find)', () => {
+  assert.deepStrictEqual(ids(checkText('collect Ticket, URL, credentials, VPN', 'x.md', { required: false })), ['COLLECT_CREDENTIALS']);
+});
+t('R10 compliant wording is not flagged (must not find)', () => {
+  const ok = '| **Account** | Yes* | username/email only |\n- Never fill a password; the person types it in the one window.\n' +
+    'the person types only the password';
+  assert.deepStrictEqual(checkText(ok, 'x.md', { required: false }), []);
+});
+
 t('compliant text has no finding (must not find)', () => {
   assert.deepStrictEqual(checkText(GOOD, 'x.md'), []);
 });

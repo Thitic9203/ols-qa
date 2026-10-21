@@ -146,7 +146,7 @@ time** per round, human wait reported on its own line and never counted, and a *
 mid-run: decisions are queued for the end-of-round popups at Step 6d (§2–§3). The round report (Step 8e)
 **ends with the `Round time:` line**, measured from session timestamps, never estimated (§1).
 
-Use plain chat for URLs/credentials; AskUserQuestion only for choices (e.g. approve comment).
+Use plain chat for URLs/accounts (never a password); AskUserQuestion only for choices (e.g. approve comment).
 
 ## Refusal-first (precondition gate)
 
@@ -181,7 +181,7 @@ Ask **one question at a time** using `references/project-config-template.md` sec
 - Jira domain, ticket prefix
 - Environments + base URLs + Swagger paths
 - Portals, login URLs, login method
-- Test credentials (never commit production secrets)
+- Test accounts (username/email only — a password is never collected, stored, or filled; the person types it in the one login window)
 - Optional error docs, transitions, gotchas
 
 Write `references/{project}-retest-guide.md` in the user's repo and tell them where it was saved.

@@ -42,5 +42,5 @@ If the workspace has Playwright E2E:
 
 ## Session credentials
 
-- Fill login from Phase A intake only.
+- Never fill a password field. Start each context from the account's saved login file; a fresh login is the main thread's one prefilled-email window ([WORKFLOW.md](../WORKFLOW.md) *Login reuse*).
 - Do not commit credentials to spec files or guides.

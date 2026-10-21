@@ -157,14 +157,13 @@ Then follow [workspace-guide-discovery.md](../../../references/workspace-guide-d
 
 ## Phase A — Session intake (mandatory) [medium freedom]
 
-Collect these **seven** items (one grouped message when possible; skip fields already on the one-pager as done):
+Collect these **six** items (one grouped message when possible; skip fields already on the one-pager as done):
 
 | Field | Required | What to collect |
 |-------|----------|-----------------|
 | **Ticket** | Yes | Jira key or browse URL |
 | **URL** | Yes | Application under test |
-| **User** | Yes* | Login (*`guest` if no login) |
-| **Password** | Yes* | (*`—` if no login) |
+| **User** | Yes* | Test account — username/email only (*`guest` if no login). Never ask for or accept a password: a fresh login is the one prefilled-email window where the person types it (*Login reuse*) |
 | **VPN** | Yes | `Required` / `Not required` + note |
 | **Confluence** | No | Page URL or `none` |
 | **Swagger** | No | OpenAPI URL or `none` |
@@ -244,7 +243,7 @@ end decisions popup, where the user can correct it; a correction there starts a 
 ━━━ Testing ticket — plan (running now) ━━━
 Ticket:      {KEY} — {one-line summary}
 URL:         {url}
-Login:       {user} / password provided (not shown)
+Login:       {user} — saved session; fresh login = one prefilled-email window, the person types the password
 VPN:         {required|not required} — {note}
 Confluence:  {url or none}
 Swagger:     {url or none}
