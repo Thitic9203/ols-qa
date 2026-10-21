@@ -19,6 +19,9 @@
 - **R8** — Existing guards stay: accounts only from the live sheet, plan file gate, retired accounts never opened, never types a password, sign-in opened at the OLS app (`?signIn=1`).
 - **R9** — Skill text stays generic (portable-content rules): no hosts, emails, or local paths.
 
+- **R10** — (21/Oct/2026 catch-ai, owner popup "แก้ ทุกโปรเจกต์") No Story/Bug skill step may ask for, accept, store, or fill a password, for any project: intake collects the **account** (username/email) only; Playwright never fills a password field; a fresh login is the R4 window. A password the user volunteers in chat is not used and not echoed. Project config templates hold accounts and login method, never a password column.
+- **R11** — The login-window lint must also fail on a password intake row, a "fill login/credentials" instruction, or a Password column in the skill files and templates of both skills.
+
 ## Edge cases
 
 - All needed accounts live → zero windows.
@@ -31,3 +34,5 @@
 
 - Testing-bot: `tests/test_login_from_sheet.py` has failing-first tests for R6 (default run passes no `--force`), `--force` opt-in, R7 refusal with 2+ tags, `--tag` narrowing, `--tag` not in selection refused; offline test suite green.
 - ols-qa: both skills state R1–R5 in their login step, lane prompt and MUST/NEVER table; a guard test fails if a skill tells a lane to log in itself; `bash scripts/run-test-suites.sh` green; PR merged; helix synced.
+- (R10) `git grep` over both skills finds no password intake field, no "Fill login", no Password column; the testing-ticket intake lists six items.
+- (R11) `node tools/login-window-rule/check.test.js` has known-answer cases for each new shape and passes on the repo.

@@ -11,3 +11,5 @@ Spec: [spec.md](spec.md) · Plan: [plan.md](plan.md)
 | T5 | ols-qa: rewrite login text in lanes reference + both skills + MUST/NEVER | R1–R5 R9 | T4 | `bash scripts/run-test-suites.sh` green |
 | T6 | ols-qa: OLS guide + ENVIRONMENT.md invocation with `--tag` | R4 R7 | — | grep shows new invocation |
 | T7 | Merge both PRs, helix sync + parity | R9 | — | `verify-on-origin.sh` ON-ORIGIN, parity pass |
+| T8 | Lint: forbid password intake / fill / Password column across both skills (failing first) | R11 | `check.test.js` new cases | red then green |
+| T9 | Rewrite intake, Playwright discipline, retest config template, retest WORKFLOW credential lines | R10 | T8 | suites green, helix synced |
