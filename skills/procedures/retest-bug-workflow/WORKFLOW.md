@@ -433,6 +433,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 |------|---------|
 | MUST read project config before testing | No hardcoded env URLs |
 | MUST run the case list in parallel lanes, one leased account per lane, unless a [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §4 predicate is named | Shortest retest time with no shared login — a shared account ends sessions and shares state, producing false defects |
+| NEVER let a lane open a login window — it returns `SESSION-DEAD`; the main thread tries no-password recovery, then opens one login window at a time, email prefilled ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3) | Lanes that logged in by themselves popped a chain of login windows at the person (owner 2026-10-21) |
 | MUST include full cURL/response per API case | Evidence must stand alone |
 | MUST treat Swagger (+ error docs) over stale ticket text | Ticket may be wrong |
 | MUST use exactly one of **PASSED ✅** / **FAILED ❌** / **BLOCKED ⛔** / **PWMI ⚠️** in the summary line — the round's real verdict; a round nobody could reach reads BLOCKED, never FAILED | Scanability for dev/QA; a coverage gap is not a defect (`SUMMARY_VERDICTS` in `retest_rules.js`) |
