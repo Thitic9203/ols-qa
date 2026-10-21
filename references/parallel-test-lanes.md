@@ -107,18 +107,21 @@ shared, a rate limit trips, a one-time code is consumed by the other lane.
 | Scenario needs a fresh / pre-first-use account | That account is leased to that lane only and is consumed — record it in the lease table |
 | Pool too small for the plan | Fewer lanes, never shared accounts. Ask the user for more accounts only if it changes the lane count |
 
-**Dead session → one login window at a time, main thread only.** A lane never opens a login window,
-types credentials, or runs the login tool — lanes logging in by themselves pop a chain of windows at
-the person. On 401/403, a redirect to login, or a different user, the lane stops that account's cases
-and returns `SESSION-DEAD {account tag}`. The parent then:
+**Dead session → login by command, main thread only.** A lane never logs in, types credentials, gives login commands, or runs the login tool. On 401/403, a redirect to login, or a different user, the lane stops that account's cases and returns `SESSION-DEAD {account tag}`. The parent collects every dead account and then follows these steps.
 
-1. tries the workspace's no-password recovery first (the session relink named in the project guide);
-2. only if the account is still dead **and** the run still needs it, opens **one login window at a
-   time**: one account, email already filled, cursor in the password field — the person types only
-   the password. It waits until that sign-in is verified (session endpoint returns the expected user
-   id) and the login file is saved before opening any other window. Never a window per row range, per
-   lane, or for an account the run does not use;
-3. re-dispatches that lane's remaining cases.
+The parent, like the whole skill, never opens a browser, login window or sign-in page, and never drives a login form, for any test account, whether on the main thread or in a lane (spec: login-by-command). Instead the main thread gives the user **ready-to-run commands** in chat, **one `bash` block per command**, built from the intake answers (`<project-dir>`, `<env>`, `<account>` and the relink/mint command names from the project guide or intake). The user presses Run, and Claude never runs them itself:
+
+1. **Relink.** One block per needed account whose session is not live. This step uses no password:
+   ```bash
+   cd <project-dir> && <relink-command> --env <env> --account <account>
+   ```
+2. **Setup/mint.** Only for each account whose relink came back **FAILED**, one block for that account alone. The user types any secret in their own terminal:
+   ```bash
+   cd <project-dir> && <mint-command> --env <env> --account <account>
+   ```
+3. **Probe.** When the user says the commands have run, Claude calls the session endpoint for each account, expects that account's user id, and reports account → OK / FAILED with the reason. An account still FAILED blocks only its cases, which are reported BLOCKED ("session not restored") and never PASSED.
+
+Once the probe is OK, the parent re-dispatches that lane's remaining cases. Prefer accounts whose sessions are already live when leasing, so the run needs as few commands as possible (zero when enough are live).
 
 When choosing lane accounts, prefer accounts whose sessions are live now, so the run needs as few
 windows as possible — none when enough live accounts exist.
@@ -169,8 +172,8 @@ Browser context: own context, started from the leased account's login file
 {auth dir}/{env}-{role}-{alias}.json (pre-logged-in by the parent when the account shares an OTP
 inbox — start from it, do not request a new code). Before any result counts, call the session
 endpoint and expect {user id}; on 401/403, a login redirect, or another user, STOP that account's
-cases and return SESSION-DEAD {account tag}. Never open a login window, type credentials, or run the
-login tool yourself — the parent opens one login window at a time.
+cases and return SESSION-DEAD {account tag}. Never log in, type credentials, give login commands, or run the
+login tool yourself — the parent restores sessions by ready-to-run command.
 Session lease: if the workspace provides a session-lease tool ({lease tool from guide}), acquire the
 lease on {account tag} BEFORE loading the login file — holder "{Lx} {round id}", TTL longer than the
 run — renew the lease before it expires, and release the lease with the same holder in finally (on
@@ -241,7 +244,7 @@ Then continue with the calling workflow's summary / comment step as a single mer
 | Rule | Because |
 |------|---------|
 | MUST default to parallel lanes and name a §4 predicate to run serial | Serial-by-habit is the main cost of long ticket runs |
-| NEVER let a lane open a login window — it returns `SESSION-DEAD`; the parent tries no-password recovery, then opens one login window at a time, email prefilled | Lanes that logged in by themselves popped a chain of login windows at the person (owner 2026-10-21) |
+| NEVER open a browser or login window for a test account (parent or lane) — a lane returns `SESSION-DEAD`; the parent gives ready-to-run commands (relink all needed → mint only the FAILED ones), then probes | Lanes that logged in by themselves popped a chain of login windows at the person; owner order 2026-10-21: login by command, as in the e2e suite |
 | MUST lease each account to exactly one lane | A shared login ends sessions and shares state — false defects |
 | MUST keep shared-record and multi-role scenarios in one lane, in order | Concurrent edits of one record race |
 | MUST check each lane's authenticated user id against the lease | Proves no collision happened |

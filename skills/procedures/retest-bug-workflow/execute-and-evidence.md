@@ -58,20 +58,28 @@ From config: base URL, portal, login URL for the env on the ticket.
 
 ### 4b. Login
 
-**Main thread only, one login window at a time**
-([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3 *Dead session*). Pick lane
-accounts whose sessions are live first. When an account needs a fresh login, try the no-password
-recovery from the project guide first; only if it is still dead and needed, open a single window for
-that one account with the email already filled — the person types only the password — and verify
-and save it before any other window. Never a window per lane, per row range, or for an account the
-run does not use. OTP/SSO per config. If blocked → ask user for a bearer token.
+**Main thread only, login by command**
+([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3 *Dead session*). Pick lane accounts whose sessions are live first.
+Claude never opens a browser, login window or sign-in page, and never drives a login form, for any test account, whether on the main thread or in a lane (spec: login-by-command). Instead the main thread gives the user **ready-to-run commands** in chat, **one `bash` block per command**, built from the intake answers (`<project-dir>`, `<env>`, `<account>` and the relink/mint command names from the project guide or intake). The user presses Run, and Claude never runs them itself:
+
+1. **Relink.** One block per needed account whose session is not live. This step uses no password:
+   ```bash
+   cd <project-dir> && <relink-command> --env <env> --account <account>
+   ```
+2. **Setup/mint.** Only for each account whose relink came back **FAILED**, one block for that account alone. The user types any secret in their own terminal:
+   ```bash
+   cd <project-dir> && <mint-command> --env <env> --account <account>
+   ```
+3. **Probe.** When the user says the commands have run, Claude calls the session endpoint for each account, expects that account's user id, and reports account → OK / FAILED with the reason. An account still FAILED blocks only its cases, which are reported BLOCKED ("session not restored") and never PASSED.
+
+OTP/SSO per config, and any code is typed by the user in the mint step. If blocked → ask user for a bearer token.
 
 **Login reuse** ([round-time-contract.md](../../../references/round-time-contract.md) §5): first load
 the saved login file `{auth dir from guide}/{env}-{role}-{alias}.json` — named by account, not by lane,
 gitignored — and call the session endpoint **before any result counts**; it must return the expected
 user id. On 401/403, a redirect to login, or a different user, a lane stops that account's cases and
-returns `SESSION-DEAD {account tag}` — it never logs in itself; the main thread recovers the account as
-above and overwrites the file. One account belongs to one lane, never shared across concurrent sessions.
+returns `SESSION-DEAD {account tag}` — it never logs in itself; the main thread restores the account by
+command as above. One account belongs to one lane, never shared across concurrent sessions.
 
 ### 4c. Test data
 
