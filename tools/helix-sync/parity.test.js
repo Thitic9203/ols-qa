@@ -182,6 +182,52 @@ check('a fetch that never answers is CANNOT-VERIFY within the bound, never OK, a
   assert.strictEqual(left.stdout.trim(), '', `orphaned transport still running: pids ${left.stdout.trim()}`);
 });
 
+check('a transport that respawns a child while its tree is being killed leaves nothing behind', () => {
+  // git spawns its real transport the moment the ssh -G probe exits, from the same live process.
+  // Here the transport stands in for git: it has three children and starts one more the moment any of
+  // them exits. A slow pgrep (a loaded machine) widens the gap between killing the first child and
+  // killing the transport, so a walk that lets the parent keep running orphans the respawn every time.
+  const f = fixture({ olsFiles: BASE_OLS, helixFiles: { ...BASE_HELIX, 'references/drifted.md': 'ols-qa main\n' } });
+  const marker = path.join(f.base, 'respawn-marker');
+  const transport = path.join(f.base, 'respawning-transport.js');
+  fs.writeFileSync(transport, [
+    "const { spawn } = require('child_process');",
+    'const marker = process.argv[2];',
+    "const sleeper = () => spawn(process.execPath, ['-e', 'setTimeout(() => {}, 600000)', marker], { stdio: 'ignore' });",
+    'let respawned = false;',
+    'for (let i = 0; i < 3; i++) sleeper().on(\'exit\', () => { if (!respawned) { respawned = true; sleeper(); } });',
+    'setInterval(() => {}, 1000);',
+    '',
+  ].join('\n'));
+  const fakeSsh = path.join(f.base, 'respawning-ssh.sh');
+  fs.writeFileSync(fakeSsh, `#!/bin/sh\nexec "${process.execPath}" "${transport}" "${marker}"\n`, { mode: 0o755 });
+  const realPgrep = run('/bin/sh', ['-c', 'command -v pgrep']).stdout.trim();
+  assert.ok(realPgrep, 'pgrep not found');
+  const shim = path.join(f.base, 'slow-bin');
+  fs.mkdirSync(shim);
+  fs.writeFileSync(path.join(shim, 'pgrep'), `#!/bin/sh\nsleep 1\nexec "${realPgrep}" "$@"\n`, { mode: 0o755 });
+  git(f.helix, 'remote', 'set-url', 'origin', 'git@stalled.example.invalid:owner/helix.git');
+  try {
+    const r = run('/bin/bash', [SCRIPT], {
+      env: {
+        ...CLEAN_ENV, PATH: `${shim}:${CLEAN_ENV.PATH}`, OLS_REPO: f.ols, HELIX_REPO: f.helix,
+        GIT_SSH_COMMAND: fakeSsh, GIT_SSH_VARIANT: 'ssh', HELIX_PARITY_FETCH_TIMEOUT: '3',
+      },
+      timeout: 120000,
+    });
+    assert.ok(!r.signal, `script itself had to be killed (${r.signal})`);
+    assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+    assert.match(r.stdout, /^CANNOT-VERIFY fetch of helix origin\/main timed out after 3s/);
+    const left = run('pgrep', ['-f', marker]);
+    assert.strictEqual(left.stdout.trim(), '', `respawned child still running: pids ${left.stdout.trim()}`);
+  } finally {
+    // Only processes this check started carry the per-fixture marker path.
+    for (const pid of run('pgrep', ['-f', marker]).stdout.split('\n').filter(Boolean)) {
+      try { process.kill(Number(pid), 'SIGKILL'); } catch (e) { /* already gone */ }
+    }
+  }
+});
+
 check('a non-numeric or zero fetch bound is refused as CANNOT-VERIFY', () => {
   const f = fixture({ olsFiles: BASE_OLS, helixFiles: BASE_HELIX });
   for (const bad of ['0', 'abc', '']) {
