@@ -45,11 +45,25 @@ FETCH_TIMEOUT="${HELIX_PARITY_FETCH_TIMEOUT:-120}"
 case "$FETCH_TIMEOUT" in ''|*[!0-9]*|0) cannot "HELIX_PARITY_FETCH_TIMEOUT must be a positive whole number of seconds" ;; esac
 export GIT_TERMINAL_PROMPT=0
 
-# Children are collected before the parent dies, or they are reparented and escape.
+# Children are collected before the parent dies, or they are reparented and escape. A parent that
+# keeps running while its children die can spawn a new one after they were listed (git starts its
+# real transport the moment the ssh -G probe exits), so each process is stopped before its children
+# are listed, the list is read a second time for a fork that was in flight when the stop landed, and
+# the process is terminated and continued only after its whole subtree is handled.
+# KILL_TREE_SEEN: space-delimited pids already handled (bash 3.2 has no associative arrays).
+KILL_TREE_SEEN=" "
 kill_tree() {
-  local kid
-  for kid in $(pgrep -P "$1" 2>/dev/null); do kill_tree "$kid"; done
-  kill -TERM "$1" 2>/dev/null
+  local pid="$1" kid pass
+  KILL_TREE_SEEN="${KILL_TREE_SEEN}${pid} "
+  kill -STOP "$pid" 2>/dev/null
+  for pass in 1 2; do
+    for kid in $(pgrep -P "$pid" 2>/dev/null); do
+      case "$KILL_TREE_SEEN" in *" $kid "*) continue ;; esac
+      kill_tree "$kid"
+    done
+  done
+  kill -TERM "$pid" 2>/dev/null
+  kill -CONT "$pid" 2>/dev/null
 }
 
 # fetch_bounded <repo>: 0 fetched · 124 timed out · other = git's own failure status
