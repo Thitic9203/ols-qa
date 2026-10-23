@@ -2,6 +2,8 @@
 
 **Owner order:** 21/Oct/2026. Apply the e2e suite's login rule to the Story skill (`testing-ticket`) and the fix-verification skill (`retest-bug`), with the user's own accounts in place of the e2e ones. Claude never opens a browser or login window to log a test account in. It gives the user ready-to-run commands, the user presses Run, and Claude probes the session.
 
+**Amended 23/Oct/2026 (owner order, verbatim):** "จำไว้รอบหน้าทำแบบนี้เสมอ ไม่แยกคำสั่ง รวมถึงใน skill เทสด้วยนะ อัปเดตด้วย ทั้งใน ols-qa และ helix" — the commands are no longer split. **R12–R15** below supersede R2's "one `bash` block per command", R3's "one command per account" and R4's "one setup/mint command for that account alone". Everything else stays.
+
 **Supersedes:** [single-login-window](../single-login-window/spec.md) **R1** (window part), **R3** (window part), **R4**, and the "fresh login is the R4 window" clause of **R10**. Its R2 (lane hands back `SESSION-DEAD`) and R5 (prefer live accounts) carry over as R7 and R8 below. Its R6–R7 cover the testing-bot login tool. That tool stays, but these skills no longer tell Claude to run it.
 
 ## Why
@@ -22,10 +24,22 @@
 - **R10** — Skill text stays generic (portable-content rules): no hosts, emails, ids or local paths. Placeholders only.
 - **R11** — The `tools/login-window-rule` lint must **fail** when a scanned skill file tells Claude to open a login window or sign-in page, keeps the old "one login window at a time" rule or a prefilled-email window, or tells the run to drive the real login. It must also **fail** when a required file does not state the login-by-command rule. The R10/R11 password checks of `single-login-window` stay.
 
+### Combined block (owner order 23/Oct/2026 — supersedes the "one block per command / per account" parts of R2, R3, R4)
+
+- **R12** — Each login step (relink, setup/mint) must be given as **one combined `bash` block** that loops over every account that step covers. The skill must not split a step into one block per account or one block per command. Shape (placeholders only):
+  ```bash
+  cd <project-dir> && for a in <account-1> <account-2>; do echo "=== $a"; <command for $a> >/tmp/<name>-$a.log 2>&1 && echo "$a OK" || echo "$a FAILED (log: /tmp/<name>-$a.log)"; done
+  ```
+- **R13** — Inside the combined block, each account must be **isolated**: one account failing must not stop the next one (no `set -e`, no `&&` chaining across accounts). The block must print **`<account> OK`** or **`<account> FAILED (log: <path>)`** for every account, so the user can paste the output back.
+- **R14** — The relink block covers **every account the run needs** whose session is not live (R3). The mint block covers **only the accounts whose relink printed FAILED** (R4), still in one combined block, never for an account that printed OK and never for a whole row range.
+- **R15** — The `tools/login-window-rule` lint must **fail** when a scanned skill file tells Claude to give one `bash` block per account or per command, or one setup/mint command per account. It must also **fail** when a required file does not state the combined-block rule.
+
 ## Edge cases
 
 - All needed accounts are live → no commands. The skill probes and reports, then runs.
-- Relink is OK for some accounts and FAILED for others → mint commands only for the FAILED ones (R4).
+- Relink is OK for some accounts and FAILED for others → mint commands only for the FAILED ones (R4), in one combined block (R14).
+- One account's command exits non-zero inside the combined block → the loop moves on to the next account; that account prints FAILED with its log path (R13).
+- Only one account needs a step → still the same combined-block shape, with one account in the loop.
 - The user never runs the commands, or reports no result → nothing is assumed. The cases for those accounts stay BLOCKED with the reason "session not restored".
 - The project guide names no relink/mint command, and the user gave none at intake → ask for the command template (never a password). Until then, the cases that need the account are BLOCKED.
 - Unauthenticated ticket (guest) → no login and no commands.
@@ -35,5 +49,7 @@
 
 - Both skills (WORKFLOW, the retest step file, the stubs) and `references/parallel-test-lanes.md` state R1–R8 and no longer tell Claude to open a window.
 - `node tools/login-window-rule/check.test.js` has must-find / must-not-find cases for each new forbidden shape and for the new required marker, and passes on the repo.
+- Both skills, the retest step file, the stubs, `references/parallel-test-lanes.md` and the retest config template give each login step as one combined block (R12–R14) and no longer say "one block per account / per command".
+- `check.test.js` has must-find / must-not-find cases for the per-account / per-command shapes and the combined-block marker (R15), and they fail before the skill text is changed.
 - `bash scripts/run-test-suites.sh` is green.
 - The PR is open, not merged. The helix sync is done by main after merge.
