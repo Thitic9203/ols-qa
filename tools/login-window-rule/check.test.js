@@ -19,7 +19,7 @@ function t(name, fn) {
   catch (e) { failed++; console.log(`  FAIL ${name} — ${e.message}`); }
 }
 const ids = (fs) => fs.map((f) => f.id).sort();
-const GOOD = 'On 401 return SESSION-DEAD <tag> to the parent. The main thread gives a ready-to-run command per account and never opens a login window.';
+const GOOD = 'On 401 return SESSION-DEAD <tag> to the parent. The main thread gives ready-to-run commands as one combined `bash` block per step and never opens a login window.';
 
 t('old lane text "log in fresh and overwrite the file" is found (must find)', () => {
   const f = checkText(GOOD + '\non 401/403, a login redirect, or another user, log in fresh and\noverwrite the file.', 'x.md');
@@ -64,7 +64,33 @@ t('login-by-command: old one-window rule, prefilled window, drive login are foun
   assert.deepStrictEqual(ids(checkText(txt, 'x.md', { required: false })), ['DRIVE_LOGIN', 'OLD_ONE_WINDOW_RULE', 'PREFILLED_WINDOW']);
 });
 t('login-by-command: missing ready-to-run command marker is reported (must find)', () => {
-  assert.deepStrictEqual(ids(checkText('SESSION-DEAD only', 'x.md')), ['NO_LOGIN_BY_COMMAND']);
+  assert.deepStrictEqual(ids(checkText('SESSION-DEAD only, one combined `bash` block', 'x.md')), ['NO_LOGIN_BY_COMMAND']);
+});
+
+t('combined block R15: "one `bash` block per command" is found (must find)', () => {
+  assert.deepStrictEqual(ids(checkText('gives ready-to-run commands in chat, **one `bash` block per command**, built from intake', 'x.md', { required: false })), ['PER_ACCOUNT_BLOCK']);
+});
+t('combined block R15: "one `bash` block each" is found (must find)', () => {
+  assert.deepStrictEqual(ids(checkText('give the user ready-to-run commands, one `bash` block each: relink every needed account', 'x.md', { required: false })), ['PER_ACCOUNT_BLOCK']);
+});
+t('combined block R15: "One block per needed account" / "one block for that account alone" are found (must find)', () => {
+  const txt = '1. **Relink.** One block per needed account whose session is not live.\n2. **Mint.** one block for that account alone.';
+  assert.deepStrictEqual(ids(checkText(txt, 'x.md', { required: false })), ['PER_ACCOUNT_BLOCK', 'PER_ACCOUNT_BLOCK']);
+});
+t('combined block R15: "one setup/mint command for that account" is found (must find)', () => {
+  assert.deepStrictEqual(ids(checkText('the skill must give one setup/mint command for that account alone.', 'x.md', { required: false })), ['PER_ACCOUNT_BLOCK']);
+});
+t('combined block R15: per-command block on a line that starts with an unrelated "never" is still found (must find)', () => {
+  const txt = 'Claude never opens a browser or login window. Instead the main thread gives the user ready-to-run commands in chat, **one `bash` block per command**, built from intake.\n' +
+    '| NEVER open a browser or login window — the main thread gives ready-to-run commands, one `bash` block each (relink) |';
+  assert.deepStrictEqual(ids(checkText(txt, 'x.md', { required: false })), ['PER_ACCOUNT_BLOCK', 'PER_ACCOUNT_BLOCK']);
+});
+t('combined block R15: combined wording and negated per-account wording are not flagged (must not find)', () => {
+  const ok = 'Give **one combined `bash` block** per step that loops over every account.\nNever split it into one block per account.';
+  assert.deepStrictEqual(checkText(ok, 'x.md', { required: false }), []);
+});
+t('combined block R15: missing combined-block marker is reported (must find)', () => {
+  assert.deepStrictEqual(ids(checkText('SESSION-DEAD and a ready-to-run command', 'x.md')), ['NO_COMBINED_BLOCK']);
 });
 
 t('compliant text has no finding (must not find)', () => {
@@ -72,7 +98,7 @@ t('compliant text has no finding (must not find)', () => {
 });
 
 t('missing SESSION-DEAD and one-window rule are both reported', () => {
-  assert.deepStrictEqual(ids(checkText('nothing here', 'x.md')), ['NO_LOGIN_BY_COMMAND', 'NO_SESSION_DEAD']);
+  assert.deepStrictEqual(ids(checkText('nothing here', 'x.md')), ['NO_COMBINED_BLOCK', 'NO_LOGIN_BY_COMMAND', 'NO_SESSION_DEAD']);
 });
 
 t('unreadable root is reported as unreadable, not a pass', () => {

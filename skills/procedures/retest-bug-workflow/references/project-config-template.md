@@ -40,8 +40,8 @@ Claude never opens a login window. It shows each command to the user as its own 
 
 | Step | Template |
 |------|----------|
-| Relink (no password; every needed account) | `cd <project-dir> && <relink-command> --env <env> --account <account>` |
-| Setup/mint (only accounts whose relink FAILED) | `cd <project-dir> && <mint-command> --env <env> --account <account>` |
+| Relink (no password; every needed account, one combined block) | `cd <project-dir> && for a in <account-1> <account-2>; do echo "=== $a"; <relink-command> --env <env> --account "$a" >/tmp/relink-$a.log 2>&1 && echo "$a OK" \|\| echo "$a FAILED (log: /tmp/relink-$a.log)"; done` |
+| Setup/mint (only accounts whose relink FAILED, one combined block) | `cd <project-dir> && for a in <failed-account-1> <failed-account-2>; do echo "=== $a"; <mint-command> --env <env> --account "$a" >/tmp/mint-$a.log 2>&1 && echo "$a OK" \|\| echo "$a FAILED (log: /tmp/mint-$a.log)"; done` |
 | Probe (Claude runs it) | `<session endpoint>` returns the account's user id |
 
 ## API architecture

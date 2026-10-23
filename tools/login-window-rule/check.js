@@ -3,7 +3,11 @@
 
 /**
  * Login-window rule lint (Spec: docs/sdd/single-login-window R2, R10, R11;
- *                         docs/sdd/login-by-command R1–R8, R11 — supersedes the window rules).
+ *                         docs/sdd/login-by-command R1–R8, R11 — supersedes the window rules;
+ *                         docs/sdd/login-by-command R12–R15 — one combined bash block per login step).
+ *
+ * Owner 2026-10-23: "ไม่แยกคำสั่ง" — each login step (relink, mint) is ONE combined bash block that
+ * loops over its accounts, isolates each one and prints OK / FAILED with a log path.
  *
  * Owner 2026-10-21 (later order): Claude NEVER opens a browser or login window for a test account.
  * It gives ready-to-run relink / mint commands in chat, the user presses Run, then Claude probes.
@@ -45,6 +49,10 @@ const SCAN_ONLY = [
 const NEGATION = /\b(never|not|no|nor|without)\b|n't\b/i;
 const OPEN_WINDOW_RE = /\bopen(?:s|ing)?\s+(?:a|one|the|any|single|separate)\s+(?:single\s+|separate\s+|new\s+)?(?:login|sign-in|signin)\s+(?:window|page|drawer)/gi;
 
+// login-by-command R15: "one `bash` block per command / each / per (needed) account / for that account",
+// "one setup/mint command for that account" — the split shape the owner retired. Negated text passes.
+const PER_ACCOUNT_BLOCK_RE = /\bone\s+(?:`bash`\s+)?block\s+(?:per\s+(?:command|account|needed\s+account)|each\b|for\s+(?:that|each)\s+account)|\bone\s+(?:setup\/mint|mint|relink|setup)\s+command\s+(?:per|for\s+(?:that|each))\s+account/gi;
+
 const FORBIDDEN = [
   // [^.] spans line breaks: the lane prompt wraps "log in fresh and\noverwrite the file".
   { id: 'LANE_LOGS_IN', re: /log\s+in\s+fresh[^.]{0,40}?\boverwrite\b/gi,
@@ -73,6 +81,8 @@ const REQUIRED = [
     why: 'the lane hand-back for a dead session is not named' },
   { id: 'NO_LOGIN_BY_COMMAND', re: /ready-to-run command/i,
     why: 'the login-by-command rule (ready-to-run relink/mint commands, then probe) is not stated' },
+  { id: 'NO_COMBINED_BLOCK', re: /one combined `bash` block/i,
+    why: 'the combined-block rule (one bash block per login step, looping over accounts) is not stated (login-by-command R12)' },
 ];
 
 function checkText(text, file, { required = true } = {}) {
@@ -89,6 +99,15 @@ function checkText(text, file, { required = true } = {}) {
     const line = text.slice(0, m.index).split('\n').length;
     findings.push({ file, line, id: 'OPENS_LOGIN_WINDOW',
       why: 'tells Claude to open a login window/page — give ready-to-run commands instead (login-by-command R1–R2)' });
+  }
+  for (const m of text.matchAll(PER_ACCOUNT_BLOCK_RE)) {
+    // Negation counts only within the 40 characters before the match, on the same line: these
+    // lines often open with an unrelated "never opens a login window" (spec plan: 40-char window).
+    const lineStart = text.lastIndexOf('\n', m.index) + 1;
+    if (NEGATION.test(text.slice(Math.max(lineStart, m.index - 40), m.index))) continue;
+    const line = text.slice(0, m.index).split('\n').length;
+    findings.push({ file, line, id: 'PER_ACCOUNT_BLOCK',
+      why: 'splits login commands into one block per account/command — give one combined bash block per step (login-by-command R12–R14)' });
   }
   for (const r of required ? REQUIRED : []) {
     if (!r.re.test(text)) findings.push({ file, line: 0, id: r.id, why: r.why });

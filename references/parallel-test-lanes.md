@@ -109,15 +109,15 @@ shared, a rate limit trips, a one-time code is consumed by the other lane.
 
 **Dead session → login by command, main thread only.** A lane never logs in, types credentials, gives login commands, or runs the login tool. On 401/403, a redirect to login, or a different user, the lane stops that account's cases and returns `SESSION-DEAD {account tag}`. The parent collects every dead account and then follows these steps.
 
-The parent, like the whole skill, never opens a browser, login window or sign-in page, and never drives a login form, for any test account, whether on the main thread or in a lane (spec: login-by-command). Instead the main thread gives the user **ready-to-run commands** in chat, **one `bash` block per command**, built from the intake answers (`<project-dir>`, `<env>`, `<account>` and the relink/mint command names from the project guide or intake). The user presses Run, and Claude never runs them itself:
+The parent, like the whole skill, never opens a browser, login window or sign-in page, and never drives a login form, for any test account, whether on the main thread or in a lane (spec: login-by-command). Instead the main thread gives the user **ready-to-run commands** in chat as **one combined `bash` block** per step (relink, then setup/mint), never split per account or per command, built from the intake answers (`<project-dir>`, `<env>`, `<account>` and the relink/mint command names from the project guide or intake). The block loops over that step's accounts and isolates each one, so one account failing does not stop the next, and it prints `<account> OK` or `<account> FAILED (log: <path>)` for every account. The user presses Run, and Claude never runs them itself:
 
-1. **Relink.** One block per needed account whose session is not live. This step uses no password:
+1. **Relink.** One combined block over every needed account whose session is not live. This step uses no password:
    ```bash
-   cd <project-dir> && <relink-command> --env <env> --account <account>
+   cd <project-dir> && for a in <account-1> <account-2>; do echo "=== $a"; <relink-command> --env <env> --account "$a" >/tmp/relink-$a.log 2>&1 && echo "$a OK" || echo "$a FAILED (log: /tmp/relink-$a.log)"; done
    ```
-2. **Setup/mint.** Only for each account whose relink came back **FAILED**, one block for that account alone. The user types any secret in their own terminal:
+2. **Setup/mint.** One combined block over only the accounts whose relink printed **FAILED**, never an account that printed OK. The user types any secret in their own terminal; if the block pauses, the mint command is waiting for that input:
    ```bash
-   cd <project-dir> && <mint-command> --env <env> --account <account>
+   cd <project-dir> && for a in <failed-account-1> <failed-account-2>; do echo "=== $a"; <mint-command> --env <env> --account "$a" >/tmp/mint-$a.log 2>&1 && echo "$a OK" || echo "$a FAILED (log: /tmp/mint-$a.log)"; done
    ```
 3. **Probe.** When the user says the commands have run, Claude calls the session endpoint for each account, expects that account's user id, and reports account → OK / FAILED with the reason. An account still FAILED blocks only its cases, which are reported BLOCKED ("session not restored") and never PASSED.
 
@@ -244,7 +244,7 @@ Then continue with the calling workflow's summary / comment step as a single mer
 | Rule | Because |
 |------|---------|
 | MUST default to parallel lanes and name a §4 predicate to run serial | Serial-by-habit is the main cost of long ticket runs |
-| NEVER open a browser or login window for a test account (parent or lane) — a lane returns `SESSION-DEAD`; the parent gives ready-to-run commands (relink all needed → mint only the FAILED ones), then probes | Lanes that logged in by themselves popped a chain of login windows at the person; owner order 2026-10-21: login by command, as in the e2e suite |
+| NEVER open a browser or login window for a test account (parent or lane) — a lane returns `SESSION-DEAD`; the parent gives ready-to-run commands, one combined `bash` block per step (relink all needed → mint only the FAILED ones; each account isolated, prints OK / FAILED with a log path), then probes | Lanes that logged in by themselves popped a chain of login windows at the person; owner order 2026-10-21: login by command, as in the e2e suite |
 | MUST lease each account to exactly one lane | A shared login ends sessions and shares state — false defects |
 | MUST keep shared-record and multi-role scenarios in one lane, in order | Concurrent edits of one record race |
 | MUST check each lane's authenticated user id against the lease | Proves no collision happened |
