@@ -15,7 +15,7 @@ Collect these before any Playwright run.
 ## User (account only — no password)
 
 - The test account (username/email). Use `guest` when the ticket is explicitly unauthenticated.
-- Never ask for, accept, store, or fill a password. If the user pastes one, do not use or echo it. A dead session is never restored with a login window. The main thread gives ready-to-run relink commands, then mint commands for the FAILED accounts only, and the user runs them; then Claude probes ([WORKFLOW.md](../WORKFLOW.md) *Fresh login*).
+- Never ask for, accept, store, or fill a password. If the user pastes one, do not use or echo it. A dead session is never restored with a login window. The main thread gives ready-to-run relink commands as one combined `bash` block, then the mint commands for the FAILED accounts only as one combined `bash` block, and the user runs them; then Claude probes ([WORKFLOW.md](../WORKFLOW.md) *Fresh login*).
 - Record the account names, the env, the URLs and the relink/mint command templates (`<project-dir>`, `<env>`, `<account>`) when the project guide does not name them. Never record a password.
 
 ## VPN
