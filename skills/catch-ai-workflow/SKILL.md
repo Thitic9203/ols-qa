@@ -78,23 +78,29 @@ Before reporting anything as wrong, name the source that defines what it should 
 
 ## Refusal-first (precondition gate)
 
-MUST NOT start without a named audit target. MUST NOT file a defect whose expected side came from a
+MUST NOT start without a named audit target. **No target named** (for example the skill was triggered
+by "check yourself" with nothing in scope) → ask one question — what should be audited — and stop
+until the user answers. MUST NOT file a defect whose expected side came from a
 guess, a translation, or a feature name — the expected side must be quoted from its source
-(see [The Iron Law](#the-iron-law) above; read [agent-rationalizations.md](../../references/agent-rationalizations.md)). MUST NOT open a Jira bug from
-this workflow; a confirmed defect hands off to `create-bug-workflow`, and Priority comes from the
+(see [The Iron Law](#the-iron-law) above; read [agent-rationalizations.md](../../references/agent-rationalizations.md)). Filing is not
+part of this workflow (see [MUST / NEVER](#must--never)); Priority comes from the
 [Bug Priority & Severity Matrix](../../references/bug-priority-matrix.md), never invented.
 
 ## Procedure [high freedom]
 
-1. **Fix the scope.** Name what is under audit and what is out.
-2. **Enumerate** every claim, number, file, screen, endpoint, and section in scope.
-3. **Name the governing source for each** — spec, Figma frame, acceptance criterion, OpenAPI path, DB schema, ticket, or data file. A proxy that merely correlates (a file timestamp, a similar page, your own earlier message) governs nothing.
-4. **Inspect the actual side directly** — read the file, run the command, call the endpoint, open the screen. Capture verbatim.
-5. **Compare character-exact** and classify each item: Defect / Question / checked-clean.
-6. **Map coverage** — what has no check at all.
+1. **Fix the scope.** Name what is under audit and what is out. Output: the `Scope:` line of the report.
+2. **Enumerate** every claim, number, file, screen, endpoint, and section in scope. Output: a numbered inventory list.
+3. **Name the governing source for each** — spec, Figma frame, acceptance criterion, OpenAPI path, DB schema, ticket, or data file. A proxy that merely correlates (a file timestamp, a similar page, your own earlier message) governs nothing. Output: the source next to each inventory item.
+4. **Inspect the actual side directly** — read the file, run the command, call the endpoint, open the screen. Capture verbatim. Output: the verbatim actual next to each item.
+5. **Compare character-exact** and classify each item: Defect / Question / checked-clean. Output: a classification table (item · expected + source · actual · class).
+6. **Map coverage** — what has no check at all. Output: the [coverage matrix](reference.md#coverage-matrix) table.
 7. **Find the root cause of each defect** using [root-cause-investigation.md](../../references/root-cause-investigation.md) — the owning layer, not the place it surfaced.
-8. **Propose the fix and the prevention, each with a citable source.**
-9. **Report and give the verdict.**
+8. **Propose the fix and the prevention, each with a citable source.** Output: one [remediation entry](reference.md#remediation-entry-template) per defect.
+9. **Report and give the verdict.** Output: the [report template](reference.md#report-template), filled.
+
+**🔴 CHECKPOINT after step 9:** present the report and stop. Hand a confirmed defect to
+`create-bug-workflow`, or apply any Correction to the audited work, only after the owner approves
+that specific hand-off or edit in chat.
 
 Audit dimensions, evidence standard, severity, verdict, prevention layers, the standard-source
 registry, and the report template: [reference.md](reference.md).
@@ -147,8 +153,10 @@ Run [result-quality-gate.md](../../references/result-quality-gate.md) — all 20
 ones included — **before this audit confirms or rejects any test verdict in the audited work**. Write one final result line per case (older lines marked
 `superseded`), run the mechanical layers with the workspace's checker when it has one, walk the
 judgement layers, and paste the checker's last output line (or the counted hand check) into the
-round's record. A red layer blocks that case's verdict: report the case as what it really is
-(usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
+round's record. No `tools/result-gate/` in the workspace → walk all 20 layers by hand, count them,
+and say in the record that the check was by hand ([dependencies.md](../../references/dependencies.md),
+in-repo guard tools). A red layer blocks that case's verdict: report the case as BLOCKED with the
+reason, never drop it and never soften the layer. A lane's "gate green"
 is a claim — the main thread re-runs the gate itself (layer 20).
 
 **Go back:** A red layer returns that case to Procedure step 4 — Inspect the actual side directly; if it still cannot be confirmed, the case is BLOCKED with the reason.
@@ -176,34 +184,39 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + this work
 | MUST open every source cited in a recommendation | A remembered citation is an invented one |
 | MUST attach a prevention layer to every defect | A fix without prevention returns as the same finding |
 | MUST NOT file a Jira bug from this workflow | Filing belongs to `create-bug-workflow` after the defect is confirmed |
-| MUST NOT rewrite the audited work beyond the reported corrections | Audit and rewrite are different jobs |
+| MUST NOT rewrite the audited work beyond the reported corrections, and apply those only after the owner approves them (CHECKPOINT after step 9) | Audit and rewrite are different jobs; an unasked edit changes delivered work behind the owner's back |
 
 ## Must-read files
 
 Every file this skill's procedure requires, one hop from here. Read each at the point its line names.
 
+**Read for every audit:**
+
 - Read [bug-priority-matrix.md](../../references/bug-priority-matrix.md) before setting any priority or a PWMI / FAILED verdict.
-- Read [customer-escape-prevention.md](../../references/customer-escape-prevention.md) before any QA run; the gates that stop shipped defects.
 - Read [defect-report-completeness.md](../../references/defect-report-completeness.md) before writing up any defect or non-pass.
 - Read [figma-design-comparison.md](../../references/figma-design-comparison.md) before judging any UI or visual result against the design.
 - Read [helix-session-constraints.md](../../references/helix-session-constraints.md) once at session start.
-- Read [jira-comment-post-review.md](../../references/jira-comment-post-review.md) after posting a Jira comment, before saying done.
-- Read [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) before posting a Jira table with multi-line cells.
 - Read [long-workflow-todos.md](../../references/long-workflow-todos.md) when the workflow has many steps; keep the todo list.
 - Read [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) before recording any result that is not PASSED.
-- Read [playwright-preflight.md](../../references/playwright-preflight.md) before any Playwright run.
-- Read [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) when a QA follow-up could be suggested.
 - Read [qa-debug-discipline.md](../../references/qa-debug-discipline.md) when a test is flaky or a tool errors.
 - Read [qa-evidence-gates.md](../../references/qa-evidence-gates.md) before any completion claim.
-- Read [resilient-selectors.md](../../references/resilient-selectors.md) when writing or fixing Playwright selectors.
 - Read [root-cause-investigation.md](../../references/root-cause-investigation.md) before naming a cause for any failure.
-- Read [round-time-contract.md](../../references/round-time-contract.md) when a round starts and before reporting times.
 - Read [session-closing.md](../../references/session-closing.md) at session end.
 - Read [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) before invoking or switching skills.
 - Read [skill-routing.md](../../references/skill-routing.md) when choosing which skill handles a request.
 - Read [skill-rules-style.md](../../references/skill-rules-style.md) before asking the user or stopping on a missing input.
-- Read [test-through-real-steps.md](../../references/test-through-real-steps.md) before testing an action; no API shortcut for the action under test.
 - Read [user-communication.md](../../references/user-communication.md) before any message to the user.
+
+**Read only when the audit target needs it** — a Playwright run or selector, a Jira comment, a verify/retest close-out, a timed round, or a QA follow-up; the trigger at the end of each line says when:
+
+- Read [customer-escape-prevention.md](../../references/customer-escape-prevention.md) before any QA run; the gates that stop shipped defects.
+- Read [jira-comment-post-review.md](../../references/jira-comment-post-review.md) after posting a Jira comment, before saying done.
+- Read [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) before posting a Jira table with multi-line cells.
+- Read [playwright-preflight.md](../../references/playwright-preflight.md) before any Playwright run.
+- Read [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) when proposing a QA follow-up.
+- Read [resilient-selectors.md](../../references/resilient-selectors.md) when writing or fixing Playwright selectors.
+- Read [round-time-contract.md](../../references/round-time-contract.md) when a round starts and before reporting times.
+- Read [test-through-real-steps.md](../../references/test-through-real-steps.md) before testing an action; no API shortcut for the action under test.
 - Read [verify-closing-checklist.md](../../references/verify-closing-checklist.md) before reporting a verify or retest done.
 
 ## Dependencies

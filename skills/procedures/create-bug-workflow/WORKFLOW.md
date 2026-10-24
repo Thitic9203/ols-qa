@@ -17,15 +17,18 @@ File **one or more bug reports** on the tracker the user names (Jira, GitHub Iss
 - [Refusal-first (precondition gate)](#refusal-first-precondition-gate)
 - [Phase A — Intake (one message, three parts) \[medium freedom\]](#phase-a--intake-one-message-three-parts-medium-freedom)
 - [Phase B — Parse target \[medium freedom\]](#phase-b--parse-target-medium-freedom)
-- [Phase B2 — Board-conflict re-check (hard gate, before drafting/confirm) \[low freedom\]](#phase-b2--board-conflict-re-check-hard-gate-before-draftingconfirm-low-freedom)
-- [Phase C — Confirm before create (hard gate) \[low freedom\]](#phase-c--confirm-before-create-hard-gate-low-freedom)
-- [Phase D — Create issues \[low freedom\]](#phase-d--create-issues-low-freedom)
+- [🔴 GATE: Phase B2 — Board-conflict re-check (hard gate, before drafting/confirm) \[low freedom\]](#-gate-phase-b2--board-conflict-re-check-hard-gate-before-draftingconfirm-low-freedom)
 - [Phase E — Falsification (before create) \[high freedom\]](#phase-e--falsification-before-create-high-freedom)
+- [🔴 GATE: Phase C — Confirm before create (hard gate) \[low freedom\]](#-gate-phase-c--confirm-before-create-hard-gate-low-freedom)
+- [Phase D — Create issues \[low freedom\]](#phase-d--create-issues-low-freedom)
 - [Phase F — Fix-verify and close (mandatory) \[low freedom\]](#phase-f--fix-verify-and-close-mandatory-low-freedom)
 - [QA closing (mandatory before "done") \[low freedom\]](#qa-closing-mandatory-before-done-low-freedom)
 - [Out of scope](#out-of-scope)
 - [References](#references)
 - [MUST / NEVER](#must--never)
+
+Sections appear in execution order: Phase E (falsification) runs after Phase B2 and before Phase C —
+its letter is kept from the original numbering, its place is not.
 
 ## Progress checklist
 
@@ -51,6 +54,9 @@ Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
 **Gates:** MUST NOT create issues until Phase C confirm. MUST NOT file without evidence. MUST verify each URL in Phase F before saying done — because create APIs can return IDs for empty bodies.
 
+**No evidence for a candidate** → ask for it in the A3 follow-up. If none can be supplied, do not
+draft that candidate; report it to the user as **BLOCKED (no evidence)** and continue with the rest.
+
 ## Refusal-first (precondition gate)
 
 MUST refuse to reach Phase B until **A1 (target)**, **A2 (format)**, and **A3 (bug details)** are sufficient to draft — because guessing tracker fields produces junk issues.
@@ -65,16 +71,9 @@ unconfirmed → it is a **question, not a bug**: resolve it (or mark BLOCKED / a
 file. (Root cause this prevents: a phantom label bug filed against a transliterated word never in the
 design — the real spec matched the app all along.)
 
-**MUST re-check the tracker/board for a prior ticket that already settled this behavior BEFORE filing.**
-A defect the team has already discussed and *concluded is intended* is **not a bug**, even if it looks
-wrong to you. Before drafting, search the board (Phase B2) for existing or closed tickets on the same
-screen / field / message / behavior. If a resolved ticket records a decision that the current behavior is
-correct — e.g. a discussion concluded "the error text here must be exactly X", and the app shows X — then
-it is **not a bug**: report it to the user in chat **with the reference link** (the concluding comment URL,
-not just the ticket key) and do **not** file. (Root cause this prevents: re-filing a defect against a
-point the team already closed with an agreed-upon expected value.)
-
-If pre-flight fails (auth, repo missing), stop — MUST NOT create issues silently.
+**MUST re-check the tracker/board for a prior ticket that already settled this behavior BEFORE filing** —
+the full rule, its search steps and its outcomes are in
+[Phase B2](#-gate-phase-b2--board-conflict-re-check-hard-gate-before-draftingconfirm-low-freedom).
 
 On first response after constraints, follow [workspace-guide-discovery.md](../../../references/workspace-guide-discovery.md) for **Create bug**, then show [intake-one-pager.md](../../../references/intake-one-pager.md) (Create bug section).
 
@@ -96,7 +95,7 @@ Support **one target per run** unless the user explicitly asks for both Jira and
 
 > **Is there a required format or example?** For example:
 > - Paste a template or link to an example issue
-> - “Use Helix default” (behavioral title + What happens / Expected / Steps / Environment)
+> - “Use Helix default” (behavioral title + What happens / Expected / Repro matrix / Steps / Environment)
 > - Project rules (Jira v2 wiki for FE, v3 ADF for API — if user specifies, **lock** for the session)
 
 If the user says “Helix default”, use the draft structure in [bug-draft-template.md](references/bug-draft-template.md).
@@ -105,12 +104,18 @@ If the user says “Helix default”, use the draft structure in [bug-draft-temp
 
 > **What bug(s) should I open?** Provide for each:
 > - Title or short summary
-> - What happens / expected behavior
-> - Steps to reproduce
-> - Severity (Critical / High / Medium / Low)
+> - What happens / expected behavior — and the source of the expected side (design frame, AC, PRD line, or PO decision, with a link)
+> - Steps to reproduce, and every entry point you tried
+> - Priority (Lowest / Low / Medium / High / Highest) and Severity (Low / Medium / High / Urgent), if you already know them
 > - Evidence (screenshots, errors, URLs) — attach paths or paste text
 
-The user may reference findings from a **prior testing-ticket** run in the same chat — reuse that evidence; do not invent details.
+Priority and Severity use the vocabulary of the
+[Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md) only — no other scale.
+Read each bug's cell from the matrix and cite it in the draft (cheat-sheet line number + row text,
+verbatim). If the user gives a value the matrix cell does not support, or none, show the matching
+matrix row and ask; never invent a level.
+
+If the user references findings from a **prior testing-ticket** run in the same chat, reuse that evidence; do not invent details.
 
 **Wait** until A1–A3 are sufficient to draft. Ask follow-ups only for gaps.
 
@@ -123,17 +128,17 @@ The user may reference findings from a **prior testing-ticket** run in the same 
 | **GitHub** | `github.com/owner/repo` | `gh auth status`; repo exists |
 | **Jira** | Domain + project key from URL | MCP `getVisibleJiraProjects` or ask user to confirm browser login |
 
-If pre-flight fails, report and stop — do not create issues silently.
+If pre-flight fails (auth, repo missing), report and stop — MUST NOT create issues silently.
 
 **Go back:** If pre-flight fails, return to Phase A — Intake (A1 — Where to open bugs) once the user gives a reachable target; nothing is created meanwhile.
 
 ---
 
-## Phase B2 — Board-conflict re-check (hard gate, before drafting/confirm) [low freedom]
+## 🔴 GATE: Phase B2 — Board-conflict re-check (hard gate, before drafting/confirm) [low freedom]
 
 **For every bug about to be filed, search the tracker/board first** — a defect the team already
-discussed and concluded is *intended behavior* is not a bug, and re-filing it wastes a full
-file → retest → close-out round.
+discussed and concluded is *intended behavior* is not a bug, even if it looks wrong to you, and
+re-filing it wastes a full file → retest → close-out round.
 
 1. **Search the board** for existing or closed tickets covering the same **screen / field / message /
    behavior** as each candidate bug. On Jira use `searchJiraIssuesUsingJql` (search summaries **and**
@@ -150,18 +155,38 @@ file → retest → close-out round.
      comment anchor) so they can verify the reasoning themselves.
    - **Duplicate — already open.** The same defect is already filed and unresolved → do not open a
      second one; point the user at the existing ticket.
-   - **No conflict.** No ticket settles it → proceed to Phase C for this candidate.
+   - **No conflict.** No ticket settles it → proceed to Phase E for this candidate.
 4. **Uncertain whether a match truly settles it?** Treat it as a **question to the user / PO, not a
    bug** — surface the ticket link and ask, rather than filing over a possible prior decision.
+5. **The search itself cannot run** (no tracker read access, MCP down, search error) → **STOP.**
+   Report the error verbatim, hold every candidate as **BLOCKED (board search not run)**, and do not
+   move to Phase E or Phase C until a search has completed for each candidate.
 
-Only candidates that clear this gate move to Phase C. Note in the confirm block that the board was
-checked (see Phase C).
+Only candidates that clear this gate move on — to Phase E, then Phase C. Note in the confirm block
+that the board was checked (see Phase C).
 
-**Go back:** A candidate that fails this gate (conflict or duplicate) leaves the batch here. If the user or PO answers an uncertain match with "still a bug", return to item 3 of this phase and decide that candidate again.
+(Root cause this prevents: re-filing a defect against a point the team already closed with an
+agreed-upon expected value.)
+
+**Go back:** A candidate that fails this gate (conflict or duplicate) leaves the batch here. If the user or PO answers an uncertain match with "still a bug", return to item 3 of this phase and decide that candidate again. After a blocked search (item 5), return to item 1 once access is restored.
 
 ---
 
-## Phase C — Confirm before create (hard gate) [low freedom]
+## Phase E — Falsification (before create) [high freedom]
+
+Runs here — after Phase B2, before the Phase C confirm — for every candidate that cleared B2.
+
+For each bug, if not already validated in a prior test:
+
+- One disproof attempt: intentional design? role-only? flake? **already settled in another ticket?**
+  (the board-conflict search is Phase B2 — do not skip it just because a bug "looks obvious").
+- Drop or mark **Needs Review** — only create **Confirmed** / user-approved **Likely** items.
+
+**Go back:** If the disproof attempt finds the item already settled in another ticket, return to Phase B2 — Board-conflict re-check for that candidate. Candidates that survive move to Phase C.
+
+---
+
+## 🔴 GATE: Phase C — Confirm before create (hard gate) [low freedom]
 
 Show:
 
@@ -173,7 +198,7 @@ Board check: {N candidates searched — M dropped as already-settled/duplicate, 
 Bug count:  {K}
 
 Draft summaries:
-  1. [{Severity}] {Module} — {title one line}
+  1. [{Priority}] {Module} — {title one line}
   2. ...
 
 (Full drafts below — review each body)
@@ -198,39 +223,38 @@ Follow [posting-discipline.md](references/posting-discipline.md).
 ```bash
 gh issue create --repo <owner/repo> \
   --title "<title>" \
-  --label "bug,severity:<level>" \
+  --label "bug,severity:<Severity>" \
   --body "<body>"
 ```
 
-Capture returned issue URL.
+`<Severity>` is the matrix row (Low / Medium / High / Urgent) cited in the draft. Capture the returned issue URL.
 
 ### Jira
 
 1. Lock **v2 wiki** (FE/UI) vs **v3 ADF** (API) per user format — do not switch mid-session.
 2. Prefer Atlassian MCP `createJiraIssue`.
-3. On MCP failure → JXA + Chrome fallback per posting-discipline (ASCII-only script, dry-run before post).
+3. **MCP fails** → pick the first path that applies, and say which one you used:
+   - macOS with a logged-in browser session → JXA + Chrome fallback per posting-discipline (ASCII-only script, dry-run before post);
+   - otherwise, Jira REST credentials configured (see [dependencies.md](../../../references/dependencies.md)) → REST on the locked path;
+   - otherwise → **STOP**: hand the approved drafts to the user to file manually, report the run as BLOCKED (no create path), and skip to Phase F only for anything the user files and links back.
+
+**Write the body in the markup of the path you post through**, from the first keystroke
+([jira-wiki-vs-markdown.md](../../../references/jira-wiki-vs-markdown.md) § The rule). One table, one rule:
+
+| Path | Body markup | Gates in jira-wiki-vs-markdown.md |
+|------|-------------|-----------------------------------|
+| MCP `createJiraIssue` | markdown (MCP converts it to ADF) | Post-post: re-fetch and confirm zero literal markup left in the rendered text |
+| REST v2 (`/rest/api/2/…`) — FE/UI lock | Jira wiki markup (`*bold*`, `----`, `\|\|header\|\|` with no divider row) | Pre-post string scan **and** post-post counts — both |
+| REST v3 (`/rest/api/3/…`) — API lock | ADF JSON | Post-post: re-fetch and confirm zero literal markup left in the rendered text |
+| JXA + Chrome fallback | the markup of the endpoint the script calls (v2 → wiki, v3 → ADF) | the gates of that endpoint's row |
+
+A markdown body on the v2 path returns HTTP 200 and renders as garbage — the gates are the only catch.
 
 Attach screenshots to Jira before embedding them in wiki bodies, and embed them **bare** —
 `!file.png!`, resized to ~600–640 px before upload. A width parameter puts a pipe inside a
-table cell and splits the row; the rule and its scanner live in the workspace at
-`tools/retest-guard/retest_rules.js` (rule `img-width-param`).
-
-**Write the body in the locked format's language.** MCP takes markdown; the v2 path takes wiki
-markup (`*bold*`, `----`, `||header||` with no divider row). A markdown body on the v2 path returns
-HTTP 200 and renders as garbage — run both gates in
-[jira-wiki-vs-markdown.md](../../../references/jira-wiki-vs-markdown.md) before and after posting.
-
----
-
-## Phase E — Falsification (before create) [high freedom]
-
-For each bug, if not already validated in a prior test:
-
-- One disproof attempt: intentional design? role-only? flake? **already settled in another ticket?**
-  (the board-conflict search is Phase B2 — do not skip it just because a bug "looks obvious").
-- Drop or mark **Needs Review** — only create **Confirmed** / user-approved **Likely** items.
-
-**Go back:** If the disproof attempt finds the item already settled in another ticket, return to Phase B2 — Board-conflict re-check for that candidate.
+table cell and splits the row. When the workspace carries `tools/retest-guard/retest_rules.js`,
+run its scanner (rule `img-width-param`); when it does not, check every embed by hand for a bare
+`!file.png!` and say so.
 
 ---
 
@@ -240,7 +264,10 @@ After Phase D create calls:
 
 1. List each issue with **URL or key** from tool output (not guessed).
 2. **Fix-verify round 1:** Open or fetch each link — confirm title/summary and body match approved draft.
-3. If mismatch (wrong project, truncated body, wrong severity) → fix via edit API or recreate per user direction → **re-fetch** each link.
+3. **🔴 GATE — mismatch** (wrong project, truncated body, wrong priority/severity): show the user the
+   draft-vs-destination difference and the proposed fix (edit in place, or recreate), and **wait for
+   approval**. Then fix via the edit API, or recreate — when recreating, also close or link the wrong
+   issue as a duplicate (with the same approval) so no stray issue stays behind → **re-fetch** each link.
 4. **Maximum 2 fix-verify rounds** — then report partial success honestly.
 5. If any create failed → report which succeeded and which failed.
 
@@ -251,7 +278,7 @@ MUST NOT say “all bugs created” until at least one full fix-verify round pas
 ```text
 ━━━ Create bug — complete ━━━
 Verdict: CREATED {N}/{N} — verified at destination
-| # | Target  | Issue              | Severity |
+| # | Target  | Issue              | Priority |
 |---|---------|--------------------|----------|
 | 1 | Jira    | PROJ-456 (link)    | High     |
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -268,7 +295,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] Each URL opened or fetched — title visible.
 - [ ] Close-out includes `Verdict: CREATED x/y`.
 - [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (Create bug section).
-- [ ] Suggest **retest** after fix; handoff if blocked.
+- [ ] Offer **retest** after the fix; handoff if blocked.
 
 **Go back:** If any item above is unchecked, return to the phase it names (B2, D or F) and redo from there; do not report done.
 
@@ -298,5 +325,6 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 |------|---------|
 | MUST NOT invent reproduction steps | False bugs |
 | MUST search the board (Phase B2) before filing; drop any bug already settled as intended in a prior/closed ticket and report it with the reference link | Re-filing a closed decision wastes a full retest round |
+| MUST take Priority and Severity from the bug-priority-matrix and cite the cell | An invented scale cannot be compared with the verdicts that use the matrix |
 | MUST verify each issue URL in Phase F | Silent partial failure |
 | MUST lock Jira v2/v3 per session when user specifies | Rewrite cost |

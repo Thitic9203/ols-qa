@@ -3,18 +3,18 @@
 ## GitHub
 
 - `gh issue create` — use HEREDOC for body; capture stdout for issue URL.
-- Labels: `bug`, `severity:<level>`, `module:<name>` when supported.
+- Labels: `bug`, `severity:<Severity>` (matrix row: Low / Medium / High / Urgent), `module:<name>` when supported.
 
 ## Jira
 
-| Bug type (user says) | API style | Body markup |
-|----------------------|-----------|-------------|
-| FE / UI | v2 comment style for descriptions if creating via UI; create issue fields per MCP | Wiki |
-| API / logic | v3 | ADF / markdown per MCP |
-
-Lock format at confirm (Phase C).
+Which body markup each create path takes, and which gate runs on it, is one table in
+[WORKFLOW.md § Phase D — Jira](../WORKFLOW.md#jira). Lock format at confirm (Phase C).
 
 ## Jira MCP → JXA fallback
+
+Used only when WORKFLOW Phase D's MCP-failure branch selects it (macOS with a logged-in browser
+session). Otherwise follow the next branch there — REST with credentials, or hand the drafts to the user.
+
 
 1. Build body; `JSON.stringify` then escape non-ASCII to `\uXXXX` for ASCII-only `.js` file.
 2. Dry-run decode before `osascript`.
