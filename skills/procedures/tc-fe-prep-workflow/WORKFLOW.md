@@ -1,8 +1,8 @@
 ---
 name: tc-fe-prep-workflow
 description: |
-  Prepare frontend manual test cases (Thai, ราชบัณฑิตยสภา) from a Jira story (AC/EC) with mandatory AC/EC coverage review and ISTQB/29119-3 quality check, then draft table in chat, export a Qase-import CSV (Import_Qase_{ISSUE_KEY}.csv) attached to one comment on that story only, and close with a four-axis final TC review report (AC/EC alignment, spelling, numbering, scope).
-  Use when the user asks for FE test cases, manual TC from acceptance criteria, draft TC comment on Jira, or TC FE Preparation from Helix (/tc-fe-prep).
+  Prepare frontend manual test cases (Thai, ราชบัณฑิตยสภา) from a Jira story (AC/EC) with mandatory AC/EC coverage review and ISTQB/29119-3 quality check, show an HTML draft for approval, then post one comment on that story only with the Draft_Jira and Import_Qase (plus per-Type) CSV attachments, and close with a four-axis final TC review report (AC/EC alignment, spelling, numbering, scope).
+  Use when the user asks for FE test cases, manual TC from acceptance criteria or edge cases (even without saying FE), a TC comment on a Jira story, or TC FE Preparation from Helix (/tc-fe-prep).
   Do NOT use for API-only Swagger test cases (tc-api-prep-workflow), Playwright execution (testing-ticket-workflow), retest-after-fix (retest-bug-workflow), or opening bug tickets (create-bug-workflow).
 ---
 
@@ -73,7 +73,7 @@ Follow [shared-preamble.md](../../../references/shared-preamble.md). Ask one foc
 
 MUST refuse to start until the user provides a **Jira story key or browse URL** — because TC rows must trace to AC/EC on a specific issue.
 
-If missing, stop with the refusal template from skill-rules-style.md (list missing items; do not invent a story).
+If missing, stop with the refusal template from [skill-rules-style.md](../../../references/skill-rules-style.md) — Refusal-first (list missing items; do not invent a story).
 
 ## Prerequisites (read before Step 0)
 
@@ -93,6 +93,11 @@ If the user did not provide a ticket key or URL:
 
 **Wait for an answer.** Extract `{ISSUE_KEY}` and `{JIRA_DOMAIN}` from the URL when possible.
 
+**Failure branch (reading the story):**
+- The issue cannot be read (any non-200 such as 401 / 403 / 404, network error, or empty body) → report the exact error and the key you used, and **stop**. Do not draft from memory, a cached copy or another issue.
+- The issue is not a story (e.g. Bug, Task, Sub-task) → tell the user the type you read and ask whether to continue on it or which story to use; wait for the answer.
+- The story has no AC/EC labels (no `AC_` / `EC_` items or equivalent acceptance-criteria section) → **stop** with the refusal template and ask which source defines the criteria (another field, a linked page, or the user's list). Never invent AC/EC from the description.
+
 ---
 
 ## Step 1 — Load or create project config [medium freedom]
@@ -101,7 +106,7 @@ If workspace-guide-discovery already loaded a guide → use it and go to Step 2.
 
 Otherwise:
 
-1. Ask using `references/project-config-template.md` (one section at a time).
+1. Ask using [project-config-template.md](references/project-config-template.md) (one section at a time).
 2. Offer to save answers into `references/{PROJECT}-tc-fe-prep-guide.md` in the user’s repo.
 
 Config should capture: Jira domain, default story vs sub-task policy, portal names, shared login role, CSV column headers (if non-default), export format preference (`csv` / `xlsx`; default `csv`), and publish method preference.
@@ -158,14 +163,14 @@ Do NOT post the TC table as markdown in chat. Instead:
 
 ## Step 6 — Save artifacts in the user's workspace [medium freedom]
 
-**Suite gate (do before writing the CSV):** The Qase CSV needs a **Suite** value per row. Inspect the project's existing Qase suite tree first (Qase project code: the project guide) (Qase web UI → Test cases → suite sidebar, or ask the user to paste the current suite list — there is no Qase MCP) and reuse a fitting suite; only propose a new suite (with user approval) when none fits. Never assign a suite blind, never create a duplicate. Full rules: [qase-import-format.md](references/qase-import-format.md) — Suite rules.
+**Suite gate (do before writing the CSV):** The Qase CSV needs a **Suite** value per row. Inspect the project's existing Qase suite tree first (Qase project code: the project guide) (Qase web UI → Test cases → suite sidebar, or ask the user to paste the current suite list — there is no Qase MCP) and reuse a fitting suite; only propose a new suite (with user approval) when none fits. Never assign a suite blind, never create a duplicate. Full rules: [qase-import-format.md](references/qase-import-format.md) — Suite rules. In the same pass, check the project's **Type** and **Status** option lists (Qase UI → project settings, or the import wizard preview, or ask the user to paste them) contain `Unit Test` / `Integration Test` / `System Test` and `Done` in Status; if any is missing, stop and tell the user before writing the CSV ([qase-import-format.md](references/qase-import-format.md) — Field option values).
 
-After approval (and Suite confirmed), write **four files** inside the user's project (paths relative to workspace root):
+After approval (and Suite confirmed), write the files below inside the user's project (paths relative to workspace root) — each row's Condition decides whether it is written: always the `.md` and the two CSVs (or their xlsx pair when the user asked for Excel), plus one typed CSV per Type that has TCs (0–3):
 
 | File | Condition | Purpose |
 |------|-----------|---------|
 | `references/{ISSUE_KEY}_FE_TC.md` | always | Canonical markdown (prep block + Jira table) |
-| `references/Draft_Jira_{ISSUE_KEY}.csv` | always (unless xlsx requested) | **Jira-format CSV** — same column set as the chat draft table (10 columns); use as source-of-truth for the comment table |
+| `references/Draft_Jira_{ISSUE_KEY}.csv` | always (unless xlsx requested) | **Jira-format CSV** — same 10 columns as the approved Step 5 HTML draft; use as source-of-truth for the comment table |
 | `references/Import_Qase_{ISSUE_KEY}.csv` | always (unless xlsx requested) | **Qase import CSV** — schema per [qase-import-format.md](references/qase-import-format.md) |
 | `references/Draft_Jira_{ISSUE_KEY}.xlsx` / `references/Import_Qase_{ISSUE_KEY}.xlsx` | user explicitly requested Excel/xlsx | Excel versions of both files above |
 | `references/Unit_Test_{ISSUE_KEY}.csv` | only if Type = `Unit Test` TCs exist | **Typed content CSV** — 13 English columns; TCs filtered to Type = `Unit Test`, content mapped to Unit Test template columns (Step 6 mapping); Function/Sub Function groupings from ticket title + Services Impacted |
@@ -250,7 +255,7 @@ After writing all CSV files, build ADF JSON for the **slim 6-column Jira comment
 4. Build complete ADF document with one literal `__ATT{n}_ID__` placeholder per uploaded file in the attachment link nodes — n = the file's upload position (Step 7 order), so 2 to 5 placeholders
 5. Store ADF string in agent context (transient — not written to a file). Exception: when the user asks for a draft without posting ("draft only" / "do not post"), write it to `Jira_comment_{ISSUE_KEY}.adf.json` plus a readable `Jira_comment_{ISSUE_KEY}.preview.md`, per [jira-comment-adf-template.md](references/jira-comment-adf-template.md) — never a Markdown file as the comment body
 
-Then report to user: "Files saved. ADF ready. Publishing..."
+Then report to user: "Files saved. ADF ready."
 
 ---
 
@@ -263,6 +268,8 @@ Then report to user: "Files saved. ADF ready. Publishing..."
 ---
 
 ## Step 7 — Publish to Jira (story only) [low freedom]
+
+🔴 **GATE:** proceed only if the user approved this exact draft in Step 5 (or, for an unattended run, the Step 6.5 Slack approval rule). Any edit after approval returns to Step 5.
 
 **Target:** `{ISSUE_KEY}` story the user specified.
 
@@ -439,62 +446,4 @@ Complete [verify-closing-checklist.md](../../../references/verify-closing-checkl
 
 ## MUST / NEVER
 
-Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). Skill-specific:
-
-| Rule | Because |
-|------|---------|
-| MUST refuse without story key/URL | No traceable AC/EC source |
-| MUST NOT comment on sub-tasks or other issues | Scope is one story |
-| MUST NOT add TC outside story AC/EC | Traceability |
-| MUST write all TC content in Thai (Step 3b) — there is no English-only mode | Workspace standard; English mode is not offered for FE TC |
-| MUST re-fetch the TC glossary from its published sheet at Step 2.6 every run, and post the source URL, row count, and diff in chat before designing TCs | The team edits the sheet between runs; a cached CSV is not evidence of the current words |
-| MUST treat the glossary as the first authority for Thai wording — above the Step 3b fallback table, above remembered wording, above the UI-label exception | Two sources of truth guarantee drift; the sheet is the one the team maintains |
-| MUST NOT normalise, spell-fix, dedupe, or sort `{EVIDENCE_REPO}/references/tc-glossary.csv` — it is a verbatim mirror; typos are fixed in the sheet by its owner | A CSV that differs from the sheet is a silent drift bug |
-| MUST stop and ask the user when a glossary Thai cell is empty, or when one English key carries conflicting Thai meanings across rows | The agent has no authority to coin project terminology |
-| MUST NOT write a guessed term and tag it "provisional", "pending confirmation", or "documented fallback" instead of asking | Tagging a guess is not asking; the guess still reaches the deliverable |
-| MUST use ราชบัณฑิตยสภา approved Thai term first (Step 3b); fall back to English only when no official term exists or the UI label is English | Authoritative Thai is more professional than ad-hoc transliteration or unnecessary English |
-| MUST post the Step 4.5 Thai↔English term table and get user confirmation BEFORE writing any TC content to a deliverable file — the Step 4f reviewer working draft, outside the repo, is the only exception | User must approve term choices before they are committed to the real TC file |
-| MUST use formal Thai language level throughout | TCs are delivered to internal and external teams |
-| MUST keep Type to exactly `System Test` / `Unit Test` / `Integration Test` (Step 3d) | These are the project's Qase Type values; other values break import |
-| MUST set Status = `Done` on every Qase CSV row | Workspace rule for the project's Qase import |
-| MUST inspect the project's existing Qase suites and reuse a fitting one; create a new suite only with user approval and never a duplicate | Duplicate/colliding suites corrupt the existing Qase tree |
-| MUST verify the project's Qase Type and Status options exist before import; stop and tell user if a value is missing | Qase silently resets unknown Type/Status values on import |
-| MUST produce both `Draft_Jira_{ISSUE_KEY}.csv` (Jira 10-col schema) and `Import_Qase_{ISSUE_KEY}.csv` (Qase schema) | Two different audiences: comment table consumers and Qase importers |
-| MUST upload both CSV files before posting the comment; embed both as footer links | Footer must have two clickable download lines — one per file |
-| MUST use simple sequential numbers (1, 2, 3) as TC IDs in all outputs — no prefix, no padding, do not ask user | Fixed workspace standard |
-| MUST sort Jira comment + Draft_Jira CSV + Import_Qase CSV by Type first (Unit Test → Integration Test → System Test), then ACs ascending, then ECs ascending within each Type group; TC IDs run continuously 1, 2, 3 across whole file (Step 3e) | All three outputs share the same Type-first ordering for consistency |
-| MUST NOT invent Type test cases that lack an AC/EC trace | Type is a label on existing coverage, not a reason to add out-of-scope rows |
-| MUST add Remark block for any Type with zero test cases | Makes coverage gaps explicit rather than silently absent |
-| MUST NOT reference agent-machine absolute paths in Jira | Other users cannot reproduce |
-| MUST run Step 2.5 conflict check before designing TCs | Contradictions between ticket and PRD/Figma invalidate TCs built without resolution |
-| MUST ask for PRD/Figma links if not found in ticket (Step 2.5a) | Cannot cross-reference without sources; one question covers both at once |
-| MUST collect last-updated datetime for each source before comparing (Step 2.5b) | Recency determines which source is stronger truth; without it the recommendation is guesswork |
-| MUST convert all datetimes to Bangkok time (ICT, UTC+7) before displaying | User's working timezone is Bangkok; raw UTC or platform timestamps cause confusion |
-| MUST format datetimes as `DD Mon YYYY HH.MM AM/PM` (e.g. `11 Dec 2026 11.45 AM`) | Consistent, readable format agreed with user |
-| MUST show "Newer source (ICT)" column with datetime per conflict row in the report | User needs to know which version to trust and exactly how much newer it is |
-| MUST NOT start Step 3 while conflicts from Step 2.5 are unresolved | Designing TCs on contradictory requirements creates rework |
-| MUST post the Step 2.5 conflict report block even when no conflicts found | Gives user visibility that cross-check was done |
-| MUST run Step 4 review before draft table | Prevents out-of-scope cases reaching Jira |
-| MUST run the Step 4 review as a LOOP that exits only on a clean (zero-comment) round — no fixed 2-round cap — and MUST run the Step 4f independent reviewer-agent pass (≥2 reviewers per round for a thorough/"superpowers" request) | One or two passes can still leave fabricated/uncovered cases; the exit condition is a clean round, not a round count |
-| MUST report the verdict of EVERY review round to the user as it finishes (round number + CLEAN/defects + fixes applied) — never batch rounds into one summary, never go silent between rounds | The user must always know a round ran and what it found; silent multi-round work reads as a stalled session |
-| MUST apply tc-quality-standards on every row | ISTQB / 29119-3 consistency |
-| MUST convert `<br>` to Jira-native line breaks before posting (see [jira-linebreak-conversion.md](../../../references/jira-linebreak-conversion.md)) | `<br>` renders as literal text on Jira |
-| MUST pass post-publish review ([jira-comment-post-review.md](../../../references/jira-comment-post-review.md)) before reporting "commented" or "done" to user | Prevents false success claims with broken formatting |
-| MUST post Step 7.5 final review report ([tc-final-review-report.md](references/tc-final-review-report.md)) with overall **PASS** before Step 8 or any "TC prep complete" message | User receives certified four-axis review of final TC |
-| MUST attach CSV/Excel to Jira issue when file was generated (not just workspace) | User expects downloadable file on the issue |
-| MUST NOT use `\n` inside **chat draft** markdown table cells | Breaks table row in markdown renderers |
-| MUST generate a typed CSV for each Type that has TCs — no user selection needed; skip if a Type has zero TCs | Only Types with actual TCs produce a deliverable file |
-| MUST filter TCs by Type into each typed CSV: Type = `Unit Test` → Unit_Test; `Integration Test` → Integration_Test; `System Test` → System_Test | Each template's audience expects only its own test type |
-| MUST map Jira draft columns to each template's columns per Step 6 mapping tables — derive values for columns with no direct source; only execution-result columns (Actual Result, Test status, Test Date, Test By, ผลการทดสอบ, วันที่ทดสอบ, ผู้ทดสอบ) are left blank | Column names differ between Jira and typed templates; all non-execution columns must have correct content |
-| MUST use ticket title/feature name as Function and Services Impacted as Sub Function in Unit_Test CSV | Unit Test template requires Function/Sub Function grouping structure |
-| MUST skip typed CSV for a Type that has zero TCs — do NOT generate an empty file | Empty files are not useful deliverables |
-| MUST add a note line in the Jira comment for each skipped type: `ไม่มี TC ประเภท [type] สำหรับ ticket นี้` | User must know explicitly that the type was absent, not silently missing |
-| MUST upload only generated typed CSVs to Jira; embed footer links only for uploaded files (after Draft_Jira + Import_Qase) | No broken or phantom links |
-| MUST append disclaimer as last line of comment after all attachment links — exact text, no translation | Required quality gate for all TC FE deliverables |
-| **MUST NOT drop any required comment element when regenerating or re-posting** — every rebuild MUST include: (1) table with all TC rows, (2) Attachments heading + all file links, (3) Remark block when Figma/PRD absent or any Type has zero TCs, (4) Disclaimer as last line. Run pre-publish re-check table before every post. Fixing TC text ≠ permission to omit the rest. | Partial rebuild silently loses mandatory elements — user must not discover missing content by inspection |
-| MUST NOT invent or paraphrase AC/EC labels or criterion text anywhere in any CSV — use verbatim text from the ticket only | Invented AC/EC creates false traceability and corrupts test coverage records |
-| MUST run Step 2a AC/EC internal consistency check after Step 2 and before Step 2.5 | Duplicate/redundant/contradictory AC/EC within the ticket wastes TC effort or produces conflicting test cases |
-| MUST include Step 2a results in the pre-draft review HTML even when no issues found | Gives user visibility that the check was done |
-| MUST NOT proceed to Step 3 while Step 2a issues are unresolved | TC design on inconsistent AC/EC creates rework |
-| MUST follow user's decision on how to handle flagged AC/EC (skip, draft all, fix first) | User owns the AC/EC scope — AI does not unilaterally remove or merge items |
-| MUST set Test Status = `BLOCKED` on every case whose spec is uncertain, with a per-row Remark naming actor (**the QA Owner goes and contacts**), contact target, topic, and unblock condition (Step 4e) — never guess, never leave an uncertainty out of the sheet | A guessed TC produces a false verdict; an unattributed "waiting" remark means nobody acts on it |
+Read and follow [must-never.md](references/must-never.md) before any write or post — the skill-specific MUST / NEVER table (every row is binding), plus the shared rules in [shared-must-never.md](../../../references/shared-must-never.md).

@@ -29,6 +29,7 @@ Claude Code shortcut: `/tc-fe-prep` → [commands/tc-fe-prep.md](../../commands/
 Every must-read file for this workflow, linked directly from here. References already linked above are not repeated.
 
 - [WORKFLOW.md](../procedures/tc-fe-prep-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
+- [must-never.md](../procedures/tc-fe-prep-workflow/references/must-never.md) — before any write or post — the skill-specific MUST / NEVER table.
 - [requirement-gates.md](../procedures/tc-fe-prep-workflow/requirement-gates.md) — before Step 3 — read and follow Steps 2a, 2.5 and 2.6, end to end.
 - [design-and-review.md](../procedures/tc-fe-prep-workflow/design-and-review.md) — before Step 5 — read and follow Steps 3, 4 and 4.5, end to end.
 - [csv-export-rules.md](../../references/csv-export-rules.md) — when exporting the CSV file(s).
@@ -54,7 +55,7 @@ Every must-read file for this workflow, linked directly from here. References al
 - [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) — read before recording any result that is not PASSED.
 - [playwright-preflight.md](../../references/playwright-preflight.md) — read before any Playwright run.
 - [portable-content.md](../../references/portable-content.md) — read before writing any repo, path, ticket number or project value into the skill output; nothing project-specific is hardcoded.
-- [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read when a QA follow-up could be suggested.
+- [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read before suggesting any QA follow-up at session close.
 - [qa-debug-discipline.md](../../references/qa-debug-discipline.md) — read when a test is flaky or a tool errors.
 - [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — read before any completion claim.
 - [resilient-selectors.md](../../references/resilient-selectors.md) — read when writing or fixing Playwright selectors.
