@@ -306,7 +306,7 @@ is green.
 
 **Design + depth reconciliation (same pass, fail-closed).**
 
-- [ ] Every UI row carries a **design node link**, or the Phase B BLOCKED-with-reason naming who was
+- [ ] Every UI scenario was compared against a design node named on the report header's `Design ref:` line (F2 — no per-row column), or the Phase B BLOCKED-with-reason naming who was
       asked for it. No UI row is PASSED on an assumed expected.
 - [ ] Every in-scope width has results for every in-scope page, and the overflow/overlap checks were
       **measured** (numbers in the notes), not judged by eye. Out-of-scope widths are stated as such.
