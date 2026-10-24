@@ -1,8 +1,8 @@
 # Qase import format (FE TC)
 
-The CSV attached to the Jira comment is a **Qase.io import file** for the OLS project
-(`https://app.qase.io/project/OLS`). Filename: `Import_Qase_{ISSUE_KEY}.csv`
-(e.g. `Import_Qase_OLS-142.csv`).
+The CSV attached to the Jira comment is a **Qase.io import file** for the
+project's Qase project (`https://app.qase.io/project/{QASE_PROJECT}` — the code comes from the
+project guide). Filename: `Import_Qase_{ISSUE_KEY}.csv` (e.g. `Import_Qase_PROJ-100.csv`).
 
 Qase import uses a column-mapping wizard — header names are free text, you map each to a
 Qase field during import. Use the exact column set below; do not add the cut fields.
@@ -17,7 +17,7 @@ Qase field during import. Use the exact column set below; do not add the cut fie
 | **Priority** | Priority | `High` / `Medium` / `Low` |
 | **Type** | Type | `System Test` / `Unit Test` / `Integration Test` only |
 | **Status** | Status | `Done` (always) |
-| **Suite** | Suite | Existing OLS suite path — see Suite rules below |
+| **Suite** | Suite | Existing suite path in the project — see Suite rules below |
 | **Steps – Action** | Step action | Numbered manual steps (Thai) |
 | **Steps – Expected result** | Step expected result | Numbered assertions (Thai) |
 | **Steps – Data** | Step data | Test data for the step |
@@ -36,18 +36,18 @@ Qase field during import. Use the exact column set below; do not add the cut fie
 | **Type** | `System Test` · `Unit Test` · `Integration Test` |
 | **Status** | `Done` (fixed — every row) |
 
-> ⚠️ **AC/EC is not a native Qase field.** It maps to a custom field configured in the OLS project. If OLS has no custom field named `AC/EC` (or equivalent), this column will be silently ignored on import — no error shown. Verify the OLS custom fields before importing, and note the correct field name to map to in the import wizard.
+> ⚠️ **AC/EC is not a native Qase field.** It maps to a custom field configured in the Qase project. If the project has no custom field named `AC/EC` (or equivalent), this column will be silently ignored on import — no error shown. Verify the project's custom fields before importing, and note the correct field name to map to in the import wizard.
 
 > ⚠️ **Type and Status are NOT Qase defaults.** Stock Qase Type is
 > `Functional/Smoke/Regression/…` and Status is `Actual/Draft/Deprecated`. The values
-> above only import correctly if OLS has them configured as custom values. **Verify the
-> OLS project's Type and Status options before import** (Qase UI → project settings, or
+> above only import correctly if the project has them configured as custom values. **Verify the
+> project's Type and Status options before import** (Qase UI → project settings, or
 > the import wizard preview). If a value does not exist, the import silently resets it —
 > stop and tell the user, do not let rows import with wrong Type/Status.
 
 ## Suite rules (mandatory — no duplicates)
 
-1. **Inspect the OLS project's existing suite tree first** (Qase UI → Test cases →
+1. **Inspect the project's existing suite tree first** (Qase UI → Test cases →
    suite sidebar). Record the current suites before assigning anything.
 2. If an existing suite already fits the test cases → **reuse it** (use its exact path).
 3. Only propose a **new** suite when nothing fits. A new suite MUST NOT duplicate, rename,

@@ -2,45 +2,51 @@
 
 ## Comment structure
 
-```text
-Draft TC FE as below
+The comment is posted as **ADF** (WORKFLOW Step 7) — never as a markdown body. Its shape, in order
+(the readable preview of the same structure: [jira-comment-adf-template.md](jira-comment-adf-template.md)):
 
-**Shared data preparation (all TCs):**
+```text
+Draft TC FE as below — ดูรายละเอียด Precondition / Steps / Expected ได้ในไฟล์แนบ
+
+Shared data preparation (all TCs):            ← ADF orderedList
 1. ...
 2. ...
 
-**Note — Precondition column:** After shared prep (above), complete Precondition items before Test Steps.
+Slim summary table — 6 columns (ADF table; headers are tableHeader nodes, bold by default):
+| AC/EC Ref | Services Impacted | ID | Test Title           | Priority | Type        |
+| AC_01     | Media Library     | 1  | ...                  | High     | System Test |
+| EC_02     | 1. order-service 2. api-gateway | 2 | ...   | Medium   | System Test |
 
-| **Acceptance Criteria** | **Services Impacted** | ... |
-| --- | --- | --- |
-| AC_01: ... | - Service | TC_... | ... |
+Attachments — one link per uploaded file (link text = filename, href from __ATT{n}_ID__):
+Draft_Jira_{ISSUE_KEY}.csv — ตารางเทสเคส (Jira format)
+Import_Qase_{ISSUE_KEY}.csv — Qase import file พร้อม import เข้า Qase project
+Unit_Test_{ISSUE_KEY}.csv / Integration_Test_{ISSUE_KEY}.csv / System_Test_{ISSUE_KEY}.csv — only if generated
 
----
-
-📎 **Attachments:**
-- [Draft_Jira_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ID1}/Draft_Jira_{ISSUE_KEY}.csv) — ตารางเทสเคส (Jira format)
-- [Import_Qase_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ID2}/Import_Qase_{ISSUE_KEY}.csv) — Qase import file พร้อม import เข้า OLS project
-- [Unit_Test_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ID3}/Unit_Test_{ISSUE_KEY}.csv) — Unit Test *(include only if generated)*
-- [Integration_Test_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ID4}/Integration_Test_{ISSUE_KEY}.csv) — Integration Test *(include only if generated)*
-- [System_Test_{ISSUE_KEY}.csv](https://{JIRA_DOMAIN}/secure/attachment/{ID5}/System_Test_{ISSUE_KEY}.csv) — System Test *(include only if generated)*
+Skip-note per absent Type · Remark block (when it applies) · Disclaimer (last node)
 ```
+
+IDs are plain numbers (design-and-review Step 3c); AC/EC Ref is the code only; Services Impacted
+follows the Step 3 column rule (one plain name, or bold-numbered inline for 2+ — never a `- ` bullet).
+Precondition, Test Data, Test Steps and Expected Result live only in the CSV attachments.
 
 ## Table rules
 
 | Rule | Detail |
 |------|--------|
 | One row per TC | Never merge multiple TCs into one row |
-| Line breaks in cells | Use `<br>` not raw newlines in markdown source |
-| Numbered lists in cells | `1. First<br>2. Second<br>3. Third` |
-| Header emphasis | **Bold every header cell** \u2014 wrap each column name in `**...**` in the chat draft, Jira comment, and `.md` file e.g. `\| **Acceptance Criteria** \| **Test Title** \|` |
+| Line breaks in cells | `.md` file and HTML draft: `<br>`, not raw newlines. ADF: `hardBreak` nodes (the slim table has none) |
+| Numbered lists in cells | `1. First<br>2. Second<br>3. Third` (`.md` / HTML draft) |
+| Header emphasis | `.md` file: wrap each column name in `**...**`. Jira comment (ADF): `tableHeader` nodes — no `**` anywhere in ADF text. HTML draft: plain `<th>` |
 
 ## Export file rules
 
 | Format | Header bold | Detail |
 |--------|-------------|--------|
-| Chat draft / Jira comment / `.md` | `**Column Name**` markdown bold | Apply to every column header |
+| `.md` file | `**Column Name**` markdown bold | Apply to every column header |
+| Jira comment (ADF) | `tableHeader` node (bold by default) | Never `**` in ADF text — it renders literally |
+| HTML draft | plain `<th>` | No `**` |
 | `.xlsx` | `Font(bold=True)` via openpyxl | Applied to row 1 of the worksheet |
-| `.csv` | Plain text \u2014 **no bold** | CSV format does not support text formatting; header row is plain column names only |
+| `.csv` | Plain text — **no bold** | CSV format does not support text formatting; header row is plain column names only |
 
 ### Additional CSV rules
 
@@ -48,8 +54,8 @@ Draft TC FE as below
 |------|--------|
 | Encoding | UTF-8 with BOM (`encoding='utf-8-sig'`) for Excel |
 | Header | Same 10 column names as the table (plain text, no `**`) — applies to `Draft_Jira_*` file; `Import_Qase_*` uses Qase schema |
-| Cell newlines | Real `\n` inside quoted CSV fields \u2014 use `csv.writer` |
-| HTML tags | Strip all; `<br>` variants \u2192 `\n` |
+| Cell newlines | Real `\n` inside quoted CSV fields — use `csv.writer` |
+| HTML tags | Strip all; `<br>` variants → `\n` |
 
 ## Mandatory `<br>` conversion before Jira post
 
@@ -63,7 +69,7 @@ Full rules: [jira-linebreak-conversion.md](../../../../references/jira-linebreak
 | ADF JSON | `{"type": "hardBreak"}` |
 | Wiki (v2) | `\\` |
 
-**Chat draft keeps `<br>`** (readable in markdown). **Jira body MUST NOT contain `<br>`.**
+**The `.md` file and HTML draft keep `<br>`.** **Jira body MUST NOT contain `<br>`.**
 
 ## ADF notes (when using API/browser ADF)
 

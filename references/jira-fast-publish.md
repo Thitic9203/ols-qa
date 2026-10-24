@@ -10,7 +10,7 @@ Single-JS publish patterns for Jira comment + CSV upload. Reduces publish from 8
 
 - [Decision rule — which method](#decision-rule--which-method)
 - [Pattern A — Pre-set data (Call 1)](#pattern-a--pre-set-data-call-1)
-- [Pattern B — Upload CSVs + post comment (Call 2)](#pattern-b--upload-csvs--post-comment-call-2)
+- [Pattern B — Upload files + post comment (Call 2)](#pattern-b--upload-files--post-comment-call-2)
 - [Pattern C — Read result (Call 3)](#pattern-c--read-result-call-3)
 - [Pattern D — Comment-only, no CSVs (retest-bug > 3 table rows)](#pattern-d--comment-only-no-csvs-retest-bug--3-table-rows)
 - [ADF pre-compute rules](#adf-pre-compute-rules)
@@ -40,17 +40,22 @@ markdown body on the v2 path posts fine (HTTP 200) and renders wrong: `**x**` �
 
 ## Pattern A — Pre-set data (Call 1)
 
-Always call this BEFORE Pattern B/D. Sets CSV content and ADF body on `window.*` to avoid JS string escaping issues.
+Always call this BEFORE Pattern B/D. Sets the files and the ADF body on `window.*` to avoid JS string escaping issues.
 
 ```javascript
 // Call 1 — set data on window (avoids escaping nightmares with quotes, Thai chars, newlines)
-window.__csv1Data = '{CSV1_CONTENT_ESCAPED}';  // Draft_Jira CSV — JSON.stringify'd
-window.__csv2Data = '{CSV2_CONTENT_ESCAPED}';  // Import_Qase CSV — JSON.stringify'd
-window.__adfBody = '{ADF_JSON_STRING}';        // Pre-built ADF with __ATT1_ID__ / __ATT2_ID__ placeholders
-'data set ok';
+// One entry per file, in upload order. File n (1-based) fills placeholder __ATT{n}_ID__.
+window.__files = [
+  {name: '{FILE1_NAME}', data: {FILE1_CONTENT_JSON}},   // e.g. Draft_Jira_{ISSUE_KEY}.csv
+  {name: '{FILE2_NAME}', data: {FILE2_CONTENT_JSON}}    // e.g. Import_Qase_{ISSUE_KEY}.csv — add one entry per extra file
+];
+window.__adfBody = '{ADF_JSON_STRING}';  // Pre-built ADF with one __ATT{n}_ID__ placeholder per file
+'data set ok: ' + window.__files.length + ' file(s)';
 ```
 
-**Generating the escaped strings:** Use `JSON.stringify(csvContent)` in the Python/inline script that builds the CSV. This handles Thai characters, quotes, and newlines. Paste the result directly into the pattern above.
+**Generating the escaped strings:** Use `JSON.stringify(content)` in the Python/inline script that builds each file. This handles Thai characters, quotes, and newlines. Paste each result directly as a `data:` value above.
+
+**Legacy form (still accepted by Pattern B):** `window.__csv1Data` / `window.__csv2Data` with filenames passed in Pattern B. Use `window.__files` for anything new, and always when there are more than two files or exactly one.
 
 **MUST NOT navigate** after Pattern A — navigation clears `window.*`. Navigate to the Jira issue page first, then run Pattern A.
 
@@ -58,19 +63,28 @@ window.__adfBody = '{ADF_JSON_STRING}';        // Pre-built ADF with __ATT1_ID__
 
 ---
 
-## Pattern B — Upload CSVs + post comment (Call 2)
+## Pattern B — Upload files + post comment (Call 2)
 
-Runs after Pattern A. Reads `window.__csv1Data`, `window.__csv2Data`, `window.__adfBody`.
+Runs after Pattern A. Uploads every file in `window.__files` in order, replaces each `__ATT{n}_ID__` with the id of file n, then posts `window.__adfBody`.
 
 ```javascript
 (function(){
   var issueKey = '{ISSUE_KEY}';
   var baseUrl = '/rest/api/3/issue/' + issueKey;
   var hdrs = {'X-Atlassian-Token': 'no-check'};
-  window.__fastPublish = {status: 'running'};
+  var files = window.__files || [
+    {name: '{CSV1_FILENAME}', data: window.__csv1Data},
+    {name: '{CSV2_FILENAME}', data: window.__csv2Data}
+  ].filter(function(f){ return typeof f.data === 'string'; });
+  var attIds = [];
+  function state(extra){
+    window.__fastPublish = Object.assign({attIds: attIds.slice(), total: files.length,
+      att1Id: attIds[0], att2Id: attIds[1]}, extra);
+  }
+  state({status: 'running'});
 
   function uploadFile(name, content) {
-    var blob = new Blob(['﻿', content], {type: 'text/csv;charset=utf-8'});
+    var blob = new Blob(['\uFEFF', content], {type: 'text/csv;charset=utf-8'});
     var file = new File([blob], name, {type: 'text/csv'});
     var fd = new FormData();
     fd.append('file', file);
@@ -87,42 +101,31 @@ Runs after Pattern A. Reads `window.__csv1Data`, `window.__csv2Data`, `window.__
     }).then(function(r){ return r.json(); });
   }
 
-  var att1Id, att2Id;
-  uploadFile('{CSV1_FILENAME}', window.__csv1Data)
-    .then(function(r1){
-      att1Id = r1[0].id;
-      window.__fastPublish = {status: 'csv1_done', att1Id: att1Id};
-      return uploadFile('{CSV2_FILENAME}', window.__csv2Data);
-    })
-    .then(function(r2){
-      att2Id = r2[0].id;
-      window.__fastPublish = {status: 'csv2_done', att1Id: att1Id, att2Id: att2Id};
-      var body = window.__adfBody
-        .replace('__ATT1_ID__', att1Id)
-        .replace('__ATT2_ID__', att2Id);
+  var chain = Promise.resolve();
+  files.forEach(function(f, i){
+    chain = chain.then(function(){ return uploadFile(f.name, f.data); })
+      .then(function(r){ attIds.push(r[0].id); state({status: 'file' + (i + 1) + '_done'}); });
+  });
+  chain.then(function(){
+      var body = window.__adfBody;
+      attIds.forEach(function(id, i){
+        body = body.split('__ATT' + (i + 1) + '_ID__').join(id);
+      });
+      if (/__ATT\d+_ID__/.test(body)) { throw new Error('unfilled __ATT placeholder — files and placeholders differ'); }
       return postComment(body);
     })
     .then(function(cr){
-      window.__fastPublish = {
-        status: 'ok',
-        commentId: cr.id,
-        commentUrl: cr.self,
-        att1Id: att1Id,
-        att2Id: att2Id
-      };
+      state({status: 'ok', commentId: cr.id, commentUrl: cr.self});
     })
     .catch(function(e){
-      window.__fastPublish = Object.assign(
-        window.__fastPublish || {},
-        {status: 'error', message: e.message || String(e)}
-      );
+      state({status: 'error', message: e.message || String(e)});
     });
 })();
 ```
 
-**Filenames:** `Draft_Jira_{ISSUE_KEY}.csv` and `Import_Qase_{ISSUE_KEY}.csv`.
+**Filenames (tc-fe-prep upload order):** `Draft_Jira_{ISSUE_KEY}.csv`, `Import_Qase_{ISSUE_KEY}.csv`, then each generated typed CSV in order `Unit_Test`, `Integration_Test`, `System_Test` — at most 5 files. tc-api-prep uploads one CSV.
 
-**ADF placeholders:** Build the full ADF JSON before this call. Use `__ATT1_ID__` and `__ATT2_ID__` as literal strings in the ADF's attachment link nodes — Pattern B replaces them with real IDs after upload.
+**ADF placeholders:** Build the full ADF JSON before this call with exactly one literal `__ATT{n}_ID__` per uploaded file (n = its position in `window.__files`, 1-based). Pattern B refuses to post when a placeholder is left unfilled.
 
 ---
 
@@ -137,10 +140,12 @@ JSON.stringify(window.__fastPublish || {status: 'pending'});
 | `status` | What it means | Action |
 |----------|--------------|--------|
 | `ok` | Upload + comment done | Proceed to screenshot verify |
-| `pending` or `running` | Still in flight | Wait 2s, read again |
-| `error` + `att1Id` + `att2Id` present | Uploads done, comment failed | Retry comment-only (build fresh fetch call with saved IDs) |
-| `error` + `att1Id` only | CSV #2 upload failed | Retry CSV #2 + comment (use saved `att1Id`) |
-| `error` + no IDs | Upload #1 failed | Check auth (401/403?), re-navigate, retry from Pattern A |
+| `pending`, `running` or `file{n}_done` | Still in flight | Wait 2s, read again |
+| `error` with `attIds.length == total` | Uploads done, comment failed (or a placeholder was unfilled — see `message`) | Fix the cause, then retry comment-only with the saved `attIds` |
+| `error` with `0 < attIds.length < total` | Upload of file `attIds.length + 1` failed | Retry from that file only; keep the saved `attIds` |
+| `error` with empty `attIds` | Upload #1 failed | Check auth (401/403?), re-navigate, retry from Pattern A |
+
+`att1Id` / `att2Id` stay in the result as aliases of `attIds[0]` / `attIds[1]`.
 
 ---
 
@@ -176,7 +181,7 @@ Build ADF JSON **in the same step as file writing** (not after) — the agent al
 **Build process:**
 1. Iterate every cell of the approved table (same pass used for CSV cleaning)
 2. Convert `<br>` → `{"type": "hardBreak"}` ADF node
-3. Build complete ADF document with `__ATT1_ID__` / `__ATT2_ID__` as literal string placeholders in attachment link nodes
+3. Build complete ADF document with one `__ATT{n}_ID__` literal string placeholder per uploaded file (n = upload position, 1-based) in attachment link nodes
 4. Store ADF string in agent context — no need to write to a file (it's transient)
 
 **Validate before posting:** Verify ADF has correct node count and no malformed JSON before running Pattern B.
@@ -189,7 +194,7 @@ If CSV content may exceed JS string literal limits, use the standard Pattern A �
 
 Call sequence:
 1. Navigate to Jira issue page
-2. Pattern A: set `window.__csv1Data`, `window.__csv2Data`, `window.__adfBody`
+2. Pattern A: set `window.__files` and `window.__adfBody`
 3. Pattern B: upload + comment (references `window.*` — no size limit issue)
 4. Pattern C: read result
 
@@ -211,7 +216,7 @@ Call sequence:
 | Error | Recovery |
 |-------|----------|
 | `401`/`403` in error message | Re-navigate to Jira page (re-establishes auth session), then retry from Pattern A |
-| `att1Id` + `att2Id` saved, comment failed | Skip re-upload; post comment with saved IDs directly |
-| `att1Id` saved, `att2Id` missing | Re-upload CSV #2 only; use saved `att1Id` + new `att2Id` for comment |
+| All `attIds` saved, comment failed | Skip re-upload; post comment with saved IDs directly |
+| Some `attIds` saved | Re-upload only the files after the last saved id; use saved + new ids for the comment |
 | `pending`/`running` after 3s | Read Pattern C once more; if still running, re-execute Pattern B |
 | JS execution error (not fetch error) | Verify page is on correct Jira issue; re-run Pattern A + B |

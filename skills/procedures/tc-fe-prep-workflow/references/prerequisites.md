@@ -6,7 +6,7 @@ Read this before Step 0 of the main skill.
 
 - Confirm **which Jira issue** receives the comment (almost always the **story**).
 - Sub-tasks are out of scope unless the user explicitly names one.
-- Do not post, transition, or assign tickets unless the user asked for that in a separate task.
+- The only Jira write is the Step 7 comment (plus its attachments) on that story, and only after the user approves the Step 5 HTML draft in chat. Never transition or assign tickets in this workflow. A draft-only request posts nothing (WORKFLOW Step 7).
 
 ## Requirements quality
 
@@ -23,16 +23,15 @@ Read this before Step 0 of the main skill.
 
 ## Jira mechanics
 
-- Markdown table cells: use `<br>` between numbered sub-items.
-- Bold table headers: `**Column Name**` in header row.
-- CSV must match the table row-for-row (plus header row).
-- Prefer attachment **link** in the comment footer over embedded media nodes if ADF returns errors.
+- Comment layout, header and line-break rules: [jira-formatting.md](jira-formatting.md) (the comment is ADF; the `.md` file and HTML draft use `<br>`).
+- CSV must match the approved draft row-for-row (plus header row).
+- Use attachment **links** in the comment footer, not embedded media nodes.
 
 ## Verification discipline
 
-- Draft in chat first.
+- Show the HTML draft (Step 5) and get approval in chat before anything is posted — never paste the TC table into chat.
 - After any automated publish, open Jira and count table rows.
-- If only the header appears, switch publish method — do not declare success.
+- If only the header appears, the post failed — re-post via ADF (Step 7) and do not declare success.
 
 ## Security
 

@@ -45,7 +45,7 @@ This workspace writes **all** FE test case content in Thai. There is no English-
 - **Term priority (stop at the first rule that answers):**
   1. **The project TC glossary** re-fetched at Step 2.6 — if the English term has a row with a non-empty Thai cell, use that Thai term **verbatim**. The glossary outranks every table in this file.
   2. **The fallback table below** — only for terms the glossary has no row for.
-  3. **Ask the user** — anything else. Never coin a term.
+  3. **Ask the user** — anything else. Never coin a term. The one deferral: an English UI label the ticket writes verbatim, with no glossary or fallback row, is kept as written during design and asked at Step 4.5 (Step 2.6.3 row "No row for the term" (a)).
 - Where the glossary and this file disagree, **the glossary wins**. Do not "reconcile" them or prefer the wording you remember.
 - Terms whose glossary row exists but has an **empty** Thai cell are a Step 2.6 blocking question, not a free choice. Where a former default exists (e.g. `Dropdown` → `รายการแบบเลื่อนลง`), offer it as a **suggestion** in that question — never as the answer.
 - **Fallback table — only for terms absent from the glossary:**
@@ -63,7 +63,7 @@ This workspace writes **all** FE test case content in Thai. There is no English-
   | Password | รหัสผ่าน |
   | Username | ชื่อผู้ใช้ |
   | Reset | รีเซ็ต *(ราชบัณฑิต ทับศัพท์)* |
-  | Submit | ส่ง / บันทึก *(แล้วแต่ context)* |
+  | Submit | `บันทึก` when the action stores data (save/update form); otherwise `ส่ง` |
   | Error message | ข้อความแสดงข้อผิดพลาด |
   | Toggle | ปุ่มสลับ |
   | Sidebar | แถบด้านข้าง |
@@ -140,6 +140,14 @@ List only the types that are absent. Omit types that have at least one test case
 
 Include only the line(s) that apply (Figma / PRD / both). If both links exist, omit these lines entirely.
 
+**Blocked-case Remark lines** — append to the Remark block when Step 4e marked any case `BLOCKED` **and** the case's status and Remark will not reach the tracking sheet (Step 6.5 skipped: no guide row, a draft-only run, or the tab tool refused). One line per blocked case, Remark verbatim from Step 4e:
+
+```
+- TC {ID} — BLOCKED — {Step 4e Remark: actor, contact target, topic, unblock condition}
+```
+
+These lines appear in the HTML draft (Step 5), the `.md` file (Step 6) and the Jira comment or draft-only ADF (Step 7). The Draft_Jira, Import_Qase and typed CSV schemas stay unchanged.
+
 ---
 
 Default **10 columns** for the HTML draft, CSV files, and markdown `.md` — Type is always included:
@@ -205,7 +213,7 @@ end-of-run summary, and never go silent between rounds.
 
 Follow [ac-ec-coverage-review.md](references/ac-ec-coverage-review.md):
 
-- Build the **traceability matrix** (every AC and EC → one or more `TC_*`).
+- Build the **traceability matrix** (every AC and EC → one or more TC IDs, plain numbers per Step 3c).
 - Confirm **ไม่ขาด** (full AC/EC outcomes covered), **ไม่เกิน / ไม่กาว / ไม่เพ้อ** (no orphan or invented cases).
 - Row count **need not** equal AC+EC count; alignment matters, not 1:1 rows.
 
@@ -234,8 +242,9 @@ MUST NOT be resolved by guessing or by silently picking one interpretation.
 
 For every such case, do ALL of the following — no case may be skipped:
 
-1. Set that case's **Test Status = `BLOCKED`** (per-row, in the tracking sheet / result table — not
-   the whole ticket unless every case is affected).
+1. Set that case's **Test Status = `BLOCKED`** (per-row, not the whole ticket unless every case is
+   affected). Where it is written: the tracking sheet via Step 6.5 (`Sheet_Tab_{ISSUE_KEY}.json`);
+   when Step 6.5 is skipped, the Remark block's blocked-case lines (Step 3d) — never nowhere.
 2. Write a **Remark on that exact case's row** that names, explicitly:
    - **Actor** — the case's **QA Owner** is the person who must go make contact (name them, e.g.
      `QA Owner ({owner}) ติดต่อ …` — never a bare "waiting for X" with no actor);
@@ -279,6 +288,13 @@ verdict, and every finding + how it was fixed. Do not proceed to Step 4.5 until 
 5. **No round cap and no silent rounds.** Loop until a reviewer round returns zero comments, however
    many rounds it takes; a round whose result was never reported to the user does not count.
 
+**No subagents available** (the runtime has no Agent/Task tool, or dispatch fails): do not skip the
+loop and do not count the 4a–4e pass as a review round. Instead, for each round, run a separate
+**self-review** pass that starts from a fresh re-read of the ticket's **verbatim AC/EC + seed** (not
+your own summary of them) and applies every step-1 check to the current draft. Label every such round
+`SELF-REVIEW` in the round report (`รีวิวรอบ N (SELF-REVIEW): …`), tell the user once that independent
+reviewers were unavailable, and keep the same binary verdict and exit rule (steps 2–5).
+
 ---
 
 ## Step 4.5 — Thai↔English term confirmation (mandatory gate) [medium freedom]
@@ -303,7 +319,8 @@ These terms appear in the test cases. Thai follows the glossary first, then ร�
 
 **Rules:**
 - List **every** term where a Thai-vs-English choice was made — both the ones translated to Thai and the ones deliberately kept in English.
-- The **ที่มา** column is mandatory on every row: `glossary` (row in the Step 2.6 CSV), `fallback` (Step 3b table, no glossary row), or `user` (answered a Step 2.6 question). A row with no provenance means the term was invented — remove it and ask.
+- The **ที่มา** column is mandatory on every row: `glossary` (row in the Step 2.6 CSV), `fallback` (Step 3b table, no glossary row), or `user` (answered a Step 2.6 question, or a question row at this gate). A row with no provenance means the term was invented — remove it and ask.
+- **Question rows** — every term carried from Step 2.6.3 (a): put `? — ticket เขียนว่า "{label}"` in ใช้ในเทสเคสเป็น and `user` in ที่มา, and ask in the same message which word to use (keep the English label, or a Thai word the user gives). Do not proceed until every question row has the user's answer; apply it to every cell before Step 5.
 - Where the glossary offered comma-separated variants (e.g. `แถบ, แท็บ`), propose one and mark the row `glossary` — the user confirms the pick here.
 - For each kept-English term, state the reason (no official Thai term / UI label is English / acronym or standard like API, URL, OTP).
 - **Wait for the user's response.** If the user asks to change any term, apply it and re-post the changed rows.
