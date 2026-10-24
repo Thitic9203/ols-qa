@@ -4,12 +4,13 @@ description: |
   Open bug reports on Jira or GitHub after collecting target link, format template, and bug details — confirm before creating.
   Use when the user chooses Create bug from Helix, invokes /create-bug, or wants issues filed from test findings.
   Do NOT use for Playwright test runs (testing-ticket-workflow), retest-after-fix (retest-bug-workflow), posting manual TC tables (tc-fe-prep / tc-api-prep), or updating test result sheets without filing bugs.
-proactive_triggers:
-  - /create-bug
-  - create bug
-  - file bug
-  - open bug
-  - log defect
+metadata:
+  proactive_triggers:
+    - /create-bug
+    - create bug
+    - file bug
+    - open bug
+    - log defect
 ---
 
 # Create Bug (discovery stub)

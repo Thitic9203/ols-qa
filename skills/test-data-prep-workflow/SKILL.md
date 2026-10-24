@@ -4,13 +4,14 @@ description: |
   Create, fix, or verify OLS test data — media, courses, learning paths, covers, videos, PDFs, accounts, logins — for QA runs or training content. Follows ols-data-prep.md as the single source of truth and passes every quality gate before the data is used.
   Use when the user says /test-data-prep, or asks to prepare / build / seed / fix OLS content or covers.
   Do NOT use for running tests on a ticket (testing-ticket-workflow), retesting a bug (retest-bug-workflow), or drafting test-case tables (tc-fe-prep / tc-api-prep).
-proactive_triggers:
-  - /test-data-prep
-  - prepare test data
-  - create test data
-  - build training content
-  - make covers
-  - seed media / course / learning path
+metadata:
+  proactive_triggers:
+    - /test-data-prep
+    - prepare test data
+    - create test data
+    - build training content
+    - make covers
+    - seed media / course / learning path
 ---
 
 # Test data prep (discovery stub)

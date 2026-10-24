@@ -4,14 +4,15 @@ description: |
   Take a set of published content items out of public view — inventory the set, prove the items are otherwise healthy, pick the least damaging mechanism the available accounts can actually use, execute, then prove with guest-side evidence that every item is gone and nothing else moved.
   Use when the user says hide this content, take these down, remove from the public catalogue, unpublish this batch, ซ่อนสื่อ, นำออกจากคลัง, or /content-takedown.
   Do NOT use for deleting content permanently, for renaming or fixing item metadata (name-guard fixers), or for retesting a bug fix (retest-bug-workflow).
-proactive_triggers:
-  - /content-takedown
-  - hide this content
-  - take these down
-  - remove from the public catalogue
-  - unpublish this batch
-  - ซ่อนสื่อ
-  - นำออกจากคลัง
+metadata:
+  proactive_triggers:
+    - /content-takedown
+    - hide this content
+    - take these down
+    - remove from the public catalogue
+    - unpublish this batch
+    - ซ่อนสื่อ
+    - นำออกจากคลัง
 ---
 
 <!-- ols-only: this file is not synced to the generic plugin, so it may link to other

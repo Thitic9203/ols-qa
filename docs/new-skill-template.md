@@ -11,10 +11,11 @@ description: |
   {Verb} {primary outcome} when {scenario}.
   Use when the user {trigger phrases}.
   Do NOT use when {negative case 1}; {negative case 2}; or {other Helix skill name}.
-proactive_triggers:
-  - phrase users might say
-  - /slash-command-if-any
-  - Helix menu label
+metadata:
+  proactive_triggers:
+    - phrase users might say
+    - /slash-command-if-any
+    - Helix menu label
 ---
 
 # Your skill title
