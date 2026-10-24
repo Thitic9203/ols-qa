@@ -79,8 +79,8 @@ Before reporting anything as wrong, name the source that defines what it should 
 ## Refusal-first (precondition gate)
 
 MUST NOT start without a named audit target. MUST NOT file a defect whose expected side came from a
-guess, a translation, or a feature name — that is the OLS-315 failure, recorded in
-[agent-rationalizations.md](../../references/agent-rationalizations.md). MUST NOT open a Jira bug from
+guess, a translation, or a feature name — the expected side must be quoted from its source
+(see [The Iron Law](#the-iron-law) above; read [agent-rationalizations.md](../../references/agent-rationalizations.md)). MUST NOT open a Jira bug from
 this workflow; a confirmed defect hands off to `create-bug-workflow`, and Priority comes from the
 [Bug Priority & Severity Matrix](../../references/bug-priority-matrix.md), never invented.
 

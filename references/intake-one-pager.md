@@ -23,7 +23,7 @@ Optional: Jira story key for traceability only
 Required:
   • Ticket (Jira key or URL)
   • Application URL
-  • Login (user/password or "guest")
+  • Login account — username/email only, or "guest" (never a password)
   • VPN: required or not
 Optional:
   • Confluence page
