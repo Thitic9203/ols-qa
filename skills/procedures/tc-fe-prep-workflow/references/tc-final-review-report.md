@@ -36,7 +36,7 @@ Score each axis **PASS** or **FAIL**. Overall **PASS** only when all four axes p
 
 | Check | PASS when |
 |-------|-----------|
-| Traceability | Every **AC** and **EC** on the story maps to at least one `TC_*` row |
+| Traceability | Every **AC** and **EC** on the story maps to at least one TC row |
 | Expected outcomes | Each AC/EC expected result from the ticket appears in **Expected Result** of mapped TC(s) |
 | Error messages | Validation/error copy in TC matches ticket text (exact or approved paraphrase) |
 | Split coverage | When one AC covers multiple branches (e.g. Draft vs Submit), each branch has its own TC or explicit steps |
@@ -61,13 +61,14 @@ Build a traceability table for the report (see output template).
 | Check | PASS when |
 |-------|-----------|
 | Shared data prep | Ordered list `1.` … `N.` sequential, no gaps or duplicates |
-| Test Case ID | `TC_01` … `TC_N` sequential when using numeric IDs; or stable project convention with no gaps |
+| Test Case ID | Plain `1` … `N` sequential, no prefix, no padding, no gaps (design-and-review Step 3c) |
 | Cell numbering | Within each **Precondition**, **Test Steps**, and **Expected Result** cell, items are `1.` `2.` `3.` … with no skips |
-| Jira formatting | Bold numbering in table cells (`**1.**` …) per [jira-formatting.md](jira-formatting.md) — not bare `1.` at cell start |
+| Jira formatting | Per [jira-formatting.md](jira-formatting.md): the ADF comment shows no literal `**`, `<br>` or HTML; the `.md` file bolds headers |
+| Bold inline numbering | Every multi-item cell that the column table in [design-and-review.md](../design-and-review.md) Step 3 numbers inline (e.g. **Services Impacted** with 2+ services) uses bold `**1.** … **2.** …` — never a `- ` bullet or bare `1.` |
 
 **Note:** Row sort order (e.g. Unit → Integration → System) may differ from ticket AC/EC order — that is **not** a numbering failure unless the user asked to preserve ticket order.
 
-**FAIL examples:** steps jump `1.` → `3.`; TC_08 followed by TC_10; shared prep missing item 3.
+**FAIL examples:** steps jump `1.` → `3.`; TC `8` followed by TC `10`; shared prep missing item 3.
 
 ### Axis 4 — Content accuracy / scope
 
@@ -126,8 +127,8 @@ Compared final TC against story **{ISSUE_KEY}** ({summary short}).
 
 | Ticket | TC(s) | Notes |
 |--------|-------|-------|
-| AC_01 | TC_XX | … |
-| EC_01 | TC_XX | … |
+| AC_01 | {TC IDs} | … |
+| EC_01 | {TC IDs} | … |
 
 {Bullet gaps if FAIL. Omit section detail if PASS with nothing notable.}
 
@@ -148,7 +149,7 @@ Compared final TC against story **{ISSUE_KEY}** ({summary short}).
 | Area | Result |
 |------|--------|
 | Shared data prep | 1–{N} ✓ |
-| Test Case ID | TC_01–TC_{N} ✓ |
+| Test Case ID | 1–{N} ✓ |
 | Cell step numbering | ✓ |
 
 {Note row sort strategy if Test Type grouping used.}

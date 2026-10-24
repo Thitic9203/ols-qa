@@ -47,7 +47,7 @@ Ask **one section at a time**. Wait for answers before the next section.
 > Fixed for this workspace (do not ask): content language = **Thai** (ราชบัณฑิตยสภา);
 > **Type** column always present (`System Test` / `Unit Test` / `Integration Test`);
 > **Status** = `Done`; export is a **Qase import CSV** named `Import_Qase_{ISSUE_KEY}.csv`;
-> **Suite** must reuse an existing OLS Qase suite or a user-approved new one.
+> **Suite** must reuse an existing Qase suite of the project or a user-approved new one.
 
 ---
 

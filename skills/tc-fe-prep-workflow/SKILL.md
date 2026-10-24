@@ -53,6 +53,7 @@ Every must-read file for this workflow, linked directly from here. References al
 - [long-workflow-todos.md](../../references/long-workflow-todos.md) — read when the workflow has many steps; keep the todo list.
 - [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) — read before recording any result that is not PASSED.
 - [playwright-preflight.md](../../references/playwright-preflight.md) — read before any Playwright run.
+- [portable-content.md](../../references/portable-content.md) — read before writing any repo, path, ticket number or project value into the skill output; nothing project-specific is hardcoded.
 - [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read when a QA follow-up could be suggested.
 - [qa-debug-discipline.md](../../references/qa-debug-discipline.md) — read when a test is flaky or a tool errors.
 - [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — read before any completion claim.

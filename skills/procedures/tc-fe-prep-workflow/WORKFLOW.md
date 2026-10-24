@@ -8,9 +8,9 @@ description: |
 
 # TC FE Prep Workflow
 
-Prepare **frontend manual test cases** from a Jira **story** (acceptance criteria + edge cases), get user approval in chat, then publish **one comment** on **that story only** with a markdown table plus a downloadable CSV/Excel attachment.
+Prepare **frontend manual test cases** from a Jira **story** (acceptance criteria + edge cases), get user approval in chat, then publish **one comment** on **that story only** with the slim 6-column ADF table (Step 7) plus the downloadable CSV/Excel attachments.
 
-**Portable:** Works in any AI agent that can read this skill. **Project-agnostic:** No hardcoded repos, paths, or ticket numbers.
+**Portable:** Works in any AI agent that can read this skill. **Project-agnostic:** no hardcoded repos, paths, or ticket numbers ([portable-content.md](../../../references/portable-content.md)); **project values** (Jira domain, Qase project, tracking-sheet tool, approval channel) come from the project guide loaded in Step 1 — never hardcode them here.
 
 ## Contents
 
@@ -139,9 +139,9 @@ Read and follow [design-and-review.md](design-and-review.md) before Step 5 — S
 
 Do NOT post the TC table as markdown in chat. Instead:
 
-1. **Generate** `references/{ISSUE_KEY}_FE_TC_draft.html` following [html-draft-template.md](references/html-draft-template.md) exactly — full-width table, Type-grouped rows (Unit → Integration → System), `<br>` between numbered steps, Remark block if needed.
+1. **Generate** `references/{ISSUE_KEY}_FE_TC_draft.html` following [html-draft-template.md](references/html-draft-template.md) exactly — full-width table, Type-grouped rows (Unit → Integration → System), `<br>` between numbered steps, Remark block whenever design-and-review Step 3d says it applies.
 2. **Write** the file to the workspace using the Write tool.
-3. **Open** in the browser (the agent's browser tool, `open_url` / `navigate`) → `file:///absolute/path/to/references/{ISSUE_KEY}_FE_TC_draft.html`
+3. **Open** in the browser (the agent's browser tool, `open_url` / `navigate`) → `file:///absolute/path/to/references/{ISSUE_KEY}_FE_TC_draft.html`. **No browser tool, or the `file://` page will not open:** give the user the file's absolute path and a short chat summary (row count per Type, AC/EC covered, any `BLOCKED` cases) instead of the item-4 line, say the page could not be opened and why, and wait for approval the same way. Never paste the TC table into chat as the fallback. Step 2.5 uses this same fallback for its HTML.
 4. **Post in chat** (short):
 
 > Draft TC เปิดใน Chrome แล้ว — ตรวจสอบ แล้ว approve หรือแจ้ง edit ได้เลยครับ **Not posted to Jira yet.**
@@ -152,13 +152,13 @@ Do NOT post the TC table as markdown in chat. Instead:
 
 **Go back:** Step 6 starts only on approval; each edit request returns to item 1 of this step (regenerate, re-open).
 
-**Header rule (Jira comment only):** Every column header MUST be wrapped in `**bold**` in the Jira comment and the markdown `.md` file (Step 7 / Step 6). The HTML file uses plain `<th>` — no `**` needed.
+**Header rule:** in the markdown `.md` file (Step 6) wrap every column header in `**bold**`. The Jira comment is ADF (Step 7): its headers are `tableHeader` nodes, bold by default — never put `**` in ADF text (it renders literally). The HTML file uses plain `<th>`. Full table: [jira-formatting.md](references/jira-formatting.md) — Export file rules.
 
 ---
 
 ## Step 6 — Save artifacts in the user's workspace [medium freedom]
 
-**Suite gate (do before writing the CSV):** The Qase CSV needs a **Suite** value per row. Inspect the OLS project's existing suite tree first (Qase web UI → Test cases → suite sidebar, or ask the user to paste the current suite list — there is no Qase MCP) and reuse a fitting suite; only propose a new suite (with user approval) when none fits. Never assign a suite blind, never create a duplicate. Full rules: [qase-import-format.md](references/qase-import-format.md) — Suite rules.
+**Suite gate (do before writing the CSV):** The Qase CSV needs a **Suite** value per row. Inspect the project's existing Qase suite tree first (Qase project code: the project guide) (Qase web UI → Test cases → suite sidebar, or ask the user to paste the current suite list — there is no Qase MCP) and reuse a fitting suite; only propose a new suite (with user approval) when none fits. Never assign a suite blind, never create a duplicate. Full rules: [qase-import-format.md](references/qase-import-format.md) — Suite rules.
 
 After approval (and Suite confirmed), write **four files** inside the user's project (paths relative to workspace root):
 
@@ -186,7 +186,7 @@ All columns must be populated — derive values for any column that has no direc
 | Priority | Priority | Direct copy (`High` / `Medium` / `Low`) |
 | Type | Type | Direct copy (`System Test` / `Unit Test` / `Integration Test`) |
 | Status | *(fixed)* | Always `Done` |
-| Suite | *(suite gate)* | From existing OLS suite tree — see Step 6 suite gate |
+| Suite | *(suite gate)* | From the project's existing suite tree — see Step 6 suite gate |
 | Steps – Action | Test Steps | Direct copy |
 | Steps – Expected result | Expected Result | Direct copy |
 | Steps – Data | Test Data | Direct copy |
@@ -247,7 +247,7 @@ After writing all CSV files, build ADF JSON for the **slim 6-column Jira comment
 1. Use only 6 columns: AC/EC Ref (code only), Services Impacted, ID, Test Title, Priority, Type
 2. Set `colwidth` on every `tableHeader` node per the Step 7 table spec: `[90, 130, 50, 510, 90, 150]`
 3. No hardBreak nodes needed — no multi-line cells in the slim table
-4. Build complete ADF document with `__ATT1_ID__`, `__ATT2_ID__`, `__ATT3_ID__`, `__ATT4_ID__` as literal string placeholders in attachment link nodes (one placeholder per attached file)
+4. Build complete ADF document with one literal `__ATT{n}_ID__` placeholder per uploaded file in the attachment link nodes — n = the file's upload position (Step 7 order), so 2 to 5 placeholders
 5. Store ADF string in agent context (transient — not written to a file). Exception: when the user asks for a draft without posting ("draft only" / "do not post"), write it to `Jira_comment_{ISSUE_KEY}.adf.json` plus a readable `Jira_comment_{ISSUE_KEY}.preview.md`, per [jira-comment-adf-template.md](references/jira-comment-adf-template.md) — never a Markdown file as the comment body
 
 Then report to user: "Files saved. ADF ready. Publishing..."
@@ -256,9 +256,9 @@ Then report to user: "Files saved. ADF ready. Publishing..."
 
 ## Step 6.5 — Create the ticket's TC tab in the tracking sheet [low freedom]
 
-**Gate:** the draft is approved, and the project guide loaded in Step 1 has a **"Create the per-ticket TC tab"** row. Approval is Step 5 in chat. For an unattended run, a Slack reply is approval only when all four hold: it comes from the owner's own Slack user (matched by user ID, not display name), it is in the DM thread that carried **this** draft, it was posted after the draft, and its text is exactly `passed` once leading and trailing spaces are trimmed, in any letter case. Anything else (another person, another thread or draft, an earlier message, `passed!`, `ok`, `passed but …`) is not approval: keep waiting and write nothing. Without the guide row, skip this step and say so in one line. `--create-tab` exists only after ols-qa-testing-bot PR #5 is merged; until then the command ends in a usage error (exit `2`), so report that and stop. The tracking sheet is written only through the guide's tool, never with a raw Sheets API call or a one-off script (guide row "Write scope").
+**Gate:** the draft is approved, and the project guide loaded in Step 1 has a **"Create the per-ticket TC tab"** row. Approval is Step 5 in chat. For an unattended run, a Slack reply is approval only when all four hold: it comes from the owner's own Slack user (matched by user ID, not display name), it is in the DM thread that carried **this** draft, it was posted after the draft, and its text is exactly `passed` once leading and trailing spaces are trimmed, in any letter case. Anything else (another person, another thread or draft, an earlier message, `passed!`, `ok`, `passed but …`) is not approval: keep waiting and write nothing. Without the guide row, skip this step and say so in one line; blocked cases then go to the Remark block's blocked-case lines ([design-and-review.md](design-and-review.md) Step 3d). If the guide's command ends in a usage error (exit `2`), report it verbatim and stop. The tracking sheet is written only through the guide's tool, never with a raw Sheets API call or a one-off script (guide row "Write scope").
 
-**Rows and run:** for `--rows`, use `references/Draft_Jira_{ISSUE_KEY}.csv` as it is. When Step 4e marked any case `BLOCKED`, write `references/Sheet_Tab_{ISSUE_KEY}.json` instead: a JSON list with one object per approved row, keyed by the same column names, where each blocked case adds `"Test Status": "BLOCKED"` and its Step 4e `"Remark"`. For `--qa-owner`, take the ticket's QA Owner from the tracking sheet's ticket list and pass the QA Owner dropdown alias, as the project guide defines it (rows "Create the per-ticket TC tab" and "QA Owner dropdown = Table-managed"), not the full-name form the ticket list may show; real names stay outside the repo. First run the guide's command with `--dry-run` and summarise it in chat (tab name, row count, dropdown source, existence check; never the sheet id). Then run it without `--dry-run`. Only exit `0` with `"readback": "clean"` counts as success. Exit `3` means nothing was written: report the reason verbatim and stop (never write into a tab that already exists). The tab, its rows and its Table are created in one all-or-nothing request, so exit `4` means only that the tab may exist but is not proven right (the read-back failed or did not match). Report the output, including its `next_step`, and ask the user before anything else touches the sheet. Recovery: open the tab and check that its gid is the one in the message, compare it with the dry-run, and if it is wrong the ticket's QA Owner agrees, the user deletes that tab by hand, then this step reruns (the rerun refuses while the tab exists, and `progress_build.py` rolls the tab into Test Progress every 5 minutes until then).
+**Rows and run:** for `--rows`, use `references/Draft_Jira_{ISSUE_KEY}.csv` as it is. When Step 4e marked any case `BLOCKED`, write `references/Sheet_Tab_{ISSUE_KEY}.json` instead: a JSON list with one object per approved row, keyed by the same column names, where each blocked case adds `"Test Status": "BLOCKED"` and its Step 4e `"Remark"`. For `--qa-owner`, take the ticket's QA Owner from the tracking sheet's ticket list and pass the QA Owner dropdown alias, as the project guide defines it (rows "Create the per-ticket TC tab" and "QA Owner dropdown = Table-managed"), not the full-name form the ticket list may show; real names stay outside the repo. First run the guide's command with `--dry-run` and summarise it in chat (tab name, row count, dropdown source, existence check; never the sheet id). Then run it without `--dry-run`. Only exit `0` with `"readback": "clean"` counts as success. Exit `3` means nothing was written: report the reason verbatim and stop (never write into a tab that already exists). The tab, its rows and its Table are created in one all-or-nothing request, so exit `4` means only that the tab may exist but is not proven right (the read-back failed or did not match). Report the output, including its `next_step`, and ask the user before anything else touches the sheet. Recovery: open the tab and check that its gid is the one in the message, compare it with the dry-run, and if it is wrong the ticket's QA Owner agrees, the user deletes that tab by hand, then this step reruns (the rerun refuses while the tab exists, and the project's progress rollup named in the guide may pick the tab up until then).
 
 ---
 
@@ -285,13 +285,13 @@ ADF is already built from Step 6 — proceed directly to fast publish. Full JS p
    | Priority | High / Medium / Low | 90 |
    | Type | System Test / Integration Test / Unit Test | 150 |
 
-   Set `colwidth` on **every** header cell (`tableHeader.attrs.colwidth: [N]`) so columns scale to content — do not omit. Adjust values proportionally if TC count or title length differs significantly.
+   Set `colwidth` on **every** header cell (`tableHeader.attrs.colwidth: [N]`) so columns scale to content — do not omit. Use the values above unchanged; only when the longest Test Title exceeds 80 characters, widen Test Title to 600 and keep the other five as listed.
 
    Do **not** include Precondition, Test Data, Test Steps, or Expected Result in the Jira comment table — these are in the CSV attachments.
 
 4. Footer: clickable download links — one per uploaded file (see footer link pattern in [jira-formatting.md](references/jira-formatting.md)):
    - `[Draft_Jira_{ISSUE_KEY}.csv]({url})` — ตาราง TC ครบ (AC text, Precondition, Steps, Expected)
-   - `[Import_Qase_{ISSUE_KEY}.csv]({url})` — Qase import file พร้อม import เข้า OLS project
+   - `[Import_Qase_{ISSUE_KEY}.csv]({url})` — Qase import file พร้อม import เข้า Qase project
    - `[Unit_Test_{ISSUE_KEY}.csv]({url})` — Unit Test template *(include only if file was generated)*
    - `[Integration_Test_{ISSUE_KEY}.csv]({url})` — Integration Test template *(include only if file was generated)*
    - `[System_Test_{ISSUE_KEY}.csv]({url})` — System Test template *(include only if file was generated)*
@@ -324,8 +324,8 @@ Shortcut check: scroll to bottom of the ADF `content` array — last node MUST b
 TC tables always go ADF-direct — do NOT try MCP first.
 
 1. Navigate to the Jira issue page (if not already there)
-2. Pattern A: set `window.__csv1Data`, `window.__csv2Data`, `window.__adfBody` on `window.*`
-3. Pattern B: single JS call — upload `Draft_Jira` → upload `Import_Qase` → post ADF comment. Upload order: `Draft_Jira` first, `Import_Qase` second, then typed CSVs in order (`Unit_Test`, `Integration_Test`, `System_Test` — add upload steps for each present file before the comment post)
+2. Pattern A: set `window.__files` (one `{name, data}` entry per file, in upload order) and `window.__adfBody` on `window.*`. Upload order: `Draft_Jira` first, `Import_Qase` second, then each generated typed CSV in order `Unit_Test`, `Integration_Test`, `System_Test`
+3. Pattern B: single JS call — uploads every file in order, fills each `__ATT{n}_ID__`, then posts the ADF comment
 4. Pattern C: read `window.__fastPublish` → check `status: 'ok'`; on error follow recovery rules in [jira-fast-publish.md](../../../references/jira-fast-publish.md)
 
 Attachment IDs captured in Pattern B are substituted into the ADF footer links automatically. Never write filenames as plain text.
@@ -341,7 +341,7 @@ Run the **full review checklist** from [jira-comment-post-review.md](../../../re
 - [ ] **Both** `Draft_Jira_{ISSUE_KEY}.csv` and `Import_Qase_{ISSUE_KEY}.csv` attached to the same issue (not just in workspace) and **both** footer links work.
 - [ ] Comment is on the **story**, not a sub-task.
 
-If any check fails → fix and re-post → re-verify on Jira UI (max 3 rounds).
+If any check fails → fix and re-post → re-verify on Jira UI (max 3 rounds). After 3 failed rounds → report the failing checks verbatim and stop; do not claim success.
 
 **Go back:** If a post-publish check fails, fix and return to *Publish method* item 1 to re-post, then run this checklist again — max 3 rounds. Step 7.5 waits.
 
@@ -378,10 +378,10 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] Step 4 review block posted with **Ready for draft: YES** and traceability matrix complete.
 - [ ] Step 4f independent reviewer-agent loop run; **every round's verdict reported to the user**; loop exited only on a clean (zero-comment) round.
 - [ ] AC/EC coverage complete; quality checklist PASS per tc-quality-standards.
-- [ ] Step 4.5 Thai↔English term table posted with glossary source line and a `ที่มา` value on every row; user confirmed (or adjustments applied) **before** any deliverable file write (the Step 4f working draft outside the repo is the only earlier file).
+- [ ] Step 4.5 Thai↔English term table posted with glossary source line and a `ที่มา` value on every row; every question row answered; user confirmed (or adjustments applied) **before** any deliverable file write (the Step 4f working draft outside the repo is the only earlier file).
 - [ ] Every Thai term in the final TC matches the Step 2.6 glossary verbatim where a non-empty row exists; no term was invented, and none tagged "provisional".
 - [ ] All content is Thai per ราชบัณฑิตยสภา (Step 3b); English kept only where the Step 4.5 gate marked it kept-English.
-- [ ] Suite gate done — every CSV row uses an existing OLS suite, or a new suite was user-approved; no duplicate suites.
+- [ ] Suite gate done — every CSV row uses an existing project suite, or a new suite was user-approved; no duplicate suites.
 - [ ] `Draft_Jira_{ISSUE_KEY}.csv` uses the 10-column Jira table schema; rows sorted Unit Test → Integration Test → System Test, ACs then ECs within each group; row count matches approved draft.
 - [ ] `Import_Qase_{ISSUE_KEY}.csv` uses Qase schema, `Status = Done` on every row, cut fields absent; rows sorted Unit Test → Integration Test → System Test, ACs then ECs within each group, TC IDs continuous 1,2,3; row count matches approved draft.
 - [ ] Both files uploaded to the Jira issue; both footer links verified working.
@@ -455,10 +455,10 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST use ราชบัณฑิตยสภา approved Thai term first (Step 3b); fall back to English only when no official term exists or the UI label is English | Authoritative Thai is more professional than ad-hoc transliteration or unnecessary English |
 | MUST post the Step 4.5 Thai↔English term table and get user confirmation BEFORE writing any TC content to a deliverable file — the Step 4f reviewer working draft, outside the repo, is the only exception | User must approve term choices before they are committed to the real TC file |
 | MUST use formal Thai language level throughout | TCs are delivered to internal and external teams |
-| MUST keep Type to exactly `System Test` / `Unit Test` / `Integration Test` (Step 3d) | These are the OLS Qase Type values; other values break import |
-| MUST set Status = `Done` on every Qase CSV row | Workspace rule for OLS Qase import |
-| MUST inspect existing OLS Qase suites and reuse a fitting one; create a new suite only with user approval and never a duplicate | Duplicate/colliding suites corrupt the existing Qase tree |
-| MUST verify OLS Qase Type and Status options exist before import; stop and tell user if a value is missing | Qase silently resets unknown Type/Status values on import |
+| MUST keep Type to exactly `System Test` / `Unit Test` / `Integration Test` (Step 3d) | These are the project's Qase Type values; other values break import |
+| MUST set Status = `Done` on every Qase CSV row | Workspace rule for the project's Qase import |
+| MUST inspect the project's existing Qase suites and reuse a fitting one; create a new suite only with user approval and never a duplicate | Duplicate/colliding suites corrupt the existing Qase tree |
+| MUST verify the project's Qase Type and Status options exist before import; stop and tell user if a value is missing | Qase silently resets unknown Type/Status values on import |
 | MUST produce both `Draft_Jira_{ISSUE_KEY}.csv` (Jira 10-col schema) and `Import_Qase_{ISSUE_KEY}.csv` (Qase schema) | Two different audiences: comment table consumers and Qase importers |
 | MUST upload both CSV files before posting the comment; embed both as footer links | Footer must have two clickable download lines — one per file |
 | MUST use simple sequential numbers (1, 2, 3) as TC IDs in all outputs — no prefix, no padding, do not ask user | Fixed workspace standard |
