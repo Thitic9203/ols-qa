@@ -95,16 +95,21 @@ If the user mentions Swagger **changed**, a **new API version**, or updating exi
 
 ## Phase B — Test case table format (mandatory) [medium freedom]
 
-Show the **default column list** from [references/default-columns.md](references/default-columns.md) (summary table only — do not duplicate the full definitions here).
+Read [references/default-columns.md](references/default-columns.md) and pick the branch from the user's messages so far:
 
-Ask:
+| User's messages so far | Phase B action |
+|------------------------|----------------|
+| Already fix the delivery (Phase C answer, e.g. "as CSV", "comment on {link}") **and** do not ask for custom or other columns | Use the default columns. State them in **one line** (`Columns: default — Test Case ID, Module / Feature, …`) and say they can still be changed at the Phase F draft approval. Do not stop here; continue to Phase C. |
+| Ask for custom, extra or different columns | Show the default column summary table, apply the user's changes, and ask the question below. |
+| Silent on delivery | Show the default column summary table (summary only — do not duplicate the full definitions here) and ask the question below. |
+| Anything else (e.g. delivery only partly fixed — "comment" with no link) | Same as *Silent on delivery*: show the summary table and ask the question below. |
 
 ```text
 Do you want to add any columns beyond the default API set?
 If the default set is fine, reply **default** or **no changes**.
 ```
 
-🔴 **STOP — wait for an answer.** Record final column list for Phase D–G.
+When the question was asked: 🔴 **STOP — wait for an answer.** Record the final column list for Phases D–G in every branch.
 
 ---
 
@@ -123,11 +128,13 @@ You can pick A, B, or both. For (A), provide the link now. For (B), say CSV, Exc
 
 | Choice | Collect now |
 |--------|----------------|
-| **A — Comment** | Full destination URL; note if Jira wiki vs ADF (see delivery-options) |
+| **A — Comment** | Full destination URL (a Jira issue is always published as ADF in G2) |
 | **B — File** | `CSV` / `Excel` / `both`; optional path e.g. `references/{name}_API_TC.csv` |
 | **Both** | Link + file preferences |
 
-🔴 **STOP — wait for an answer** before designing and drafting (Phases D–F).
+Skip the question for any field the user's messages already fixed (the link for A; format and folder for B — folder defaults to `references/`), and state the recorded choice in one line instead.
+
+🔴 **STOP — wait for an answer** to every field still missing before designing and drafting (Phases D–F).
 
 ---
 
@@ -210,6 +217,8 @@ Draft API test cases (not published yet)
 **Sources:** API spec: {summary or link} · Swagger: {url}
 
 **Coverage:** {N} endpoints / {M} test cases
+
+**Columns:** {final Phase B list} · **Priority rule:** {only when the spec states no criticality — see api-tc-guidelines § Priority}
 
 | Test Case ID | Module / Feature | ... |
 | --- | --- |
@@ -348,5 +357,5 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST apply tc-quality-standards on every row | ISTQB / 29119-3 consistency |
 | MUST convert `<br>` to Jira-native line breaks before posting (see [jira-linebreak-conversion.md](../../../references/jira-linebreak-conversion.md)) | `<br>` renders as literal text on Jira |
 | MUST pass post-publish review ([jira-comment-post-review.md](../../../references/jira-comment-post-review.md)) before reporting "commented" or "done" to user | Prevents false success claims with broken formatting |
-| MUST attach CSV/Excel to Jira issue when file was generated and user chose delivery A (not just workspace) | User expects downloadable file on the issue |
+| MUST attach CSV/Excel to the Jira issue when the user chose delivery **both** (A + B) — not just leave it in the workspace | User expects downloadable file on the issue |
 | MUST verify destination UI when using delivery A | Truncation + literal `<br>` |
