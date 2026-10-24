@@ -75,12 +75,12 @@ Build a traceability table for the report (see output template).
 | Check | PASS when |
 |-------|-----------|
 | In scope | Every TC traces to an AC, EC, or user-confirmed story constraint |
-| Out of scope absent | No TC for features explicitly deferred (other epic, Phase 2, “>> EPIC11”, etc.) |
+| Out of scope absent | No TC for features explicitly deferred (other epic, Phase 2, “>> {EPIC_KEY}”, etc.) |
 | No invented UI | Buttons, fields, and flows exist in ticket, linked PRD, or project guide |
 | Business rules | Material limits in description (file size, types, retry count, ownership) reflected in Test Data / Expected Result |
 | No orphan rows | No “nice to have” or exploratory cases without AC/EC mapping |
 
-**FAIL examples:** NDLP import TC when ticket defers to EPIC11; Short Video TC when Phase 2; Audit Log verification with no AC/EC.
+**FAIL examples:** an import-feature TC when the ticket defers it to another epic; Short Video TC when Phase 2; Audit Log verification with no AC/EC.
 
 ---
 

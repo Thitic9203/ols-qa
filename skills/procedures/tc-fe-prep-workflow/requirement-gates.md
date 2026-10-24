@@ -192,16 +192,17 @@ Scan **only the terms this ticket's test cases will use** — do not interrogate
 
 | Condition | Action |
 |-----------|--------|
-| Thai cell empty | **STOP and ask** what word to use. May offer the Step 3b fallback term, labelled as a suggestion. |
+| Thai cell empty | **STOP and ask** what word to use. When the Step 3b fallback table has the term, offer it labelled as a suggestion — never as the answer. |
 | One English key, conflicting Thai meanings across rows | **STOP and ask** which meaning applies to this ticket. |
 | Thai cell has comma-separated variants | Not blocking — propose one variant at the Step 4.5 gate. |
 | No row for the term | Use the Step 3b fallback table. If absent there too: **(a)** the term is an English UI label the ticket itself writes verbatim (e.g. a menu name `Profile`) → not a 2.6 stop: design keeps the ticket's label unchanged and the term is asked once at the Step 4.5 gate (a question row, see there), which stops and waits before any deliverable is written; **(b)** anything else (a Thai word would have to be chosen) → **STOP and ask** here. |
+| Glossary term the UI may show in English (collision rule, [design-and-review.md § 3b](design-and-review.md#3b--language-rules-thai-always)) — the ticket writes it as an English label, or a design shows it in English | Not a 2.6 stop: design uses the glossary Thai term; the term is asked once at the Step 4.5 gate (a question row, see there), which stops and waits before any deliverable is written. |
 
-**Wait for the user's answers** to every 2.6 stop above. Record each decision for the Step 4.5 table, and list the (a) terms you carry to Step 4.5 in the 2.6 report so the user sees them now.
+**Wait for the user's answers** to every 2.6 stop above. Record each decision for the Step 4.5 table, and list the (a) and collision terms you carry to Step 4.5 in the 2.6 report so the user sees them now.
 
 Writing a guess and tagging it *provisional* / *pending confirmation* / *documented fallback* is **not** asking. See the red flags in [tc-glossary.md](../../../references/tc-glossary.md).
 
-Do NOT proceed to Step 3 until every Step 2.6 stop is answered. Carried (a) terms are not stops; they are open questions that Step 4.5 must close.
+Do NOT proceed to Step 3 until every Step 2.6 stop is answered. Carried (a) and collision terms are not stops; they are open questions that Step 4.5 must close.
 
 **Go back:** If a later Step 2a or 2.5 decision changes the surviving AC/EC set, return to 2.6.3 and scan again — the scan covers only the surviving terms.
 
