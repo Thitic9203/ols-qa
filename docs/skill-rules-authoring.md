@@ -14,7 +14,7 @@ Rules for **writing and shipping** Helix skills. Runtime rules → [references/s
 
 - **Verb + scenario + edge cases** in `description`.
 - **Negative case** in the same field: `Do NOT use when …`
-- **`proactive_triggers`**: short phrases in frontmatter (array).
+- **`proactive_triggers`**: short phrases (array) under `metadata:` in frontmatter. Top-level keys stay within the Agent Skills set (`name`, `description`, `license`, `allowed-tools`, `metadata`, `compatibility`) so skill-creator `quick_validate.py` passes.
 
 ## Rule 2 — Ship registration
 

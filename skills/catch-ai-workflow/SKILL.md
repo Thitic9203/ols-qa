@@ -4,14 +4,15 @@ description: |
   Audit work that is already finished — the agent's own prior output, a document or report, a test artifact, or a feature under test — by tracing every claim to the source that governs it, separating confirmed defects from open questions, and closing each defect with a sourced fix and a prevention layer.
   Use when the user says CatchAI, /catch-ai, claims mistakes exist in something already delivered, asks the agent to review its own work again, says "check yourself" or "find your own mistakes", QA or audit a deliverable, or says ตรวจงานตัวเองอีกรอบ. Also use before reporting that a check passed, that a defect exists, or that work is complete.
   Do NOT use for retesting a Jira bug after a dev fix (retest-bug-workflow), for drafting new TC tables (tc-fe-prep-workflow / tc-api-prep-workflow), for running a ticket's Playwright pass (testing-ticket-workflow), or for filing the bug once a defect is confirmed (create-bug-workflow).
-proactive_triggers:
-  - /catch-ai
-  - CatchAI
-  - review your work again
-  - find your own mistakes
-  - check yourself
-  - audit this deliverable
-  - ตรวจงานตัวเองอีกรอบ
+metadata:
+  proactive_triggers:
+    - /catch-ai
+    - CatchAI
+    - review your work again
+    - find your own mistakes
+    - check yourself
+    - audit this deliverable
+    - ตรวจงานตัวเองอีกรอบ
 ---
 
 # Catch AI
