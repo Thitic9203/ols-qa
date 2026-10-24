@@ -22,7 +22,7 @@ When invoked:
 1. Announce once: `Using **tc-api-prep-workflow** to prepare API manual test cases.`
 2. Read and follow [WORKFLOW.md](../procedures/tc-api-prep-workflow/WORKFLOW.md) **end-to-end** — every step, gate, and reference.
 
-Claude Code shortcut: `/tc-api-prep` → [commands/tc-api-prep.md](../../commands/tc-api-prep.md).
+Slash-command shortcut (runtimes that support commands): `/tc-api-prep` → [commands/tc-api-prep.md](../../commands/tc-api-prep.md).
 
 ## Contents
 
@@ -73,7 +73,7 @@ All preconditions and refusal rules are in WORKFLOW.md. MUST NOT start without A
 
 ## QA closing (mandatory before "done")
 
-All close-out gates are in WORKFLOW.md and [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (TC API section). MUST NOT report done until G-verify and post-publish review pass.
+All close-out gates are in WORKFLOW.md and [verify-closing-checklist.md](../../references/verify-closing-checklist.md) § *TC FE / TC API prep* (skip its tc-fe-prep-only final-report item). MUST NOT report done until G-verify and post-publish review pass.
 
 ## Dependencies
 
@@ -81,5 +81,5 @@ Run the check for each of these before step 1 — check commands and install hin
 
 - Python 3 + `openpyxl` (xlsx only)
 - Atlassian MCP
-- Jira REST credentials (ADF-direct publish)
+- Jira REST credentials (ADF-direct publish and the REST v3 fallback)
 - `superpowers:systematic-debugging`

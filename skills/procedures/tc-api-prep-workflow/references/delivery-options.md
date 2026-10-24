@@ -42,7 +42,7 @@ For hand-off to a Playwright/CLI agent or PR reading. Offer **alongside** CSV/Ex
 
 - **Never copy chat draft directly to Jira body** — always run conversion first
 - Wrap issue keys in `{{PROJ-123}}` if auto-link is unwanted
-- Large tables: verify row count on Jira UI after post; consider CSV/xlsx attachment + table summary
+- Large tables (> 50 rows): verify row count on Jira UI after post, and offer the user a CSV/xlsx attachment + table summary instead of the full inline table
 - After post: confirm **no literal `<br>` in any cell** on Jira UI
 
 ## Confluence

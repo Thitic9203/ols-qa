@@ -23,12 +23,7 @@ unanchored impression. Every Need Improve item carries a "→ Suggest:" fix, sou
 data or the AC/EC wording, or marked "confirm with dev/PO". Never put an invented value in a suggestion. State plainly when a design source (Figma/PRD) could not be opened rather than
 guessing what it shows.
 
-Post the review in chat, then always notify it to the TC-review channel of the ticket's project (each
-project has its own; from that project's config), whoever invoked the command. Project has a channel in
-config → never ask which server, group, or channel — ask only which thread; that answer is the go-ahead.
-No channel in config → search history first, ask once for that project, record it. For the send:
-never invent a thread or mention id; read the response
-back to confirm the destination and mentions before saying it is done; fix a wrong destination by
-delete-and-resend, and wrong content (correct destination) by editing in place.
+Post the review in chat, then notify it to the ticket project's TC-review channel on every run — run
+Step 5 of the workflow exactly as written there (it is the single source for the notify rules).
 
 Follow [references/user-communication.md](../references/user-communication.md).
