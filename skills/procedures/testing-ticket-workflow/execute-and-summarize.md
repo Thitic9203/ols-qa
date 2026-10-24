@@ -24,6 +24,13 @@ Part of [WORKFLOW.md](WORKFLOW.md). Sections moved verbatim; read in run order a
 Run the planned scenarios; record **PASSED** / **FAILED** / **BLOCKED** / **NOT TESTED** with evidence (screenshots, console, network).
 **Open every evidence file you cite, this round** — view each still, play each clip to its last frame — before it backs a verdict; a `verify.json`, a checker line or `file` output is not opening it ([qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *Pre-delivery completeness*).
 
+Phase E runs in this order; each step names its output:
+
+- **E-a Dispatch lanes** — output: one lane prompt per lane, sent in a single message (*Fan out* below).
+- **E-b Lease + session preflight per lane** — output: each lane's lease and its authenticated user id (*Session lease per lane* below; Phase D).
+- **E-c Execute per AC/EC id** — output: one result row per id, with evidence (*Real surface* and *Cover every enumerated AC/EC id* below), then E0–E2 per scenario inside the lane.
+- **E-d Merge** — output: one report and one bundle after the §6 merge checks, including *Lane failure* below; then E3 on every non-PASS.
+
 **Fan out whenever the plan has 2 or more units** ([round-time-contract.md §4](../../../references/round-time-contract.md)) —
 dispatch the planned lanes at once, after any parent pre-login for accounts sharing one OTP
 inbox (§3), one subagent per lane, all in a single message, each
@@ -44,6 +51,14 @@ parent holds the lease). Never load a login file without a lease. Each lane also
 browser script under a hard time limit and leaves no process of its own running when it returns, and
 the §6 merge runs the leftover-process check for the round's account tags (§5/§6). The §6 merge adds the lease check:
 none held by this round (`tools/lane-lease-check/` where the workspace carries it).
+
+**Lane failure (a lane returns no result, exceeds its hard time limit, or its Playwright runner
+crashes).** The main thread stops that lane's leftover processes for its account tag, releases its
+lease, and re-dispatches that unit **once** on a fresh lease. A second failure → every case of that
+unit with no reported result becomes a **BLOCKED** row (`lane did not return` + the lane's log path)
+and goes through E2 like any other BLOCKED case. A lane's cases are never dropped, never inferred from
+another lane, and never PASSED without the lane's own result line. A lane that returns `SESSION-DEAD`
+follows Phase D *Fresh login* instead.
 
 Drive every scenario through its **real surface** — a UI scenario through the UI (Playwright clicks the
 button / submits the form), following the case's steps completely. The API is for test-data /
@@ -66,7 +81,7 @@ Run this **as each scenario executes**, not while writing Phase F.
 1. **Compare the screen against its design node** on all five points — elements present · text
    char-exact · order/position · the states the node defines · no overflow and no overlap
    ([figma-design-comparison.md](../../../references/figma-design-comparison.md) §3). Record the node
-   link on the scenario's row. **Dedupe, never shorten** ([round-time-contract.md §7](../../../references/round-time-contract.md)):
+   link opened on the report header's `Design ref:` line (F2 — no design-node column). **Dedupe, never shorten** ([round-time-contract.md §7](../../../references/round-time-contract.md)):
    one compare per screen × width per round — cases on the same screen share one fresh app capture and
    one design read; cache the design-side export (node screenshot + metadata) keyed by the Figma file's
    `lastModified` and re-fetch only when it changes. The app-side capture is always fresh, and the
@@ -164,6 +179,10 @@ judgement layers, and paste the checker's last output line (or the counted hand 
 round's record. A red layer blocks that case's verdict: report the case as what it really is
 (usually BLOCKED with the reason), never drop it and never soften the layer. A lane's "gate green"
 is a claim — the main thread re-runs the gate itself (layer 20).
+The mechanical (**M**) and judgement (**J**) layers are listed by kind in the reference; the
+mechanical ones run with `node tools/result-gate/check.js` where the workspace carries it. Gate time is
+AGENT+EXEC time: it counts toward the round's `Round time:` line, and an overrun is reported there —
+never hidden by skipping or sampling a layer.
 
 **Go back:** A layer red for missing or unopened evidence returns that case to Phase E to capture it again; if it cannot be fixed, report the case as BLOCKED with the reason. Phase F waits until every case has a final line.
 
@@ -287,7 +306,7 @@ is green.
 
 **Design + depth reconciliation (same pass, fail-closed).**
 
-- [ ] Every UI row carries a **design node link**, or the Phase B BLOCKED-with-reason naming who was
+- [ ] Every UI scenario was compared against a design node named on the report header's `Design ref:` line (F2 — no per-row column), or the Phase B BLOCKED-with-reason naming who was
       asked for it. No UI row is PASSED on an assumed expected.
 - [ ] Every in-scope width has results for every in-scope page, and the overflow/overlap checks were
       **measured** (numbers in the notes), not judged by eye. Out-of-scope widths are stated as such.
@@ -337,7 +356,7 @@ Follow [round-time-contract.md §3](../../../references/round-time-contract.md):
    in the background; meanwhile build the bundle — the render and media check
    ([§6](../../../references/round-time-contract.md)) when a comment will be posted, and the popups. The
    reviewer must return CLEAN before step 4.
-2. **Decisions popup** — only when questions are queued. One `AskUserQuestion`, batched 4 at a time:
+2. **Decisions popup** — only when questions are queued. One structured-question popup (e.g. `AskUserQuestion`; a runtime without one uses a single numbered question list in chat), batched 4 at a time:
    the scope plan from Phase C, each queued E3 non-PASS (A/B/C), missing design, cross-ticket
    conflicts (*Investigate further* / *Close out now*), and **for every Defect-candidate row (and
    every C answer) "Open a bug for {TC/ER}?"** (*Not now — stays Not filed yet* / *Open it via
