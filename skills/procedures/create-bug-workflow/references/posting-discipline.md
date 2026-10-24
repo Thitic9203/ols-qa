@@ -3,12 +3,13 @@
 ## GitHub
 
 - `gh issue create` — use HEREDOC for body; capture stdout for issue URL.
-- Labels: `bug`, `severity:<Severity>` (matrix row: Low / Medium / High / Urgent), `module:<name>` when supported.
+- Labels: `bug`, `severity:<Severity>` (the draft's Severity: Low / Medium / High / Urgent), `module:<name>` when supported —
+  only labels the [WORKFLOW Phase B tracker-fields pre-flight](../WORKFLOW.md#phase-b--parse-target-medium-freedom) found or the user approved.
 
 ## Jira
 
 Which body markup each create path takes, and which gate runs on it, is one table in
-[WORKFLOW.md § Phase D — Jira](../WORKFLOW.md#jira). Lock format at confirm (Phase C).
+[WORKFLOW.md § Phase D — Jira](../WORKFLOW.md#jira). The format is locked once, at intake A2, for the session; Phase C only shows it.
 
 ## Jira MCP → JXA fallback
 
@@ -30,5 +31,6 @@ session). Otherwise follow the next branch there — REST with credentials, or h
 ## Post-create verification
 
 - Fetch or open each issue URL.
-- Compare title to draft.
+- Compare title **and** body (and Priority/Severity) to the approved draft — the full check and its
+  mismatch gate are [WORKFLOW Phase F](../WORKFLOW.md#phase-f--fix-verify-and-close-mandatory-low-freedom).
 - Report failures explicitly.
