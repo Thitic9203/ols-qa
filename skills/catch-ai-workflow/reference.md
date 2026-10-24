@@ -165,7 +165,7 @@ Scope: <what was audited> · Out of scope: <what was not>
 - Reproduce: <steps or command>
 - Environment: <branch/commit, env, viewport>
 - Impact: <who or what breaks>
-- Correction: <the fix, or the corrected statement>
+- Correction: <the proposed fix, or the corrected statement — applied only after the owner approves it>
 
 ## Questions (expected or actual side unconfirmed)
 - <item> — need <source or access> to confirm <exact point>
