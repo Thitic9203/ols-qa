@@ -91,10 +91,10 @@ part of this workflow (see [MUST / NEVER](#must--never)); Priority comes from th
 1. **Fix the scope.** Name what is under audit and what is out. Output: the `Scope:` line of the report.
 2. **Enumerate** every claim, number, file, screen, endpoint, and section in scope. Output: a numbered inventory list.
 3. **Name the governing source for each** — spec, Figma frame, acceptance criterion, OpenAPI path, DB schema, ticket, or data file. A proxy that merely correlates (a file timestamp, a similar page, your own earlier message) governs nothing. Output: the source next to each inventory item.
-4. **Inspect the actual side directly** — read the file, run the command, call the endpoint, open the screen. Capture verbatim. Output: the verbatim actual next to each item.
+4. **Inspect the actual side directly** — read the file, run the command, call the endpoint, open the screen. Capture verbatim. Read-only inspection only: a command or call that writes, sends, deletes or changes state (POST/PUT/DELETE, a migration, a post, a create) → 🔴 ask the owner first and wait; without that yes the item is a Question. Output: the verbatim actual next to each item.
 5. **Compare character-exact** and classify each item: Defect / Question / checked-clean. Output: a classification table (item · expected + source · actual · class).
 6. **Map coverage** — what has no check at all. Output: the [coverage matrix](reference.md#coverage-matrix) table.
-7. **Find the root cause of each defect** using [root-cause-investigation.md](../../references/root-cause-investigation.md) — the owning layer, not the place it surfaced.
+7. **Find the root cause of each defect** using [root-cause-investigation.md](../../references/root-cause-investigation.md) — the owning layer, not the place it surfaced. Output: one Root cause line per defect — the owning layer and a label Confirmed / Suspected / Unknown (Unknown is a Question, never a guessed fix).
 8. **Propose the fix and the prevention, each with a citable source.** Output: one [remediation entry](reference.md#remediation-entry-template) per defect.
 9. **Report and give the verdict.** Output: the [report template](reference.md#report-template), filled.
 
@@ -118,7 +118,7 @@ registry, and the report template: [reference.md](reference.md).
 | Fix backed by a document you opened and quoted | **Recommendation** — with source, version, date |
 | Fix you believe is right but no standard governs it | **Judgment** — labelled, with the trade-off stated |
 | Result changes between identical runs | **FAILED** — flaky is a failure, not a re-run |
-| Usable but misses a stated quality bar | **FAILED** — "it works" is not a pass |
+| Usable but misses a stated quality bar | **Defect, Major** → **FAILED** — "it works" is not a pass (product bugs: the matrix row decides, [reference.md § Verdict](reference.md#verdict)) |
 
 ## Rationalizations — STOP
 
@@ -171,7 +171,7 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + this work
 - [ ] Every fix carries a source that was opened in this session, or is labelled Judgment.
 - [ ] Every defect carries a prevention layer.
 - [ ] Coverage gaps listed separately from defects.
-- [ ] Verdict stated: PASSED / FAILED / BLOCKED / No issue found.
+- [ ] Verdict stated: PASSED / PWMI / FAILED / BLOCKED / No issue found, per [reference.md § Verdict](reference.md#verdict).
 
 **Go back:** An unchecked item returns to its Procedure step — scope → 1; defect fields → 4–5; Question vs defect → 5; fix source or prevention → 8; coverage gaps → 6; verdict → 9.
 

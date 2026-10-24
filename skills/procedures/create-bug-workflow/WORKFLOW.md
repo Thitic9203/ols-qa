@@ -113,7 +113,11 @@ Priority and Severity use the vocabulary of the
 [Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md) only — no other scale.
 Read each bug's cell from the matrix and cite it in the draft (cheat-sheet line number + row text,
 verbatim). If the user gives a value the matrix cell does not support, or none, show the matching
-matrix row and ask; never invent a level.
+matrix row and ask; never invent a level. A Severity the user gives is kept exactly as given — it is the
+title bracket — and is never replaced by your own reading; Priority is its own field, read from the matrix.
+
+Steps to reproduce come only from the user's input and evidence. A step that seems missing is a
+follow-up question here, never a line you add to the draft.
 
 If the user references findings from a **prior testing-ticket** run in the same chat, reuse that evidence; do not invent details.
 
@@ -130,6 +134,23 @@ If the user references findings from a **prior testing-ticket** run in the same 
 
 If pre-flight fails (auth, repo missing), report and stop — MUST NOT create issues silently.
 
+**Tracker fields pre-flight** (runs after the target is reachable, before Phase C):
+
+- **GitHub labels.** Run `gh label list --repo <owner/repo> --limit 500` and check that `bug` and each
+  `severity:<Severity>` the drafts need exist (`gh issue create` rejects an unknown label and creates
+  nothing). Any missing → name the missing labels in the Phase C confirm block (`Fields:` line) and ask
+  the user to choose: they create the labels (or approve creating them — a new label is a change in their
+  repo, so it needs that explicit yes), **or** file without the missing labels, with the Severity kept in
+  the title bracket and body. Never drop a label silently; Phase D passes only labels that exist.
+- **Jira fields.** Fetch the create metadata for the project and issue type (Atlassian MCP
+  `getJiraIssueTypeMetaWithFields`, or REST `GET /rest/api/<v>/issue/createmeta/<KEY>/issuetypes/<id>`).
+  Map Priority to the `priority` field (use the option name the metadata lists) and Severity to the
+  field id the workspace project guide names — never a guessed `customfield_` id. A required field with
+  no value in the draft, or a Severity field the guide does not name → ask in the Phase C confirm block.
+  Show the mapping on the `Fields:` line.
+- **Metadata cannot be read** (no permission, error) → report the error verbatim and ask; do not create
+  with unmapped fields.
+
 **Go back:** If pre-flight fails, return to Phase A — Intake (A1 — Where to open bugs) once the user gives a reachable target; nothing is created meanwhile.
 
 ---
@@ -144,7 +165,12 @@ re-filing it wastes a full file → retest → close-out round.
    behavior** as each candidate bug. On Jira use `searchJiraIssuesUsingJql` (search summaries **and**
    comment text — the deciding conclusion often lives in a comment, not the title); on GitHub search
    open **and** closed issues. Use the distinctive terms of the finding (the exact error text, the
-   field label, the component) — not just the ticket type.
+   field label, the component) — not just the ticket type. No status filter, so resolved tickets are
+   included. Examples:
+   - Jira (`text ~` covers summary, description and comments):
+     `project = <KEY> AND text ~ "\"<exact error text>\"" ORDER BY updated DESC` — then repeat with the
+     field label or component name.
+   - GitHub: `gh issue list --repo <owner/repo> --state all --search '"<exact error text>" in:title,body,comments'`.
 2. **Read the conclusion of any match**, including resolved/closed ones. A closed ticket can still hold
    the authoritative decision.
 3. **Decide per candidate:**
@@ -195,10 +221,11 @@ Show:
 Target:     {Jira PROJ / GitHub owner/repo}
 Format:     {user template name or Helix default}
 Board check: {N candidates searched — M dropped as already-settled/duplicate, K to file}
+Fields:     {GitHub: labels that exist / labels missing + the user's choice · Jira: Priority → field, Severity → field id from the workspace guide, required fields with their values}
 Bug count:  {K}
 
 Draft summaries:
-  1. [{Priority}] {Module} — {title one line}
+  1. [{Severity}] {Module} — {title one line} · Priority {Priority}
   2. ...
 
 (Full drafts below — review each body)
@@ -227,13 +254,21 @@ gh issue create --repo <owner/repo> \
   --body "<body>"
 ```
 
-`<Severity>` is the matrix row (Low / Medium / High / Urgent) cited in the draft. Capture the returned issue URL.
+`<Severity>` is the Severity in the approved draft (Low / Medium / High / Urgent). Pass only labels the
+Phase B pre-flight found in the repo, or that the user created/approved; when the user chose to file
+without a missing label, leave it out and say so in the Phase F report. Capture the returned issue URL.
 
 ### Jira
 
 1. Lock **v2 wiki** (FE/UI) vs **v3 ADF** (API) per user format — do not switch mid-session.
-2. Prefer Atlassian MCP `createJiraIssue`.
-3. **MCP fails** → pick the first path that applies, and say which one you used:
+2. Prefer Atlassian MCP `createJiraIssue`, with the field mapping shown in the Phase C `Fields:` line
+   (Priority → `priority`, Severity → the guide's field id, every required field filled).
+3. **Field-validation error** (HTTP 400 / an `errors` object naming a field — required, invalid option,
+   unknown custom field) → nothing was created. Show the error **verbatim**, name the field and the fix
+   you propose (from the create metadata), and **wait for the user's approval** before retrying on the
+   same path. Never drop or blank the field to make the create pass, and never treat this as an MCP
+   failure that switches path.
+4. **MCP fails** (unreachable, auth, tool error — not a field error) → pick the first path that applies, and say which one you used:
    - macOS with a logged-in browser session → JXA + Chrome fallback per posting-discipline (ASCII-only script, dry-run before post);
    - otherwise, Jira REST credentials configured (see [dependencies.md](../../../references/dependencies.md)) → REST on the locked path;
    - otherwise → **STOP**: hand the approved drafts to the user to file manually, report the run as BLOCKED (no create path), and skip to Phase F only for anything the user files and links back.
@@ -323,7 +358,12 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 
 | Rule | Because |
 |------|---------|
-| MUST NOT invent reproduction steps | False bugs |
+| MUST NOT invent reproduction steps — they come only from the reporter's input and evidence; a missing step is a question | False bugs |
+| NEVER file a bug whose expected side is a transliteration, a feature name or a hedged line ("should be…", "confirm with PO") | App vs an assumed spec is a question, not a bug (Refusal-first) |
+| NEVER file a second ticket for a defect already open on the board (Phase B2 duplicate) | Two tickets split the discussion and the retest |
+| NEVER call a create API before the user replies **confirm** in Phase C | An unapproved issue is public at once and must be cleaned up by hand |
+| NEVER replace a Severity the reporter gave with your own reading | The reporter's severity is the title bracket; a guessed one misroutes triage |
+| NEVER drop a label or field to make a create succeed (Phase B pre-flight, Phase D field errors) | A silently missing Severity/Priority hides the bug from the views that filter on it |
 | MUST search the board (Phase B2) before filing; drop any bug already settled as intended in a prior/closed ticket and report it with the reference link | Re-filing a closed decision wastes a full retest round |
 | MUST take Priority and Severity from the bug-priority-matrix and cite the cell | An invented scale cannot be compared with the verdicts that use the matrix |
 | MUST verify each issue URL in Phase F | Silent partial failure |
