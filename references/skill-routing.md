@@ -1,23 +1,27 @@
 # Helix skill routing
 
-Canonical map for `/helix`, [commands/helix.md](../commands/helix.md), and [AGENTS.md](../AGENTS.md). Do not duplicate this table elsewhere — link here.
+The single routing source for the [helix router](../skills/helix/SKILL.md), [commands/helix.md](../commands/helix.md), and [AGENTS.md](../AGENTS.md). Do not duplicate this table elsewhere — link here. Menu wording lives in [menu-text.md](menu-text.md); Thai and informal phrasings map through [intent-shortcuts.md](intent-shortcuts.md).
 
 ## Primary menu
 
-| User intent | Skill | Command |
-|-------------|-------|---------|
-| FE manual TC from story AC/EC | `tc-fe-prep-workflow` | `/tc-fe-prep` |
-| API manual TC from spec + Swagger | `tc-api-prep-workflow` | `/tc-api-prep` |
-| Retest a bug after dev fix | `retest-bug-workflow` | `/retest-bug` |
-| Playwright test for one ticket | `testing-ticket-workflow` | `/testing-ticket` |
-| File bug(s) on Jira/GitHub | `create-bug-workflow` | `/create-bug` |
-| Hide a set of published content from public view | `content-takedown-workflow` | `/content-takedown` |
-| Review an existing TC document against a ticket's AC/EC | `tc-review-workflow` | `/tc-review` |
-| Review already-recorded results and their evidence clips | `review-result-workflow` | `/review-result` |
-| Audit finished work against its governing sources | `catch-ai-workflow` | `/catch-ai` |
-| Smoke test a deployed build on a named environment | `smoke-test-workflow` | `/smoke-test` |
-| Create, fix, or verify test data (content, covers, accounts) | `test-data-prep-workflow` | `/test-data-prep` |
-| Unsure / multi-step | `helix` skill or `/helix` (Claude Code) | `/helix` or `@helix` |
+`#` is the number the user replies with; **Option** is the bold name in [menu-text.md](menu-text.md) for the same number. Rows 8–11 are not shipped in helix: outside the ols-qa workspace, say so and offer only the fallback named on that row.
+
+| # | Option | Route to | Command | User intent · what to pass on |
+|---|--------|----------|---------|-------------------------------|
+| 1 | TC FE Preparation | [`tc-fe-prep-workflow`](../skills/tc-fe-prep-workflow/SKILL.md) | `/tc-fe-prep` | FE manual TC from story AC/EC. Pass any issue key/URL from the message. |
+| 2 | TC API Preparation | [`tc-api-prep-workflow`](../skills/tc-api-prep-workflow/SKILL.md) | `/tc-api-prep` | API manual TC from spec + Swagger. Run its Phase A–C intake if spec, Swagger, or delivery is missing. |
+| 3 | Retest Bug | [`retest-bug-workflow`](../skills/retest-bug-workflow/SKILL.md) | `/retest-bug` | Retest a bug after a dev fix. Pass any bug key/URL from the message. |
+| 4 | Testing Ticket | [`testing-ticket-workflow`](../skills/testing-ticket-workflow/SKILL.md) | `/testing-ticket` | Playwright test for one ticket. Pass any issue key/URL; its Phase A intake collects missing fields. |
+| 5 | Create Bug | [`create-bug-workflow`](../skills/create-bug-workflow/SKILL.md) | `/create-bug` | File bug(s) on Jira/GitHub. Reuse bug evidence from the same chat if present. |
+| 6 | Catch AI | [`catch-ai-workflow`](../skills/catch-ai-workflow/SKILL.md) | `/catch-ai` | Audit finished work against its governing sources. Pass the audit target from the message. |
+| 7 | TC Review | [`tc-review-workflow`](../skills/tc-review-workflow/SKILL.md) | `/tc-review` | Review an existing TC document against a ticket's AC/EC. Pass the TC document and the ticket key/URL. |
+| 8 | Content Takedown | `content-takedown-workflow` (ols-qa workspace only) | `/content-takedown` | Hide a set of published content from public view. Fallback outside ols-qa: none — no shipped workflow hides content; ask what the user needs. |
+| 9 | Review Result | `review-result-workflow` (ols-qa workspace only) | `/review-result` | Review already-recorded results and their evidence clips. Fallback outside ols-qa: offer 6 (`catch-ai-workflow`), which audits finished work. |
+| 10 | Smoke Test | `smoke-test-workflow` (ols-qa workspace only) | `/smoke-test` | Smoke test a deployed build on a named environment. Fallback outside ols-qa: offer 4 (`testing-ticket-workflow`), which tests one ticket, not a whole build. |
+| 11 | Test Data Prep | `test-data-prep-workflow` (ols-qa workspace only) | `/test-data-prep` | Create, fix, or verify test data (content, covers, accounts). Fallback outside ols-qa: none — ask what the user needs. |
+| 12 | Other | — | — | Ask one clarifying question in the user's language, then route by this table or [intent-shortcuts.md](intent-shortcuts.md); if nothing fits, say so. |
+
+Unsure / multi-step: the `helix` skill or `/helix` (Claude Code), `@helix` elsewhere.
 
 ## Jira issue type → skill (unattended and bot runs)
 
@@ -28,7 +32,7 @@ When a runner tests a ticket without a human picking the workflow, the ticket's 
 | Story | `testing-ticket-workflow` |
 | Bug | `retest-bug-workflow` |
 
-Other issue types (Task, Epic, Sub-task) have no confirmed mapping yet: a runner keeps its current routing, records which skill it used, and never invents a mapping. The two skill files must stay at `skills/procedures/testing-ticket-workflow/WORKFLOW.md` and `skills/procedures/retest-bug-workflow/WORKFLOW.md`; `tools/skill-routing-guard/skill_routing_map.test.js` fails the suite if either moves or this table changes.
+Other issue types (Task, Epic, Sub-task) have no confirmed mapping yet: a runner keeps its current routing, records which skill it used, and never invents a mapping. The two skill files must stay at `skills/procedures/testing-ticket-workflow/WORKFLOW.md` and `skills/procedures/retest-bug-workflow/WORKFLOW.md`; in the ols-qa source repo, `tools/skill-routing-guard/skill_routing_map.test.js` fails the suite if either moves or this table changes (the guard is not shipped in helix).
 
 ## Proactive suggestion (suggest-only)
 
