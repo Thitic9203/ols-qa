@@ -19,7 +19,7 @@ Show the menu and route to the correct workflow skill. The command [commands/hel
 
 ## Contents
 
-- [Opening](#opening-always-unless-the-user-already-chose-a-mode) · [Discipline](#discipline) · [Refusal-first](#refusal-first-precondition-gate)
+- [Opening](#opening-always-unless-the-user-already-chose-a-mode) · [Discipline](#discipline) · [Scope](#scope)
 - [Proactive suggestion](#proactive-suggestion-suggest-only-opt-out) · [Routing](#routing) · [QA closing](#qa-closing-mandatory-before-done) · [MUST / NEVER](#must--never)
 - [Must-read files](#must-read-files) · [Dependencies](#dependencies)
 
@@ -27,26 +27,30 @@ Show the menu and route to the correct workflow skill. The command [commands/hel
 
 Respond in **the user's language** (see [user-communication.md](../../references/user-communication.md)) — menus, questions, and replies follow the language the user writes in; keep technical terms, file names, and ticket keys as written. Be concise.
 
-Show the menu from [menu-text.md](../../references/menu-text.md) (Opening block, in the user's language as that file says).
+Decide what to show in this order — the first step that applies wins:
+
+1. **Named workflow.** If the user's message already names a workflow (Thai, informal, or mixed input included), map it via [intent-shortcuts.md](../../references/intent-shortcuts.md), extract any issue key or URL from the same message, skip the menu, and go to Routing.
+2. **Issue key with no mode** (`/helix {ISSUE_KEY}`). Infer the workflow only when the same message also contains a phrase from intent-shortcuts.md (e.g. `{ISSUE_KEY} API test cases from Swagger` → 2). A bare key or URL alone never picks a workflow: show the menu and ask which option applies to that key.
+3. **Proactive suggestion.** Otherwise apply [Proactive suggestion](#proactive-suggestion-suggest-only-opt-out); if it yields one suggestion, show that instead of the menu.
+4. **Menu.** Otherwise show the menu from [menu-text.md](../../references/menu-text.md) (Opening block, in the user's language as that file says).
 
 🔴 STOP — wait for the user's choice before starting a workflow.
-
-If the user's message already names a workflow (Thai, informal, or mixed input included), map it via [intent-shortcuts.md](../../references/intent-shortcuts.md), extract any issue key or URL from the same message, and **skip this menu**. If the user invoked `/helix {ISSUE_KEY}` with no mode, infer only when obvious (e.g. "API test cases from Swagger" → 2); otherwise ask which option applies.
 
 ## Discipline
 
 Follow [shared-preamble.md](../../references/shared-preamble.md).
 
-## Refusal-first (precondition gate)
+## Scope
 
-This skill only routes — it does not run tests or post to Jira. When the goal is already clear, the menu is skipped (see Opening) because an extra menu round wastes time.
+This skill only routes — it does not run tests or post to Jira (see MUST / NEVER). When the goal is already clear, the menu is skipped (Opening step 1) because an extra menu round wastes time.
 
 ## Proactive suggestion (suggest-only, opt-out)
 
-When the session context already hints at a workflow (git branch, linked Jira ticket, defects mentioned in chat), you MAY offer **one** suggestion instead of the full menu — following [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md).
+Apply the trigger table in [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) to the session context (git branch, linked Jira ticket, defects mentioned in chat):
 
+- If `HELIX_PROACTIVE=0` is set, or no trigger row matches, make no suggestion — show the menu.
+- If a row matches, offer exactly **one** suggestion (the strongest signal, as that file ranks them) instead of the menu.
 - **Suggest only — never auto-run** a workflow (Rule #5).
-- Respect `HELIX_PROACTIVE=0` — if set, skip suggestions and show the normal menu.
 - 🔴 STOP — one suggestion per turn, then wait for the user to pick (number/name) before loading anything.
 - No Jira MCP? Infer from branch + last commit and say so, so the user can correct.
 
@@ -97,37 +101,44 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Rou
 
 ## Must-read files
 
-Every file this skill's procedure requires, one hop from here. Read each at the point its line names.
+The router itself reads only the first group. The second group is required by the shared rules this skill follows ([shared-preamble.md](../../references/shared-preamble.md), [qa-closing-shared.md](../../references/qa-closing-shared.md), [shared-must-never.md](../../references/shared-must-never.md)); the router never reaches those steps — the routed workflow reads each one at the point its line names. Both groups stay one hop from here so no required rule is two links away.
+
+Read while routing:
 
 - Read [agent-rationalizations.md](../../references/agent-rationalizations.md) when tempted to skip a step; each excuse has its correct action.
+- Read [helix-session-constraints.md](../../references/helix-session-constraints.md) once at session start.
+- Read [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) when a QA follow-up could be suggested.
+- Read [session-closing.md](../../references/session-closing.md) at session end.
+- Read [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) before invoking or switching skills.
+- Read [skill-routing.md](../../references/skill-routing.md) when choosing which skill handles a request.
+- Read [skill-rules-style.md](../../references/skill-rules-style.md) before asking the user or stopping on a missing input.
+
+Read only when the routed workflow reaches that step:
+
 - Read [bug-priority-matrix.md](../../references/bug-priority-matrix.md) before setting any priority or a PWMI / FAILED verdict.
 - Read [customer-escape-prevention.md](../../references/customer-escape-prevention.md) before any QA run; the gates that stop shipped defects.
 - Read [defect-report-completeness.md](../../references/defect-report-completeness.md) before writing up any defect or non-pass.
 - Read [figma-design-comparison.md](../../references/figma-design-comparison.md) before judging any UI or visual result against the design.
-- Read [helix-session-constraints.md](../../references/helix-session-constraints.md) once at session start.
 - Read [jira-comment-post-review.md](../../references/jira-comment-post-review.md) after posting a Jira comment, before saying done.
 - Read [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) before posting a Jira table with multi-line cells.
 - Read [long-workflow-todos.md](../../references/long-workflow-todos.md) when the workflow has many steps; keep the todo list.
 - Read [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) before recording any result that is not PASSED.
 - Read [playwright-preflight.md](../../references/playwright-preflight.md) before any Playwright run.
-- Read [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) when a QA follow-up could be suggested.
 - Read [qa-debug-discipline.md](../../references/qa-debug-discipline.md) when a test is flaky or a tool errors.
 - Read [qa-evidence-gates.md](../../references/qa-evidence-gates.md) before any completion claim.
 - Read [resilient-selectors.md](../../references/resilient-selectors.md) when writing or fixing Playwright selectors.
 - Read [result-quality-gate.md](../../references/result-quality-gate.md) before any verdict leaves the round.
 - Read [root-cause-investigation.md](../../references/root-cause-investigation.md) before naming a cause for any failure.
 - Read [round-time-contract.md](../../references/round-time-contract.md) when a round starts and before reporting times.
-- Read [session-closing.md](../../references/session-closing.md) at session end.
-- Read [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) before invoking or switching skills.
-- Read [skill-routing.md](../../references/skill-routing.md) when choosing which skill handles a request.
-- Read [skill-rules-style.md](../../references/skill-rules-style.md) before asking the user or stopping on a missing input.
 - Read [test-through-real-steps.md](../../references/test-through-real-steps.md) before testing an action; no API shortcut for the action under test.
 - Read [verify-closing-checklist.md](../../references/verify-closing-checklist.md) before reporting a verify or retest done.
 
 ## Dependencies
 
-Run the check for each of these before routing — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
+Check these before routing — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
 
 - Atlassian MCP (ticket lookup while routing) — optional; without it, ask the user to paste the ticket text (see Routing)
-- each routed skill lists its own dependencies in its `## Dependencies` section
 - `superpowers:systematic-debugging`
+- each routed skill lists its own dependencies in its `## Dependencies` section and re-checks them when it starts
+
+If a check fails, do not stop routing: name the failed dependency in one line, give its install hint or fallback from the dependencies.md row, and still show the menu (or route a named workflow). The routed skill re-checks its own dependencies and stops there if a missing one is required.
