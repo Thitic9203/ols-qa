@@ -279,7 +279,7 @@ After G1 and/or G2, run the **full review checklist** from [jira-comment-post-re
    - [ ] Row count matches approved Phase F table.
    - [ ] Columns match Phase B confirmation.
    - [ ] Cell content matches approved draft (spot-check first, middle, last rows).
-   - [ ] **(A only)** **No literal `<br>`, HTML tags, or `**` markers** visible as text in any cell (zero tolerance).
+   - [ ] **(A and B)** **No literal `<br>`, HTML tags, or `**` markers** visible as text in any cell — comment and CSV/xlsx alike (zero tolerance).
    - [ ] **(A only)** Numbered items (`1. ` `2. ` `3. `) each on a **separate line** — not running together.
    - [ ] **(A only)** No truncation on the destination UI.
    - [ ] **(A + B both)** CSV/Excel **attached to the same issue** (not just in workspace) and footer link works.
@@ -304,6 +304,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 
 - [ ] Phase E review block posted with **Ready for draft: YES**, endpoint matrix complete, out-of-scope documented, tc-quality-standards PASS.
 - [ ] G-verify checklist passed for the chosen delivery (A, B or both), with at least one re-read of the destination.
+- [ ] **(A only)** Post-publish review passed per [jira-comment-post-review.md](../../../references/jira-comment-post-review.md).
 - [ ] Close-out includes `Verified:` and test case count.
 - [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) § *TC FE / TC API prep* — skip its **Final TC review report posted** item (tc-fe-prep only) and its attachment item unless delivery was **both**.
 

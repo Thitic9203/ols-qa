@@ -246,20 +246,19 @@ Then:
 
 1. **Identity for a mention:** ask for the exact id (Discord user id, Jira account id, etc.) rather than
    guessing one from a display name — a wrong id either pings nobody or pings the wrong person.
-🔴 **GATE — before the external send:** show in chat the destination (channel + thread), the final text
-exactly as it will be sent (after any item-4 tightening) and its character count. The thread answer
-counts as the go-ahead only once that preview is visible; if the text changed after the user saw the
-review, this preview is what they approve.
-
-2. **Send, then read the response back** before telling the user it is done: confirm the destination
+2. 🔴 **GATE — before the external send:** show in chat the destination (channel + thread), the final text
+   exactly as it will be sent (after any item-5 tightening) and its character count. The thread answer
+   counts as the go-ahead only once that preview is visible; if the text changed after the user saw the
+   review, this preview is what they approve.
+3. **Send, then read the response back** before telling the user it is done: confirm the destination
    (channel/thread id) matches what they asked for, and that a requested mention actually resolved.
    **Send returns non-2xx or times out** → do not retry blindly: report the status code and response
    body, keep the review in chat, and ask the user how to proceed (a 429 states the `retry_after` value
    it returned).
-3. **Wrong destination → delete and resend** — a message cannot be moved between channels/threads by
+4. **Wrong destination → delete and resend** — a message cannot be moved between channels/threads by
    editing it. **Wrong content, correct destination → edit in place** — never delete and repost just to
    fix wording.
-4. **Fit the platform's message limit before sending** (Discord: 2,000 characters). Count the characters.
+5. **Fit the platform's message limit before sending** (Discord: 2,000 characters). Count the characters.
    If the text is too long, tighten the wording. Do not drop findings the user saw in chat, and do not
    split the review into several posts unless the user asks.
 5. **Revising a review that is already posted** (new suggestions, a scope cut): edit the existing
@@ -324,6 +323,11 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | NEVER report a business rule or comment that does not conflict with an AC/EC | The AC/EC are the contract. A rule with no TC but no conflict is not a defect in the document |
 | MUST give every Need Improve item a sourced "→ Suggest:" fix, and NEVER invent a value for it | A problem without a fix leaves the author guessing. An invented number gets copied into the TC as if it were spec |
 | MUST run Step 5 exactly as written — it is the single source for the notify rules (project channel every run, ask only the thread, never invent an id, preview gate, length limit, read-back, delete-and-resend vs edit-in-place) | Restating those rules in several places let copies drift apart |
+| MUST send every review to the ticket project's own TC-review channel, whoever invoked the skill | Each project's team reads its own channel; a review in another project's channel reaches the wrong people |
+| NEVER ask which server, group, or channel when the project's config has one — ask only which thread | The answer is already in config; asking again is a repeat question (#0059) |
+| NEVER invent a channel, thread, or mention id for an external send | A wrong id either reaches nobody or reaches the wrong person |
+| MUST fix a wrong-destination send by delete-and-resend, and a wrong-content send by edit-in-place | A channel/thread cannot be changed by editing; deleting a correctly-placed message to fix wording destroys its position in the thread for no reason |
+| MUST edit an already-posted review in place and keep it within the platform's length limit | A second copy splits the thread. An over-limit post is rejected or cut off |
 | MUST NOT post to Jira/Confluence/GitHub or send an external message before the user has seen the review in chat | The review is the deliverable to approve first — an external send is not the review itself |
 
 ## Must-read files
