@@ -1,8 +1,8 @@
 ---
 name: testing-ticket-workflow
 description: |
-  Test one Jira ticket with Playwright after intake (plan shown, then run) — compare every screen against the design (Figma), summarize results in chat, then optionally update an external results destination.
-  Use when the user picks Testing ticket from Helix, says /testing-ticket, or wants automated UI/API checks for a single ticket.
+  Test one Jira ticket with Playwright after intake — show the intake summary and plan, wait for the user's confirmation, then run; compare every screen against the design (Figma), summarize results in chat, then optionally update an external results destination.
+  Use when the user picks Testing ticket from Helix, says /testing-ticket, or asks to test, verify or QA a single Jira story/ticket on an environment — even without saying testing ticket ("เทส ticket นี้ให้หน่อย").
   Do NOT use for opening bug tickets (create-bug-workflow), retest-after-fix on a bug (retest-bug-workflow), or drafting manual TC tables (tc-fe-prep / tc-api-prep). Does not run full-app regression.
 metadata:
   proactive_triggers:
