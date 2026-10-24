@@ -21,7 +21,7 @@ Part of [WORKFLOW.md](WORKFLOW.md). Sections moved verbatim; read before draftin
 
 ## Step 6 — Draft Jira comment [medium freedom]
 
-**Do not post until the user approves** (unless they explicitly waive approval) — through the single
+🔴 **GATE — STOP: Do not post until the user approves** (unless they explicitly waive approval) — through the single
 Step 6d approval popup.
 
 **Draft in the syntax of the endpoint chosen at Step 3 — never in markdown "and convert later".**
@@ -150,11 +150,11 @@ carries `[▶ file.mp4|^file.mp4]` in an Evidence cell, and its rendered row has
 elements, with the MP4 resolving to a real attachment link. The construct that genuinely breaks a row
 is the image width parameter (`!img|width=N!`, PM-004) — that one is still forbidden.
 
-The **`Evidence` column** (between `Actual Result` and `Status`) holds the case's screenshot **in the
-cell** — `!file.png!`, pre-resized, **no `|width=…`** (the pipe breaks the row). One image per row,
-for PASSED and FAILED alike. **API bugs have no screenshots** → drop the `Evidence` column
-(`||*No.*||*Expected Result*||*Actual Result*||*Status*||`) and put the full cURL + response for each
-case in a separate `*Evidence*` section below the table instead (a cURL block does not fit in a cell).
+The **`Evidence` column** sits between `Actual Result` and `Status`, for PASSED and FAILED rows alike.
+
+**Evidence per row (one rule; the [Step 8·0 gate](closeout-and-notify.md#80--format-completeness-gate-must-pass-before-any-transition) is authoritative):** FE / UI bug — every executed case's row carries its whole-flow MP4 link `[▶ …mp4|^…mp4]` in the `Evidence` cell, and a text-verification row also carries an inline still `!file.png!` (pre-resized, no `|width=…`); a non-text row carries the MP4 only. API bug — no `Evidence` column; full cURL + response per case in an `*Evidence*` section below the table.
+
+For an API bug the header row is therefore `||*No.*||*ER*||*Case (Role)*||*Expected Result*||*Actual Result*||*Status*||` — a cURL block does not fit in a cell.
 
 **Template core — markdown/ADF** (MCP `addCommentToJiraIssue` or `/rest/api/3/…`): identical
 content, but `**bold**`, `---`, and a `| col | col |` table with a `|---|` divider row. It ends with the same
@@ -180,8 +180,8 @@ with a passing status carries an evidence reference — passed rows included
 
 **Verbosity ceiling:** a PASSED comment stays inside the template above — no added narrative
 paragraphs, no restating the ticket, no "why this matters" prose. Each field line holds only its
-value. FE screenshots go **in the `Evidence` cell** — the `Actual Result` cell already describes what
-the image shows, so no separate caption line is needed. If a field doesn't apply (e.g.
+value. FE evidence (MP4 link, plus the still on a text-verification row) goes **in the `Evidence` cell** — the `Actual Result` cell already describes what
+it shows, so no separate caption line is needed. If a field doesn't apply (e.g.
 **API**/**Swagger** on an FE bug), omit the line entirely rather than writing "N/A".
 
 ### 6·0 — Build the run manifest, render the body, run the guard (mandatory)
@@ -235,7 +235,7 @@ and no exit code stands in for them.
 
 A PASSED comment stops at the template above. **A FAILED / BLOCKED comment adds exactly these two
 blocks**, in this order (the failing behaviour itself already lives in the `Actual Result` cell + its
-`Evidence` screenshot, so it is not repeated as a separate prose block):
+`Evidence` MP4 / still, so it is not repeated as a separate prose block):
 
 | Block | Content | Answers |
 |-------|---------|---------|
@@ -259,7 +259,7 @@ Read your own draft as the developer who will act on it. Run the six-question ga
 [defect-report-completeness.md](../../../references/defect-report-completeness.md) §5. Any "no" → **fix the
 comment**, never "post now and explain in chat". Also confirm: every scope word in the draft (`always`,
 `any entry point`, `only when …`) traces to something you actually exercised and captured (a verdict-table
-row + its `Evidence` screenshot), and no observation in the draft is under an unresolved contradiction.
+row + its `Evidence` MP4 / still), and no observation in the draft is under an unresolved contradiction.
 
 **Go back:** If any of the six questions is "no", fix the comment and return to Step 6·0 — re-render and re-run the guard before 6c.
 
@@ -278,7 +278,7 @@ cause and check each one —
 Any box unchecked → delete the sentence or go back to Step 4h and earn it. Do not soften it into a
 hedge.
 
-**Table headers:** every column MUST carry an explicit, all-English header. The single table's header row is fixed and MUST read exactly `No.` · `ER` (Task: `AC`) · `Case (Role)` · `Expected Result` · `Actual Result` · `Evidence` · `Status` — `Expected Result` / `Actual Result` mirror the ticket's own field names (**Expected Result** / **Actual Result**) so a reader lines the comment up against the ticket without translating, and `Evidence` (between `Actual Result` and `Status`) holds each row's screenshot in-cell. **API bugs drop the `Evidence` column** (`No.` · `ER` · `Case (Role)` · `Expected Result` · `Actual Result` · `Status`) and carry cURL/response in a section below. Never `Expected result item`, never a bare `Actual`. A bare `#` for the row-number column renders as a **blank** header cell in Jira. **Headers MUST be bold, in the syntax of the target endpoint** — v2 wiki `||*No.*||*Expected Result*||…` (single asterisk, `||` delimiters, **no divider row**); markdown/ADF `| **No.** | **Expected Result** | …` followed by a `|---|` divider. A `**No.**` in a v2 body renders as literal `*No.*`, and a `|---|` divider row in a v2 body renders as a visible row of dashes.
+**Table headers:** every column MUST carry an explicit, all-English header. The single table's header row is fixed and MUST read exactly `No.` · `ER` (Task: `AC`) · `Case (Role)` · `Expected Result` · `Actual Result` · `Evidence` · `Status` — `Expected Result` / `Actual Result` mirror the ticket's own field names (**Expected Result** / **Actual Result**) so a reader lines the comment up against the ticket without translating, and `Evidence` (between `Actual Result` and `Status`) holds each row's evidence in-cell per the **Evidence per row** rule above. **API bugs drop the `Evidence` column** (`No.` · `ER` · `Case (Role)` · `Expected Result` · `Actual Result` · `Status`) and carry cURL/response in a section below. Never `Expected result item`, never a bare `Actual`. A bare `#` for the row-number column renders as a **blank** header cell in Jira. **Headers MUST be bold, in the syntax of the target endpoint** — v2 wiki `||*No.*||*Expected Result*||…` (single asterisk, `||` delimiters, **no divider row**); markdown/ADF `| **No.** | **Expected Result** | …` followed by a `|---|` divider. A `**No.**` in a v2 body renders as literal `*No.*`, and a `|---|` divider row in a v2 body renders as a visible row of dashes.
 
 Show the full draft in chat; the user's approval is the single Step 6d approval popup — no separate
 wait here.
@@ -313,6 +313,8 @@ resolve as BLOCKED rows with reasons — never halt the queue, never post over a
 
 ### 6d. End of round — decisions popup, then one approval bundle (mandatory, fixed order)
 
+🔴 **GATE — STOP:** nothing is posted, transitioned or notified until item 4's approval is in (or the round is delegated, below).
+
 **Delegated rounds:** when the owner has delegated the round ("don't ask", "don't wait", "handle it"), the decisions popup carries only what the [no-wait decision gate](../../../references/no-wait-decision-gate.md) could not resolve, and the approval wait is skipped (layer 19) — every format, syntax and readback gate below still runs. Opening new bugs still needs a live yes.
 
 Follow [round-time-contract.md](../../../references/round-time-contract.md) §3 in this order:
@@ -323,7 +325,7 @@ Follow [round-time-contract.md](../../../references/round-time-contract.md) §3 
    at Step 3 (v2 wiki or ADF) and confirm tables, line breaks and formatting; resolve every referenced
    image or clip (the attachment exists, its id or filename matches the reference). A render or media
    failure blocks the approval popup until fixed. The reviewer must return CLEAN before item 4.
-2. **Decisions popup — only when something is queued.** One `AskUserQuestion`, batched 4 questions at a
+2. **Decisions popup — only when something is queued.** One choice-question call (`AskUserQuestion` in Claude Code), batched 4 questions at a
    time: the scope plan (Step 2b/2c, and the round-N scope), each queued non-PASS (A/B/C, Step 4i),
    each missing design (Step 2d), and each cross-ticket conflict (*Investigate further* / *Close out
    now*). Nothing queued → skip this item; the round then has a single human touch.
@@ -368,7 +370,7 @@ the draft looks like what you meant.
 |---------|--------|
 | Comment ≤ 3 table rows OR text-only (no table) | MCP `addCommentToJiraIssue` — fast for short results |
 | Comment > 3 table rows | ADF-direct via browser JS (Pattern D in [jira-fast-publish.md](../../../references/jira-fast-publish.md)) |
-| FE bug with screenshots | v2 wiki markup via browser JS (Step 7c) |
+| FE bug with MP4 / stills | v2 wiki markup via browser JS (Step 7c) |
 
 **Definition of "table":** `| col | col |` rows with data — the evidence summary block (`**Env:** staging`, `**API:** …`) is NOT a table.
 
@@ -394,7 +396,7 @@ Use **v2** wiki markup and `/rest/api/2/issue/{KEY}/comment`.
 
 **Mandatory flow — each row's `Evidence` cell carries a working MP4 link (every case) plus an inline screenshot (text-verification cases):**
 
-1. **Resize any screenshot first** — text-verification stills to ~600–640 px wide (`sips -Z 640 …`) so a bare `!file.png!` renders at a readable in-cell size. (MP4s are not resized.)
+1. **Resize any screenshot first** — text-verification stills to ~600–640 px wide (macOS `sips -Z 640`, ImageMagick `magick … -resize 640x`, or `ffmpeg -vf scale=640:-1`) so a bare `!file.png!` renders at a readable in-cell size. (MP4s are not resized.)
 2. **Upload attachments** — for each MP4 and screenshot, `POST /rest/api/3/issue/{KEY}/attachments` (curl `-u email:token` with `X-Atlassian-Token: no-check`, or authenticated browser fetch).
 3. **Embed in the `Evidence` cell** — the MP4 as a wiki attachment link `[▶ {KEY}_TC_{nn}.mp4|^{KEY}_TC_{nn}.mp4]` (role-suffixed when the case covers more than one role — use the attached name verbatim), and (text-verification rows only) the screenshot as `!filename.png!` **with no `|width=…`** (the pipe would split the table row). One case per verdict-table row.
 4. **Post comment** — v2 wiki `POST /rest/api/2/issue/{KEY}/comment`. v2 renders `!file.png!` as an inline picture and `[▶ …|^…mp4]` as a click-to-play/download attachment link.

@@ -34,7 +34,7 @@ Claude Code shortcut: `/retest-bug` → [commands/retest-bug.md](../../commands/
 
 ## Contents
 
-Every must-read file for this workflow, linked directly from here. References already linked above are not repeated.
+Every file this workflow uses, linked directly from here. Only WORKFLOW.md is read up front; load each other file at the step or moment its line names. References already linked above are not repeated.
 
 - [WORKFLOW.md](../procedures/retest-bug-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
 - [execute-and-evidence.md](../procedures/retest-bug-workflow/execute-and-evidence.md) — before Step 4 — read and follow Steps 4–5 and the result quality gate, end to end.
@@ -64,7 +64,7 @@ Every must-read file for this workflow, linked directly from here. References al
 - [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) — read before posting a Jira table with multi-line cells.
 - [long-workflow-todos.md](../../references/long-workflow-todos.md) — read when the workflow has many steps; keep the todo list.
 - [playwright-preflight.md](../../references/playwright-preflight.md) — read before any Playwright run.
-- [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read when a QA follow-up could be suggested.
+- [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read before the round report, to suggest (never start) at most one follow-up Helix workflow.
 - [resilient-selectors.md](../../references/resilient-selectors.md) — read when writing or fixing Playwright selectors.
 - [session-closing.md](../../references/session-closing.md) — read at session end.
 - [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — read before invoking or switching skills.
@@ -80,9 +80,9 @@ All preconditions and refusal rules are in WORKFLOW.md. MUST NOT start without a
 
 ## QA closing (mandatory before "done")
 
-All close-out gates are in WORKFLOW.md and [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Retest section). MUST NOT claim PASSED/FAILED without evidence in the comment, and MUST NOT post a retest comment — bug or task — without its **case list** — ONE table only (No. · ER/AC · Case (Role) · Expected Result · Actual Result · Evidence · Status, a row per ER/AC with its covering cases as `• TC_nn title (role)` inside the row; never a separate `Test cases run` table). No `Scope: FULL` line; multi-point header fields and cells as bullets; after posting set column widths and centre every clip/image with `tools/retest-guard/adf_colwidth.js`. The design reference goes on the header's `Design ref:` line, never as a per-row column.
+All close-out gates are in WORKFLOW.md and [verify-closing-checklist.md](../../references/verify-closing-checklist.md) (Retest section). MUST NOT claim PASSED/FAILED without evidence in the comment, and MUST NOT post a retest comment — bug or task — without its **case list** — ONE table only, headed and filled per the **Table headers** and **Evidence per row** rules in [comment-and-post.md](../procedures/retest-bug-workflow/comment-and-post.md) (a row per ER/AC with its covering cases as `• TC_nn title (role)` inside the row; never a separate `Test cases run` table). No `Scope: FULL` line; multi-point header fields and cells as bullets; after posting set column widths and centre every clip/image with `tools/retest-guard/adf_colwidth.js`. The design reference goes on the header's `Design ref:` line, never as a per-row column.
 
-**Before any comment draft is written to disk or shown as final** — including "draft only" requests — run `node tools/retest-guard/retest_guard.js --body <draft> --format v2 --bug-type FE` (for other bug types use the `--format`/`--bug-type` values the WORKFLOW comment step names) and keep fixing the draft until it exits 0. If the guard fails, return to the comment step in WORKFLOW.md; never hand over a draft the guard has not passed.
+**Before any comment draft is written to disk or shown as final** — including "draft only" requests — run `node tools/retest-guard/retest_guard.js --body <draft> --format v2 --bug-type FE` (for other bug types use the `--format`/`--bug-type` values the WORKFLOW comment step names) and keep fixing the draft until it exits 0. If the guard fails, return to the comment step in WORKFLOW.md; never hand over a draft the guard has not passed. When the workspace has no `tools/retest-guard/` ([dependencies.md](../../references/dependencies.md)), apply the same rules by hand from the comment step and state `guard not installed — checked by hand` with the draft; exit 2 (guard present but could not run) is not a pass — fix the run.
 
 ## Dependencies
 
