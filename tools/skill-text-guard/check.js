@@ -10,11 +10,14 @@
  *                   references/ols-*.md is the OLS-only project guide: never synced to helix
  *                   (scripts/sync-skills-to-helix.sh), so real keys are allowed there.
  *
+ * Scans git-tracked files only (what ships); a folder that is not a git repo is walked.
+ *
  *   node tools/skill-text-guard/check.js [--root <dir>]
  * exit 0 = clean · 1 = violation(s) printed as path:line rule text · 2 = unreadable root
  */
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const DIRS = ['skills', 'references', 'commands'];
 const SECRET = '(password|passcode|bearer token|access token|api key|token|credential|secret)';
@@ -48,12 +51,22 @@ function checkText(rel, text) {
   return hits;
 }
 
+// Only tracked files ship. Workflows write gitignored local files under references/ (e.g. the
+// per-ticket handoff file, .gitignore `/references/*OLS-*`); scanning the working tree would fail
+// on a machine that has one and pass in CI. Outside a git repo (test fixtures) walk the folder.
+function files(root) {
+  try {
+    const out = execFileSync('git', ['-C', root, 'ls-files', '-z', '--', ...DIRS], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    return out.split('\0').filter((f) => f.endsWith('.md')).map((f) => path.join(root, f)).filter((f) => fs.existsSync(f));
+  } catch (e) {
+    return DIRS.flatMap((d) => walk(path.join(root, d)));
+  }
+}
+
 function run(root) {
   const hits = [];
-  for (const d of DIRS) {
-    for (const f of walk(path.join(root, d))) {
-      hits.push(...checkText(path.relative(root, f), fs.readFileSync(f, 'utf8')));
-    }
+  for (const f of files(root)) {
+    hits.push(...checkText(path.relative(root, f), fs.readFileSync(f, 'utf8')));
   }
   return hits;
 }

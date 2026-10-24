@@ -31,6 +31,22 @@ t('allows real keys only in the OLS-only guide references/ols-project-guide.md',
 t('still flags keys in a shipped reference', () => assert.deepStrictEqual(checkText('references/bug-priority-matrix.md', 'learned OLS-26').map((h) => h.rule), ['ticket-key']));
 t('passes a non-OLS key pattern like DEMO-123', () => assert.deepStrictEqual(rules('Example ticket DEMO-123'), []));
 
+// tracked files only: a gitignored local file with a real key is not shipped, so not flagged
+t('ignores a gitignored local file; flags the same text once tracked', () => {
+  const os = require('os'); const fs = require('fs'); const { execFileSync } = require('child_process');
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'stg-'));
+  const g = (...a) => execFileSync('git', ['-C', d, ...a], { stdio: 'ignore' });
+  g('init', '-q'); fs.mkdirSync(path.join(d, 'skills')); fs.mkdirSync(path.join(d, 'references'));
+  fs.writeFileSync(path.join(d, '.gitignore'), '/references/*OLS-*\n');
+  fs.writeFileSync(path.join(d, 'skills', 'a.md'), 'clean\n');
+  fs.writeFileSync(path.join(d, 'references', 'helix-handoff-OLS-1.md'), '# Handoff — OLS-1\n');
+  g('add', '.gitignore', 'skills/a.md');
+  assert.deepStrictEqual(run(d).map((h) => h.rule), []);
+  fs.writeFileSync(path.join(d, 'references', 'shipped.md'), 'learned OLS-1\n'); g('add', 'references/shipped.md');
+  assert.deepStrictEqual(run(d).map((h) => h.file), [path.join('references', 'shipped.md')]);
+  fs.rmSync(d, { recursive: true, force: true });
+});
+
 // the real repo
 t('repo skills/ references/ commands/ are clean', () => {
   const hits = run(path.resolve(__dirname, '..', '..'));
