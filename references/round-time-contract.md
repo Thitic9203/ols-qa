@@ -22,7 +22,8 @@ This contract is shared by `retest-bug-workflow`, `testing-ticket-workflow`, and
 
 | Point | Rule |
 |---|---|
-| Scope gate (retest Step 2b/2c, testing Phase C) | **Show the plan, then run.** Print the case list and lane plan, then start execution without waiting. The plan appears again in the end decisions popup, where the user can correct it. A correction there starts a new round. |
+| Scope gate (retest Step 2b/2c) | **Show the plan, then run.** Print the case list and lane plan, then start execution without waiting. The plan appears again in the end decisions popup, where the user can correct it. A correction there starts a new round. |
+| Scope gate (testing-ticket Phase C) — **the one exception to this section** | **Show the intake summary and the plan, then wait for the user's confirmation before the first Playwright run** (owner decision D2). This wait happens once, before execution starts, so it is not a mid-run wait and its time is reported as human wait (§1). After the confirmation, every other rule in this table applies: no waits during the run, and later questions go to the end decisions popup. |
 | Non-PASS challenge (A/B/C), missing design, cross-ticket conflict | Apply the documented unattended default: `non-pass-challenge-gate.md` (BLOCKED + remark, continue); the retest "missing design" bot-mode rule; `qa-closing-shared.md` cross-ticket step 5. Then **queue the question** for the end decisions popup. |
 | Per-project values: env, account pool, Jira post format (v2/v3), transition names, notify recipient field, results destination | Read them from the workspace guide. If a value is missing, ask once and **save it to the guide immediately**, without a second "save this?" question (`workspace-guide-discovery.md`). Never store production passwords in a committed guide. |
 
@@ -40,7 +41,7 @@ This contract is shared by `retest-bug-workflow`, `testing-ticket-workflow`, and
    - each external result update (destination and rows).
 5. **Execute.** Post, then do the post-publish re-read. Then transition, assign, unblock, notify, and update results. No second approval.
 
-If no decisions are queued, step 2 is skipped, and the round has a single human touch.
+If no decisions are queued, step 2 is skipped, and the round has a single human touch (testing-ticket also has its start-of-round plan confirmation, §2).
 
 ## 4. Fan-out (lanes own their unit)
 

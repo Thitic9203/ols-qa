@@ -36,4 +36,4 @@ Collect these before any Playwright run.
 
 ## Confirmation gate
 
-The agent must show all six fields (or explicit `none`) plus a derived test plan and receive **confirm** before Playwright starts.
+🔴 GATE: the agent must show all six fields (or explicit `none`) plus a derived test plan and receive the user's **confirm** before the first Playwright run ([WORKFLOW.md](../WORKFLOW.md) Phase C; the testing-ticket exception in round-time-contract §2).

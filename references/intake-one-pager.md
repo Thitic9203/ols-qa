@@ -28,7 +28,8 @@ Required:
 Optional:
   • Confluence page
   • Swagger URL
-I will post a test plan — reply **confirm** before Playwright runs.
+I will post the intake summary and a test plan, and wait —
+nothing runs in Playwright until you reply **confirm**.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
