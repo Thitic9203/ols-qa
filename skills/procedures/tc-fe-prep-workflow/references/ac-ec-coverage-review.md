@@ -1,6 +1,6 @@
 # FE test cases — AC / EC coverage review
 
-Run **after Step 3 (design)** and **before Step 5 (draft in chat)**. Pair with [tc-quality-standards.md](../../../../references/tc-quality-standards.md) for ISTQB / 29119-3 row quality.
+Run **after Step 3 (design)** and **before Step 5 (HTML draft)**. Pair with [tc-quality-standards.md](../../../../references/tc-quality-standards.md) for ISTQB / 29119-3 row quality.
 
 ---
 
@@ -16,12 +16,12 @@ List every **AC** and **EC** from the story (from Step 2). For each item record:
 
 | AC/EC ID | Summary (short) | Covered by TC ID(s) | Notes |
 |----------|-----------------|---------------------|-------|
-| AC_01 | … | TC_Feature_01, TC_Feature_02 | Split positive/negative |
-| EC_02 | … | TC_Feature_05 | |
+| AC_01 | … | 1, 2 | Split positive/negative |
+| EC_02 | … | 5 | |
 
 Rules:
 
-- **Every AC and EC** must appear in the matrix with at least one `TC_*` — or STOP and add cases.
+- **Every AC and EC** must appear in the matrix with at least one TC ID (plain number, design-and-review Step 3c) — or STOP and add cases.
 - **One TC may cover multiple AC/EC** when they share the same flow and assertions.
 - **Multiple TCs may cover one AC/EC** when scenarios differ (e.g. role, data state, validation branch).
 
