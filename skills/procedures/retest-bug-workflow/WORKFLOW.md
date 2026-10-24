@@ -62,10 +62,11 @@ Retest bug progress:
 - [ ] Step 5 — Evidence
 - [ ] Result quality gate (mandatory before the comment is drafted)
 - [ ] Step 6 — Draft Jira comment
+- [ ] QA closing, pre-6d part (cross-ticket conflict check) → 🔴 GATE — STOP: Step 6d approval before Step 7 posts anything
 - [ ] Step 7 — Post comment
 - [ ] Step 8 — Close out (after successful post; no second approval unless user asked)
 - [ ] Step 9 — QA result notify (if the project configures a channel)
-- [ ] QA closing (mandatory before "done")
+- [ ] QA closing (mandatory before "done") — remaining checks, after Step 9
 - [ ] Step 10 — A question arrives after the comment was posted
 ```
 
@@ -146,7 +147,7 @@ time** per round, human wait reported on its own line and never counted, and a *
 mid-run: decisions are queued for the end-of-round popups at Step 6d (§2–§3). The round report (Step 8e)
 **ends with the `Round time:` line**, measured from session timestamps, never estimated (§1).
 
-Use plain chat for URLs/accounts (never a password); AskUserQuestion only for choices (e.g. approve comment).
+Use plain chat for URLs/accounts (never a password); the runtime's choice-question tool (`AskUserQuestion` in Claude Code) only for choices (e.g. approve comment).
 
 ## Refusal-first (precondition gate)
 
@@ -207,7 +208,7 @@ still re-counted fresh at Step 2c.
 Use Atlassian integration (`getJiraIssue` or equivalent):
 
 - `issueIdOrKey`: `{ISSUE_KEY}`
-- Prefer markdown or rendered fields
+- Request the markdown or rendered form of the fields; read raw ADF only when neither is returned
 
 Capture: environment, test steps, expected/actual results, API endpoint, bug type hints (`[API]`, `[FE]`, admin vs user portal).
 
@@ -256,7 +257,7 @@ severity/priority notion. Cheat-sheet (full matrix + hard rule at the link):
 | system crash for some users | Highest | **FAILED** |
 | complete outage / data loss / security breach | Highest | **FAILED** |
 
-**Viewing a Figma supplement:** when the bug/parent references a Figma design, prefer the **Figma Dev Mode MCP** (`get_screenshot` / `get_metadata`) — needs the Figma desktop app with **Dev Mode MCP Server enabled** (Figma menu → Preferences) and the file open; `node-id` in the URL uses `-`, the MCP `nodeId` uses `:` (`1234-5678` → `1234:5678`). If that server is off, **fall back to the browser-automation MCP**: open the file URL (a logged-in browser session persists auth), let the canvas render, screenshot the node. Dismiss the **"view this file in Dev Mode?"** modal with **"Not now"** — NEVER "Request access". View+Comment access is enough. (Figma stays a **supplement** — it never overrides the bug's own expected results.)
+**Viewing a Figma supplement:** when the bug/parent references a Figma design, use the **Figma Dev Mode MCP** first (`get_screenshot` / `get_metadata`) — needs the Figma desktop app with **Dev Mode MCP Server enabled** (Figma menu → Preferences) and the file open; `node-id` in the URL uses `-`, the MCP `nodeId` uses `:` (`1234-5678` → `1234:5678`). If that server is off, **fall back to the browser-automation MCP**: open the file URL (a logged-in browser session persists auth), let the canvas render, screenshot the node. Dismiss the **"view this file in Dev Mode?"** modal with **"Not now"** — NEVER "Request access". View+Comment access is enough. (Figma stays a **supplement** — it never overrides the bug's own expected results.)
 
 ---
 
@@ -336,10 +337,12 @@ Follow [figma-design-comparison.md](../../../references/figma-design-comparison.
 
 ## Step 3 — Bug type and comment format (decide once) [medium freedom]
 
-| Bug type | Screenshots | Comment format | API |
+| Bug type | Evidence per row | Comment format | API |
 |----------|-------------|----------------|-----|
-| **API** | No | v3 ADF | `/rest/api/3/.../comment` |
-| **FE / UI** | **Required** | **v2 wiki markup** | `/rest/api/2/.../comment` |
+| **API** | cURL + response below the table (no `Evidence` column) | v3 ADF | `/rest/api/3/.../comment` |
+| **FE / UI** | **MP4 link every row; + inline still on text-verification rows** | **v2 wiki markup** | `/rest/api/2/.../comment` |
+
+**Evidence per row (one rule; the [Step 8·0 gate](closeout-and-notify.md#80--format-completeness-gate-must-pass-before-any-transition) is authoritative):** FE / UI bug — every executed case's row carries its whole-flow MP4 link `[▶ …mp4|^…mp4]` in the `Evidence` cell, and a text-verification row also carries an inline still `!file.png!` (pre-resized, no `|width=…`); a non-text row carries the MP4 only. API bug — no `Evidence` column; full cURL + response per case in an `*Evidence*` section below the table.
 
 Set flag `COMMENT_FORMAT=v2` or `v3` here. **Do not change later** — rewriting between formats wastes time.
 
@@ -389,7 +392,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] Step 7d fix-verify completed.
 - [ ] **Cross-ticket conflict check ran before the Step 6d approval popup** ([qa-closing-shared.md](../../../references/qa-closing-shared.md#cross-ticket-conflict-check)): the whole project searched with every layer's query + hit count recorded, candidates opened (fields + every comment), the table posted in chat with a clickable link per ticket, and the user answered *Investigate further* / *Close out now* in the Step 6d decisions popup before the post, any transition, or notify.
 - [ ] **Round report ends with the `Round time:` line** (Step 8e), measured from session timestamps ([round-time-contract.md](../../../references/round-time-contract.md) §1), and `references/helix-handoff-{KEY}.md` written for this round (§10).
-- [ ] **Step 8·0 format-completeness gate passed BEFORE any transition** — FE bug: screenshots embedded inline + render-verified; API bug: full cURL/response per row.
+- [ ] **Step 8·0 format-completeness gate passed BEFORE any transition** — evidence per the [Evidence per row](comment-and-post.md#step-6--draft-jira-comment-medium-freedom) rule: FE bug — MP4 link in every row (plays from Jira) + inline still on text-verification rows (renders as a picture); API bug — full cURL/response per row.
 - [ ] Bug landed in Done → **Step 8d** run: stories it blocked either moved to ready-for-QA or left with their remaining blockers reported.
 - [ ] Step 9 QA notify sent if the project configures a channel (retest verdict + Jira comment link + @mention) — **sent regardless of who invoked the retest** (owner, another QA, slash command, bot/trigger) and regardless of whether they asked for one.
 - [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) (Retest section).
@@ -434,22 +437,19 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST read project config before testing | No hardcoded env URLs |
 | MUST run the case list in parallel lanes, one leased account per lane, unless a [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §4 predicate is named | Shortest retest time with no shared login — a shared account ends sessions and shares state, producing false defects |
 | NEVER open a browser or login window for a test account (main thread or lane) — a lane returns `SESSION-DEAD`; the main thread gives ready-to-run commands, one combined `bash` block per step (relink every needed account → setup/mint only the FAILED ones; each account isolated, prints OK / FAILED with a log path), then probes ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3) | Login windows popped a chain of windows at the person; owner order 2026-10-21: login by command, as in the e2e suite |
-| MUST include full cURL/response per API case | Evidence must stand alone |
 | MUST treat Swagger (+ error docs) over stale ticket text | Ticket may be wrong |
 | MUST use exactly one of **PASSED ✅** / **FAILED ❌** / **BLOCKED ⛔** / **PWMI ⚠️** in the summary line — the round's real verdict; a round nobody could reach reads BLOCKED, never FAILED | Scanability for dev/QA; a coverage gap is not a defect (`SUMMARY_VERDICTS` in `retest_rules.js`) |
 | MUST keep a PASSED comment inside the Step 6 template fields only — no narrative padding, one-line evidence captions | A tight comment is scannable in seconds; prose bloat buries the verdict (locked from an owner-accepted format 2026-07-23) |
 | MUST give every table column an explicit English header; row-number column = `No.` | bare `#` renders as a blank header cell in Jira |
-| MUST head the single FE table exactly `No.` · `ER` (Task: `AC`) · `Case (Role)` · `Expected Result` · `Actual Result` · `Evidence` · `Status` (API bug: drop `Evidence`) — never `Expected result item`, never a bare `Actual` | the middle columns carry the ticket's own field names so a reader lines the comment up with no translation, and `Evidence` holds each row's screenshot in-cell (user correction 2026-07-24 on two retests; Evidence column added 2026-07-27; one table with `ER` and `Case (Role)` ordered by the owner 2026-09-24) |
+| MUST head the single table exactly as the **Table headers** rule in [comment-and-post.md](comment-and-post.md#step-6--draft-jira-comment-medium-freedom) states (the guard's `VERDICT_TABLE_HEADERS`; API bug: drop `Evidence`) — that rule is the one copy | the middle columns carry the ticket's own field names so a reader lines the comment up with no translation (user correction 2026-07-24 on two retests; Evidence column added 2026-07-27; one table with `ER` and `Case (Role)` ordered by the owner 2026-09-24) |
 | MUST bold every table header cell (`\| **No.** \| **Test Case** \| …`) | Jira doesn't auto-bold markdown headers; non-bold looks unprofessional |
-| MUST compare actual text against expected (customfield_12116) character-by-character when expected specifies exact wording | Any text difference = FAIL — no "minor wording" or "cosmetic" exceptions |
-| MUST lock v2/v3 at Step 3; FE → v2 + screenshots | Rewrites waste time |
-| MUST verify Jira UI after post (Step 7d) before Step 8 | Truncation / wrong endpoint |
-| MUST pass the Step 8·0 format-completeness gate before ANY status transition — FE bug requires a screenshot in each row's `Evidence` cell (`!file.png!`, pre-resized, no `\|width`) **and** render-verified; a text-only FE comment fails the gate | Transitioning on an evidence-incomplete comment silently hides the gap (learned on a past retest: FE bug moved to Done with a text-only comment) |
-| MUST NOT offer the user a "skip screenshots / text-only" option for an FE bug — screenshots are mandatory, not optional; if upload is blocked, STOP and resolve, don't bypass | Offering to skip a mandatory step is how the gate got bypassed (same past retest) |
+| MUST compare actual text against the Expected Result field (field id from the project guide) character-by-character when expected specifies exact wording | Any text difference = FAIL — no "minor wording" or "cosmetic" exceptions |
+| MUST pass the Step 8·0 format-completeness gate before ANY status transition — FE bug evidence follows the [Evidence per row](comment-and-post.md#step-6--draft-jira-comment-medium-freedom) rule (MP4 link in every row's `Evidence` cell, plus an inline `!file.png!` still — pre-resized, no `\|width` — on text-verification rows), link and still render-verified; a text-only FE comment fails the gate | Transitioning on an evidence-incomplete comment silently hides the gap (learned on a past retest: FE bug moved to Done with a text-only comment) |
+| MUST NOT offer the user a "skip the MP4 / stills / text-only" option for an FE bug — that evidence is mandatory, not optional; if upload is blocked, STOP and resolve, don't bypass | Offering to skip a mandatory step is how the gate got bypassed (same past retest) |
 | MUST run Step 8 after successful post unless user stopped you | Workflow closure |
 | MUST run Step 8d as soon as the bug lands in Done — Done = fixed = the stories it blocked may be releasable | Otherwise blocked stories sit in the backlog after their blocker is already closed |
 | MUST check EVERY "is blocked by" link on a story before moving it in Step 8d, treat only **Done** as resolved, and move only stories parked in the blocked status | This bug is often not the story's only blocker; moving a still-blocked story sends untestable work back to QA, and touching a story already in QA/dev moves it backwards |
-| MUST create test data when possible | "No data" is not an excuse |
+| MUST create missing test data in the [4c order](execute-and-evidence.md#4c-test-data) — ask the user only after steps 1–3 fail | "No data" is not an excuse |
 | MUST perform the action under test through its real surface (UI bug → through the UI, every Test Step); API only for test-data/precondition prep, and for an API-layer bug the API call is the real step | [test-through-real-steps.md](../../../references/test-through-real-steps.md) — an API shortcut for a UI action verifies the wrong layer and can pass while the screen is broken |
 | MUST NOT change COMMENT_FORMAT after Step 3 | v2/v3 rewrite cost |
 | MUST take transition names/ids, notify-helper flags, app URL shapes and UI-automation quirks from the workspace's project guide — never from a value written in this skill | Workflows, tooling and UI differ per project; a value hardcoded here transitions the wrong ticket somewhere else (portable-content.md) |
@@ -463,7 +463,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST NOT post PASSED on partial coverage — an item **observed to differ** is a FAILED row (severity per the matrix); an **unverified/unreachable** item is a BLOCKED row (a coverage gap, never a product FAILED); neither is a PASS and neither is dropped | "Fixed except one point" hidden as a caveat is misread as a full pass; and calling a merely-unverified item FAILED contradicts "a coverage gap is not a defect" |
 | MUST NOT transition, notify, or report "done" while any enumerated item lacks a rowed status (coverage gate fail-closed) | Partial coverage is a stop condition; a green verdict over an incomplete table looks finished but is not |
 | MUST judge any Priority/Severity referenced in a retest comment ONLY from the [Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md) — never invent a severity notion | Keeps bug-priority language consistent across QA workflows; no ad hoc severity claims in Jira comments |
-| MUST exercise **every** entry point to a failing surface separately (direct route **and** the in-app path a user takes) and capture each with its own screenshot in the `Evidence` cell; name the entry point(s) actually exercised in the `Fixture` line, and never claim a path you did not run | A path with no captured screenshot is a guess. A past retest: "happens via both entry points" was published from one run, the dev acted on it, and it had to be retracted in-ticket |
+| MUST exercise **every** entry point to a failing surface separately (direct route **and** the in-app path a user takes) and capture each in its own row's `Evidence` cell (per the [Evidence per row](comment-and-post.md#step-6--draft-jira-comment-medium-freedom) rule); name the entry point(s) actually exercised in the `Fixture` line, and never claim a path you did not run | A path with no captured evidence is a guess. A past retest: "happens via both entry points" was published from one run, the dev acted on it, and it had to be retracted in-ticket |
 | MUST NOT write a scope word (`always`, `any entry point`, `both ways`, `only when …`) that no exercised-and-captured `Evidence` row supports | The scope claim is the first thing a dev builds on |
 | MUST hard-reload every surface after a state-changing fixture step before observing or capturing it; report a stale-data window only as a separate timing note with the measured delay | An already-open view holds pre-change data — recording it publishes your test timing as product behavior (past retest: card looked clickable ~5s after unpublish) |
 | MUST resolve any disagreement between your own observations with one clean re-run before drafting, and record which was the artifact; unresolvable → BLOCKED, not FAILED | Resolving it in favour of the verdict you already reached is how the wrong repro path shipped |
@@ -482,7 +482,6 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST correct a wrong published statement **visibly in both places** — in-place comment edit naming the corrected claim **and** a follow-up in the thread where the wrong answer was given | People already replied to the wrong version; a silent edit makes the thread unreadable |
 | MUST send the Step 9 notify on every retest a configured channel covers — whoever invoked the skill (owner, another QA, slash command, unattended bot), asked for it or not | The notify is how the QA owner learns the verdict; tying it to who started the run means retests run by anyone else close silently |
 | MUST run the Step 9 pre-notify review gate (5 checks on dry-run output) before EVERY send, including resends | Catches wrong recipient/link/counts before they go live (user rule 2026-07-15) |
-| MUST embed each FE screenshot in its verdict-table `Evidence` cell as `!file.png!` — pre-resized (~600–640 px), **no `\|width=…`** (the pipe splits the table row) — never leave as filename-only text | Screenshots must render as pictures inside the cell; a `\|width` param breaks the row, and filename text is unreadable evidence (2026-07-27) |
 | MUST retest a **Task / Story** against its Acceptance Criteria (read where the AC actually lives, usually the description) with the same enumerate→row→reconcile discipline a Bug's Expected Result gets; a ticket stating no verifiable AC is BLOCKED + a question to the owner, never PASSED | A task retest with no written contract is an unverified pass; "nothing to check" is not a check |
 | MUST post the **case list** inside the retest comment's one table: No. · ER · Case (Role) · Expected Result · Actual Result · Evidence · Status — **never a separate case table, never a design-node column**; the design reference lives on the header's `Design ref:` line — for **both** bug and task retests, reconciled against the Step 2c list and the `ER*`/`AC*` ids | A result that never becomes a case row is never re-run; three customer escapes came through results that lived only as comment prose |
 | MUST scope the retest to the **whole surface** the fix touched (its existing cases + the states and in-scope widths the design defines), not only the reported line | A component was retested on one screen while the defect sat on another screen reusing it — the customer found it |

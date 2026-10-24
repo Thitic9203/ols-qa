@@ -128,7 +128,7 @@ compare itself stays full — all five points below.
 
 ### 4e. API testing
 
-Use `fetch` with **full URLs**. Patterns: baseline, bug case from ticket, edge cases if relevant.
+Use `fetch` with **full URLs**. Patterns: baseline, bug case from ticket, edge cases the bug's Expected Result or fix touches (empty value, max length, a role without permission) — each one that applies becomes its own row.
 
 ### 4f. Swagger comparison
 
@@ -222,7 +222,8 @@ run. The 7 layers below are unchanged: every clip still clears all 7, and a red 
 re-capture and re-run all 7.
 
 - **Record a whole-flow MP4 for every executed case, and for every role the case or the bug detail names** (drive the case's real steps end-to-end, same capture the story-testing flow uses). 5 roles named = 5 clips, named `{KEY}_TC_{nn}_{ROLE}.mp4`; a role you could not exercise is a **BLOCKED row naming that role and the blocker**, never "same as the other role". The MP4 is the retest evidence — it replaces the former screenshot-only rule. Record with the QA toolkit's `capture/qa_recorder.js` (never Playwright `recordVideo`) — it writes the provenance manifest and runs `capture/verify_video.py` on the clip before it returns. Every clip MUST clear the **[MP4 7-layer quality + correctness gate](../../../references/qa-evidence-gates.md)** (the capture spec — 1920×1080, dsf 2, CRF 18 preset slow, yuv420p limited-range, steady picture, provenance manifest; **never Playwright `recordVideo`**, whose 1 Mbps VP8 cap makes the picture pump and whose fixed-grid padding makes it judder; the flow reaches the stated target — "scroll to menu XX" must actually arrive, never cut early; the Expected Result is visible on screen) — fail-closed: a blurry / skipped / early-cut clip = re-capture, the case is not done.
-- **Text-verification case → screenshot AS WELL as the MP4.** When a case verifies exact wording / label / message / count / displayed values (anything judged char-exact against the bug's Expected Result), also embed a still screenshot inline so the exact text is legible in a frame — the row then carries **both** the MP4 link and the `!png!` image. A non-text case carries the MP4 only.
+- **Text-verification case → screenshot AS WELL as the MP4.** When a case verifies exact wording / label / message / count / displayed values (anything judged char-exact against the bug's Expected Result), also embed a still screenshot inline so the exact text is legible in a frame — the row then carries **both** the MP4 link and the `!png!` image.
+- **Evidence per row (one rule; the [Step 8·0 gate](closeout-and-notify.md#80--format-completeness-gate-must-pass-before-any-transition) is authoritative):** FE / UI bug — every executed case's row carries its whole-flow MP4 link `[▶ …mp4|^…mp4]` in the `Evidence` cell, and a text-verification row also carries an inline still `!file.png!` (pre-resized, no `|width=…`); a non-text row carries the MP4 only. API bug — no `Evidence` column; full cURL + response per case in an `*Evidence*` section below the table.
 - **Destination = the Jira issue, in the comment.** Upload every file (MP4 + any screenshot) as an **issue attachment**, then reference it in the verdict table's `Evidence` cell (the column between `Actual Result` and `Status`). A retest never writes to Google Drive — that is the story/bot flow, not this one.
 - **Naming (reuse the story convention):** `{KEY}_TC_{nn}.mp4` for the clip, `TC_{nn}-ER_{n}.png` for a text still — **and when the case covers more than one role, every file for it carries the role**: `{KEY}_TC_{nn}_{ROLE}.mp4`, `TC_{nn}_{ROLE}-ER_{n}.png`. One rule, same as the [story gate](../../../references/qa-evidence-gates.md); the `Evidence` link must use the name the file was **actually attached** under.
 - Max ~3 bullets per case in the comment.
@@ -231,7 +232,7 @@ re-capture and re-run all 7.
   - **screenshot** (text-verification rows) → reference as `!filename.png!` with **no `|width=…` parameter**. Inside a wiki table cell the `|` in `!img|width=N!` collides with the cell delimiter and splits the row, so resize the image **before** upload (~600–640 px wide) and embed it bare. It MUST render as a picture inside the cell — never filename-only text.
 
 **Upload + embed flow:**
-1. Save the MP4 (and any text-verification screenshot, resized to ~600–640 px wide via `sips -Z 640 in.png --out out.png`) to a scratch dir outside the repo.
+1. Save the MP4 (and any text-verification screenshot, resized to ~600–640 px wide — macOS `sips -Z 640 in.png --out out.png`, ImageMagick `magick in.png -resize 640x out.png`, or `ffmpeg -i in.png -vf scale=640:-1 out.png`) to a scratch dir outside the repo.
 2. Upload each file: `POST /rest/api/3/issue/{KEY}/attachments` with `X-Atlassian-Token: no-check` (curl `-u email:token`, or authenticated browser fetch).
 3. In the `Evidence` cell of the verdict table: the MP4 link `[▶ …mp4|^…mp4]`, plus `!filename.png!` on text-verification rows — one case per row.
 
