@@ -10,4 +10,4 @@ Pass any arguments after `/testing-ticket` as the Jira issue key or URL. If none
 
 Every UI scenario is compared against its Figma node; a screen with no design reference is reported back to whoever asked for the run and its visual points stay BLOCKED.
 
-Follow [references/user-communication.md](../references/user-communication.md). Do not run Playwright until the user confirms the intake summary. After tests, summarize in chat, then ask if results should be updated elsewhere (see skill Phase G). Do not open bugs — use create-bug-workflow.
+Follow [references/user-communication.md](../references/user-communication.md). 🔴 GATE: show the intake summary and test plan, and do not run Playwright until the user confirms them (WORKFLOW Phase C). After tests, summarize in chat; every external write (Jira comment, results destination, notify) goes in the single end-of-round approval popup (WORKFLOW *Gates*, Phase G). Do not open bugs — use create-bug-workflow.
