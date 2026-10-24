@@ -71,7 +71,7 @@ _retestskillmarker · skill=retest-bug-workflow · src={ols-qa|helix} · via={re
 ```
 
 🔴 **Last line = the usage marker, after one blank line — every retest result, every format.** Fill it
-from the run, never guess: `src=helix` when running from the Helix plugin, `src=ols-qa` from this repo;
+from the run, never guess: `src=helix` when running from the Helix plugin, `src=ols-qa` when running from the ols-qa source repository;
 `via` = the command or skill the user invoked; `agent` = the AI tool doing the run. In `run.json` set
 `marker: {src, via, agent}` and the renderer prints it; `retest_guard.js` refuses a body without it (`marker-missing`).
 
@@ -116,7 +116,7 @@ reader what was actually exercised, and a result that never became a case does n
 ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §1). The
 coverage lines stay **after** the table. The owner's words: "ทำไมต้องแยกตาราง รวมให้เป็นตารางเดียว".
 
-🔴 **No `Scope: FULL` line.** A full round prints no Scope line at all ("*Scope:* FULL ตัดทิ้ง");
+🔴 **No `Scope: FULL` line.** A full round prints no Scope line at all (the owner removed the `*Scope:* FULL` line);
 only a scoped round prints `*Scope:* CASES: <ids>`.
 
 🔴 **Several points = bullets, never one long line.** A header value with more than one point
@@ -167,7 +167,7 @@ Step 2 enumerated `ER*` list against the verdict table: **`enumerated ids == row
 evidence (or an explicit BLOCKED reason)`**, and `*Expected-result coverage:* {n} / {total}` shows
 `{n} == {total}`. Every expected-result/detail item is its **own row** — none parked only in a remark,
 a note under the table, or chat; no row is status-less; the verdict is **not PASSED** if any item was
-unverified or observed to differ — an **observed-to-differ** item is a FAILED row (per matrix), an
+unverified or observed to differ — an **observed-to-differ** item is a PWMI or FAILED row per the [verdict rule](WORKFLOW.md#verdict-rule), an
 **unverified/unreached** item is a BLOCKED row (a coverage gap, not a product FAILED). Any shortfall ⇒
 the retest is **not complete** — add the row / verify the item / re-status the partial case before drafting further.
 
@@ -243,7 +243,10 @@ blocks**, in this order (the failing behaviour itself already lives in the `Actu
 | **Resolution options** | the two mutually exclusive outcomes with a named **role** owner each (role only, never a person's name) — spec owner updates the expected result (no code change) **or** dev changes `{exact route/surface}` and leaves `{what already passes}` alone; end with `Decided by: <role>` | "do I change code or do you change the ticket, and who decides?" |
 
 Also state plainly, in one line, whether the **originally reported symptom is gone** — a FAILED verdict on a
-different deviation is routinely misread as "the fix didn't work".
+different deviation is routinely misread as "the fix didn't work". The line has three values: `gone`,
+`still present`, or `not verified this round` — the third for a Task (no reported symptom) or a round
+that never reached the symptom; never write `gone` / `still present` for something this round did not
+observe. In `run.json`: `symptomGone: true | false | "not verified"`.
 
 **Do not add** a separate `Repro matrix` or `Why this item failed` block — the entry point(s) exercised
 go into the `Fixture` line, and the expected-vs-actual comparison is the verdict-table row itself. Keep
@@ -415,7 +418,7 @@ Before Step 8 transition, run review per [jira-comment-post-review.md](../../../
    - [ ] Each FE MP4 clears the 7-layer quality+correctness gate — plays sharp end-to-end **with no flicker/judder at 100%** (layers 1b/1c: ≤5% repeated moving frames, provenance manifest present), **scrolls to and holds the stated target in frame** (no early cut), ER visible; one clip per named role.
    - [ ] **Pre-delivery completeness gate (7-layer) green** ([qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *Pre-delivery completeness*): scope re-counted from the bug **this round**, role × case matrix full, **every** attachment opened and played from Jira (not sampled), every claim points at a row, verdict↔bug↔priority↔remark agree, nothing recorded only in prose, **4-question adversarial pass answered with a pointer for every question**; unattended runs resolve to BLOCKED rows and report incomplete rather than halting silently. Fail closed — no transition, no notify, no "done" while red.
    - [ ] API evidence: cURL + response present per row.
-3. If any check fails → fix → re-post → re-verify on Jira UI. **Max 3 rounds** — then report specific failures with best available workaround.
+3. If any check fails → fix → re-post → re-verify on Jira UI. **Max 3 rounds** — then **STOP**: mark the round BLOCKED, list each 7d check still failing, and do not transition, assign or notify (never bypass a failing check).
 
 MUST NOT transition, assign, or report "done" until 7d passes — because stakeholders trust Jira, not MCP output.
 

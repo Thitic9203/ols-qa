@@ -400,5 +400,19 @@ check('the scanner refuses a run-time line with no number (an estimate word is n
   assert.strictEqual(found.length, 1);
 });
 
+check('a round that did not check the symptom says so instead of "gone" / "still present"', () => {
+  const m = fullyBlocked();
+  m.symptomGone = M.SYMPTOM_NOT_VERIFIED;
+  assert.deepStrictEqual(M.validate(m), []);
+  const body = RENDER.render(m);
+  assert.ok(body.includes('*Originally reported symptom:* not verified this round'), body);
+  assert.ok(!/Originally reported symptom:\*? (gone|still present)/.test(body));
+  const found = errorsOnly(R.scanBody(body, { format: R.FORMATS.WIKI, bugType: 'FE' }));
+  assert.deepStrictEqual(found, [], JSON.stringify(found.map((f) => f.rule)));
+  const gone = fullyBlocked();
+  gone.symptomGone = true;
+  assert.ok(RENDER.render(gone).includes('*Originally reported symptom:* gone'), 'the boolean states changed');
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);
