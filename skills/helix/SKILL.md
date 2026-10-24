@@ -15,11 +15,11 @@ metadata:
 
 # Helix router
 
-Show the menu and route to the correct workflow skill. Full text: [commands/helix.md](../../commands/helix.md).
+Show the menu and route to the correct workflow skill. The command [commands/helix.md](../../commands/helix.md) loads this skill; the rules live here only.
 
 ## Contents
 
-- [Opening](#opening-always-unless-the-user-already-chose-a-mode) · [Discipline](#discipline) · [Refusal-first](#refusal-first-precondition-gate) · [Intent shortcuts](#intent-shortcuts-thai--mixed-input)
+- [Opening](#opening-always-unless-the-user-already-chose-a-mode) · [Discipline](#discipline) · [Refusal-first](#refusal-first-precondition-gate)
 - [Proactive suggestion](#proactive-suggestion-suggest-only-opt-out) · [Routing](#routing) · [QA closing](#qa-closing-mandatory-before-done) · [MUST / NEVER](#must--never)
 - [Must-read files](#must-read-files) · [Dependencies](#dependencies)
 
@@ -27,11 +27,11 @@ Show the menu and route to the correct workflow skill. Full text: [commands/heli
 
 Respond in **the user's language** (see [user-communication.md](../../references/user-communication.md)) — menus, questions, and replies follow the language the user writes in; keep technical terms, file names, and ticket keys as written. Be concise.
 
-Show the menu from [menu-text.md](../../references/menu-text.md) (Opening block — copy verbatim).
+Show the menu from [menu-text.md](../../references/menu-text.md) (Opening block, in the user's language as that file says).
 
-Wait for the user's choice before starting a workflow.
+🔴 STOP — wait for the user's choice before starting a workflow.
 
-If the user's message already names a workflow (including Thai phrases), map via [intent-shortcuts.md](../../references/intent-shortcuts.md) and **skip this menu** — read and follow that workflow directly.
+If the user's message already names a workflow (Thai, informal, or mixed input included), map it via [intent-shortcuts.md](../../references/intent-shortcuts.md), extract any issue key or URL from the same message, and **skip this menu**. If the user invoked `/helix {ISSUE_KEY}` with no mode, infer only when obvious (e.g. "API test cases from Swagger" → 2); otherwise ask which option applies.
 
 ## Discipline
 
@@ -39,13 +39,7 @@ Follow [shared-preamble.md](../../references/shared-preamble.md).
 
 ## Refusal-first (precondition gate)
 
-This skill only routes — it does not run tests or post to Jira.
-
-If the user’s goal is already clear (e.g. “write FE TC for PROJ-123”), **skip the menu** and load the matching workflow stub (`skills/{name}/SKILL.md`) — because an extra menu round wastes time.
-
-## Intent shortcuts (Thai / mixed input)
-
-When the user writes Thai or informal English, map intent using [intent-shortcuts.md](../../references/intent-shortcuts.md). Respond in the language the user wrote in. Extract issue keys from the same message when present.
+This skill only routes — it does not run tests or post to Jira. When the goal is already clear, the menu is skipped (see Opening) because an extra menu round wastes time.
 
 ## Proactive suggestion (suggest-only, opt-out)
 
@@ -53,7 +47,7 @@ When the session context already hints at a workflow (git branch, linked Jira ti
 
 - **Suggest only — never auto-run** a workflow (Rule #5).
 - Respect `HELIX_PROACTIVE=0` — if set, skip suggestions and show the normal menu.
-- One suggestion per turn, then wait for the user to pick (number/name) before loading anything.
+- 🔴 STOP — one suggestion per turn, then wait for the user to pick (number/name) before loading anything.
 - No Jira MCP? Infer from branch + last commit and say so, so the user can correct.
 
 ```text
@@ -63,22 +57,22 @@ Say the number/name to start, or ignore. (Set HELIX_PROACTIVE=0 to silence.)
 
 ## Routing
 
-| User choice | Action |
-|-------------|--------|
-| 1, TC FE, FE test cases | Read and follow [tc-fe-prep-workflow](../tc-fe-prep-workflow/SKILL.md) |
-| 2, TC API, Swagger API TC | Read and follow [tc-api-prep-workflow](../tc-api-prep-workflow/SKILL.md) |
-| 3, retest, verify fix | Read and follow [retest-bug-workflow](../retest-bug-workflow/SKILL.md) |
-| 4, testing ticket, Playwright | Read and follow [testing-ticket-workflow](../testing-ticket-workflow/SKILL.md) |
-| 5, create bug, file bug | Read and follow [create-bug-workflow](../create-bug-workflow/SKILL.md) |
-| 6, catch ai, audit, review my work | Read and follow [catch-ai-workflow](../catch-ai-workflow/SKILL.md) |
-| 7, tc review, review test cases | Read and follow [tc-review-workflow](../tc-review-workflow/SKILL.md) |
-| 8, content takedown, hide content | `content-takedown-workflow` (ols-qa workspace only) — not shipped in helix; outside ols-qa, say so and suggest the closest workflow above |
-| 9, review result, review evidence clips | `review-result-workflow` (ols-qa workspace only) — not shipped in helix; outside ols-qa, say so and suggest the closest workflow above |
-| 10, smoke test, post-deploy smoke | `smoke-test-workflow` (ols-qa workspace only) — not shipped in helix; outside ols-qa, say so and suggest the closest workflow above |
-| 11, test data prep, seed test data | `test-data-prep-workflow` (ols-qa workspace only) — not shipped in helix; outside ols-qa, say so and suggest the closest workflow above |
-| 12, other | Clarify; suggest closest workflow |
+Route by the single table in [skill-routing.md § Primary menu](../../references/skill-routing.md#primary-menu): the user's number, option name, or intent-shortcuts phrase picks one row. Do not keep a routing table anywhere else.
 
-Handoffs: [skill-routing.md](../../references/skill-routing.md).
+1. **Announce before acting.** Before loading anything, tell the user in one line, in their language, which workflow you are routing to: the menu number, option name, skill, and command — e.g. `Routing to 3 · Retest Bug → retest-bug-workflow (/retest-bug) for {ISSUE_KEY}.` No workflow starts without this line.
+2. **Load and follow** that row's `skills/{name}/SKILL.md` completely, passing on what the row says (issue key, URL, TC document, audit target).
+3. **First routed response:** recite [helix-session-constraints.md](../../references/helix-session-constraints.md) once (All Helix block; add the Testing ticket block when routing to 4).
+
+When routing cannot proceed:
+
+| Situation | Do |
+|-----------|-----|
+| Reply is not 1–12, an option name, or an intent-shortcuts phrase | Re-show the menu once; if still unclear, treat it as 12 (Other). |
+| Row 8–11 chosen outside the ols-qa workspace | Say it is not shipped in helix, then offer only that row's named fallback. |
+| The routed `SKILL.md` is missing or cannot be loaded | Say which file is missing, do not imitate the workflow from memory, and show the menu again. |
+| Ticket lookup is unavailable (no Atlassian MCP or token) | Route anyway and ask the user to paste the ticket text or link; the child workflow handles its own intake. |
+
+Handoffs after a workflow ends: [skill-routing.md § Handoffs](../../references/skill-routing.md#handoffs-after-a-workflow-ends).
 
 ## QA closing (mandatory before "done")
 
@@ -96,7 +90,8 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Rou
 
 | Rule | Because |
 |------|---------|
-| MUST show English menu from commands/helix.md | Consistent UX across agents |
+| MUST show the menu from references/menu-text.md in the user's language | Same numbers and option names at every entry point; user-communication.md |
+| MUST state the workflow it routes to before loading it | The user can correct a wrong route before any work starts |
 | MUST NOT start a workflow without user picking 1–12 or naming one | Avoid wrong scope |
 | MUST NOT post to Jira or create issues from this router | Side effects belong in child workflows |
 
@@ -131,8 +126,8 @@ Every file this skill's procedure requires, one hop from here. Read each at the 
 
 ## Dependencies
 
-Run the check for each of these before step 1 — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
+Run the check for each of these before routing — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
 
-- Atlassian MCP (ticket lookup while routing)
+- Atlassian MCP (ticket lookup while routing) — optional; without it, ask the user to paste the ticket text (see Routing)
 - each routed skill lists its own dependencies in its `## Dependencies` section
 - `superpowers:systematic-debugging`

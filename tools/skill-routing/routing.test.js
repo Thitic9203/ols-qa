@@ -11,15 +11,18 @@
  *   A3  every SKILL.md description says when to use it ("Use when" or "Use for") and when not
  *       to ("Do NOT use for" or "Do NOT use when"). Both wordings are accepted because both are
  *       in use today and the plan's D3 audit did not count either as a failure.
- *   A4  skills/helix/SKILL.md (the router) names every routed skill, by skill name or by its
- *       /command.
- *   A5  the helix numbered menu covers every skill: each skills/<name>/SKILL.md (helix
- *       excluded) is linked from a numbered row of the Routing table in skills/helix/SKILL.md,
+ *   A4  single routing source (spec docs/sdd/helix-skill-quality R8): skills/helix/SKILL.md and
+ *       commands/helix.md both link references/skill-routing.md and references/menu-text.md,
+ *       and neither keeps a numbered routing table of its own (a row starting "| 1," / "| `1`," /
+ *       "| 1 |"). Two copies drifted before: the command routed reply 8 to Other while the skill
+ *       routed it to Content Takedown.
+ *   A5  the numbered menu covers every skill: each skills/<name>/SKILL.md (helix excluded) is
+ *       linked from a numbered row of the "## Primary menu" table in references/skill-routing.md,
  *       or — for an ols-qa-only skill that is not shipped to helix (owner decision 14/Oct/2026) —
  *       named there as plain text `<name>` on a row that says "(ols-qa workspace only)", so the
- *       shared router file has no link that would break in helix,
- *       and references/menu-text.md lists one numbered option per routed row plus "Other",
- *       with the "Reply with 1–N" line matching the last number.
+ *       shared file has no link that would break in helix,
+ *       and references/menu-text.md lists one numbered option per row, each with the same bold
+ *       name as that row's Option column, with the "Reply with 1–N" line matching the last number.
  *
  * The Jira issue type → skill table is guarded separately by
  * tools/skill-routing-guard/skill_routing_map.test.js.
@@ -107,43 +110,56 @@ function descriptionProblems(root) {
   return problems;
 }
 
-/* A4: routed skills the helix router does not name (by skill name or /command). */
+/* A4: router entry points that keep their own numbered table or do not link the single
+ * sources. Returns ["<file>: <reason>"]. */
+const ENTRY_POINTS = [path.join('skills', 'helix', 'SKILL.md'), path.join('commands', 'helix.md')];
+const OWN_TABLE_ROW = /^\|\s*`?\d+`?\s*[,|]/m;
 function helixUnlisted(root) {
-  const helix = fs.readFileSync(path.join(root, 'skills', 'helix', 'SKILL.md'), 'utf8');
-  return routedSkills(root)
-    .filter((s) => s !== 'helix')
-    .filter((s) => {
-      const command = '/' + s.replace(/-workflow$/, '');
-      const cmdRe = new RegExp(command.replace(/[-/]/g, '\\$&') + '(?![a-z0-9-])');
-      return !helix.includes(s) && !cmdRe.test(helix);
-    });
+  const problems = [];
+  for (const rel of ENTRY_POINTS) {
+    const file = path.join(root, rel);
+    if (!fs.existsSync(file)) continue;
+    const text = fs.readFileSync(file, 'utf8');
+    const name = rel.split(path.sep).join('/');
+    if (OWN_TABLE_ROW.test(text)) problems.push(`${name}: keeps its own numbered routing table`);
+    if (!/\]\([^)]*references\/skill-routing\.md[)#]/.test(text)) problems.push(`${name}: does not link references/skill-routing.md`);
+    if (!/\]\([^)]*references\/menu-text\.md[)#]/.test(text)) problems.push(`${name}: does not link references/menu-text.md`);
+  }
+  return problems;
 }
 
 /* A5: problems with the helix numbered menu. Returns ["<reason>"]. */
 function helixMenuProblems(root) {
   const problems = [];
-  const helix = fs.readFileSync(path.join(root, 'skills', 'helix', 'SKILL.md'), 'utf8');
-  const sec = helix.split(/^## Routing\s*$/m)[1];
-  if (sec == null) return ['skills/helix/SKILL.md: no "## Routing" section'];
+  const routing = fs.readFileSync(path.join(root, 'references', 'skill-routing.md'), 'utf8');
+  const sec = routing.split(/^## Primary menu\s*$/m)[1];
+  if (sec == null) return ['references/skill-routing.md: no "## Primary menu" section'];
   const table = sec.split(/^## /m)[0];
-  const rows = [...table.matchAll(/^\|\s*(\d+),[^|]*\|([^\n]*)$/gm)];
+  // | # | Option | Route to | ...
+  const rows = [...table.matchAll(/^\|\s*(\d+)\s*\|\s*([^|]*?)\s*\|([^\n]*)$/gm)];
   const linked = new Set();
   for (const r of rows) {
-    for (const m of r[2].matchAll(/\]\(\.\.\/([a-z0-9-]+)\/SKILL\.md\)/g)) linked.add(m[1]);
+    for (const m of r[3].matchAll(/\]\(\.\.\/skills\/([a-z0-9-]+)\/SKILL\.md\)/g)) linked.add(m[1]);
     // ols-qa-only skill: plain-text `name` (no link) accepted only on a row labelled as such.
-    if (/\(ols-qa workspace only\)/.test(r[2])) for (const m of r[2].matchAll(/`([a-z0-9-]+)`/g)) linked.add(m[1]);
+    if (/\(ols-qa workspace only\)/.test(r[3])) for (const m of r[3].matchAll(/`([a-z0-9-]+)`/g)) linked.add(m[1]);
   }
   for (const s of listSkills(root)) {
-    if (s !== 'helix' && !linked.has(s)) problems.push(`helix Routing table: no numbered row links ${s}`);
+    if (s !== 'helix' && !linked.has(s)) problems.push(`Primary menu: no numbered row links ${s}`);
   }
   const nums = rows.map((r) => Number(r[1]));
   const menuFile = path.join(root, 'references', 'menu-text.md');
   if (!fs.existsSync(menuFile)) return problems;
   const menu = fs.readFileSync(menuFile, 'utf8');
-  const items = [...menu.matchAll(/^(\d+)\. \*\*/gm)].map((m) => Number(m[1]));
+  const entries = [...menu.matchAll(/^(\d+)\. \*\*([^*]+)\*\*/gm)];
+  const items = entries.map((m) => Number(m[1]));
   const want = nums.length ? Math.max(...nums) : 0;
   if (items.length !== want || items.some((n, i) => n !== i + 1)) {
-    problems.push(`menu-text.md: options ${JSON.stringify(items)} do not match the ${want} Routing rows`);
+    problems.push(`menu-text.md: options ${JSON.stringify(items)} do not match the ${want} Primary menu rows`);
+  }
+  const label = new Map(entries.map((m) => [Number(m[1]), m[2].trim()]));
+  for (const r of rows) {
+    const n = Number(r[1]);
+    if (label.has(n) && label.get(n) !== r[2]) problems.push(`option ${n}: menu-text.md says "${label.get(n)}", skill-routing.md says "${r[2]}"`);
   }
   const reply = menu.match(/Reply with \*\*1\*\*–\*\*(\d+)\*\*/);
   if (!reply || Number(reply[1]) !== want) problems.push(`menu-text.md: "Reply with" range is not 1–${want}`);
@@ -222,43 +238,61 @@ test('A3 must-find: missing Use-when, missing Do-NOT, and wrong name are reporte
 });
 
 // A4
-test('A4 must-not-find: helix naming a skill or its /command passes', () => assert.deepStrictEqual(helixUnlisted(clean), []));
-test('A4 must-find: a routed skill helix never names is reported (/bb does not count as /b)', () => {
-  const r = fixture({ skills: { 'a-workflow': GOOD_DESC, 'b-workflow': GOOD_DESC }, routing: ROUTING_OK, helix: 'Route to a-workflow or /bb.' });
-  assert.deepStrictEqual(helixUnlisted(r), ['b-workflow']);
+const LINKS = 'Route by [skill-routing.md](../../references/skill-routing.md#primary-menu); menu from [menu-text.md](../../references/menu-text.md).\n';
+const writeCommand = (r, body) => { fs.mkdirSync(path.join(r, 'commands'), { recursive: true }); fs.writeFileSync(path.join(r, 'commands', 'helix.md'), body); };
+test('A4 must-not-find: router and command link the single sources and keep no table', () => {
+  const r = fixture({ skills: { 'a-workflow': GOOD_DESC }, routing: ROUTING_OK, helix: LINKS });
+  writeCommand(r, '---\ndescription: x\n---\nFollow [the skill](../skills/helix/SKILL.md). Table: [x](../references/skill-routing.md#primary-menu), [m](../references/menu-text.md).\n| Rule | Because |\n');
+  assert.deepStrictEqual(helixUnlisted(r), []);
+});
+test('A4 must-find: a command with its own numbered table (reply 8 → Other) and no links is reported', () => {
+  const r = fixture({ skills: { 'a-workflow': GOOD_DESC }, routing: ROUTING_OK, helix: LINKS });
+  writeCommand(r, '| User choice | Action |\n|---|---|\n| `1`, a | x |\n| `8`, other | Ask |\n');
+  assert.deepStrictEqual(helixUnlisted(r), [
+    'commands/helix.md: keeps its own numbered routing table',
+    'commands/helix.md: does not link references/skill-routing.md',
+    'commands/helix.md: does not link references/menu-text.md',
+  ]);
+});
+test('A4 must-find: a router SKILL.md that keeps a "| 1, ..." table is reported', () => {
+  const r = fixture({ skills: { 'a-workflow': GOOD_DESC }, routing: ROUTING_OK, helix: LINKS + '| 1, a | Read [a](../a-workflow/SKILL.md) |\n' });
+  assert.deepStrictEqual(helixUnlisted(r), ['skills/helix/SKILL.md: keeps its own numbered routing table']);
 });
 
 // A5
-const routingTable = (rows) => '## Routing\n\n| User choice | Action |\n|---|---|\n' + rows.join('\n') + '\n\n## Next\n';
-const menuText = (n) => Array.from({ length: n }, (_, i) => `${i + 1}. **Opt ${i + 1}** — x`).join('\n') + `\n\nReply with **1**–**${n}**, or the option name.\n`;
-test('A5 must-not-find: every skill linked from a numbered row, menu-text matches', () => {
-  const r = fixture({ skills: { 'a-workflow': GOOD_DESC, 'b-workflow': GOOD_DESC }, routing: ROUTING_OK,
-    helix: routingTable(['| 1, a | Read and follow [a-workflow](../a-workflow/SKILL.md) |', '| 2, b | Read and follow [b-workflow](../b-workflow/SKILL.md) |', '| 3, other | Clarify |']) });
-  fs.writeFileSync(path.join(r, 'references', 'menu-text.md'), menuText(3));
-  assert.deepStrictEqual(helixMenuProblems(r), []);
+const primaryMenu = (rows) => '## Primary menu\n\n| # | Option | Route to | Command | Intent |\n|---|---|---|---|---|\n' + rows.join('\n') + '\n\n## Next\n| z | `helix` skill | `/helix` |\n';
+const menuText = (n, names = []) => Array.from({ length: n }, (_, i) => `${i + 1}. **${names[i] || `Opt ${i + 1}`}** — x`).join('\n') + `\n\nReply with **1**–**${n}**, or the option name.\n`;
+const ROW_A = '| 1 | Opt 1 | [`a-workflow`](../skills/a-workflow/SKILL.md) | `/a` | x |';
+const ROW_B = '| 2 | Opt 2 | [`b-workflow`](../skills/b-workflow/SKILL.md) | `/b` | x |';
+const ROW_OTHER = (n) => `| ${n} | Opt ${n} | — | — | Clarify |`;
+const menuFixture = (rows, menu) => {
+  const r = fixture({ skills: { 'a-workflow': GOOD_DESC, 'b-workflow': GOOD_DESC }, routing: primaryMenu(rows), helix: LINKS });
+  fs.writeFileSync(path.join(r, 'references', 'menu-text.md'), menu);
+  return r;
+};
+test('A5 must-not-find: every skill linked from a numbered row, menu-text numbers and names match', () => {
+  assert.deepStrictEqual(helixMenuProblems(menuFixture([ROW_A, ROW_B, ROW_OTHER(3)], menuText(3))), []);
 });
 test('A5 must-find: a skill only named in prose (not a numbered row) and a stale menu-text range', () => {
-  const r = fixture({ skills: { 'a-workflow': GOOD_DESC, 'b-workflow': GOOD_DESC }, routing: ROUTING_OK,
-    helix: routingTable(['| 1, a | Read and follow [a-workflow](../a-workflow/SKILL.md) |', '| 2, other | Clarify |']) + 'See [b-workflow](../b-workflow/SKILL.md).\n' });
-  fs.writeFileSync(path.join(r, 'references', 'menu-text.md'), menuText(3));
+  const r = menuFixture([ROW_A, ROW_OTHER(2)], menuText(3));
+  fs.appendFileSync(path.join(r, 'references', 'skill-routing.md'), 'See [`b-workflow`](../skills/b-workflow/SKILL.md).\n');
   assert.deepStrictEqual(helixMenuProblems(r), [
-    'helix Routing table: no numbered row links b-workflow',
-    'menu-text.md: options [1,2,3] do not match the 2 Routing rows',
+    'Primary menu: no numbered row links b-workflow',
+    'menu-text.md: options [1,2,3] do not match the 2 Primary menu rows',
     'menu-text.md: "Reply with" range is not 1–2',
   ]);
 });
-
+test('A5 must-find: option name differs between menu-text.md and skill-routing.md', () => {
+  assert.deepStrictEqual(helixMenuProblems(menuFixture([ROW_A, ROW_B, ROW_OTHER(3)], menuText(3, ['Opt 1', 'Opt 2', 'Content Takedown']))),
+    ['option 3: menu-text.md says "Content Takedown", skill-routing.md says "Opt 3"']);
+});
 test('A5 must-not-find: an ols-qa-only skill named as plain text on a labelled numbered row', () => {
-  const r = fixture({ skills: { 'a-workflow': GOOD_DESC, 'b-workflow': GOOD_DESC }, routing: ROUTING_OK,
-    helix: routingTable(['| 1, a | Read and follow [a-workflow](../a-workflow/SKILL.md) |', '| 2, b | `b-workflow` (ols-qa workspace only) |', '| 3, other | Clarify |']) });
-  fs.writeFileSync(path.join(r, 'references', 'menu-text.md'), menuText(3));
-  assert.deepStrictEqual(helixMenuProblems(r), []);
+  const rows = [ROW_A, '| 2 | Opt 2 | `b-workflow` (ols-qa workspace only) | `/b` | x |', ROW_OTHER(3)];
+  assert.deepStrictEqual(helixMenuProblems(menuFixture(rows, menuText(3))), []);
 });
 test('A5 must-find: a plain-text skill name on a numbered row without the ols-qa-only label', () => {
-  const r = fixture({ skills: { 'a-workflow': GOOD_DESC, 'b-workflow': GOOD_DESC }, routing: ROUTING_OK,
-    helix: routingTable(['| 1, a | Read and follow [a-workflow](../a-workflow/SKILL.md) |', '| 2, b | `b-workflow` |', '| 3, other | Clarify |']) });
-  fs.writeFileSync(path.join(r, 'references', 'menu-text.md'), menuText(3));
-  assert.deepStrictEqual(helixMenuProblems(r), ['helix Routing table: no numbered row links b-workflow']);
+  const rows = [ROW_A, '| 2 | Opt 2 | `b-workflow` | `/b` | x |', ROW_OTHER(3)];
+  assert.deepStrictEqual(helixMenuProblems(menuFixture(rows, menuText(3))), ['Primary menu: no numbered row links b-workflow']);
 });
 
 // Real repo
@@ -267,8 +301,8 @@ test(`real repo: ${realSkills.length} skills found (sanity)`, () => assert.ok(re
 test('real repo A1: every skill is in references/skill-routing.md', () => assert.deepStrictEqual(unroutedSkills(REPO), []));
 test('real repo A2: every routed skill exists', () => assert.deepStrictEqual(missingRoutedSkills(REPO), []));
 test('real repo A3: every description has use / do-not-use clauses and a matching name', () => assert.deepStrictEqual(descriptionProblems(REPO), []));
-test('real repo A4: helix names every routed skill', () => assert.deepStrictEqual(helixUnlisted(REPO), []));
-test('real repo A5: helix numbered menu covers every skill and menu-text agrees', () => assert.deepStrictEqual(helixMenuProblems(REPO), []));
+test('real repo A4: router and /helix command link the single routing source and keep no table', () => assert.deepStrictEqual(helixUnlisted(REPO), []));
+test('real repo A5: Primary menu covers every skill and menu-text numbers and names agree', () => assert.deepStrictEqual(helixMenuProblems(REPO), []));
 
 for (const r of TEMP_ROOTS) fs.rmSync(r, { recursive: true, force: true });
 console.log(`  ${passed} passed, ${failed} failed`);

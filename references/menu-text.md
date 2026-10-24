@@ -1,8 +1,10 @@
 # Helix menu text (single source of truth)
 
-Used by [commands/helix.md](../commands/helix.md) and [skills/helix/SKILL.md](../skills/helix/SKILL.md). Do not duplicate elsewhere — link here.
+Used by [commands/helix.md](../commands/helix.md) and [skills/helix/SKILL.md](../skills/helix/SKILL.md). Do not duplicate elsewhere — link here. What each number routes to: [skill-routing.md § Primary menu](skill-routing.md#primary-menu).
 
-## Opening block (copy verbatim for menu)
+## Opening block
+
+Show this block in **the user's language** ([user-communication.md](user-communication.md)): translate the sentences and option descriptions; keep the numbers **1**–**12**, their order, and the bold option names exactly as written, so the same reply routes the same way in every language and every entry point.
 
 ```text
 Hi — I'm Helix, your QA assistant. I help with test-case preparation, ticket testing, bug retests, and related Jira workflows so you spend less time on repetitive steps.
