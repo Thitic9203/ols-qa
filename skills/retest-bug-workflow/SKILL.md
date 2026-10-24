@@ -73,6 +73,7 @@ Every file this workflow uses, linked directly from here. Only WORKFLOW.md is re
 - [user-communication.md](../../references/user-communication.md) — read before any message to the user.
 - [project-config-template.md](../procedures/retest-bug-workflow/references/project-config-template.md) — read when the project has no retest config yet.
 - [worked-example.md](../procedures/retest-bug-workflow/references/worked-example.md) — read for a full worked retest.
+- [debug-discipline.md](../procedures/retest-bug-workflow/references/debug-discipline.md) — read when a case is still failing, to triage FAILED vs BLOCKED.
 
 ## Refusal-first (precondition gate)
 

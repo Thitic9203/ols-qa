@@ -438,5 +438,23 @@ check('testRunTime.notMeasured: needs reason "no-case-ran"', () => {
   assert.ok(M.validate(m).some((f) => f.field === 'testRunTime.reason'));
 });
 
+check('the symptom line has a third state for a round that did not check it', () => {
+  // A Task has no originally reported symptom, and a round where nothing ran observed nothing:
+  // forcing "gone" / "still present" there makes the comment claim something never checked.
+  const m = base();
+  m.results[0].status = 'FAILED';
+  m.verdict = 'FAILED';
+  m.rootCause = { text: 'the list refreshes late', label: 'Confirmed' };
+  m.resolutionOptions = [{ text: 'a', owner: 'dev' }, { text: 'b', owner: 'spec owner' }];
+  m.decidedBy = 'spec owner';
+  m.symptomGone = M.SYMPTOM_NOT_VERIFIED;
+  assert.strictEqual(M.SYMPTOM_NOT_VERIFIED, 'not verified');
+  assert.ok(!M.validate(m).some((f) => f.field === 'symptomGone'), 'the not-verified state is refused');
+  ['maybe', 'unknown', '', null].forEach((v) => {
+    m.symptomGone = v;
+    assert.ok(M.validate(m).some((f) => f.field === 'symptomGone'), 'a loose value is accepted: ' + JSON.stringify(v));
+  });
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);

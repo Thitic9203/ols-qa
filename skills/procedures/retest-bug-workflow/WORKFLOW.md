@@ -1,12 +1,6 @@
----
-name: retest-bug-workflow
-description: |
-  Retest a Jira bug or task after a dev fix — read ticket, build the retest case list, compare every screen against the design (Figma), test API or UI, compare Swagger, draft evidence, post the comment with its case list (with approval), transition and assign back to dev.
-  Use when the user says retest bug, retest task, verify fix, check if an issue is fixed, /retest-bug, or Retest bug from Helix.
-  Do NOT use for writing new FE/API test case tables (tc-fe-prep / tc-api-prep), full ticket Playwright runs (testing-ticket-workflow), or opening new bugs (create-bug-workflow).
----
-
 # Retest bug workflow
+
+> Not a skill entry — the skill name, description and triggers live only in [SKILL.md](../../retest-bug-workflow/SKILL.md).
 
 End-to-end retest from a Jira **bug or task** ticket: fetch ticket → build the retest case list → design (Figma) reference gate → test → compare Swagger → draft comment (case list + verdict table) → post (after approval) → transition → assign back to dev.
 
@@ -16,7 +10,7 @@ ticket's Acceptance Criteria plus the existing cases of the surface it touched (
 the same artifact — a **case list in the posted comment**, one row per case, so the next reader sees
 exactly what was covered without reading the chat.
 
-**Project-agnostic:** Load URLs, credentials, and transitions from `references/*-retest-guide.md` in the user's workspace.
+**Project-agnostic:** Load URLs, credentials, and transitions from `<workspace>/references/*-retest-guide.md`.
 
 ## Contents
 
@@ -143,7 +137,8 @@ session before believing any result (§9).
 **Round-time contract.** Every retest round follows
 [round-time-contract.md](../../../references/round-time-contract.md): a **15-minute cap on AGENT + EXEC
 time** per round, human wait reported on its own line and never counted, and a **soft cap** — at about
-12 minutes print one line and finish the round; never cut cases to stay under it (§1). No step waits
+12 minutes print one line and finish the round; never cut cases, gates, widths or the reviewer round
+to stay under it — the cap is measured and any overrun reported, never met by skipping work (§1). No step waits
 mid-run: decisions are queued for the end-of-round popups at Step 6d (§2–§3). The round report (Step 8e)
 **ends with the `Round time:` line**, measured from session timestamps, never estimated (§1).
 
@@ -173,11 +168,11 @@ If no key or URL was provided:
 
 ### 1a. Find existing config
 
-In the **workspace** `references/` folder, find `*-retest-guide.md`. If present → read → go to 1c.
+In the **workspace**, find `<workspace>/references/*-retest-guide.md`. If present → read → go to 1c.
 
 ### 1b. Interactive setup (first time)
 
-Ask **one question at a time** using `references/project-config-template.md` sections:
+Ask **one question at a time** using [references/project-config-template.md](references/project-config-template.md) sections:
 
 - Jira domain, ticket prefix
 - Environments + base URLs + Swagger paths
@@ -185,7 +180,7 @@ Ask **one question at a time** using `references/project-config-template.md` sec
 - Test accounts (username/email only — a password is never collected, stored, or filled; a dead session is restored by ready-to-run relink/mint commands the user runs; record their templates (`<project-dir>`, `<env>`, `<account>`) when the guide names none)
 - Optional error docs, transitions, gotchas
 
-Write `references/{project}-retest-guide.md` in the user's repo and tell them where it was saved.
+Write `<workspace>/references/{project}-retest-guide.md` and tell them where it was saved.
 Each answered value is saved to the guide **immediately** — no second "save this?" question; a value
 missing later in a run is asked once and saved the same way. Never store production passwords in a
 committed guide ([round-time-contract.md](../../../references/round-time-contract.md) §2).
@@ -199,7 +194,7 @@ All URLs, credentials, transition names, and Swagger URLs come from config — *
 ## Step 2 — Fetch Jira ticket [high freedom]
 
 **Round N (a ticket retested before) — fingerprint check first.** Read
-`references/helix-handoff-{KEY}.md` and fetch each source's fingerprint fresh: ticket `updated` +
+`<workspace>/references/helix-handoff-{KEY}.md` and fetch each source's fingerprint fresh: ticket `updated` +
 comment count · Figma `lastModified` · Swagger spec hash · build version where exposed. A matching
 fingerprint skips the full re-read of that source; a changed or missing one re-reads that source only
 ([round-time-contract.md](../../../references/round-time-contract.md) §10). The bug's contract is
@@ -214,7 +209,8 @@ Capture: environment, test steps, expected/actual results, API endpoint, bug typ
 
 **The bug's own details are the PRIMARY verdict source.** Read the bug's description in full and extract its **Expected Result verbatim** — every item, every exact wording. The verdict criterion is:
 
-- **PASSED** only if the retest satisfies **ALL** expected results stated in the bug — every item, character-exact where the bug specifies wording. Partial match = **FAILED**.
+- **PASSED** only if the retest satisfies **ALL** expected results stated in the bug — every item, character-exact where the bug specifies wording.
+- <a id="verdict-rule"></a>🔴 **Verdict rule (the one rule for any difference):** a partial match is **never PASSED**. An item **observed to differ** — any difference, including one word or one pixel; there is no "minor wording" or "cosmetic" exception to *not PASSED* — is a non-PASS row whose verdict comes **only** from the [Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md): **Lowest / Low / Medium → PWMI**, **High / Highest → FAILED**. An item **not verified / unreachable** is a **BLOCKED** row (a coverage gap, never a product FAILED). The round's summary verdict follows the rows, worst finding first: FAILED, then PWMI, then BLOCKED, then PASSED (`computedVerdict` in `tools/retest-guard/retest_manifest.js`).
 - Parent-story AC / Figma are **supplements** for context or when the bug is title-only — they never override or dilute the bug's own expected results. If the bug's expected result and the parent AC conflict, test against the bug's text and flag the conflict to the user.
 - **Enumerate the full contract now (coverage gate layers 1–2).** Extract **every** Expected-Result item **and** each bullet of the bug's detail/steps char-exact, give each a stable id (`ER1…`), and map each id 1:1 to a row you will fill in the Step 6 verdict table — so the ALL-items check is a **visible row per id**, not implied. A compound expected ("shows A **and** B") splits into one row per clause; an item with no row is a coverage gap → add it, never drop it. Nothing verified-or-reported may live outside this list, and nothing in it may be silently omitted.
 
@@ -351,7 +347,7 @@ Set flag `COMMENT_FORMAT=v2` or `v3` here. **Do not change later** — rewriting
 | Need | Use |
 |------|-----|
 | **Any non-PASSED item — mandatory** | [root-cause-investigation.md](../../../references/root-cause-investigation.md) + the debugging skill it names (`superpowers:systematic-debugging`, Phases 1–3) |
-| Retest-specific FAILED vs BLOCKED triage | `references/debug-discipline.md` |
+| Retest-specific FAILED vs BLOCKED triage | [references/debug-discipline.md](references/debug-discipline.md) |
 | Real browser UI | Browser automation / DevTools available in the environment |
 | Complex multi-case proof | Verification discipline before claiming done |
 
@@ -377,7 +373,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] **`node tools/retest-guard/retest_guard.js` exited 0** for this round — on the manifest before drafting (Step 6·0) and on the posted body before the transition (Step 8·0; skipped only when a fresh hash compare shows the posted body byte-identical to the guarded draft). Exit 2 (could not run) is not a pass, and the guard's clean result covers the mechanical rules only.
 - [ ] **Step 6c independent reviewer round returned CLEAN**, every round was reported to the user as it finished, and the reviewer's findings were verified rather than taken on trust.
 - [ ] **Scope is stated only when partial** — a full round prints no Scope line; a partial one prints `CASES: <ids>` with the verdict reading `PASSED (scoped: …)` and an `Out of scope this round:` line naming every item this round did not verify.
-- [ ] **AC/EC & bug-detail coverage gate (7-layer) PASSED — `enumerated Step 2 ER* ids == rows carrying a status + evidence (or explicit BLOCKED)`** ([qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *AC/EC & bug-detail coverage*): every Expected-Result item + bug-detail bullet was enumerated char-exact at Step 2, mapped 1:1 to a verdict-table row, verified on its real surface, and appears as its **own row** — none parked only in a remark/note/chat, no PASSED over partial coverage, a differing item is a FAILED/BLOCKED row not a footnote. Fail closed: any item unverified/unrowed/status-less ⇒ retest not complete.
+- [ ] **AC/EC & bug-detail coverage gate (7-layer) PASSED — `enumerated Step 2 ER* ids == rows carrying a status + evidence (or explicit BLOCKED)`** ([qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *AC/EC & bug-detail coverage*): every Expected-Result item + bug-detail bullet was enumerated char-exact at Step 2, mapped 1:1 to a verdict-table row, verified on its real surface, and appears as its **own row** — none parked only in a remark/note/chat, no PASSED over partial coverage, a differing item is a PWMI/FAILED row ([verdict rule](#verdict-rule)) and an unverified one a BLOCKED row, never a footnote. Fail closed: any item unverified/unrowed/status-less ⇒ retest not complete.
 - [ ] **Case list in the posted comment (bug and task alike)** — every Step 2c case appears in the `Case (Role)` cell of each row it covers, in the one table (no separate case table); `Case coverage: {n}/{total}` reconciles; the surface's existing cases were pulled in, not just the ticket's own lines ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md) §1).
 - [ ] **Design (Figma) comparison ran for every UI case** ([figma-design-comparison.md](../../../references/figma-design-comparison.md)): node link recorded per case, five points compared (present · char-exact text · order/position · states · no overflow/overlap measured); a screen with **no** design reference was reported back to the assigning person/channel and its visual points left **BLOCKED**, never PASSED; a screen this ticket intentionally changed was reported as **design out of date** (owner named) rather than filed as a defect; a mid-test AC revision is spelled out in the verdict line as an accepted limitation.
 - [ ] **Depth gates green** ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md)): values checked against their source (not just present) · every in-scope width run with overflow/overlap **measured** · fixture large enough to overflow/scroll · build id recorded · no `caveat/not verifiable/assumed` row carrying a passing status · anything wrong that was seen is reported even where no expected asked for it.
@@ -391,7 +387,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] Jira issue re-opened after post: comment visible, not truncated.
 - [ ] Step 7d fix-verify completed.
 - [ ] **Cross-ticket conflict check ran before the Step 6d approval popup** ([qa-closing-shared.md](../../../references/qa-closing-shared.md#cross-ticket-conflict-check)): the whole project searched with every layer's query + hit count recorded, candidates opened (fields + every comment), the table posted in chat with a clickable link per ticket, and the user answered *Investigate further* / *Close out now* in the Step 6d decisions popup before the post, any transition, or notify.
-- [ ] **Round report ends with the `Round time:` line** (Step 8e), measured from session timestamps ([round-time-contract.md](../../../references/round-time-contract.md) §1), and `references/helix-handoff-{KEY}.md` written for this round (§10).
+- [ ] **Round report ends with the `Round time:` line** (Step 8e), measured from session timestamps ([round-time-contract.md](../../../references/round-time-contract.md) §1), and `<workspace>/references/helix-handoff-{KEY}.md` written for this round (§10).
 - [ ] **Step 8·0 format-completeness gate passed BEFORE any transition** — evidence per the [Evidence per row](comment-and-post.md#step-6--draft-jira-comment-medium-freedom) rule: FE bug — MP4 link in every row (plays from Jira) + inline still on text-verification rows (renders as a picture); API bug — full cURL/response per row.
 - [ ] Bug landed in Done → **Step 8d** run: stories it blocked either moved to ready-for-QA or left with their remaining blockers reported.
 - [ ] Step 9 QA notify sent if the project configures a channel (retest verdict + Jira comment link + @mention) — **sent regardless of who invoked the retest** (owner, another QA, slash command, bot/trigger) and regardless of whether they asked for one.
@@ -414,10 +410,10 @@ Read and follow [closeout-and-notify.md](closeout-and-notify.md) after the post 
 | Design comparison / no Figma for a screen | [figma-design-comparison.md](../../../references/figma-design-comparison.md) |
 | Depth gates from the shipped-defect review | [customer-escape-prevention.md](../../../references/customer-escape-prevention.md) |
 | Default parallel execution — lanes, one account per lane, merge | [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) |
-| Still failing | `references/debug-discipline.md` |
-| Encoding / v2 issues | `references/gotchas.md` |
-| Session handoff | `references/handoff-template.md` |
-| Lessons learned | `references/post-mortem-template.md` |
+| Still failing | [references/debug-discipline.md](references/debug-discipline.md) |
+| Encoding / v2 issues | [references/gotchas.md](references/gotchas.md) |
+| Session handoff | [references/handoff-template.md](references/handoff-template.md) |
+| Lessons learned | [references/post-mortem-template.md](references/post-mortem-template.md) |
 | [worked-example.md](references/worked-example.md) | On-demand: anonymized sample (read only when format reference needed) |
 
 ---
@@ -443,7 +439,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST give every table column an explicit English header; row-number column = `No.` | bare `#` renders as a blank header cell in Jira |
 | MUST head the single table exactly as the **Table headers** rule in [comment-and-post.md](comment-and-post.md#step-6--draft-jira-comment-medium-freedom) states (the guard's `VERDICT_TABLE_HEADERS`; API bug: drop `Evidence`) — that rule is the one copy | the middle columns carry the ticket's own field names so a reader lines the comment up with no translation (user correction 2026-07-24 on two retests; Evidence column added 2026-07-27; one table with `ER` and `Case (Role)` ordered by the owner 2026-09-24) |
 | MUST bold every table header cell (`\| **No.** \| **Test Case** \| …`) | Jira doesn't auto-bold markdown headers; non-bold looks unprofessional |
-| MUST compare actual text against the Expected Result field (field id from the project guide) character-by-character when expected specifies exact wording | Any text difference = FAIL — no "minor wording" or "cosmetic" exceptions |
+| MUST compare actual text against the Expected Result field (field id from the project guide) character-by-character when expected specifies exact wording | Any text difference is **never PASSED** — no "minor wording" or "cosmetic" exceptions; its verdict (PWMI or FAILED) comes from the matrix per the [verdict rule](#verdict-rule) |
 | MUST pass the Step 8·0 format-completeness gate before ANY status transition — FE bug evidence follows the [Evidence per row](comment-and-post.md#step-6--draft-jira-comment-medium-freedom) rule (MP4 link in every row's `Evidence` cell, plus an inline `!file.png!` still — pre-resized, no `\|width` — on text-verification rows), link and still render-verified; a text-only FE comment fails the gate | Transitioning on an evidence-incomplete comment silently hides the gap (learned on a past retest: FE bug moved to Done with a text-only comment) |
 | MUST NOT offer the user a "skip the MP4 / stills / text-only" option for an FE bug — that evidence is mandatory, not optional; if upload is blocked, STOP and resolve, don't bypass | Offering to skip a mandatory step is how the gate got bypassed (same past retest) |
 | MUST verify the Jira UI after post (Step 7d) before Step 8, then run Step 8 unless the user stopped you | Truncation / wrong endpoint; workflow closure |
@@ -454,14 +450,14 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST lock v2/v3 at Step 3 (FE → v2) and MUST NOT change COMMENT_FORMAT after Step 3 | v2/v3 rewrite cost |
 | MUST include full cURL/response per API case | Evidence must stand alone |
 | MUST take transition names/ids, notify-helper flags, app URL shapes and UI-automation quirks from the workspace's project guide — never from a value written in this skill | Workflows, tooling and UI differ per project; a value hardcoded here transitions the wrong ticket somewhere else (portable-content.md) |
-| MUST NOT include local file paths in Jira comments (`docs/result/`, absolute home/machine paths, etc.) | Meaningless to Jira readers; user enforced "เน้นๆๆ ห้ามผิดอีก" |
+| MUST NOT include local file paths in Jira comments (`docs/result/`, absolute home/machine paths, etc.) | Meaningless to Jira readers; the owner flagged this as a repeat mistake |
 | MUST scan Jira comment for local paths before posting | Catches leaks: `docs/`, `~/`, absolute paths |
 | MUST `--dry-run` Discord notify before real send | Catches format errors before they go live |
 | MUST fetch the notify recipient from the ticket's QA Owner field (per project guide) per ticket, and verify the @mention person = that field's value — NEVER the Reporter, never a name carried over from another ticket | Label said "QA Owner" but pinged the Reporter → 3 wrong pings, user correction 2026-07-15 |
-| MUST verdict from the bug's OWN expected results — PASSED only when ALL items are met (character-exact where wording is specified); parent AC is supplement, never substitute | Bug details are the contract; partial match = FAILED (user rule 2026-07-15) |
+| MUST verdict from the bug's OWN expected results — PASSED only when ALL items are met (character-exact where wording is specified); parent AC is supplement, never substitute | Bug details are the contract; a partial match is never PASSED (user rule 2026-07-15) — PWMI or FAILED per the [verdict rule](#verdict-rule) |
 | MUST enumerate **every** Expected-Result item + bug-detail bullet char-exact at Step 2, map each `ER*` id 1:1 to a verdict-table row, and reconcile `enumerated ids == rowed-and-statused rows` (`{n}/{total}` coverage, `{n}=={total}`) before Step 6 / 8·0 (7-layer coverage gate in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md)) | The retest scope is the bug's own contract; an unenumerated or unmapped item is silently unverified |
 | MUST record **every** expected-result/detail result as its own verdict-table row — NEVER park an untested/failing item in a remark, a note under the table, or chat while the verdict reads PASSED | Coverage is proven by rows, not prose beside them; a footnoted gap reads as a clean pass downstream |
-| MUST NOT post PASSED on partial coverage — an item **observed to differ** is a FAILED row (severity per the matrix); an **unverified/unreachable** item is a BLOCKED row (a coverage gap, never a product FAILED); neither is a PASS and neither is dropped | "Fixed except one point" hidden as a caveat is misread as a full pass; and calling a merely-unverified item FAILED contradicts "a coverage gap is not a defect" |
+| MUST NOT post PASSED on partial coverage — an item **observed to differ** is a PWMI or FAILED row per the [verdict rule](#verdict-rule); an **unverified/unreachable** item is a BLOCKED row (a coverage gap, never a product FAILED); neither is a PASS and neither is dropped | "Fixed except one point" hidden as a caveat is misread as a full pass; and calling a merely-unverified item FAILED contradicts "a coverage gap is not a defect" |
 | MUST NOT transition, notify, or report "done" while any enumerated item lacks a rowed status (coverage gate fail-closed) | Partial coverage is a stop condition; a green verdict over an incomplete table looks finished but is not |
 | MUST judge any Priority/Severity referenced in a retest comment ONLY from the [Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md) — never invent a severity notion | Keeps bug-priority language consistent across QA workflows; no ad hoc severity claims in Jira comments |
 | MUST exercise **every** entry point to a failing surface separately (direct route **and** the in-app path a user takes) and capture each in its own row's `Evidence` cell (per the [Evidence per row](comment-and-post.md#step-6--draft-jira-comment-medium-freedom) rule); name the entry point(s) actually exercised in the `Fixture` line, and never claim a path you did not run | A path with no captured evidence is a guess. A past retest: "happens via both entry points" was published from one run, the dev acted on it, and it had to be retracted in-ticket |

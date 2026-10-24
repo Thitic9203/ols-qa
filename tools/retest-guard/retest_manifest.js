@@ -337,7 +337,10 @@ function validate(m) {
     }
     if (asArray(m.resolutionOptions).length < 2) out.push(err('resolutionOptions', 'two mutually exclusive options, each with a role owner', 'code change, or spec change'));
     if (!isNonEmptyString(m.decidedBy)) out.push(err('decidedBy', 'name the role that decides', 'role only, never a person'));
-    if (typeof m.symptomGone !== 'boolean') out.push(err('symptomGone', 'state whether the originally reported symptom is gone', '"FAILED" alone reads as "the fix did not work"'));
+    if (typeof m.symptomGone !== 'boolean' && m.symptomGone !== SYMPTOM_NOT_VERIFIED) {
+      out.push(err('symptomGone', `state whether the originally reported symptom is gone: true, false, or "${SYMPTOM_NOT_VERIFIED}"`,
+        '"FAILED" alone reads as "the fix did not work"; use "' + SYMPTOM_NOT_VERIFIED + '" for a Task or a round that never reached the symptom'));
+    }
   }
 
   return out;
@@ -366,7 +369,15 @@ function destinationMismatch(caseStatuses, destinationStatuses) {
   };
 }
 
+/**
+ * The third value of `symptomGone`, beside true ("gone") and false ("still present").
+ * A Task has no originally reported symptom, and a round in which nothing ran observed
+ * nothing; either of the two boolean values there states a check that never happened.
+ */
+const SYMPTOM_NOT_VERIFIED = 'not verified';
+
 module.exports = {
+  SYMPTOM_NOT_VERIFIED,
   STATUSES,
   PASSING,
   SCOPE_MODES,

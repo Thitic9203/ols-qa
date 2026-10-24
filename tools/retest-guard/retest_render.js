@@ -219,7 +219,9 @@ function renderWith(m, fmt) {
 
   if (M.computedVerdict(m) !== 'PASSED') {
     L.push('');
-    L.push(`${bold('Originally reported symptom:')} ${m.symptomGone ? 'gone' : 'still present'}`);
+    const symptom = m.symptomGone === M.SYMPTOM_NOT_VERIFIED ? 'not verified this round'
+      : m.symptomGone ? 'gone' : 'still present';
+    L.push(`${bold('Originally reported symptom:')} ${symptom}`);
     L.push('');
     L.push(`${bold('Root cause:')} ${text(m.rootCause.text)} — ${m.rootCause.label}`);
     L.push('');
