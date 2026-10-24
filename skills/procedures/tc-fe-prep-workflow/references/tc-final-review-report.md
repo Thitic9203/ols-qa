@@ -64,6 +64,7 @@ Build a traceability table for the report (see output template).
 | Test Case ID | Plain `1` … `N` sequential, no prefix, no padding, no gaps (design-and-review Step 3c) |
 | Cell numbering | Within each **Precondition**, **Test Steps**, and **Expected Result** cell, items are `1.` `2.` `3.` … with no skips |
 | Jira formatting | Per [jira-formatting.md](jira-formatting.md): the ADF comment shows no literal `**`, `<br>` or HTML; the `.md` file bolds headers |
+| Bold inline numbering | Every multi-item cell that the column table in [design-and-review.md](../design-and-review.md) Step 3 numbers inline (e.g. **Services Impacted** with 2+ services) uses bold `**1.** … **2.** …` — never a `- ` bullet or bare `1.` |
 
 **Note:** Row sort order (e.g. Unit → Integration → System) may differ from ticket AC/EC order — that is **not** a numbering failure unless the user asked to preserve ticket order.
 

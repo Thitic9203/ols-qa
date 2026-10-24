@@ -10,7 +10,7 @@ description: |
 
 Prepare **frontend manual test cases** from a Jira **story** (acceptance criteria + edge cases), get user approval in chat, then publish **one comment** on **that story only** with the slim 6-column ADF table (Step 7) plus the downloadable CSV/Excel attachments.
 
-**Portable:** Works in any AI agent that can read this skill. **Project values** (Jira domain, Qase project, tracking-sheet tool, approval channel) come from the project guide loaded in Step 1 — never hardcode them here.
+**Portable:** Works in any AI agent that can read this skill. **Project-agnostic:** no hardcoded repos, paths, or ticket numbers ([portable-content.md](../../../references/portable-content.md)); **project values** (Jira domain, Qase project, tracking-sheet tool, approval channel) come from the project guide loaded in Step 1 — never hardcode them here.
 
 ## Contents
 
