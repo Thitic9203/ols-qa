@@ -17,6 +17,15 @@ At minimum, cover each scenario below whose condition holds for the operation:
 
 Skip a scenario only when its condition does not hold, and list it under **out of scope** in the draft header.
 
+## Priority
+
+The **Priority** column is `High` / `Medium` / `Low` ([default-columns.md](default-columns.md)).
+
+- Use the criticality the API spec states for an operation or flow when it states one.
+- When the spec states none, choose one rule for the whole table, write it in one line in the Phase F draft header (`Priority rule: …`), and apply it to every row — the user approves or changes it at Phase F.
+- Never mark every row the same priority ([tc-quality-standards.md](../../../../references/tc-quality-standards.md): not "All High"; critical paths not all Medium).
+- This is test case priority, not bug priority — the bug priority matrix does not apply here.
+
 ## Test Data column
 
 Include:

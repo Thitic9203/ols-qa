@@ -41,7 +41,7 @@ For hand-off to a Playwright/CLI agent or PR reading. Offer **alongside** CSV/Ex
   | Wiki (v2) | `\\` |
 
 - **Never copy chat draft directly to Jira body** — always run conversion first
-- Wrap issue keys in `{{PROJ-123}}` if auto-link is unwanted
+- Issue keys that must not auto-link: in ADF (the G2 publish path) give the text node a `code` mark; `{{PROJ-123}}` is wiki markup and renders literally in ADF
 - Large tables (> 50 rows): verify row count on Jira UI after post, and offer the user a CSV/xlsx attachment + table summary instead of the full inline table
 - After post: confirm **no literal `<br>` in any cell** on Jira UI
 

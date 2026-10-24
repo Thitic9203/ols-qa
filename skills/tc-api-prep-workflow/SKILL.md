@@ -29,6 +29,10 @@ Slash-command shortcut (runtimes that support commands): `/tc-api-prep` → [com
 Every must-read file for this workflow, linked directly from here. References already linked above are not repeated.
 
 - [WORKFLOW.md](../procedures/tc-api-prep-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
+- [default-columns.md](../procedures/tc-api-prep-workflow/references/default-columns.md) — read at Phase B, before stating or asking about the column list.
+- [delivery-options.md](../procedures/tc-api-prep-workflow/references/delivery-options.md) — read at Phase C and again before Phase G delivery (CSV, Excel, Jira, Confluence).
+- [api-tc-guidelines.md](../procedures/tc-api-prep-workflow/references/api-tc-guidelines.md) — read at Phase D and Phase E2, while designing and checking every row.
+- [jira-fast-publish.md](../../references/jira-fast-publish.md) — read at Phase G2 before publishing to a Jira issue (ADF-direct patterns and error recovery).
 - [csv-export-rules.md](../../references/csv-export-rules.md) — when exporting the CSV file(s).
 - [intake-one-pager.md](../../references/intake-one-pager.md) — at intake, to show the one-page list of inputs the run needs.
 - [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — right after posting a Jira comment — full review checklist.
@@ -43,29 +47,34 @@ Every must-read file for this workflow, linked directly from here. References al
 - [tc-quality-standards.md](../../references/tc-quality-standards.md) — read while writing every TC row.
 - [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) — read on the first response, to locate the workspace project guide for this workflow.
 - [agent-rationalizations.md](../../references/agent-rationalizations.md) — read when tempted to skip a step; each excuse has its correct action.
-- [bug-priority-matrix.md](../../references/bug-priority-matrix.md) — read before setting any priority or a PWMI / FAILED verdict.
 - [coverage-delta-template.md](../../references/coverage-delta-template.md) — read after the coverage review, before the full draft.
 - [csv-template-types.md](../../references/csv-template-types.md) — read before exporting a CSV.
-- [customer-escape-prevention.md](../../references/customer-escape-prevention.md) — read before any QA run; the gates that stop shipped defects.
-- [defect-report-completeness.md](../../references/defect-report-completeness.md) — read before writing up any defect or non-pass.
-- [figma-design-comparison.md](../../references/figma-design-comparison.md) — read before judging any UI or visual result against the design.
 - [helix-session-constraints.md](../../references/helix-session-constraints.md) — read once at session start.
 - [long-workflow-todos.md](../../references/long-workflow-todos.md) — read when the workflow has many steps; keep the todo list.
-- [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) — read before recording any result that is not PASSED.
-- [playwright-preflight.md](../../references/playwright-preflight.md) — read before any Playwright run.
 - [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read when a QA follow-up could be suggested.
-- [qa-debug-discipline.md](../../references/qa-debug-discipline.md) — read when a test is flaky or a tool errors.
 - [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — read before any completion claim.
-- [resilient-selectors.md](../../references/resilient-selectors.md) — read when writing or fixing Playwright selectors.
-- [result-quality-gate.md](../../references/result-quality-gate.md) — read before any verdict leaves the round.
-- [root-cause-investigation.md](../../references/root-cause-investigation.md) — read before naming a cause for any failure.
 - [round-time-contract.md](../../references/round-time-contract.md) — read when a round starts and before reporting times.
 - [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — read before invoking or switching skills.
 - [skill-routing.md](../../references/skill-routing.md) — read when choosing which skill handles a request.
 - [test-md-format.md](../../references/test-md-format.md) — read when exporting Test.md.
-- [test-through-real-steps.md](../../references/test-through-real-steps.md) — read before testing an action; no API shortcut for the action under test.
 - [user-communication.md](../../references/user-communication.md) — read before any message to the user.
+- [qa-debug-discipline.md](../../references/qa-debug-discipline.md) — read when a tool errors (fetch, export or publish).
+- [root-cause-investigation.md](../../references/root-cause-investigation.md) — read before naming a cause for any failure (fetch, export or publish).
 - [spec-coverage-review.md](../procedures/tc-api-prep-workflow/references/spec-coverage-review.md) — read before drafting; spec and Swagger coverage review.
+
+### Execution-only files (this workflow never triggers them)
+
+This workflow writes test cases; it never runs tests, records verdicts or opens bugs (WORKFLOW § Out of scope). The shared files above link to the files below, so they stay one hop away, but do not load them during a TC API prep run. The TC **Priority** column follows [api-tc-guidelines.md](../procedures/tc-api-prep-workflow/references/api-tc-guidelines.md) § Priority, not the bug priority matrix.
+
+- [bug-priority-matrix.md](../../references/bug-priority-matrix.md) — read before setting any priority or a PWMI / FAILED verdict.
+- [customer-escape-prevention.md](../../references/customer-escape-prevention.md) — read before any QA run; the gates that stop shipped defects.
+- [defect-report-completeness.md](../../references/defect-report-completeness.md) — read before writing up any defect or non-pass.
+- [figma-design-comparison.md](../../references/figma-design-comparison.md) — read before judging any UI or visual result against the design.
+- [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) — read before recording any result that is not PASSED.
+- [playwright-preflight.md](../../references/playwright-preflight.md) — read before any Playwright run.
+- [resilient-selectors.md](../../references/resilient-selectors.md) — read when writing or fixing Playwright selectors.
+- [result-quality-gate.md](../../references/result-quality-gate.md) — read before any verdict leaves the round.
+- [test-through-real-steps.md](../../references/test-through-real-steps.md) — read before testing an action; no API shortcut for the action under test.
 
 ## Refusal-first (precondition gate)
 

@@ -87,7 +87,7 @@ MUST NOT start without both:
 - the **governing ticket** — a Jira issue key or URL carrying AC/EC (or an equivalent spec source the
   user names explicitly).
 
-Missing either, stop in one message per [skill-rules-style.md](../../references/skill-rules-style.md).
+🔴 **STOP —** missing either, stop in one message per [skill-rules-style.md](../../references/skill-rules-style.md).
 
 **Cross-org / cross-site ticket:** if the ticket lives on an Atlassian site the connected MCP has not
 been granted access to, say so and ask the user to grant it (or paste the AC/EC directly) — never guess
@@ -104,8 +104,8 @@ a cloud id, never fall back to a browser login to read it.
    (description, custom fields — some projects keep content off `description` entirely; check both).
    Quote AC/EC labels and text exactly as written; never paraphrase from memory of a similar ticket.
    **No AC/EC found in either place** → stop per the refusal-first gate. **Spec text found but its
-   items carry no AC/EC labels** → show the text found and ask the user how to number it before Step 2;
-   never invent labels.
+   items carry no AC/EC labels** → 🔴 **STOP —** show the text found and ask the user how to number it
+   before Step 2; never invent labels.
 3. If a design source (Figma, PRD) is linked and the user wants it cross-checked, open it this session.
    If it cannot be opened (no session, no access, view-only with no rendered content), record that
    plainly — it becomes a "not verified" note next to any related finding, never a silent skip.
@@ -165,7 +165,7 @@ overrides tc-quality-standards.md here: ignore its Priority attribute and its re
 
 ---
 
-## Step 3b — Source sweep before "ask the PO / reporter" (mandatory) [high freedom]
+## Step 3b — Source sweep before "ask the PO / reporter" (mandatory) [low freedom]
 
 This workflow never decides a product verdict, but it does raise spec-level gaps and questions.
 Before any finding becomes "ask the PO / reporter" or "spec unclear", run the source sweep in
@@ -176,8 +176,15 @@ API, and tickets the commit messages name); regression results; and the design n
 was read beside the finding. A question the sources already answer is a finding with its source,
 not a question.
 
+**Product clone missing or unreadable** (the `{MONOREPO}` check in
+[dependencies.md](../../references/dependencies.md) fails): do not stop the review and do not skip the
+code layer silently. Write `code not checked — no clone` next to every question the code layer would
+have answered, continue the sweep with the remaining sources, and never present such a question as
+sweep-complete — it goes to Step 4 carrying that note.
+
 Output per item: the finding (or the remaining question) + the quoted source with its location
-(`path:line`, ticket key + comment, regression row, design node).
+(`path:line`, ticket key + comment, regression row, design node), or the `code not checked — no clone`
+note when the code layer could not run.
 
 **Go back:** A question the sweep answers returns to Step 2 or 3 as a sourced finding; only a question
 no source answers goes to Step 4 as "confirm with dev/PO".
@@ -261,18 +268,20 @@ Then:
 5. **Fit the platform's message limit before sending** (Discord: 2,000 characters). Count the characters.
    If the text is too long, tighten the wording. Do not drop findings the user saw in chat, and do not
    split the review into several posts unless the user asks.
-5. **Revising a review that is already posted** (new suggestions, a scope cut): edit the existing
+6. **Revising a review that is already posted** (new suggestions, a scope cut): edit the existing
    message in place, e.g. a Discord webhook `PATCH …/messages/{id}`, adding `thread_id` when the message is
    in a thread. Do not post a second copy. Read back the edited message and check the id, the destination,
    the mentions and the content.
-6. A thread is reached through a webhook plus `thread_id`. Without `thread_id` the message lands in the
+7. A thread is reached through a webhook plus `thread_id`. Without `thread_id` the message lands in the
    parent channel. Use the webhook the user gave for that thread, and keep it in local secrets, never in
-   the repo.
-7. Use the wording conventions already established for that surface in this workspace (e.g. a fixed term
+   the repo. **Webhook file for the chosen thread missing** from the secrets folder → ask the user for it
+   once, save it to that secrets folder under the per-thread file name above, and never write it into the
+   repo or repeat it in chat; then continue from item 2.
+8. Use the wording conventions already established for that surface in this workspace (e.g. a fixed term
    for "ticket" in the destination's language) — check the workspace's own rules before sending; do not
    invent new wording.
 
-**Go back:** If the item-2 read-back shows the wrong destination, return to item 3 (delete and resend); wrong content or an unresolved mention → edit in place (item 5) and read back again. The send is not done before a clean read-back.
+**Go back:** If the item-3 read-back shows the wrong destination, delete and resend (item 4); wrong content or an unresolved mention → edit in place (items 4 and 6) and read back again. The send is not done before a clean read-back.
 
 ---
 
@@ -335,26 +344,33 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 Every file this skill's procedure requires, one hop from here. Read each at the point its line names.
 
 - Read [agent-rationalizations.md](../../references/agent-rationalizations.md) when tempted to skip a step; each excuse has its correct action.
-- Read [bug-priority-matrix.md](../../references/bug-priority-matrix.md) before setting any priority or a PWMI / FAILED verdict.
-- Read [customer-escape-prevention.md](../../references/customer-escape-prevention.md) before any QA run; the gates that stop shipped defects.
-- Read [defect-report-completeness.md](../../references/defect-report-completeness.md) before writing up any defect or non-pass.
 - Read [figma-design-comparison.md](../../references/figma-design-comparison.md) before judging any UI or visual result against the design.
 - Read [helix-session-constraints.md](../../references/helix-session-constraints.md) once at session start.
 - Read [jira-comment-post-review.md](../../references/jira-comment-post-review.md) after posting a Jira comment, before saying done.
 - Read [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) before posting a Jira table with multi-line cells.
 - Read [long-workflow-todos.md](../../references/long-workflow-todos.md) when the workflow has many steps; keep the todo list.
 - Read [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) before recording any result that is not PASSED.
-- Read [playwright-preflight.md](../../references/playwright-preflight.md) before any Playwright run.
 - Read [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) when a QA follow-up could be suggested.
 - Read [qa-closing-shared.md](../../references/qa-closing-shared.md) before saying done; shared closing checklist.
 - Read [qa-debug-discipline.md](../../references/qa-debug-discipline.md) when a test is flaky or a tool errors.
 - Read [qa-evidence-gates.md](../../references/qa-evidence-gates.md) before any completion claim.
-- Read [resilient-selectors.md](../../references/resilient-selectors.md) when writing or fixing Playwright selectors.
 - Read [root-cause-investigation.md](../../references/root-cause-investigation.md) before naming a cause for any failure.
 - Read [round-time-contract.md](../../references/round-time-contract.md) when a round starts and before reporting times.
 - Read [session-closing.md](../../references/session-closing.md) at session end.
 - Read [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) before invoking or switching skills.
 - Read [skill-routing.md](../../references/skill-routing.md) when choosing which skill handles a request.
+
+### Execution-only files (this workflow never triggers them)
+
+This workflow reviews a document; it never runs tests, sets a bug priority, records a verdict or opens a
+bug (§ Out of scope). The shared files above link to the files below, so they stay one hop away, but do
+not load them during a TC review.
+
+- Read [bug-priority-matrix.md](../../references/bug-priority-matrix.md) before setting any priority or a PWMI / FAILED verdict.
+- Read [customer-escape-prevention.md](../../references/customer-escape-prevention.md) before any QA run; the gates that stop shipped defects.
+- Read [defect-report-completeness.md](../../references/defect-report-completeness.md) before writing up any defect or non-pass.
+- Read [playwright-preflight.md](../../references/playwright-preflight.md) before any Playwright run.
+- Read [resilient-selectors.md](../../references/resilient-selectors.md) when writing or fixing Playwright selectors.
 - Read [test-through-real-steps.md](../../references/test-through-real-steps.md) before testing an action; no API shortcut for the action under test.
 - Read [verify-closing-checklist.md](../../references/verify-closing-checklist.md) before reporting a verify or retest done.
 
@@ -365,6 +381,7 @@ Run the check for each of these before step 1 — check commands and install hin
 - Atlassian MCP
 - Figma (only when a design cross-check is asked)
 - clone of the product repo (`{MONOREPO}`) for the source sweep
-- Node.js + in-repo guard tools (`tools/result-gate`)
+- `tools/result-gate` is not run here: it checks result lines (`results.jsonl`), and this workflow
+  writes none — Step 3b applies layer 14 of result-quality-gate.md by hand
 - the ticket project's TC-review notify channel + its webhook (project config / local secrets)
 - `superpowers:systematic-debugging`
