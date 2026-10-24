@@ -40,7 +40,7 @@ Decide what to show in this order — the first step that applies wins:
 
 Follow [shared-preamble.md](../../references/shared-preamble.md).
 
-## Scope
+## Refusal-first (precondition gate)
 
 This skill only routes — it does not run tests or post to Jira (see MUST / NEVER). When the goal is already clear, the menu is skipped (Opening step 1) because an extra menu round wastes time.
 
