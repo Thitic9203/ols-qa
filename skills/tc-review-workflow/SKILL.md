@@ -26,7 +26,7 @@ metadata:
 - [Step 1 — Load both sources verbatim \[medium freedom\]](#step-1--load-both-sources-verbatim-medium-freedom)
 - [Step 2 — Build the traceability matrix \[medium freedom\]](#step-2--build-the-traceability-matrix-medium-freedom)
 - [Step 3 — Row-quality check \[medium freedom\]](#step-3--row-quality-check-medium-freedom)
-- [Source sweep before "ask the PO / reporter" (mandatory) \[high freedom\]](#source-sweep-before-ask-the-po--reporter-mandatory-high-freedom)
+- [Step 3b — Source sweep before "ask the PO / reporter" (mandatory) \[high freedom\]](#step-3b--source-sweep-before-ask-the-po--reporter-mandatory-high-freedom)
 - [Step 4 — Report Good vs Need Improve \[medium freedom\]](#step-4--report-good-vs-need-improve-medium-freedom)
 - [Step 5 — Notify the project's TC-review channel \[low freedom\]](#step-5--notify-the-projects-tc-review-channel-low-freedom)
 - [QA closing (mandatory before "done") \[low freedom\]](#qa-closing-mandatory-before-done-low-freedom)
@@ -40,7 +40,7 @@ Judge a test case document that someone has **already written** — this workflo
 test cases itself. It answers one question: *does this document, as written, prove the ticket's AC/EC and
 business rules will be checked?*
 
-Claude Code shortcut: `/tc-review` → [commands/tc-review.md](../../commands/tc-review.md).
+Slash-command shortcut (runtimes that support commands): `/tc-review` → [commands/tc-review.md](../../commands/tc-review.md).
 
 ## Progress checklist
 
@@ -53,7 +53,7 @@ TC review progress:
 - [ ] Step 1 — Load both sources verbatim
 - [ ] Step 2 — Build the traceability matrix
 - [ ] Step 3 — Row-quality check
-- [ ] Source sweep before "ask the PO / reporter" (mandatory)
+- [ ] Step 3b — Source sweep before "ask the PO / reporter" (mandatory)
 - [ ] Step 4 — Report Good vs Need Improve
 - [ ] Step 5 — Notify the project's TC-review channel (ask only the thread)
 - [ ] QA closing (mandatory before "done")
@@ -103,6 +103,9 @@ a cloud id, never fall back to a browser login to read it.
 2. **Ticket** — fetch AC, EC, and any business-rules / recheck-list section from the ticket's own fields
    (description, custom fields — some projects keep content off `description` entirely; check both).
    Quote AC/EC labels and text exactly as written; never paraphrase from memory of a similar ticket.
+   **No AC/EC found in either place** → stop per the refusal-first gate. **Spec text found but its
+   items carry no AC/EC labels** → show the text found and ask the user how to number it before Step 2;
+   never invent labels.
 3. If a design source (Figma, PRD) is linked and the user wants it cross-checked, open it this session.
    If it cannot be opened (no session, no access, view-only with no rendered content), record that
    plainly — it becomes a "not verified" note next to any related finding, never a silent skip.
@@ -156,11 +159,13 @@ by someone else, so the question is whether it can be trusted, not whether it is
 | **The setup names a method without giving it** ("there is a way to make the request fail", "prepare enough data"). | Two testers will set it up two different ways. |
 
 Do not flag test-case style choices that do not affect whether the case can be trusted (naming
-convention, column order, priority labels) unless the user asks for a style review specifically.
+convention, column order, priority labels) unless the user asks for a style review specifically. This
+overrides tc-quality-standards.md here: ignore its Priority attribute and its review-gate
+"Priorities assigned" line unless the user asks for a style review.
 
 ---
 
-## Source sweep before "ask the PO / reporter" (mandatory) [high freedom]
+## Step 3b — Source sweep before "ask the PO / reporter" (mandatory) [high freedom]
 
 This workflow never decides a product verdict, but it does raise spec-level gaps and questions.
 Before any finding becomes "ask the PO / reporter" or "spec unclear", run the source sweep in
@@ -170,6 +175,14 @@ and every comment; the surrounding tickets (parent / epic, linked, siblings on t
 API, and tickets the commit messages name); regression results; and the design node. Quote what
 was read beside the finding. A question the sources already answer is a finding with its source,
 not a question.
+
+Output per item: the finding (or the remaining question) + the quoted source with its location
+(`path:line`, ticket key + comment, regression row, design node).
+
+**Go back:** A question the sweep answers returns to Step 2 or 3 as a sourced finding; only a question
+no source answers goes to Step 4 as "confirm with dev/PO".
+
+---
 
 ## Step 4 — Report Good vs Need Improve [medium freedom]
 
@@ -215,12 +228,16 @@ message can. The Step 5 thread question is the go-ahead; do not add a separate "
 Every run sends the finished review to the TC-review notify channel **of the ticket's project** —
 whoever invoked the skill, and whether or not they asked for a share. Each project has its own channel;
 never post one project's review in another project's channel. The channel comes from that project's
-config (its "TC review notify" entry; the real id and webhook live in local secrets, never in the repo).
+config: the workspace project guide `references/{PROJECT}-guide.md` § *TC review notify* (channel
+placeholder, thread rule, mention rule). The real ids and the webhook live in the local secrets folder
+named there (one webhook file per thread, e.g. `discord_webhook_tc_review_<thread>`), never in the repo.
 
 - **Project has a channel in config → NEVER ask which server, group, or channel.** Ask exactly one
   question: which thread of that channel to post in. Offer the threads already used for this ticket or
-  recorded in the config as options. The answer is the go-ahead to send. A guard blocks the channel
-  question for such projects (`tools/ask-guard`, state `fixed-destination`) where one is installed.
+  recorded in the config as options. The answer is the go-ahead to send. Where the workspace carries
+  `tools/ask-guard` (workspace-optional, see [dependencies.md](../../references/dependencies.md)), it
+  blocks the channel question for such projects (state `fixed-destination`); without it, apply the same
+  rule by hand.
 - **Project has no channel in config →** search conversation history and memory for that project's
   destination first. Found → use it and record it in that project's config. Not found → ask once for that
   project's channel and thread, then record the answer so it is never asked again.
@@ -229,8 +246,16 @@ Then:
 
 1. **Identity for a mention:** ask for the exact id (Discord user id, Jira account id, etc.) rather than
    guessing one from a display name — a wrong id either pings nobody or pings the wrong person.
+🔴 **GATE — before the external send:** show in chat the destination (channel + thread), the final text
+exactly as it will be sent (after any item-4 tightening) and its character count. The thread answer
+counts as the go-ahead only once that preview is visible; if the text changed after the user saw the
+review, this preview is what they approve.
+
 2. **Send, then read the response back** before telling the user it is done: confirm the destination
    (channel/thread id) matches what they asked for, and that a requested mention actually resolved.
+   **Send returns non-2xx or times out** → do not retry blindly: report the status code and response
+   body, keep the review in chat, and ask the user how to proceed (a 429 states the `retry_after` value
+   it returned).
 3. **Wrong destination → delete and resend** — a message cannot be moved between channels/threads by
    editing it. **Wrong content, correct destination → edit in place** — never delete and repost just to
    fix wording.
@@ -298,12 +323,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | NEVER count or mention a struck-through AC/EC | The ticket has already taken it out of scope, so mentioning it is noise |
 | NEVER report a business rule or comment that does not conflict with an AC/EC | The AC/EC are the contract. A rule with no TC but no conflict is not a defect in the document |
 | MUST give every Need Improve item a sourced "→ Suggest:" fix, and NEVER invent a value for it | A problem without a fix leaves the author guessing. An invented number gets copied into the TC as if it were spec |
-| MUST edit an already-posted review in place and keep it within the platform's length limit | A second copy splits the thread. An over-limit post is rejected or cut off |
-| NEVER invent a channel, thread, or mention id for an external send | A wrong id either reaches nobody or reaches the wrong person |
-| MUST send every review to the ticket project's own TC-review channel, whoever invoked the skill | Each project's team reads its own channel; a review in another project's channel reaches the wrong people |
-| NEVER ask which server, group, or channel when the project's config has one — ask only which thread | The answer is already in config; asking again is a repeat question (#0059) |
-| MUST read back an external send's response and confirm destination + mentions before saying it is done | "Sent" without a read-back is an unverified claim |
-| MUST fix a wrong-destination send by delete-and-resend, and a wrong-content send by edit-in-place | A channel/thread cannot be changed by editing; deleting a correctly-placed message to fix wording destroys its position in the thread for no reason |
+| MUST run Step 5 exactly as written — it is the single source for the notify rules (project channel every run, ask only the thread, never invent an id, preview gate, length limit, read-back, delete-and-resend vs edit-in-place) | Restating those rules in several places let copies drift apart |
 | MUST NOT post to Jira/Confluence/GitHub or send an external message before the user has seen the review in chat | The review is the deliverable to approve first — an external send is not the review itself |
 
 ## Must-read files

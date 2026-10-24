@@ -14,7 +14,7 @@ workspace under test), or asked once and saved there.
 |------------|-------|--------------------|
 | Node.js 18 or newer (CI uses 20) | `node -v` | Node.js LTS from nodejs.org, or a version manager (`nvm install 20`) |
 | Python 3 | `python3 --version` | OS package manager or python.org |
-| `openpyxl` (xlsx export only) | `python3 -c "import openpyxl"` | `python3 -m pip install --user openpyxl`; without it, export CSV instead |
+| `openpyxl` (xlsx export only) | `python3 -c "import openpyxl"` | `python3 -m pip install --user openpyxl`; without it, warn the user and ask before falling back to CSV — never silently produce CSV when xlsx was requested |
 | `pypdf` (PDF summary check) | `python3 -c "import pypdf"` | `python3 -m pip install --user pypdf` |
 | `requests` (Python scripts that call APIs) | `python3 -c "import requests"` | `python3 -m pip install --user requests` |
 | ffmpeg / ffprobe (clips) | `ffmpeg -version && ffprobe -version` | OS package manager (`brew`, `apt`, `winget`) |
@@ -30,7 +30,7 @@ workspace under test), or asked once and saved there.
 
 | Dependency | Check | Install / fallback |
 |------------|-------|--------------------|
-| `tools/result-gate`, `tools/retest-guard`, `tools/lane-lease-check`, `tools/run-time`, `tools/adoption-check` | `test -f tools/<name>/<script>.js && node -v` | none to install (plain Node, no packages). When the workspace has no `tools/<name>/`, apply the same rule by hand and say so |
+| `tools/result-gate`, `tools/retest-guard`, `tools/ask-guard`, `tools/lane-lease-check`, `tools/run-time`, `tools/adoption-check` | `test -f tools/<name>/<script>.js && node -v` | none to install (plain Node, no packages). When the workspace has no `tools/<name>/`, apply the same rule by hand and say so |
 
 ## Out-of-repo tools
 
@@ -60,4 +60,4 @@ workspace under test), or asked once and saved there.
 | Figma (Dev Mode MCP or browser view) | open the design node and read one frame | enable Dev Mode MCP, or view the file in a browser session; when neither opens, design comparison is "not verified" |
 | Browser automation MCP (Chrome extension or equivalent) | list tabs and get a result | install and connect the extension; else BLOCKED for steps that need a real browser |
 | Qase (TC suite tree, FE prep import) | open the project's suite tree | ask the owner for access; export the CSV anyway |
-| Notify channel webhook / bot (only on an explicit share request) | the webhook or bot id is in the secrets folder | ask the owner; never invent a channel, thread or id |
+| Notify channel webhook / bot — tc-review: its project's TC-review channel on every run (owner decision 20/Oct); every other workflow: only on an explicit share request | the webhook or bot id is in the secrets folder; the channel comes from the project guide (`references/{PROJECT}-guide.md` § TC review notify) | ask the owner; never invent a channel, thread or id |

@@ -49,7 +49,7 @@ Rules:
 
 ---
 
-## Scope discipline (ไม่กาว · ไม่เพ้อ · นอกสโคป)
+## Scope discipline (no invented content · no speculation · nothing out of scope)
 
 | Check | FAIL examples |
 |-------|----------------|
