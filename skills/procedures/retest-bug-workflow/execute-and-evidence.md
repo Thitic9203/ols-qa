@@ -72,7 +72,7 @@ Claude never opens a browser, login window or sign-in page, and never drives a l
    ```
 3. **Probe.** When the user says the commands have run, Claude calls the session endpoint for each account, expects that account's user id, and reports account → OK / FAILED with the reason. An account still FAILED blocks only its cases, which are reported BLOCKED ("session not restored") and never PASSED.
 
-OTP/SSO per config, and any code is typed by the user in the mint step. If blocked → ask user for a bearer token.
+OTP/SSO per config, and any code is typed by the user in the mint step. If login stays blocked after the relink commands, mark that account's cases BLOCKED ("session not restored") and re-issue the commands — never ask the user to paste a password, bearer token or other credential into chat.
 
 **Login reuse** ([round-time-contract.md](../../../references/round-time-contract.md) §5): first load
 the saved login file `{auth dir from guide}/{env}-{role}-{alias}.json` — named by account, not by lane,

@@ -164,7 +164,7 @@ Any "no" → **fix the report**. Do not post and plan to explain in chat.
 | Rule | Because |
 |------|---------|
 | MUST include a repro matrix row for **every** entry point exercised, and mark untried paths `not tested` | A scope claim with no row behind it is a guess published as a finding |
-| MUST NOT state that a defect occurs via a path that has no evidence row | Learned OLS-108: "happens via both entry points" was published from one run, then had to be retracted to the dev in-ticket |
+| MUST NOT state that a defect occurs via a path that has no evidence row | Learned on a past retest: "happens via both entry points" was published from one run, then had to be retracted to the dev in-ticket |
 | MUST hard-reload every surface after a state-changing fixture step before observing it | A stale client view is a test artifact; reporting it as product behavior misleads the dev |
 | MUST resolve any contradiction between your own observations with a clean re-run before drafting | Picking the observation that fits the verdict is how a wrong repro path ships |
 | MUST include Expected vs Actual as implementable facts + a verbatim quote of the failing expected-result line | "Doesn't match the spec" is not actionable; the dev asks which line |
