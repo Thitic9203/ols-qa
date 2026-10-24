@@ -26,7 +26,7 @@ metadata:
 - [Step 1 — Load both sources verbatim \[medium freedom\]](#step-1--load-both-sources-verbatim-medium-freedom)
 - [Step 2 — Build the traceability matrix \[medium freedom\]](#step-2--build-the-traceability-matrix-medium-freedom)
 - [Step 3 — Row-quality check \[medium freedom\]](#step-3--row-quality-check-medium-freedom)
-- [Step 3b — Source sweep before "ask the PO / reporter" (mandatory) \[high freedom\]](#step-3b--source-sweep-before-ask-the-po--reporter-mandatory-high-freedom)
+- [Step 3b — Source sweep before "ask the PO / reporter" (mandatory) \[low freedom\]](#step-3b--source-sweep-before-ask-the-po--reporter-mandatory-low-freedom)
 - [Step 4 — Report Good vs Need Improve \[medium freedom\]](#step-4--report-good-vs-need-improve-medium-freedom)
 - [Step 5 — Notify the project's TC-review channel \[low freedom\]](#step-5--notify-the-projects-tc-review-channel-low-freedom)
 - [QA closing (mandatory before "done") \[low freedom\]](#qa-closing-mandatory-before-done-low-freedom)

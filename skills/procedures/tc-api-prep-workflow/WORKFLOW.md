@@ -102,6 +102,7 @@ Read [references/default-columns.md](references/default-columns.md) and pick the
 | Already fix the delivery (Phase C answer, e.g. "as CSV", "comment on {link}") **and** do not ask for custom or other columns | Use the default columns. State them in **one line** (`Columns: default — Test Case ID, Module / Feature, …`) and say they can still be changed at the Phase F draft approval. Do not stop here; continue to Phase C. |
 | Ask for custom, extra or different columns | Show the default column summary table, apply the user's changes, and ask the question below. |
 | Silent on delivery | Show the default column summary table (summary only — do not duplicate the full definitions here) and ask the question below. |
+| Anything else (e.g. delivery only partly fixed — "comment" with no link) | Same as *Silent on delivery*: show the summary table and ask the question below. |
 
 ```text
 Do you want to add any columns beyond the default API set?
