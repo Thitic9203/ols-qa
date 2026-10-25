@@ -112,9 +112,17 @@ If the user says “Helix default”, use the draft structure in [bug-draft-temp
 Priority and Severity use the vocabulary of the
 [Bug Priority & Severity Matrix](../../../references/bug-priority-matrix.md) only — no other scale.
 Read each bug's cell from the matrix and cite it in the draft (cheat-sheet line number + row text,
-verbatim). If the user gives a value the matrix cell does not support, or none, show the matching
-matrix row and ask; never invent a level. A Severity the user gives is kept exactly as given — it is the
-title bracket — and is never replaced by your own reading; Priority is its own field, read from the matrix.
+verbatim). One rule settles the two values, in this order:
+
+1. **Severity** — the matrix supplies the vocabulary (its rows); the reporter supplies the value. A
+   Severity the reporter gives in a matrix word is kept exactly as given — it is the title bracket — and
+   is never replaced by your own reading.
+2. **Priority** — its own field: the column of the matrix cell, in the reporter's Severity row, whose
+   example text matches the defect.
+3. **Ask, never decide** — when no Severity was given, the given word is not a matrix row, or the
+   reporter's Severity row has only `N/A` / no matching cell for this defect: show that matrix row and
+   ask the reporter to choose. Do not swap in another Severity or Priority yourself and do not draft the
+   bug until they answer.
 
 Steps to reproduce come only from the user's input and evidence. A step that seems missing is a
 follow-up question here, never a line you add to the draft.
@@ -202,13 +210,28 @@ agreed-upon expected value.)
 
 Runs here — after Phase B2, before the Phase C confirm — for every candidate that cleared B2.
 
-For each bug, if not already validated in a prior test:
+For each bug, if not already validated in a prior test, run every check below once and record its
+result (the board-conflict search is Phase B2 — do not skip it just because a bug "looks obvious"):
 
-- One disproof attempt: intentional design? role-only? flake? **already settled in another ticket?**
-  (the board-conflict search is Phase B2 — do not skip it just because a bug "looks obvious").
-- Drop or mark **Needs Review** — only create **Confirmed** / user-approved **Likely** items.
+| Check | How | Record |
+|-------|-----|--------|
+| Intentional design? | Open the design frame / AC / PRD line the expected side cites (Refusal-first) and compare char-exact with the evidence | Source link + the matching or differing text |
+| Role-only or data-only? | From the reporter's evidence, note which roles / accounts / entry points showed it; if only one, ask the reporter whether another was tried (never reproduce it yourself with new steps) | Roles/accounts seen, and the reporter's answer |
+| Flake? | Check the evidence for more than one occurrence (two screenshots, a repeated error, the reporter's "every time"); if a single occurrence, ask the reporter how often it happens | Occurrence count + evidence refs |
 
-**Go back:** If the disproof attempt finds the item already settled in another ticket, return to Phase B2 — Board-conflict re-check for that candidate. Candidates that survive move to Phase C.
+Then give each candidate one label, written on its draft summary line:
+
+- **Confirmed** — every check passed with evidence → goes to Phase C.
+- **Likely** — checks passed but one rests on the reporter's word only → goes to Phase C marked
+  **Likely**; filed only if the user approves it as Likely there.
+- **Needs Review** — a check failed or is still open (design source matches the app, a role/flake
+  question unanswered) → **not drafted and not filed.** List it in the Phase C confirm block on the
+  `Needs Review:` line with its open question; it is filed only after the user answers the question and
+  it is re-checked here as Confirmed or Likely.
+- **Dropped** — the check proves it is not a defect (e.g. the design shows the current behavior) →
+  report it in chat with the source link, as for a Phase B2 conflict.
+
+**Go back:** If the disproof attempt finds the item already settled in another ticket, return to Phase B2 — Board-conflict re-check for that candidate. When the user answers a Needs Review question, return to the top of this phase for that candidate. Confirmed and Likely candidates move to Phase C.
 
 ---
 
@@ -223,14 +246,15 @@ Format:     {user template name or Helix default}
 Board check: {N candidates searched — M dropped as already-settled/duplicate, K to file}
 Fields:     {GitHub: labels that exist / labels missing + the user's choice · Jira: Priority → field, Severity → field id from the workspace guide, required fields with their values}
 Bug count:  {K}
+Needs Review: {none · or per item: title — open question (not drafted, not filed)}
 
 Draft summaries:
-  1. [{Severity}] {Module} — {title one line} · Priority {Priority}
+  1. [{Severity}] {Module} — {title one line} · Priority {Priority} · {Confirmed | Likely}
   2. ...
 
 (Full drafts below — review each body)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Reply **confirm** to create all listed bugs, or specify edits.
+Reply **confirm** to create all listed bugs (a Likely item is approved as Likely by this confirm), or specify edits.
 ```
 
 Then post **full drafts** (one block per bug) per [bug-draft-template.md](references/bug-draft-template.md).
@@ -257,6 +281,13 @@ gh issue create --repo <owner/repo> \
 `<Severity>` is the Severity in the approved draft (Low / Medium / High / Urgent). Pass only labels the
 Phase B pre-flight found in the repo, or that the user created/approved; when the user chose to file
 without a missing label, leave it out and say so in the Phase F report. Capture the returned issue URL.
+
+**🔴 GATE — `gh issue create` exits non-zero** (rejected label, validation error, auth, rate limit,
+network) → treat that issue as not created until `gh issue list --repo <owner/repo> --state all
+--search '"<title>" in:title'` shows otherwise (a timeout can still create it — never file twice). Show
+the user the stderr **verbatim**, which bugs were and were not created, and the fix you propose; **retry
+nothing until the user approves.** Rate limit → say when `gh api rate_limit` reports the reset and
+wait for the user's go-ahead. Never strip a label, shorten the body or switch repo to make it pass.
 
 ### Jira
 
@@ -362,9 +393,9 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | NEVER file a bug whose expected side is a transliteration, a feature name or a hedged line ("should be…", "confirm with PO") | App vs an assumed spec is a question, not a bug (Refusal-first) |
 | NEVER file a second ticket for a defect already open on the board (Phase B2 duplicate) | Two tickets split the discussion and the retest |
 | NEVER call a create API before the user replies **confirm** in Phase C | An unapproved issue is public at once and must be cleaned up by hand |
-| NEVER replace a Severity the reporter gave with your own reading | The reporter's severity is the title bracket; a guessed one misroutes triage |
+| NEVER replace a Severity the reporter gave with your own reading — a value the matrix cannot place is a question to the reporter (Phase A3, item 3), not a correction | The reporter's severity is the title bracket; a guessed one misroutes triage |
 | NEVER drop a label or field to make a create succeed (Phase B pre-flight, Phase D field errors) | A silently missing Severity/Priority hides the bug from the views that filter on it |
 | MUST search the board (Phase B2) before filing; drop any bug already settled as intended in a prior/closed ticket and report it with the reference link | Re-filing a closed decision wastes a full retest round |
-| MUST take Priority and Severity from the bug-priority-matrix and cite the cell | An invented scale cannot be compared with the verdicts that use the matrix |
+| MUST use only the bug-priority-matrix vocabulary for Priority and Severity and cite the cell (Severity value from the reporter, Priority from the cell — Phase A3) | An invented scale cannot be compared with the verdicts that use the matrix |
 | MUST verify each issue URL in Phase F | Silent partial failure |
 | MUST lock Jira v2/v3 per session when user specifies | Rewrite cost |
