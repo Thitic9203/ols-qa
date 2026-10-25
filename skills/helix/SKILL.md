@@ -19,7 +19,7 @@ Show the menu and route to the correct workflow skill. The command [commands/hel
 
 ## Contents
 
-- [Opening](#opening-always-unless-the-user-already-chose-a-mode) · [Discipline](#discipline) · [Scope](#scope)
+- [Opening](#opening-always-unless-the-user-already-chose-a-mode) · [Discipline](#discipline) · [Refusal-first](#refusal-first-precondition-gate)
 - [Proactive suggestion](#proactive-suggestion-suggest-only-opt-out) · [Routing](#routing) · [QA closing](#qa-closing-mandatory-before-done) · [MUST / NEVER](#must--never)
 - [Must-read files](#must-read-files) · [Dependencies](#dependencies)
 
@@ -44,13 +44,21 @@ Follow [shared-preamble.md](../../references/shared-preamble.md).
 
 This skill only routes — it does not run tests or post to Jira (see MUST / NEVER). When the goal is already clear, the menu is skipped (Opening step 1) because an extra menu round wastes time.
 
+Refuse, say why in one line, and route instead when:
+
+| Request to the router | Do |
+|-----------------------|-----|
+| Post a Jira comment, transition a ticket, or create an issue directly from `/helix` | Refuse the action here; route to the workflow that owns it (create-bug, retest-bug, testing-ticket) via Routing — that workflow keeps its own approval gate. |
+| Run tests or Playwright directly from `/helix` | Refuse; route to testing-ticket or retest-bug via Routing. |
+| A request that is not QA work (no row in skill-routing.md or intent-shortcuts.md matches) | Say it is outside Helix's scope; show the menu once, then treat it as 12 (Other). |
+
 ## Proactive suggestion (suggest-only, opt-out)
 
 Apply the trigger table in [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) to the session context (git branch, linked Jira ticket, defects mentioned in chat):
 
 - If `HELIX_PROACTIVE=0` is set, or no trigger row matches, make no suggestion — show the menu.
 - If a row matches, offer exactly **one** suggestion (the strongest signal, as that file ranks them) instead of the menu.
-- **Suggest only — never auto-run** a workflow (Rule #5).
+- **Suggest only — never auto-run** a workflow: the user did not ask for it, so starting one is an unrequested side effect ([proactive-qa-triggers.md § Hard guardrails](../../references/proactive-qa-triggers.md#hard-guardrails)).
 - 🔴 STOP — one suggestion per turn, then wait for the user to pick (number/name) before loading anything.
 - No Jira MCP? Infer from branch + last commit and say so, so the user can correct.
 
@@ -74,6 +82,7 @@ When routing cannot proceed:
 | Reply is not 1–12, an option name, or an intent-shortcuts phrase | Re-show the menu once; if still unclear, treat it as 12 (Other). |
 | Row 8–11 chosen outside the ols-qa workspace | Say it is not shipped in helix, then offer only that row's named fallback. |
 | The routed `SKILL.md` is missing or cannot be loaded | Say which file is missing, do not imitate the workflow from memory, and show the menu again. |
+| One message names workflow A, then workflow B only if A's result calls for it (e.g. retest, then file a bug if still broken) | Route to A; record B as the handoff per [skill-routing.md § Handoffs](../../references/skill-routing.md#handoffs-after-a-workflow-ends); do not ask a clarifying question. Two workflows both matching one goal is a different case — ask one question per intent-shortcuts.md. |
 | Ticket lookup is unavailable (no Atlassian MCP or token) | Route anyway and ask the user to paste the ticket text or link; the child workflow handles its own intake. |
 
 Handoffs after a workflow ends: [skill-routing.md § Handoffs](../../references/skill-routing.md#handoffs-after-a-workflow-ends).
@@ -107,7 +116,7 @@ Read while routing:
 
 - Read [agent-rationalizations.md](../../references/agent-rationalizations.md) when tempted to skip a step; each excuse has its correct action.
 - Read [helix-session-constraints.md](../../references/helix-session-constraints.md) once at session start.
-- Read [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) when a QA follow-up could be suggested.
+- Read [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) at Opening step 3, before showing the menu.
 - Read [session-closing.md](../../references/session-closing.md) at session end.
 - Read [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) before invoking or switching skills.
 - Read [skill-routing.md](../../references/skill-routing.md) when choosing which skill handles a request.
@@ -138,7 +147,6 @@ Read only when the routed workflow reaches that step:
 Check these before routing — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
 
 - Atlassian MCP (ticket lookup while routing) — optional; without it, ask the user to paste the ticket text (see Routing)
-- `superpowers:systematic-debugging`
 - each routed skill lists its own dependencies in its `## Dependencies` section and re-checks them when it starts
 
 If a check fails, do not stop routing: name the failed dependency in one line, give its install hint or fallback from the dependencies.md row, and still show the menu (or route a named workflow). The routed skill re-checks its own dependencies and stops there if a missing one is required.

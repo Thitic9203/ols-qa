@@ -97,7 +97,7 @@ Every defect gets two answers: what fixes this instance, and what stops it from 
 
 ### Root cause before fix
 
-Ask "why does this happen?" until the answer stops moving. Stop at the layer that owns the behaviour, not the layer where it surfaced.
+Ask "why does this happen?" until the answer stops moving. Stop at the layer that owns the behaviour, not the layer where it surfaced. The answer has stopped moving when either (a) the owning layer is named with evidence — the file:line, config key, data row, or document section that produces the behaviour — or (b) the next "why" points outside the code, config, data, or documents the owner controls (an external system or vendor); in case (b) name that boundary and treat what lies beyond it as a Question.
 
 | Fix aimed at | Example | Verdict |
 |---|---|---|
