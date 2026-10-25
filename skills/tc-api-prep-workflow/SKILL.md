@@ -90,7 +90,7 @@ All preconditions and refusal rules are in WORKFLOW.md. MUST NOT start without A
 
 ## QA closing (mandatory before "done")
 
-All close-out gates are in WORKFLOW.md and [verify-closing-checklist.md](../../references/verify-closing-checklist.md) § *TC FE / TC API prep* (skip its tc-fe-prep-only final-report item). MUST NOT report done until G-verify and post-publish review pass.
+All close-out gates are in WORKFLOW.md and [verify-closing-checklist.md](../../references/verify-closing-checklist.md) § *TC FE / TC API prep* (skip its tc-fe-prep-only final-report item, and skip its attachment item unless a file was generated and the delivery includes A). MUST NOT report done until G-verify and post-publish review pass.
 
 ## Dependencies
 

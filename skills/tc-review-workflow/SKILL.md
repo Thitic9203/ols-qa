@@ -2,7 +2,7 @@
 name: tc-review-workflow
 description: |
   Review an existing test case document (any sheet/CSV/markdown) against the acceptance criteria (AC), edge cases (EC) and business rules on its governing ticket. Build a traceability matrix, judge coverage and row quality, and report Good vs Need Improve, each anchored to a quoted source. Always notify the finished review to the ticket project's own TC-review channel, asking only which thread.
-  Use when the user asks to review test cases or a TC sheet, check TC quality or coverage before execution, audit someone else's test case document, compare TCs against AC/EC, or wants feedback on a TC document without executing it (e.g. "รีวิวเทสเคส"). Also /tc-review.
+  Use when the user asks to review test cases or a TC sheet, check TC quality or coverage before execution, audit someone else's test case document, compare TCs against AC/EC, or wants feedback on a TC document without executing it (e.g. "รีวิวเทสเคส"). Also /tc-review. Also when a TC sheet and ticket are pasted with "is this OK/complete?".
   Do NOT use for drafting new test cases (tc-fe-prep-workflow / tc-api-prep-workflow), executing a ticket (testing-ticket-workflow), reviewing recorded evidence clips (review-result-workflow), or retesting a fix (retest-bug-workflow).
 metadata:
   proactive_triggers:
@@ -106,6 +106,10 @@ a cloud id, never fall back to a browser login to read it.
    **No AC/EC found in either place** → stop per the refusal-first gate. **Spec text found but its
    items carry no AC/EC labels** → 🔴 **STOP —** show the text found and ask the user how to number it
    before Step 2; never invent labels.
+   **The ticket or TC document fetch errors, times out, or returns partial content** (truncated text,
+   missing fields, tabs that do not load) → tell the user the exact error or what is missing, do not build
+   the matrix from partial AC/EC or a partial TC document, hand the failure to
+   `superpowers:systematic-debugging`, and resume Step 1 only once the full text loads.
 3. If a design source (Figma, PRD) is linked and the user wants it cross-checked, open it this session.
    If it cannot be opened (no session, no access, view-only with no rendered content), record that
    plainly — it becomes a "not verified" note next to any related finding, never a silent skip.
@@ -228,7 +232,8 @@ narrow scope (e.g. "drop everything about
 X"), regenerate the list from Steps 2–3 with that category removed — do not hand-edit prose reactively,
 since the same category will resurface differently worded next time otherwise.
 
-**Language:** match the ticket's / TC document's own language by default (ask once if genuinely mixed).
+**Language:** match the ticket's / TC document's own language by default. Mixed = the ticket's AC/EC and the TC
+document are written in different languages → ask the user once which language to write the review in.
 Helix menus and intake questions stay English per
 [user-communication.md](../../references/user-communication.md); the review content itself follows the
 destination document's language, the same exception that document already carries.
@@ -381,17 +386,7 @@ This workflow never posts to Jira or records a verdict on its own. Load these on
 
 ### Execution-only files (this workflow never triggers them)
 
-This workflow reviews a document; it never runs tests, sets a bug priority, records a verdict or opens a
-bug (§ Out of scope). The shared files above link to the files below, so they stay one hop away, but do
-not load them during a TC review.
-
-- Read [bug-priority-matrix.md](../../references/bug-priority-matrix.md) before setting any priority or a PWMI / FAILED verdict.
-- Read [customer-escape-prevention.md](../../references/customer-escape-prevention.md) before any QA run; the gates that stop shipped defects.
-- Read [defect-report-completeness.md](../../references/defect-report-completeness.md) before writing up any defect or non-pass.
-- Read [playwright-preflight.md](../../references/playwright-preflight.md) before any Playwright run.
-- Read [resilient-selectors.md](../../references/resilient-selectors.md) when writing or fixing Playwright selectors.
-- Read [test-through-real-steps.md](../../references/test-through-real-steps.md) before testing an action; no API shortcut for the action under test.
-- Read [verify-closing-checklist.md](../../references/verify-closing-checklist.md) before reporting a verify or retest done.
+This workflow reviews a document; it never runs tests, sets a bug priority, records a verdict or opens a bug (§ Out of scope). The shared files above link onward to execution-only references — [bug-priority-matrix.md](../../references/bug-priority-matrix.md), [customer-escape-prevention.md](../../references/customer-escape-prevention.md), [defect-report-completeness.md](../../references/defect-report-completeness.md), [playwright-preflight.md](../../references/playwright-preflight.md), [resilient-selectors.md](../../references/resilient-selectors.md), [test-through-real-steps.md](../../references/test-through-real-steps.md), [verify-closing-checklist.md](../../references/verify-closing-checklist.md) — which a TC review must not load.
 
 ## Dependencies
 

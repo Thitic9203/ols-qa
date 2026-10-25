@@ -99,7 +99,8 @@ Read [references/default-columns.md](references/default-columns.md) and pick the
 
 | User's messages so far | Phase B action |
 |------------------------|----------------|
-| Already fix the delivery (Phase C answer, e.g. "as CSV", "comment on {link}") **and** do not ask for custom or other columns | State the default columns in **one line** (`Columns: default — Test Case ID, Module / Feature, …`) instead of the summary table, and still ask the question below — a delivery answer does not answer the column question. Phase C then skips only the delivery fields already fixed. |
+| Already said they want the default columns (e.g. "default columns", "no extra columns", "the default set is fine") | State the default columns in **one line** (`Columns: default — Test Case ID, Module / Feature, …`) and record them — **do not ask the question below again**; the user has already answered it. |
+| Already fix the delivery (Phase C answer, e.g. "as CSV", "comment on {link}") but say nothing about columns | State the default columns in **one line** instead of the summary table, and still ask the question below — a delivery answer does not answer the column question. Phase C then skips only the delivery fields already fixed. |
 | Ask for custom, extra or different columns | Show the default column summary table, apply the user's changes, and ask the question below. |
 | Silent on delivery | Show the default column summary table (summary only — do not duplicate the full definitions here) and ask the question below. |
 | Anything else (e.g. delivery only partly fixed — "comment" with no link) | Same as *Silent on delivery*: show the summary table and ask the question below. |
@@ -109,7 +110,7 @@ Do you want to add any columns beyond the default API set?
 If the default set is fine, reply **default** or **no changes**.
 ```
 
-🔴 **STOP — wait for an answer in every branch** (the question is always asked). Record the final column list for Phases D–G.
+🔴 **STOP — wait for an answer in every branch except the first** (the user has not said which columns they want until they answer this question; silence on columns is not "default"). Record the final column list for Phases D–G.
 
 ---
 
@@ -149,7 +150,8 @@ From API spec + Swagger:
    - Permission (403) when the spec or Swagger names roles/scopes for the operation
    - Validation (400) — required fields, types, bounds
    - Not found (404) when the path has an id parameter; conflict (409) when Swagger lists 409 for the operation
-   - Idempotency / side effects if documented
+   - Idempotency / side effects when the spec or Swagger documents them (row shape: [api-tc-guidelines.md](references/api-tc-guidelines.md) § Coverage per endpoint)
+   - **Swagger leaves an operation's statuses or auth undocumented** (no `responses`, or only `default`; or no `security` on the operation or globally while the spec says auth is required) → do not invent a status for the affected error rows: list the operation under **Spec/Swagger gaps flagged** in the Phase E review block, ask the user for the expected status, and 🔴 **STOP** before writing those rows. No `security` and the spec is silent on auth → treat the operation as public: no 401 row, listed under out of scope.
 3. Map each row to **Services Impacted** from spec or user naming.
 4. **Test Case ID** pattern: `TC_API_{Module}_{nn}` — unique, stable.
 
@@ -275,8 +277,9 @@ Tell the user the **workspace-relative paths** to download.
 **Confluence page destination:** Patterns A–D and the REST fallback above are Jira-only. Read the page
 first, then show in chat exactly what changes (new table appended, or which existing TC table is
 replaced — never unrelated sections, per [delivery-options.md](references/delivery-options.md)
-§ Confluence). Publish after the user approves that preview, with the Atlassian MCP's Confluence
-page-update tool. MCP unavailable or the update fails → 🔴 **STOP**: deliver the G1 file instead,
+§ Confluence). 🔴 **STOP — show the Confluence change preview** and publish only after the user
+explicitly approves that preview (same skip rule as the Jira preview in G2 step 2), with the Atlassian
+MCP's Confluence page-update tool. MCP unavailable or the update fails → 🔴 **STOP**: deliver the G1 file instead,
 report the exact error, and do not say "commented".
 
 ### G-verify — Post-publish review (mandatory)
@@ -315,7 +318,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] G-verify checklist passed for the chosen delivery (A, B or both), with at least one re-read of the destination.
 - [ ] **(A only)** Post-publish review passed per [jira-comment-post-review.md](../../../references/jira-comment-post-review.md).
 - [ ] Close-out includes `Verified:` and test case count.
-- [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) § *TC FE / TC API prep* — skip its **Final TC review report posted** item (tc-fe-prep only) and its attachment item unless delivery was **both**.
+- [ ] [verify-closing-checklist.md](../../../references/verify-closing-checklist.md) § *TC FE / TC API prep* — skip its **Final TC review report posted** item (tc-fe-prep only), and skip its attachment item unless a CSV/Excel file was generated in this run **and** the delivery includes A (A alone or both — same rule as G-verify and the MUST table).
 
 **Go back:** If any item above is unchecked, return to the phase it names (E or G) and redo from there; do not report done.
 

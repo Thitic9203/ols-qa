@@ -14,6 +14,7 @@ At minimum, cover each scenario below whose condition holds for the operation:
 | Wrong type / format | 400 |
 | Not found | 404 — when the path has an id parameter |
 | Conflict / duplicate | 409 — when Swagger lists 409 for the operation |
+| Repeat call (idempotency) | When the spec or Swagger documents idempotency (e.g. an idempotency key, or PUT/DELETE replay): repeat the same request with the same key/body → the documented status for the repeat, and the expected result names the side-effect check (e.g. "no second resource created — list count unchanged") |
 
 Skip a scenario only when its condition does not hold, and list it under **out of scope** in the draft header.
 
