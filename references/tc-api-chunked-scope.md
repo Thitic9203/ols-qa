@@ -4,7 +4,7 @@ Use when Swagger or the API spec is **large** (many paths, tags, or versions) so
 
 ## When to chunk
 
-- More than **~15 operations** in scope for one ticket, or  
+- More than **15 operations** (method + path pairs) in scope for one ticket, or  
 - User says “whole service” / “all endpoints”, or  
 - Multiple tags/modules with different auth or base paths.
 
