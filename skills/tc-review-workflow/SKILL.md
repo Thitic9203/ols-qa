@@ -284,7 +284,7 @@ Then:
    split the review into several posts unless the user asks.
 6. **Revising a review that is already posted** (new suggestions, a scope cut): edit the existing
    message in place, e.g. a Discord webhook `PATCH …/messages/{id}`, adding `thread_id` when the message is
-   in a thread. Do not post a second copy. Read back the edited message and check the id, the destination,
+   in a thread. The edited text must still fit the item 5 limit. Do not post a second copy. Read back the edited message and check the id, the destination,
    the mentions and the content.
    **Edit or delete returns non-2xx or times out** → do not retry blindly and do not post a second copy
    silently: report the status code and response body to the user and keep the review in chat. A `404`
