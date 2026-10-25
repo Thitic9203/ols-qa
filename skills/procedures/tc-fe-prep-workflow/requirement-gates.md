@@ -89,6 +89,8 @@ If either is missing, ask the user once:
 - **Record which links are absent** (Figma / PRD / both) for the HTML report and the Remark block (design-and-review Step 3d / Step 5).
 - Continue to Step 2.5b with available sources only.
 
+**Link present but unreadable** (403, no Figma access, deleted or moved page, sign-in wall, empty render): do not treat the source as read and do not compare against it from memory. Record the exact error and the link, list the source as **unavailable** (with that error) in the HTML report and the Remark block (design-and-review Step 3d), then ask the user once for an export or screenshot of that source, or for approval to continue on the ticket text only. **Wait for the answer**; continue to Step 2.5b only after it, with the source marked unavailable if the user approved ticket-only.
+
 ### 2.5b — Collect source metadata (recency)
 
 For each source that is available, record its **last-updated datetime** before comparing content:
@@ -164,7 +166,7 @@ Rules: [tc-glossary.md](../../../references/tc-glossary.md). Sheet URL, tab, and
 
 ### 2.6.1 — Re-fetch the glossary
 
-Fetch the published tab as CSV using the `gid` from the project guide, overwriting the local mirror. Never hand-edit the CSV.
+Fetch the published tab as CSV using the `gid` from the project guide, overwriting the local mirror `{GLOSSARY_CSV}` — the local CSV path recorded in the project guide § TC glossary (see [tc-glossary.md](../../../references/tc-glossary.md)). Never hand-edit the CSV.
 
 **If the project guide has no glossary row (URL / tab / `gid`), or the fetch fails (non-200, empty body, header-only CSV, no network):** stop, report the exact error or the missing guide value, and ask the user to either supply the current CSV or approve running on the Step 3b fallback table only — in which case every term the TCs use that has no fallback row is asked at 2.6.3. Never reuse an earlier cached CSV as if it were re-fetched, and never report the gate as re-checked.
 
@@ -179,7 +181,7 @@ Post in chat, before any test case design:
 
 ที่มา: {published sheet URL}
 Tab: {tab name} (gid {gid}) · {N} คำ
-ไฟล์: references/tc-glossary.csv
+ไฟล์: {GLOSSARY_CSV}
 
 {diff vs committed CSV — added / removed / changed rows, or "ไม่มีการเปลี่ยนแปลงจากครั้งก่อน"}
 ```

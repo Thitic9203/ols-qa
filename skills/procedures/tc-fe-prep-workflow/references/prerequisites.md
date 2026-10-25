@@ -4,7 +4,7 @@ Read this before Step 0 of the main skill.
 
 ## Scope and authority
 
-- Confirm **which Jira issue** receives the comment (almost always the **story**).
+- Confirm **which Jira issue** receives the comment: the **story** the user named. Any other issue type follows WORKFLOW Step 0 (tell the user the type read, ask, wait).
 - Sub-tasks are out of scope unless the user explicitly names one.
 - The only Jira write is the Step 7 comment (plus its attachments) on that story, and only after the user approves the Step 5 HTML draft in chat. Never transition or assign tickets in this workflow. A draft-only request posts nothing (WORKFLOW Step 7).
 

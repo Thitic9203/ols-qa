@@ -91,7 +91,7 @@ If the user did not provide a ticket key or URL:
 
 > Which Jira story should I prepare FE test cases for? Please share the issue key or browse URL.
 
-**Wait for an answer.** Extract `{ISSUE_KEY}` and `{JIRA_DOMAIN}` from the URL when possible.
+**Wait for an answer.** Take `{ISSUE_KEY}` and `{JIRA_DOMAIN}` from the URL. If only a key was given, take `{JIRA_DOMAIN}` from the project guide (Step 1 / workspace-guide-discovery). If the guide has no Jira domain either, ask the user for the browse URL and wait — never guess a domain.
 
 **Failure branch (reading the story):**
 - The issue cannot be read (any non-200 such as 401 / 403 / 404, network error, or empty body) → report the exact error and the key you used, and **stop**. Do not draft from memory, a cached copy or another issue.
@@ -109,7 +109,7 @@ Otherwise:
 1. Ask using [project-config-template.md](references/project-config-template.md) (one section at a time).
 2. Offer to save answers into `references/{PROJECT}-tc-fe-prep-guide.md` in the user’s repo.
 
-Config should capture: Jira domain, default story vs sub-task policy, portal names, shared login role, CSV column headers (if non-default), export format preference (`csv` / `xlsx`; default `csv`), and publish method preference.
+Config MUST capture: Jira domain, default story vs sub-task policy, portal names, shared login role, CSV column headers (if non-default), export format preference (`csv` / `xlsx`; default `csv`), and publish method preference.
 
 ---
 
@@ -303,7 +303,8 @@ ADF is already built from Step 6 — proceed directly to fast publish. Full JS p
    - `[Integration_Test_{ISSUE_KEY}.csv]({url})` — Integration Test template *(include only if file was generated)*
    - `[System_Test_{ISSUE_KEY}.csv]({url})` — System Test template *(include only if file was generated)*
 5. For each typed CSV type that was **skipped** (no TCs of that type), add one note line here (after all attachment links): `ไม่มี TC ประเภท [Unit Test / Integration Test / System Test] สำหรับ ticket นี้`
-6. Disclaimer — **last line of the comment, after all attachment links** (exact text, do not translate or shorten):
+6. **Remark block** — built exactly per [design-and-review.md § 3d](design-and-review.md#3d--type-column-always-present) (Type-coverage lines, missing-Figma / missing-PRD lines, blocked-case lines). Include it only when at least one of those lines applies (a Type is absent, a PRD or Figma link was missing, or a case is `BLOCKED` with no sheet row to carry it); otherwise omit it.
+7. Disclaimer — **last line of the comment, after all attachment links** (exact text, do not translate or shorten):
    ```
    ⚠️ Disclaimer: ข้อมูลนี้เป็นเพียง Draft Version ที่ได้จากการใช้ Skill เท่านั้น (TC ครบตาม AC & EC) เนื้อหาทั้งหมดจำเป็นต้องได้รับการรีวิวและอัปเดตโดยทีม QA ก่อนนำไปใส่ในไฟล์เอกสารส่งมอบ และทำการนำ TC ไป Import เข้าสู่ Qase.io
    ```
@@ -314,10 +315,10 @@ Verify ALL of the following are present in the ADF body before calling the Jira 
 
 | # | Required element | Where in ADF |
 |---|-----------------|--------------|
-| 1 | TC table — ALL rows present, count matches approved draft | After heading |
+| 1 | TC table — ALL rows present, count matches approved draft | After the intro line and shared prep block |
 | 2 | Attachments heading + one link per uploaded file (Draft_Jira, Import_Qase + typed CSVs) | After table |
 | 3 | Skip-note line for every Type that has zero TCs: `ไม่มี TC ประเภท [Type] สำหรับ ticket นี้` | After attachment links |
-| 4 | **Remark block** — `Remark — Type coverage:` + missing-Figma line (if Figma absent from ticket) + missing-PRD line (if PRD absent from ticket) | After attachment links / skip-notes |
+| 4 | **Remark block** (content item 6, only when it applies) — `Remark — Type coverage:` + missing-Figma line (if Figma absent from ticket) + missing-PRD line (if PRD absent from ticket) + blocked-case lines (if any) | After attachment links / skip-notes |
 | 5 | **Disclaimer** — exact Thai text — **last line, nothing after it** | Very last node |
 
 Shortcut check: scroll to bottom of the ADF `content` array — last node MUST be the Disclaimer paragraph. Second-to-last MUST be the Remark block (if applicable). If you are only fixing TC text, you MUST still rebuild the full ADF with all 5 elements intact.
@@ -329,6 +330,8 @@ Shortcut check: scroll to bottom of the ADF `content` array — last node MUST b
 **Publish method — ADF-direct (single JS call):**
 
 TC tables always go ADF-direct — do NOT try MCP first.
+
+**Failure branch — no browser tool, or the Jira page is not signed in:** do **not** post and do not try another write path. Write `Jira_comment_{ISSUE_KEY}.adf.json` + `Jira_comment_{ISSUE_KEY}.preview.md` (per [jira-comment-adf-template.md](references/jira-comment-adf-template.md)) next to the CSVs, hand them over per the shared [publish-options.md § Option C — Manual handoff](../../../references/publish-options.md#option-c--manual-handoff), and tell the user: the comment was **Not posted**, why (no browser tool / Jira session not authenticated), the paths of every file, and that attaching the CSVs and pasting the comment is a manual step. Stop there — the post-publish review below does not run, and the run is not reported as published.
 
 1. Navigate to the Jira issue page (if not already there)
 2. Pattern A: set `window.__files` (one `{name, data}` entry per file, in upload order) and `window.__adfBody` on `window.*`. Upload order: `Draft_Jira` first, `Import_Qase` second, then each generated typed CSV in order `Unit_Test`, `Integration_Test`, `System_Test`
@@ -446,4 +449,4 @@ Complete [verify-closing-checklist.md](../../../references/verify-closing-checkl
 
 ## MUST / NEVER
 
-Read and follow [must-never.md](references/must-never.md) before any write or post — the skill-specific MUST / NEVER table (every row is binding), plus the shared rules in [shared-must-never.md](../../../references/shared-must-never.md).
+Read and follow [must-never.md](references/must-never.md) at the start of every run (before Step 0) and again before any write or post — the skill-specific MUST / NEVER table (every row is binding on drafting, review and publishing), plus the shared rules in [shared-must-never.md](../../../references/shared-must-never.md).

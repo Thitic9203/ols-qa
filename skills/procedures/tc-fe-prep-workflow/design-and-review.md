@@ -169,12 +169,12 @@ Default **10 columns** for the HTML draft, CSV files, and markdown `.md` — Typ
 
 The Qase import CSV uses a **different** column set (AC/EC, Title, Preconditions, Priority, Type, Status, Suite, Steps, Tags) — see [qase-import-format.md](references/qase-import-format.md). The Jira markdown table above and the Qase CSV describe the same test cases in two layouts.
 
-**Shared data prep (above table)** — typical pattern:
+**Shared data prep (above table)** — required template; keep this order and omit a step only when the ticket needs none of it:
 
 1. Log in with the required role.
 2. Navigate to the feature area.
 3. Open the correct tab or filter.
-4. Ensure required data state exists (with "if missing, create via …" referencing another story id if needed).
+4. Ensure required data state exists. When the data may be missing, add "if missing, create via …" and reference the source story by key only.
 5. Identify the target entity used across TCs.
 
 Add a **Precondition column note** above the table explaining that the column means: *after shared prep, before Test Steps*.
@@ -290,6 +290,11 @@ verdict, and every finding + how it was fixed. Do not proceed to Step 4.5 until 
 6. **Not converging → checkpoint.** If the same finding comes back in 3 consecutive rounds after being
    fixed, stop the loop, report that finding with each fix tried, and ask the user how to resolve it.
    Wait for the answer, apply it, then continue the loop — it still ends only on a clean round.
+7. **CHECKPOINT — 5 rounds without CLEAN.** After round 5 (and after every further 5 rounds) with no
+   clean round, pause the loop: report to the user the open findings of each round so far and the
+   fixes tried, and ask whether to continue the loop, change scope (Step 2a / 2.5 decisions), or stop
+   the run. Wait for the answer. This is a pause, not a cap: it never skips Step 4.5 and never counts
+   as a clean round — the loop still ends only on a clean round, or the run stops on the user's word.
 
 **No subagents available** (the runtime has no Agent/Task tool, or dispatch fails): do not skip the
 loop and do not count the 4a–4e pass as a review round. Instead, for each round, run a separate
