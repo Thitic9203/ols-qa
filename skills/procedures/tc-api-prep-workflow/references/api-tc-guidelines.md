@@ -22,7 +22,7 @@ Skip a scenario only when its condition does not hold, and list it under **out o
 The **Priority** column is `High` / `Medium` / `Low` ([default-columns.md](default-columns.md)).
 
 - Use the criticality the API spec states for an operation or flow when it states one.
-- When the spec states none, choose one rule for the whole table, write it in one line in the Phase F draft header (`Priority rule: …`), and apply it to every row — the user approves or changes it at Phase F.
+- When the spec states none, use this default rule for the whole table: **High** = happy path and auth (401/403) of write operations (POST/PUT/PATCH/DELETE); **Medium** = validation and conflict errors (400/409/422) and the happy path of read operations; **Low** = read-only not-found (404), pagination, sorting and filtering edge cases. Write it in one line in the Phase F draft header (`Priority rule: default — …`) and apply it to every row; the user approves or replaces it at Phase F, and a replacement rule is applied to every row the same way.
 - Never mark every row the same priority ([tc-quality-standards.md](../../../../references/tc-quality-standards.md): not "All High"; critical paths not all Medium).
 - This is test case priority, not bug priority — the bug priority matrix does not apply here.
 

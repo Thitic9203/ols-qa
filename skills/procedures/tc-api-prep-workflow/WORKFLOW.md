@@ -85,7 +85,7 @@ Load the spec:
 
 If load fails → stop and report; ask for export file or VPN.
 
-If the API surface is **large** (~15+ operations or whole-service scope), follow [tc-api-chunked-scope.md](../../../references/tc-api-chunked-scope.md) before Phase D — agree chunks with the user.
+Count the Swagger operations in scope (one operation = one method + path pair). If the count is **more than 15**, or the user asks for a whole service, follow [tc-api-chunked-scope.md](../../../references/tc-api-chunked-scope.md) before Phase D — agree chunks with the user.
 
 ### Phase A optional — Swagger / spec diff
 
@@ -99,7 +99,7 @@ Read [references/default-columns.md](references/default-columns.md) and pick the
 
 | User's messages so far | Phase B action |
 |------------------------|----------------|
-| Already fix the delivery (Phase C answer, e.g. "as CSV", "comment on {link}") **and** do not ask for custom or other columns | Use the default columns. State them in **one line** (`Columns: default — Test Case ID, Module / Feature, …`) and say they can still be changed at the Phase F draft approval. Do not stop here; continue to Phase C. |
+| Already fix the delivery (Phase C answer, e.g. "as CSV", "comment on {link}") **and** do not ask for custom or other columns | State the default columns in **one line** (`Columns: default — Test Case ID, Module / Feature, …`) instead of the summary table, and still ask the question below — a delivery answer does not answer the column question. Phase C then skips only the delivery fields already fixed. |
 | Ask for custom, extra or different columns | Show the default column summary table, apply the user's changes, and ask the question below. |
 | Silent on delivery | Show the default column summary table (summary only — do not duplicate the full definitions here) and ask the question below. |
 | Anything else (e.g. delivery only partly fixed — "comment" with no link) | Same as *Silent on delivery*: show the summary table and ask the question below. |
@@ -109,7 +109,7 @@ Do you want to add any columns beyond the default API set?
 If the default set is fine, reply **default** or **no changes**.
 ```
 
-When the question was asked: 🔴 **STOP — wait for an answer.** Record the final column list for Phases D–G in every branch.
+🔴 **STOP — wait for an answer in every branch** (the question is always asked). Record the final column list for Phases D–G.
 
 ---
 
@@ -257,18 +257,18 @@ Tell the user the **workspace-relative paths** to download.
 1. **Build ADF** from the approved Phase F table (only on this branch):
    - Convert every `<br>` in table cells → `{"type": "hardBreak"}` ADF node (rules: [jira-linebreak-conversion.md](../../../references/jira-linebreak-conversion.md)).
    - Build the complete ADF document; **bold every header cell**.
-   - If the user chose **both**, put the `__ATT1_ID__` placeholder in the ADF footer for the CSV attachment link; comment-only needs no placeholder.
-2. 🔴 **STOP — show the comment preview in chat** (same table, bold headers) and post only after the user explicitly approves this preview — unless their Phase F approval message also said to post it.
+   - If a CSV/Excel file was generated in this run (delivery **both**, or a file produced while delivering A), put the `__ATT1_ID__` placeholder in the ADF footer for the attachment link; no file → no placeholder.
+2. 🔴 **STOP — show the comment preview in chat** (same table, bold headers) and post only after the user explicitly approves this preview. Skip this preview only when the user's Phase F approval message itself gives a post instruction **and** names this destination (e.g. "approved, post to {URL}"); a bare "ok", "approved" or "go" is not a post instruction — show the preview and stop.
 3. **Publish — ADF-direct (do NOT try MCP first for TC tables).** Full JS patterns: [jira-fast-publish.md](../../../references/jira-fast-publish.md).
    - Navigate to the Jira issue page.
    - Pattern A: set `window.__adfBody` (and `window.__csv1Data` if uploading CSV).
-   - Both (CSV attached): Pattern B (upload + comment). Comment-only: Pattern D.
-   - Pattern C: read `window.__fastPublish` → check `status: 'ok'`. A non-ok status follows that file's Error recovery table first.
+   - File generated this run (attach it): Pattern B (upload + comment). No file: Pattern D.
+   - Pattern C: read `window.__fastPublish` → check `status: 'ok'` **and** a `commentId`. A non-ok status — or `ok` with no `commentId` — is a failed post: follow that file's Error recovery table first, and never tell the user "commented" on it.
 4. **Fallback — browser JS tool unavailable, or Pattern C still not `ok` after its Error recovery:**
    publish with Jira REST v3 using the user's own credentials (the "Jira REST credentials" row of
    [dependencies.md](../../../references/dependencies.md) — run its check first):
    - Before posting, read the issue's comments (`GET /rest/api/3/issue/{KEY}/comment`) — if a partial run already posted this table, do not post a second copy; fix that comment in place (`PUT …/comment/{id}`) instead.
-   - Both: upload the CSV/xlsx with `POST /rest/api/3/issue/{KEY}/attachments` (header `X-Atlassian-Token: no-check`), put the returned attachment id in place of `__ATT1_ID__`.
+   - File generated this run: upload the CSV/xlsx with `POST /rest/api/3/issue/{KEY}/attachments` (header `X-Atlassian-Token: no-check`), put the returned attachment id in place of `__ATT1_ID__`.
    - Post the same ADF body with `POST /rest/api/3/issue/{KEY}/comment` (`{"body": <ADF>}`) and keep the returned comment id.
    - REST also fails (non-2xx, or credentials check fails) → 🔴 **STOP**: keep the G1 files and the ADF, report the exact HTTP status and response body to the user, and do not say "commented". Hand the failure to `superpowers:systematic-debugging`; do not retry blindly.
 
@@ -291,7 +291,7 @@ After G1 and/or G2, run the **full review checklist** from [jira-comment-post-re
    - [ ] **(A and B)** **No literal `<br>`, HTML tags, or `**` markers** visible as text in any cell — comment and CSV/xlsx alike (zero tolerance).
    - [ ] **(A only)** Numbered items (`1. ` `2. ` `3. `) each on a **separate line** — not running together.
    - [ ] **(A only)** No truncation on the destination UI.
-   - [ ] **(A + B both)** CSV/Excel **attached to the same issue** (not just in workspace) and footer link works.
+   - [ ] **(file generated, delivery includes A)** CSV/Excel **attached to the same issue** (not just in workspace) and footer link works.
    - [ ] **(B only)** CSV/xlsx opens with a header row (bold in xlsx) + N data rows; no missing header.
 3. If any check fails → fix → re-post → re-verify on the destination UI. **Max 3 rounds** — then 🔴 **STOP** and report the specific failing checks, the destination URL/path and the best available workaround to the user.
 
@@ -357,5 +357,5 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST apply tc-quality-standards on every row | ISTQB / 29119-3 consistency |
 | MUST convert `<br>` to Jira-native line breaks before posting (see [jira-linebreak-conversion.md](../../../references/jira-linebreak-conversion.md)) | `<br>` renders as literal text on Jira |
 | MUST pass post-publish review ([jira-comment-post-review.md](../../../references/jira-comment-post-review.md)) before reporting "commented" or "done" to user | Prevents false success claims with broken formatting |
-| MUST attach CSV/Excel to the Jira issue when the user chose delivery **both** (A + B) — not just leave it in the workspace | User expects downloadable file on the issue |
+| MUST attach CSV/Excel to the Jira issue whenever a file was generated in this run and the delivery includes A (A alone or both) — not just leave it in the workspace | User expects downloadable file on the issue |
 | MUST verify destination UI when using delivery A | Truncation + literal `<br>` |
