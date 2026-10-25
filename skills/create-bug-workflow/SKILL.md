@@ -32,18 +32,21 @@ Every must-read file for this workflow, linked directly from here. References al
 
 - [WORKFLOW.md](../procedures/create-bug-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
 - [shared-preamble.md](../../references/shared-preamble.md) — read at the start of every run, before the first reply (preamble, constraints, tone).
-- [shared-must-never.md](../../references/shared-must-never.md) — read before any write or post — rules shared by every workflow.
 - [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) — read on the first response, to locate the workspace project guide for this workflow.
 - [intake-one-pager.md](../../references/intake-one-pager.md) — read at intake, to show the one-page list of inputs the run needs.
 - [bug-priority-matrix.md](../../references/bug-priority-matrix.md) — read before setting any priority or a PWMI / FAILED verdict.
-- [defect-report-completeness.md](../../references/defect-report-completeness.md) — read before writing up any defect or non-pass.
 - [bug-draft-template.md](../procedures/create-bug-workflow/references/bug-draft-template.md) — read when drafting the bug.
 - [posting-discipline.md](../procedures/create-bug-workflow/references/posting-discipline.md) — read before posting the bug.
-- [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — read before any completion claim.
-- [qa-closing-shared.md](../../references/qa-closing-shared.md) — read before reporting done — shared QA closing gates, including the cross-ticket conflict check.
 - [user-communication.md](../../references/user-communication.md) — read before the first message to the user (every run sends the intake message).
 - [skill-rules-style.md](../../references/skill-rules-style.md) — read before the Phase A intake message (every run asks for missing inputs there).
 - [long-workflow-todos.md](../../references/long-workflow-todos.md) — read at the start of every run (the workflow always has many phases); keep the todo list.
+
+**Read when the run reaches that phase** — mandatory at the moment named:
+
+- [defect-report-completeness.md](../../references/defect-report-completeness.md) — read before writing the first draft body (Phase C), before the confirm block is shown; a run where every candidate is dropped or Needs Review writes no draft.
+- [shared-must-never.md](../../references/shared-must-never.md) — read before the first write of the run: the first create call, attachment upload or comment in Phase D — rules shared by every workflow.
+- [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — read before any completion claim — at Phase F before saying any issue is created or verified, and at the end of a run that files nothing.
+- [qa-closing-shared.md](../../references/qa-closing-shared.md) — read before reporting done, whether or not anything was filed — shared QA closing gates, including the cross-ticket conflict check.
 
 **Read when the trigger in the line fires** — a Jira target, a design comparison, a non-pass verdict, a stuck step or tool error, session start/end, a timed round:
 
