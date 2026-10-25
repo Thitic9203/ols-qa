@@ -134,7 +134,7 @@ image in the `No.` / `Evidence` / `Status` columns (each MP4 `mediaGroup` become
 `mediaSingle`); owner: "จัดกลางเสมอ อย่าให้ต้องบอกซ้ำ". The readback check is the evidence — not the
 PUT status.
 
-🔴 **The table carries NO design-node column — not on any retest, ever.** The design reference is
+<a id="design-ref-line"></a>🔴 **The table carries NO design-node column — not on any retest, ever.** The design reference is
 one fact about the round, not a per-row fact, so it belongs on the header's `Design ref:` line and
 nowhere else: the node URL when one exists, or the Step 2d reason when none does. A column repeating
 "no node" down every row tells the reader nothing and was removed on user instruction 2026-08-25 after
