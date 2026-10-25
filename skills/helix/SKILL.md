@@ -57,29 +57,28 @@ Refuse, say why in one line, and route instead when:
 Apply the trigger table in [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) to the session context (git branch, linked Jira ticket, defects mentioned in chat):
 
 - If `HELIX_PROACTIVE=0` is set, or no trigger row matches, make no suggestion — show the menu.
-- If a row matches, offer exactly **one** suggestion (the strongest signal, as that file ranks them) instead of the menu.
+- If one row matches, offer exactly **one** suggestion instead of the menu. When more than one row matches, apply that file's only tie-break — ticket type wins over branch; if rows still tie, the signal is ambiguous, so follow its last row and show the menu.
 - **Suggest only — never auto-run** a workflow: the user did not ask for it, so starting one is an unrequested side effect ([proactive-qa-triggers.md § Hard guardrails](../../references/proactive-qa-triggers.md#hard-guardrails)).
 - 🔴 STOP — one suggestion per turn, then wait for the user to pick (number/name) before loading anything.
 - No Jira MCP? Infer from branch + last commit and say so, so the user can correct.
-
-```text
-Based on branch {branch} and {linked ticket or commit}, you may want **{workflow}** (`/{command}`).
-Say the number/name to start, or ignore. (Set HELIX_PROACTIVE=0 to silence.)
-```
+- Wording: use [proactive-qa-triggers.md § Suggestion wording](../../references/proactive-qa-triggers.md#suggestion-wording-one-line-then-wait) exactly — it is the only copy.
 
 ## Routing
 
 Route by the single table in [skill-routing.md § Primary menu](../../references/skill-routing.md#primary-menu): the user's number, option name, or intent-shortcuts phrase picks one row. Do not keep a routing table anywhere else.
 
-1. **Announce before acting.** Before loading anything, tell the user in one line, in their language, which workflow you are routing to: the menu number, option name, skill, and command — e.g. `Routing to 3 · Retest Bug → retest-bug-workflow (/retest-bug) for {ISSUE_KEY}.` No workflow starts without this line.
-2. **Load and follow** that row's `skills/{name}/SKILL.md` completely, passing on what the row says (issue key, URL, TC document, audit target).
-3. **First routed response:** recite [helix-session-constraints.md](../../references/helix-session-constraints.md) once (All Helix block; add the Testing ticket block when routing to 4).
+The first routed response does these three things in this order, once each:
+
+1. **Announce the route.** Before loading anything, tell the user in one line, in their language, which workflow you are routing to: the menu number, option name, skill, and command — e.g. `Routing to 3 · Retest Bug → retest-bug-workflow (/retest-bug) for {ISSUE_KEY}.` No workflow starts without this line. This is the router's own line; it does not replace the shared announce in step 3.
+2. **Recite the constraints:** [helix-session-constraints.md](../../references/helix-session-constraints.md) once (All Helix block; add the Testing ticket block when routing to 4). The router owns this recital; the child workflow does not recite it again in the same session.
+3. **Load and follow** that row's `skills/{name}/SKILL.md` completely, opening with the shared announce `Using **{skill}** to {purpose}.` once ([shared-must-never.md](../../references/shared-must-never.md), [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md)), and passing on what the row says (issue key, URL, TC document, audit target).
 
 When routing cannot proceed:
 
 | Situation | Do |
 |-----------|-----|
 | Reply is not 1–12, an option name, or an intent-shortcuts phrase | Re-show the menu once; if still unclear, treat it as 12 (Other). |
+| User ignores or declines a proactive suggestion (replies about something else, or says no) | Do not start that workflow. Show the menu once; do not repeat the same suggestion in this session. |
 | Row 8–11 chosen outside the ols-qa workspace | Say it is not shipped in helix, then offer only that row's named fallback. |
 | The routed `SKILL.md` is missing or cannot be loaded | Say which file is missing, do not imitate the workflow from memory, and show the menu again. |
 | One message names workflow A, then workflow B only if A's result calls for it (e.g. retest, then file a bug if still broken) | Route to A; record B as the handoff per [skill-routing.md § Handoffs](../../references/skill-routing.md#handoffs-after-a-workflow-ends); do not ask a clarifying question. Two workflows both matching one goal is a different case — ask one question per intent-shortcuts.md. |
@@ -95,7 +94,7 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + router-sp
 - [ ] Child workflow skill is loaded (not just described).
 - [ ] No Jira post or issue create happened in this router skill.
 
-If routing only, hint: `/tc-fe-prep`, `/retest-bug`, etc.
+If routing only, hint the command from the Command column of [skill-routing.md § Primary menu](../../references/skill-routing.md#primary-menu) for the chosen row.
 
 ## MUST / NEVER
 
