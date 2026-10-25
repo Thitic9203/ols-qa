@@ -26,41 +26,49 @@ Slash-command shortcut (runtimes that support commands): `/tc-api-prep` → [com
 
 ## Contents
 
-Every must-read file for this workflow, linked directly from here. References already linked above are not repeated.
+Every file this workflow can need, linked directly from here. Read the first group on every run, the second at the phase named, and the third only when its exact condition holds.
+
+### Every run
 
 - [WORKFLOW.md](../procedures/tc-api-prep-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
-- [default-columns.md](../procedures/tc-api-prep-workflow/references/default-columns.md) — read at Phase B, before stating or asking about the column list.
-- [delivery-options.md](../procedures/tc-api-prep-workflow/references/delivery-options.md) — read at Phase C and again before Phase G delivery (CSV, Excel, Jira, Confluence).
-- [api-tc-guidelines.md](../procedures/tc-api-prep-workflow/references/api-tc-guidelines.md) — read at Phase D and Phase E2, while designing and checking every row.
-- [jira-fast-publish.md](../../references/jira-fast-publish.md) — read at Phase G2 before publishing to a Jira issue (ADF-direct patterns and error recovery).
-- [csv-export-rules.md](../../references/csv-export-rules.md) — when exporting the CSV file(s).
+- [shared-preamble.md](../../references/shared-preamble.md) — at the start of every run, before the first reply (preamble, constraints, tone).
+- [helix-session-constraints.md](../../references/helix-session-constraints.md) — read once at session start.
+- [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) — read on the first response, to locate the workspace project guide for this workflow.
 - [intake-one-pager.md](../../references/intake-one-pager.md) — at intake, to show the one-page list of inputs the run needs.
-- [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — right after posting a Jira comment — full review checklist.
-- [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) — before posting a table that contains line breaks to Jira.
+- [user-communication.md](../../references/user-communication.md) — read before any message to the user.
+- [shared-must-never.md](../../references/shared-must-never.md) — before any write or post — rules shared by every workflow.
+- [tc-quality-standards.md](../../references/tc-quality-standards.md) — read while writing every TC row.
+- [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — read before any completion claim.
 - [qa-closing-shared.md](../../references/qa-closing-shared.md) — before reporting done — shared QA closing gates, including the cross-ticket conflict check.
 - [session-closing.md](../../references/session-closing.md) — after the verify gate passes — artifact index, next workflow, handoff.
-- [shared-must-never.md](../../references/shared-must-never.md) — before any write or post — rules shared by every workflow.
-- [shared-preamble.md](../../references/shared-preamble.md) — at the start of every run, before the first reply (preamble, constraints, tone).
-- [skill-rules-style.md](../../references/skill-rules-style.md) — when stopping for missing input, and for the fresh-eyes re-read of long drafts.
-- [swagger-diff-phase.md](../../references/swagger-diff-phase.md) — when Swagger changed, a new API version shipped, or existing API TCs are being updated.
-- [tc-api-chunked-scope.md](../../references/tc-api-chunked-scope.md) — read when the API surface is large (about 15+ operations or a whole service).
-- [tc-quality-standards.md](../../references/tc-quality-standards.md) — read while writing every TC row.
-- [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) — read on the first response, to locate the workspace project guide for this workflow.
-- [agent-rationalizations.md](../../references/agent-rationalizations.md) — read when tempted to skip a step; each excuse has its correct action.
+- [long-workflow-todos.md](../../references/long-workflow-todos.md) — read at the start of every run; this workflow has many phases, so keep the todo list.
+
+### At a phase
+
+- [default-columns.md](../procedures/tc-api-prep-workflow/references/default-columns.md) — read at Phase B, before stating or asking about the column list.
+- [delivery-options.md](../procedures/tc-api-prep-workflow/references/delivery-options.md) — read at Phase C and again before Phase G delivery (CSV, Excel, Jira, Confluence).
+- [spec-coverage-review.md](../procedures/tc-api-prep-workflow/references/spec-coverage-review.md) — read before drafting; spec and Swagger coverage review.
 - [coverage-delta-template.md](../../references/coverage-delta-template.md) — read after the coverage review, before the full draft.
+- [api-tc-guidelines.md](../procedures/tc-api-prep-workflow/references/api-tc-guidelines.md) — read at Phase D and Phase E2, while designing and checking every row.
+- [skill-rules-style.md](../../references/skill-rules-style.md) — when stopping for missing input, and for the fresh-eyes re-read of long drafts.
+- [csv-export-rules.md](../../references/csv-export-rules.md) — read when exporting the CSV file(s).
 - [csv-template-types.md](../../references/csv-template-types.md) — read before exporting a CSV.
-- [helix-session-constraints.md](../../references/helix-session-constraints.md) — read once at session start.
-- [long-workflow-todos.md](../../references/long-workflow-todos.md) — read when the workflow has many steps; keep the todo list.
-- [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read when a QA follow-up could be suggested.
-- [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — read before any completion claim.
-- [round-time-contract.md](../../references/round-time-contract.md) — read when a round starts and before reporting times.
-- [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — read before invoking or switching skills.
-- [skill-routing.md](../../references/skill-routing.md) — read when choosing which skill handles a request.
-- [test-md-format.md](../../references/test-md-format.md) — read when exporting Test.md.
-- [user-communication.md](../../references/user-communication.md) — read before any message to the user.
+- [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) — before posting a table that contains line breaks to Jira.
+- [jira-fast-publish.md](../../references/jira-fast-publish.md) — read at Phase G2 before publishing to a Jira issue (ADF-direct patterns and error recovery).
+- [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — read right after posting a Jira comment — full review checklist.
+
+### Only if triggered (exact condition on each line)
+
+- [swagger-diff-phase.md](../../references/swagger-diff-phase.md) — read when Swagger changed, a new API version shipped, or existing API TCs are being updated.
+- [tc-api-chunked-scope.md](../../references/tc-api-chunked-scope.md) — read when more than 15 Swagger operations (method + path pairs) are in scope, or the user asks for a whole service.
+- [test-md-format.md](../../references/test-md-format.md) — read only when the user picks Test.md as a delivery format at Phase C.
+- [round-time-contract.md](../../references/round-time-contract.md) — read only when a round starts, and before reporting any time, duration or deadline to the user.
+- [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read only after G-verify passes, when writing the next-step suggestion in session closing.
+- [skill-routing.md](../../references/skill-routing.md) — read only when the request turns out not to be API TC drafting and another skill may own it.
+- [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — read only before invoking or switching to another skill.
+- [agent-rationalizations.md](../../references/agent-rationalizations.md) — read only when you are about to skip or shorten a step or gate; each excuse has its correct action.
 - [qa-debug-discipline.md](../../references/qa-debug-discipline.md) — read when a tool errors (fetch, export or publish).
 - [root-cause-investigation.md](../../references/root-cause-investigation.md) — read before naming a cause for any failure (fetch, export or publish).
-- [spec-coverage-review.md](../procedures/tc-api-prep-workflow/references/spec-coverage-review.md) — read before drafting; spec and Swagger coverage review.
 
 ### Execution-only files (this workflow never triggers them)
 

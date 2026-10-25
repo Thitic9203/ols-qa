@@ -83,6 +83,12 @@ Runs after Pattern A. Uploads every file in `window.__files` in order, replaces 
   }
   state({status: 'running'});
 
+  // fetch() does not reject on HTTP 4xx/5xx — turn a non-2xx reply into an error with its status + body.
+  function okJson(r) {
+    if (r.ok) { return r.json(); }
+    return r.text().then(function(t){ throw new Error('HTTP ' + r.status + ': ' + String(t).slice(0, 300)); });
+  }
+
   function uploadFile(name, content) {
     var blob = new Blob(['\uFEFF', content], {type: 'text/csv;charset=utf-8'});
     var file = new File([blob], name, {type: 'text/csv'});
@@ -90,7 +96,7 @@ Runs after Pattern A. Uploads every file in `window.__files` in order, replaces 
     fd.append('file', file);
     return fetch(baseUrl + '/attachments', {
       method: 'POST', headers: hdrs, body: fd
-    }).then(function(r){ return r.json(); });
+    }).then(okJson);
   }
 
   function postComment(body) {
@@ -98,13 +104,15 @@ Runs after Pattern A. Uploads every file in `window.__files` in order, replaces 
       method: 'POST',
       headers: Object.assign({}, hdrs, {'Content-Type': 'application/json'}),
       body: body
-    }).then(function(r){ return r.json(); });
+    }).then(okJson);
   }
 
   var chain = Promise.resolve();
   files.forEach(function(f, i){
     chain = chain.then(function(){ return uploadFile(f.name, f.data); })
-      .then(function(r){ attIds.push(r[0].id); state({status: 'file' + (i + 1) + '_done'}); });
+      .then(function(r){
+        if (!r || !r[0] || !r[0].id) { throw new Error('upload reply has no attachment id (file ' + (i + 1) + ')'); }
+        attIds.push(r[0].id); state({status: 'file' + (i + 1) + '_done'}); });
   });
   chain.then(function(){
       var body = window.__adfBody;
@@ -115,6 +123,7 @@ Runs after Pattern A. Uploads every file in `window.__files` in order, replaces 
       return postComment(body);
     })
     .then(function(cr){
+      if (!cr || !cr.id) { throw new Error('comment reply has no id'); }
       state({status: 'ok', commentId: cr.id, commentUrl: cr.self});
     })
     .catch(function(e){
@@ -139,7 +148,7 @@ JSON.stringify(window.__fastPublish || {status: 'pending'});
 
 | `status` | What it means | Action |
 |----------|--------------|--------|
-| `ok` | Upload + comment done | Proceed to screenshot verify |
+| `ok` | Upload + comment done — Patterns B and D set `ok` only after a 2xx reply that carries a comment id | Proceed to screenshot verify. `ok` without `commentId` cannot come from the current patterns; treat it as non-ok and re-read the issue before any retry |
 | `pending`, `running` or `file{n}_done` | Still in flight | Wait 2s, read again |
 | `error` with `attIds.length == total` | Uploads done, comment failed (or a placeholder was unfilled — see `message`) | Fix the cause, then retry comment-only with the saved `attIds` |
 | `error` with `0 < attIds.length < total` | Upload of file `attIds.length + 1` failed | Retry from that file only; keep the saved `attIds` |
@@ -160,8 +169,13 @@ Use when there are no CSV uploads — just a large ADF comment.
     method: 'POST',
     headers: {'X-Atlassian-Token': 'no-check', 'Content-Type': 'application/json'},
     body: window.__adfBody
-  }).then(function(r){ return r.json(); })
+  }).then(function(r){
+    // fetch() does not reject on HTTP 4xx/5xx — a non-2xx reply is an error, never 'ok'.
+    if (r.ok) { return r.json(); }
+    return r.text().then(function(t){ throw new Error('HTTP ' + r.status + ': ' + String(t).slice(0, 300)); });
+  })
   .then(function(cr){
+    if (!cr || !cr.id) { throw new Error('comment reply has no id'); }
     window.__fastPublish = {status: 'ok', commentId: cr.id, commentUrl: cr.self};
   })
   .catch(function(e){
@@ -215,6 +229,7 @@ Call sequence:
 
 | Error | Recovery |
 |-------|----------|
+| `HTTP 4xx`/`HTTP 5xx` in error message (other than 401/403) | The Jira reply body follows the status — fix the cause it names (bad ADF, missing permission, wrong issue key); never report the post as done |
 | `401`/`403` in error message | Re-navigate to Jira page (re-establishes auth session), then retry from Pattern A |
 | All `attIds` saved, comment failed | Skip re-upload; post comment with saved IDs directly |
 | Some `attIds` saved | Re-upload only the files after the last saved id; use saved + new ids for the comment |

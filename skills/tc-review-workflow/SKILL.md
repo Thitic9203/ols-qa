@@ -120,6 +120,14 @@ For every AC and EC on the ticket, list which TC row(s) claim to cover it:
 |-------|-----------|--------|
 | `AC_01` | `TC_003` | covered |
 | `AC_05` | — | **no TC — gap** |
+| `AC_02` | `TC_007` | **mis-tagged** — `TC_007` Expected Result matches `AC_04` |
+| `EC_01` | `TC_010`, `TC_011` | **inconsistent tag** — sibling `TC_012` tests the same element with no tag |
+
+**Status is a closed list** — use exactly one of these four values per row, naming the ids as shown:
+`covered` · `no TC — gap` · `mis-tagged — <TC> matches <AC/EC>` · `inconsistent tag — <TC ids>`.
+A row with several problems takes the first that applies in that order after `covered`. A hole in the
+ticket's own AC list is a spec-level gap, not a matrix row — report it under Need Improve as a spec
+question (see MUST / NEVER).
 
 **Struck-through AC/EC do not count.** A row the ticket has crossed out (e.g. `-AC_07-`, often marked
 as a duplicate) is out of scope: leave it out of the matrix and out of the report entirely. Do not
@@ -239,8 +247,8 @@ config: the workspace project guide `references/{PROJECT}-guide.md` § *TC revie
 placeholder, thread rule, mention rule). The real ids and the webhook live in the local secrets folder
 named there (one webhook file per thread, e.g. `discord_webhook_tc_review_<thread>`), never in the repo.
 
-- **Project has a channel in config → NEVER ask which server, group, or channel.** Ask exactly one
-  question: which thread of that channel to post in. Offer the threads already used for this ticket or
+- **Project has a channel in config → NEVER ask which server, group, or channel** — the answer is already
+  in config, so asking again is a repeat question (#0059). Ask exactly one question: which thread of that channel to post in. Offer the threads already used for this ticket or
   recorded in the config as options. The answer is the go-ahead to send. Where the workspace carries
   `tools/ask-guard` (workspace-optional, see [dependencies.md](../../references/dependencies.md)), it
   blocks the channel question for such projects (state `fixed-destination`); without it, apply the same
@@ -248,11 +256,17 @@ named there (one webhook file per thread, e.g. `discord_webhook_tc_review_<threa
 - **Project has no channel in config →** search conversation history and memory for that project's
   destination first. Found → use it and record it in that project's config. Not found → ask once for that
   project's channel and thread, then record the answer so it is never asked again.
+- **User declines the send, or will not name a thread →** do not send — nothing goes out without the
+  thread answer and the item-2 preview. Tell the user plainly that the send is part of this workflow
+  (every run notifies the project's channel — an owner decision) and that the review is therefore not
+  complete. Record `notify not sent — user declined` in the QA closing checklist and in the final report,
+  then stop. Never skip the step silently, and never report the run as done-and-notified.
 
 Then:
 
 1. **Identity for a mention:** ask for the exact id (Discord user id, Jira account id, etc.) rather than
-   guessing one from a display name — a wrong id either pings nobody or pings the wrong person.
+   guessing one from a display name — a wrong id either pings nobody or pings the wrong person. The same
+   holds for a channel or thread id: never invent one; it comes from config or from the user's answer.
 2. 🔴 **GATE — before the external send:** show in chat the destination (channel + thread), the final text
    exactly as it will be sent (after any item-5 tightening) and its character count. The thread answer
    counts as the go-ahead only once that preview is visible; if the text changed after the user saw the
@@ -270,8 +284,12 @@ Then:
    split the review into several posts unless the user asks.
 6. **Revising a review that is already posted** (new suggestions, a scope cut): edit the existing
    message in place, e.g. a Discord webhook `PATCH …/messages/{id}`, adding `thread_id` when the message is
-   in a thread. Do not post a second copy. Read back the edited message and check the id, the destination,
+   in a thread. The edited text must still fit the item 5 limit. Do not post a second copy. Read back the edited message and check the id, the destination,
    the mentions and the content.
+   **Edit or delete returns non-2xx or times out** → do not retry blindly and do not post a second copy
+   silently: report the status code and response body to the user and keep the review in chat. A `404`
+   (message already deleted) → ask the user before posting a fresh copy; a `401`/`403` (webhook rotated
+   or revoked) → ask for the current webhook for that thread (item 7), then retry the same edit.
 7. A thread is reached through a webhook plus `thread_id`. Without `thread_id` the message lands in the
    parent channel. Use the webhook the user gave for that thread, and keep it in local secrets, never in
    the repo. **Webhook file for the chosen thread missing** from the secrets folder → ask the user for it
@@ -281,7 +299,7 @@ Then:
    for "ticket" in the destination's language) — check the workspace's own rules before sending; do not
    invent new wording.
 
-**Go back:** If the item-3 read-back shows the wrong destination, delete and resend (item 4); wrong content or an unresolved mention → edit in place (items 4 and 6) and read back again. The send is not done before a clean read-back.
+**Go back:** If the item-3 read-back shows the wrong destination, delete and resend (item 4); wrong content or an unresolved mention → edit in place (item 4 second rule; method and its failure branch in item 6) and read back again. The send is not done before a clean read-back.
 
 ---
 
@@ -295,6 +313,7 @@ Then:
       quoted from the AC/EC, or the line says who confirms it. No suggestion contains a made-up value.
 - [ ] Any design-source (Figma/PRD) claim states plainly whether it was actually opened this session.
 - [ ] If sent externally: destination and mentions verified from the read-back response, not assumed.
+- [ ] If the user declined the send: `notify not sent — user declined` is written here and in the final report.
 
 **Go back:** A matrix item unchecked returns to Step 2; an unanchored finding or a missing "→ Suggest:" line returns to Step 4; a design-source claim not opened returns to Step 1 item 3; an unverified send returns to Step 5 item 2.
 
@@ -331,12 +350,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | NEVER count or mention a struck-through AC/EC | The ticket has already taken it out of scope, so mentioning it is noise |
 | NEVER report a business rule or comment that does not conflict with an AC/EC | The AC/EC are the contract. A rule with no TC but no conflict is not a defect in the document |
 | MUST give every Need Improve item a sourced "→ Suggest:" fix, and NEVER invent a value for it | A problem without a fix leaves the author guessing. An invented number gets copied into the TC as if it were spec |
-| MUST run Step 5 exactly as written — it is the single source for the notify rules (project channel every run, ask only the thread, never invent an id, preview gate, length limit, read-back, delete-and-resend vs edit-in-place) | Restating those rules in several places let copies drift apart |
-| MUST send every review to the ticket project's own TC-review channel, whoever invoked the skill | Each project's team reads its own channel; a review in another project's channel reaches the wrong people |
-| NEVER ask which server, group, or channel when the project's config has one — ask only which thread | The answer is already in config; asking again is a repeat question (#0059) |
-| NEVER invent a channel, thread, or mention id for an external send | A wrong id either reaches nobody or reaches the wrong person |
-| MUST fix a wrong-destination send by delete-and-resend, and a wrong-content send by edit-in-place | A channel/thread cannot be changed by editing; deleting a correctly-placed message to fix wording destroys its position in the thread for no reason |
-| MUST edit an already-posted review in place and keep it within the platform's length limit | A second copy splits the thread. An over-limit post is rejected or cut off |
+| MUST run Step 5 exactly as written — it is the single source for the notify rules (project's own channel every run whoever invoked it, ask only the thread, never invent a channel/thread/mention id, preview gate, length limit, read-back, delete-and-resend vs edit-in-place, decline branch) | Restating those rules in several places let copies drift apart |
 | MUST NOT post to Jira/Confluence/GitHub or send an external message before the user has seen the review in chat | The review is the deliverable to approve first — an external send is not the review itself |
 
 ## Must-read files
@@ -346,10 +360,7 @@ Every file this skill's procedure requires, one hop from here. Read each at the 
 - Read [agent-rationalizations.md](../../references/agent-rationalizations.md) when tempted to skip a step; each excuse has its correct action.
 - Read [figma-design-comparison.md](../../references/figma-design-comparison.md) before judging any UI or visual result against the design.
 - Read [helix-session-constraints.md](../../references/helix-session-constraints.md) once at session start.
-- Read [jira-comment-post-review.md](../../references/jira-comment-post-review.md) after posting a Jira comment, before saying done.
-- Read [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) before posting a Jira table with multi-line cells.
 - Read [long-workflow-todos.md](../../references/long-workflow-todos.md) when the workflow has many steps; keep the todo list.
-- Read [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) before recording any result that is not PASSED.
 - Read [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) when a QA follow-up could be suggested.
 - Read [qa-closing-shared.md](../../references/qa-closing-shared.md) before saying done; shared closing checklist.
 - Read [qa-debug-discipline.md](../../references/qa-debug-discipline.md) when a test is flaky or a tool errors.
@@ -359,6 +370,14 @@ Every file this skill's procedure requires, one hop from here. Read each at the 
 - Read [session-closing.md](../../references/session-closing.md) at session end.
 - Read [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) before invoking or switching skills.
 - Read [skill-routing.md](../../references/skill-routing.md) when choosing which skill handles a request.
+
+### Only if triggered (exact condition on each line)
+
+This workflow never posts to Jira or records a verdict on its own. Load these only when the condition holds.
+
+- Read [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) only when the ticket's own spec looks contradictory or its expected side is unconfirmed (§ Skill composition).
+- Read [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) only when the user asks for the review to be posted to a Jira ticket as well, before building that table.
+- Read [jira-comment-post-review.md](../../references/jira-comment-post-review.md) only after such a user-requested Jira post, before saying done.
 
 ### Execution-only files (this workflow never triggers them)
 
