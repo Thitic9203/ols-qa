@@ -20,11 +20,11 @@ metadata:
 When invoked:
 
 1. Announce once: `Using **testing-ticket-workflow** to test the ticket with Playwright.`
-2. **Settle and strategize first** — before any tool call, follow [settle-and-strategize.md](../../references/settle-and-strategize.md): invoke **`engineering:testing-strategy`** to plan the approach, no guessing an expected/spec, no blind retry loops. If that skill is not in the session's available-skills list, write the strategy inline (scope, order, done-when, risks) and say in chat that you did so ([dependencies.md](../../references/dependencies.md)).
+2. **Settle and strategize first** — before any other tool call (the *Dependencies* check below runs right after this step, before Phase A), follow [settle-and-strategize.md](../../references/settle-and-strategize.md): invoke **`engineering:testing-strategy`** to plan the approach, no guessing an expected/spec, no blind retry loops. If that skill is not in the session's available-skills list, write the strategy inline (scope, order, done-when, risks) and say in chat that you did so ([dependencies.md](../../references/dependencies.md)).
 3. **Design (Figma) comparison on every UI scenario; no design reference → report to the assigner, visual points BLOCKED** — [figma-design-comparison.md](../../references/figma-design-comparison.md); runs at WORKFLOW Phase B step 4 and E0.
 4. **Test deeply** — follow [customer-escape-prevention.md](../../references/customer-escape-prevention.md); runs at WORKFLOW Phase B step 5, E0 and QA closing *Depth gates*.
 5. **Parallel lanes by default, one leased account per lane** — [parallel-test-lanes.md](../../references/parallel-test-lanes.md); lane plan at WORKFLOW Phase B step 7, dispatch and lane failure in Phase E.
-6. **Login by command, never a login window or a password** — WORKFLOW Phase D *Fresh login* ([parallel-test-lanes.md](../../references/parallel-test-lanes.md) §3).
+6. **Login by command, never a login window or a password** — when an account must log in or its session is dead, give the user ready-to-run commands as one combined `bash` block per step that loops over the accounts (each isolated, prints OK / FAILED with a log path): relink every needed account, then setup/mint only the FAILED ones; the user runs them, then probe the session and report. Never ask for, collect or fill a password. Full steps: WORKFLOW Phase D *Fresh login* ([parallel-test-lanes.md](../../references/parallel-test-lanes.md) §3).
 7. **Result quality gate, all 20 layers on every case before any verdict** — [result-quality-gate.md](../../references/result-quality-gate.md); mechanical layers by checker, judgement layers by hand, gate time counted in the round line (execute-and-summarize *Result quality gate*).
 8. **No-wait decision gate, all 20 layers before any BLOCKED / "needs decision" / held post** — [no-wait-decision-gate.md](../../references/no-wait-decision-gate.md); runs at E3 (execute-and-summarize); never park a case or a finished post waiting for someone.
 9. 🔴 GATE: show the intake summary + plan and wait for an explicit confirmation before the first Playwright run — in a bot run, from a person in the triggering channel; never self-confirm (WORKFLOW Phase C).
@@ -46,37 +46,56 @@ The must-read files for this workflow, linked directly from here (references alr
 
 ### On trigger
 
-- [execute-and-summarize.md](../procedures/testing-ticket-workflow/execute-and-summarize.md) — before Phase E — read and follow Phase E, the result quality gate and Phase F, end to end.
-- [results-update.md](../procedures/testing-ticket-workflow/results-update.md) — before Phase G — read and follow it whenever results are updated outside this chat.
-- [bug-priority-matrix.md](../../references/bug-priority-matrix.md) — whenever a Priority/Severity is named or judged.
-- [defect-candidates.md](../../references/output-templates/defect-candidates.md) — before reporting any defect found in the round — follow this exact table and the fixed owner question; never file without the owner.
-- [defect-report-completeness.md](../../references/defect-report-completeness.md) — for any verdict that is not a clean PASSED — what the write-up must contain.
+Grouped by the phase that reaches the trigger; each line names its exact trigger.
+
+#### Intake and plan (Phases A–C)
+
+- [session-intake.md](../procedures/testing-ticket-workflow/references/session-intake.md) — at Phase A — the six intake fields and the confirmation gate.
 - [intake-one-pager.md](../../references/intake-one-pager.md) — at intake, to show the one-page list of inputs the run needs.
-- [jira-wiki-vs-markdown.md](../../references/jira-wiki-vs-markdown.md) — before and after posting any Jira body (v2 wiki vs v3 ADF).
-- [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) — before recording any non-PASSED verdict.
-- [playwright-preflight.md](../../references/playwright-preflight.md) — before starting the Playwright run — must end with Ready to run: YES.
-- [qa-closing-shared.md](../../references/qa-closing-shared.md) — before reporting done — shared QA closing gates, including the cross-ticket conflict check.
-- [qa-debug-discipline.md](../../references/qa-debug-discipline.md) — when results conflict with expectations, with dev claims, or look flaky.
-- [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — read when recording or judging evidence clips and the AC/EC coverage gate.
-- [root-cause-investigation.md](../../references/root-cause-investigation.md) — before calling any case FAILED or BLOCKED — investigate to a verified root cause.
-- [round-time-contract.md](../../references/round-time-contract.md) — before logging in or reusing a session for the round.
-- [shared-must-never.md](../../references/shared-must-never.md) — before any write or post — rules shared by every workflow.
+- [parallel-prep.md](../../references/parallel-prep.md) — at Phase B, when the Jira fetch and Confluence/Swagger reads are independent.
 - [test-execution-plan-template.md](../../references/test-execution-plan-template.md) — when writing the test execution plan shown before the run.
-- [test-through-real-steps.md](../../references/test-through-real-steps.md) — before executing any case — drive the real screen, never a backend shortcut.
-- [agent-rationalizations.md](../../references/agent-rationalizations.md) — read when tempted to skip a step; each excuse has its correct action.
-- [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — read after posting a Jira comment, before saying done.
-- [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) — read before posting a Jira table with multi-line cells.
-- [long-workflow-todos.md](../../references/long-workflow-todos.md) — read when the workflow has many steps; keep the todo list.
-- [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read at close-out, before naming the next workflow (e.g. `Next: create-bug for {ids}` when F3 lists a defect).
+- [skill-rules-style.md](../../references/skill-rules-style.md) — read before asking the user or stopping on a missing input.
+
+#### Run (Phases D–E)
+
+- [round-time-contract.md](../../references/round-time-contract.md) — before logging in or reusing a session for the round.
+- [playwright-preflight.md](../../references/playwright-preflight.md) — before starting the Playwright run — must end with Ready to run: YES.
+- [playwright-discipline.md](../procedures/testing-ticket-workflow/references/playwright-discipline.md) — before writing or running any Playwright step.
 - [resilient-selectors.md](../../references/resilient-selectors.md) — read when writing or fixing Playwright selectors.
+- [test-through-real-steps.md](../../references/test-through-real-steps.md) — before executing any case — drive the real screen, never a backend shortcut.
+- [execute-and-summarize.md](../procedures/testing-ticket-workflow/execute-and-summarize.md) — before Phase E — read and follow Phase E, the result quality gate and Phase F, end to end.
+- [qa-evidence-gates.md](../../references/qa-evidence-gates.md) — read when recording or judging evidence clips and the AC/EC coverage gate.
+- [qa-debug-discipline.md](../../references/qa-debug-discipline.md) — when results conflict with expectations, with dev claims, or look flaky.
+
+#### Verdicts and defects (Phases E–F)
+
+- [root-cause-investigation.md](../../references/root-cause-investigation.md) — before calling any case FAILED or BLOCKED — investigate to a verified root cause.
+- [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) — before recording any non-PASSED verdict.
+- [bug-priority-matrix.md](../../references/bug-priority-matrix.md) — whenever a Priority/Severity is named or judged.
+- [defect-report-completeness.md](../../references/defect-report-completeness.md) — for any verdict that is not a clean PASSED — what the write-up must contain.
+- [defect-candidates.md](../../references/output-templates/defect-candidates.md) — before reporting any defect found in the round — follow this exact table and the fixed owner question; never file without the owner.
+
+#### Writes outside the chat (Phase G)
+
+- [results-update.md](../procedures/testing-ticket-workflow/results-update.md) — before Phase G — read and follow it whenever results are updated outside this chat.
+- [result-update-discipline.md](../procedures/testing-ticket-workflow/references/result-update-discipline.md) — read before updating a results destination.
+- [shared-must-never.md](../../references/shared-must-never.md) — before any write or post — rules shared by every workflow.
+- [jira-wiki-vs-markdown.md](../../references/jira-wiki-vs-markdown.md) — before and after posting any Jira body (v2 wiki vs v3 ADF).
+- [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) — read before posting a Jira table with multi-line cells.
+- [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — read after posting a Jira comment, before saying done.
+
+#### Close-out
+
+- [qa-closing-shared.md](../../references/qa-closing-shared.md) — before reporting done — shared QA closing gates, including the cross-ticket conflict check.
+- [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read at close-out, before naming the next workflow (e.g. `Next: create-bug for {ids}` when F3 lists a defect).
 - [session-closing.md](../../references/session-closing.md) — read at session end.
+
+#### Any phase
+
+- [agent-rationalizations.md](../../references/agent-rationalizations.md) — read when tempted to skip a step; each excuse has its correct action.
+- [long-workflow-todos.md](../../references/long-workflow-todos.md) — read when the workflow has many steps; keep the todo list.
 - [skill-invocation-discipline.md](../../references/skill-invocation-discipline.md) — read before invoking or switching skills.
 - [skill-routing.md](../../references/skill-routing.md) — read when choosing which skill handles a request.
-- [skill-rules-style.md](../../references/skill-rules-style.md) — read before asking the user or stopping on a missing input.
-- [result-update-discipline.md](../procedures/testing-ticket-workflow/references/result-update-discipline.md) — read before updating a results destination.
-- [session-intake.md](../procedures/testing-ticket-workflow/references/session-intake.md) — at Phase A — the six intake fields and the confirmation gate.
-- [parallel-prep.md](../../references/parallel-prep.md) — at Phase B, when the Jira fetch and Confluence/Swagger reads are independent.
-- [playwright-discipline.md](../procedures/testing-ticket-workflow/references/playwright-discipline.md) — before writing or running any Playwright step.
 
 ## Refusal-first (precondition gate)
 
@@ -88,7 +107,7 @@ All close-out gates are in WORKFLOW.md and [verify-closing-checklist.md](../../r
 
 ## Dependencies
 
-Run the check for each of these before step 1 — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
+Run the check for each of these after step 2 (strategy) and before Phase A — one order: strategize, then this check, then intake; check commands and install hints are in [dependencies.md](../../references/dependencies.md):
 
 - Playwright (in the project under test)
 - Node.js + in-repo guard tools (`tools/lane-lease-check`, `tools/adoption-check`)
