@@ -2,7 +2,7 @@
 name: testing-ticket-workflow
 description: |
   Test one Jira ticket with Playwright after intake — show the intake summary and plan, wait for the user's confirmation, then run; compare every screen against the design (Figma), summarize results in chat, then optionally update an external results destination.
-  Use when the user picks Testing ticket from Helix, says /testing-ticket, or asks to test, verify or QA a single Jira story/ticket on an environment.
+  Use when the user picks Testing ticket from Helix, says /testing-ticket, or asks to test, verify or QA a single Jira story/ticket on an environment — even without saying testing ticket ("เทส ticket นี้ให้หน่อย").
   Do NOT use for opening bug tickets (create-bug-workflow), retest-after-fix on a bug (retest-bug-workflow), or drafting manual TC tables (tc-fe-prep / tc-api-prep). Does not run full-app regression.
 ---
 
@@ -59,7 +59,7 @@ after results are published — so it sits last in the checklist.
 
 **Run order before Phase C** (one list, so nothing runs out of order):
 
-1. Settle and strategize (*Discipline* below) — before any tool call.
+1. Settle and strategize (*Discipline* below) — before any other tool call; then the SKILL.md *Dependencies* check, before Phase A.
 2. First reply: recite the core constraints, locate the workspace guide, show the intake one-pager (*Core constraints*).
 3. Phase A — intake; 🔴 GATE: wait for the required fields.
 4. Phase B — load context and build the scenarios; the scenarios decide which roles are in scope.
@@ -78,7 +78,8 @@ Follow [shared-preamble.md](../../../references/shared-preamble.md).
 
 **Round-time contract.** A round has a cap of **15 minutes of AGENT + EXEC** time; human wait is not
 counted and is reported on its own line. The cap is soft — print the ~12-minute line, finish the round,
-never cut cases. The Phase F report ends with the `Round time:` line. Full rules:
+never cut cases. The 15 minutes is a measured reporting line, not a target to meet: no gate, evidence item or
+case below is trimmed, batched away or skipped to stay under it; time over it is reported as `overrun`. The Phase F report ends with the `Round time:` line. Full rules:
 [round-time-contract.md §1](../../../references/round-time-contract.md).
 
 **Gates:**
@@ -201,12 +202,17 @@ Use [parallel-prep.md](../../../references/parallel-prep.md) when Jira fetch and
 
 ## Phase C — Show the plan, wait for confirmation [medium freedom]
 
-🔴 GATE: print the intake summary + plan below, then **wait for the user's confirmation before the first Playwright run**, so the user approves scope, environment and accounts before anything runs (the one exception in [round-time-contract.md §2](../../../references/round-time-contract.md)). Do not start Phase D until the user confirms. A correction at this point updates the plan, which is shown again and waits again. After the confirmation
+🔴 GATE: print the intake summary + plan below, then **wait for the user's confirmation before the first Playwright run**, so the user approves scope, environment and accounts before anything runs (owner decision D2 — the one exception in [round-time-contract.md §2](../../../references/round-time-contract.md)). Do not start Phase D until the user confirms. A correction at this point updates the plan, which is shown again and waits again. After the confirmation
 there are no mid-run waits; the plan rides again in the end decisions popup.
 
 **Unattended / bot trigger:** post the same intake summary + plan to the triggering channel with the
 project's @mention and wait there for an explicit confirm from a person. Never self-confirm, never treat
-silence or a timeout as a confirm, and never start Phase D without it.
+silence or a timeout as a confirm, and never start Phase D without it. When the bot's wait ends with no
+confirm (its own timeout, the confirm window the project guide names, or the run being stopped): post one
+line in the same channel — `Not started — no confirmation for {KEY}; plan above; reply confirm to start a
+new round` — release every leased account, end the round as **NOT STARTED** with the plan attached, and run
+no Phase D and no external write. A confirm that arrives later starts a new round from Phase B (sessions and
+scenarios are re-checked).
 
 ```text
 ━━━ Testing ticket — plan (waiting for your confirmation) ━━━
@@ -386,9 +392,9 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 |------|---------|
 | MUST NOT open Jira/GitHub bugs in this workflow | Use create-bug-workflow |
 | MUST run the plan in parallel lanes whenever it has 2+ units, one leased account per lane, lane count = min(units, leasable accounts) with no fixed cap, unless a [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §4 predicate is named | Shortest run time with no shared login — a shared account ends sessions and shares state, producing false defects |
-| NEVER open a browser or login window for a test account (main thread or lane) — rule stated at Phase D *Login reuse* and *Fresh login* (lane returns `SESSION-DEAD`; main thread gives ready-to-run commands, then probes) | Login windows popped a chain of windows at the person; owner order 2026-10-21: login by command, as in the e2e suite |
+| NEVER open a browser or login window for a test account (main thread or lane), and never ask for, collect or fill a password — a lane returns `SESSION-DEAD`; the main thread gives ready-to-run commands, one combined `bash` block per step (relink every needed account → setup/mint only the FAILED ones; each account isolated, prints OK / FAILED with a log path), then probes — full steps at Phase D *Login reuse* and *Fresh login* ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3) | Login windows popped a chain of windows at the person; owner order 2026-10-21: login by command, as in the e2e suite |
 | MUST pass the 7-layer AC/EC coverage gate — rule stated at Phase B step 3 (enumerate, map 1:1), Phase E *Cover every enumerated AC/EC id* (own row, never a remark; a differing id is FAILED/PWMI per the matrix, an unreachable id is BLOCKED — a coverage gap, never a product FAILED) and Phase F *AC/EC coverage reconciliation* (fail-closed: no Phase G, no "100%/complete") | The run's scope is the ticket's AC/EC contract; a card was once passed with the gap footnoted in a remark — coverage is proven by rows, and "works except one point" reads as a clean pass downstream |
-| MUST print the Phase C intake summary + plan and wait for the user's confirmation before the first Playwright run; the plan rides again in the end decisions popup ([round-time-contract.md §2](../../../references/round-time-contract.md), testing-ticket exception) | The user approves scope, environment and accounts before anything runs; the wait is once, before execution, never mid-run (a bot run waits for an explicit confirm in its triggering channel — Phase C) |
+| MUST print the Phase C intake summary + plan and wait for the user's confirmation before the first Playwright run; the plan rides again in the end decisions popup ([round-time-contract.md §2](../../../references/round-time-contract.md), testing-ticket exception) | Owner decision D2 (round-time-contract §2): the user approves scope, environment and accounts before anything runs; the wait is once, before execution, never mid-run (a bot run waits for an explicit confirm in its triggering channel — Phase C) |
 | NEVER wait mid-run for a user answer — apply the documented default and queue the question for the end decisions popup ([§2](../../../references/round-time-contract.md)) | Human wait blocks the round; the default keeps the run moving and the question still reaches the user |
 | MUST execute every external write (comment, result update, notify) under **one** approval popup that names each concrete action, with no second approval ([§3](../../../references/round-time-contract.md)) | One human touch per round; every action is still approved by name |
 | MUST end every round report with the measured `Round time: AGENT+EXEC {n} min · human wait {h} min · overrun {…} min` line — never estimated ([§1](../../../references/round-time-contract.md)) | The 15-minute cap is only real if it is measured |
@@ -402,8 +408,8 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST resolve any disagreement between your own observations with one clean re-run before writing F2/F3; unresolvable → BLOCKED, not FAILED | Resolving it in favour of the result you already wrote is how a wrong repro path ships |
 | MUST give every FAILED/BLOCKED defect the F3 blocks — repro matrix, expected line quoted verbatim vs actual, **root cause**, resolution options with a named owner | These are the questions the reader asks next; answering them in chat leaves the record incomplete |
 | MUST run the E2 root-cause investigation for EVERY FAILED and BLOCKED scenario, during the run, starting by invoking `superpowers:systematic-debugging` (Phases 1–3) and naming it in the write-up | The session state is open only during the run; improvised reasoning afterwards is where guessing enters |
-| MUST run the E3 challenge gate for EVERY non-PASSED scenario — re-verify the expected side char-exact against an authoritative source **including related/linked tickets' AC/EC**, then apply the documented default and queue expected-vs-observed + the AC/EC finding + a recommendation (adjust TC / re-test / confirm defect) for the end decisions popup before listing it as a defect ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)) | A non-PASS against a stale, superseded, or misread expected is a phantom defect; the expected side is the one that must be earned, and adjusting a spec or re-testing is the user's call |
-| MUST NOT file / list a defect whose expected turned out wrong, superseded, or unclear — that is a test-case adjustment or a BLOCKED question, never a defect; unattended bots resolve it as BLOCKED + remark, never a phantom bug and never a halt | Filing the app against an unverified expected is exactly how a phantom bug ships |
+| MUST run the E3 challenge gate for EVERY non-PASSED scenario — re-verify the expected side char-exact against an authoritative source **including related/linked tickets' AC/EC**, then apply the documented default and queue expected-vs-observed + the AC/EC finding + a recommendation (adjust TC / re-test / confirm defect) for the end decisions popup before listing it as a defect ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)) | A non-PASS against a stale, superseded, or misread expected is a phantom defect; the expected side is the one that must be earned, and adjusting a spec or re-testing is the user's call (PM-006, [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)) |
+| MUST NOT file / list a defect whose expected turned out wrong, superseded, or unclear — that is a test-case adjustment or a BLOCKED question, never a defect; unattended bots resolve it as BLOCKED + remark, never a phantom bug and never a halt | Filing the app against an unverified expected is exactly how a phantom bug ships (PM-006) |
 | MUST complete the 8-boundary sweep and write `not checked` where a boundary was not reached | A boundary not captured during the run cannot be reconstructed later — reconstruction is fabrication |
 | MUST attach a captured artifact to every cause statement and label it `Confirmed` / `Suspected` / `Unknown — not investigated`, carrying the label into every destination the sentence is copied to | A `Suspected` cause read as `Confirmed` sends a developer to the wrong layer |
 | MUST NOT use a hedge (`probably`, `น่าจะ`, `seems`, `flaky`, `cache issue`, `environment issue`) as a cause, restate the symptom as the cause, or infer a cause from another scenario/role/record | Hedged guessing is still guessing, and it ships as QA's finding |
@@ -412,7 +418,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST NOT rewrite a ticket's acceptance/expected text to match observed behavior | The spec owner decides; QA reports the conflict and names them |
 | MUST pass the F4 reader gate before Phase G | The gate exists so answers land in the write-up, not in a round-trip that ends in an edited record |
 | MUST re-verify before answering any question that arrives after publishing, then fold the answer into the published record in place (Phase H) | Answering from memory publishes wrong claims |
-| MUST compare every UI scenario against its **design node** on all five points and report a screen with **no design reference** back to the assigner with its visual points **BLOCKED** — rule stated at Phase B step 4 and E0 steps 1 and 7; the node link goes on the report header's `Design ref:` line, never a per-row column | An all-present, mis-ordered screen passes a "shows A, B, C" expected (the set that shipped 25 customer-found defects contained the word `figma` zero times); an assumed expected produces both phantom defects and false passes |
+| MUST compare every UI scenario against its **design node** on all five points and report a screen with **no design reference** back to the assigner with its visual points **BLOCKED** — rule stated at Phase B step 4 and E0 steps 1 and 7; the node link goes on the report header's `Design ref:` line, never a per-row column | An all-present, mis-ordered screen passes a "shows A, B, C" expected (the set that shipped 25 customer-found defects contained the word `figma` zero times); an assumed expected produces both phantom defects and false passes (PM-006) |
 | MUST report a screen this ticket intentionally changed as **design out of date** (name the design owner, ask for the node update in this ticket) instead of listing it as a defect | A relocated menu was reported missing when it existed in a submenu — a full round lost |
 | MUST spell out a mid-test AC revision in the verdict (`PASSED against AC as revised {date}, differs from design in {…}`) and hand the difference to the known-limitation list | A silent PASSED on a revised AC shipped the review's only High-severity escape |
 | MUST cover the whole **surface** the ticket touched — its existing cases, states, and in-scope widths — not only the ticket's own AC lines | A component passed on one screen while the defect sat on another screen reusing it |
