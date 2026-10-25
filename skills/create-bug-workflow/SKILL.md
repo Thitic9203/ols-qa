@@ -43,6 +43,7 @@ Every must-read file for this workflow, linked directly from here. References al
 - [qa-closing-shared.md](../../references/qa-closing-shared.md) — read before reporting done — shared QA closing gates, including the cross-ticket conflict check.
 - [user-communication.md](../../references/user-communication.md) — read before the first message to the user (every run sends the intake message).
 - [skill-rules-style.md](../../references/skill-rules-style.md) — read before the Phase A intake message (every run asks for missing inputs there).
+- [long-workflow-todos.md](../../references/long-workflow-todos.md) — read at the start of every run (the workflow always has many phases); keep the todo list.
 
 **Read when the trigger in the line fires** — a Jira target, a design comparison, a non-pass verdict, a stuck step or tool error, session start/end, a timed round:
 
@@ -53,7 +54,6 @@ Every must-read file for this workflow, linked directly from here. References al
 - [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — read after posting a Jira comment, before saying done.
 - [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) — read before posting a Jira table with multi-line cells.
 - [jira-wiki-vs-markdown.md](../../references/jira-wiki-vs-markdown.md) — before and after posting any Jira body (v2 wiki vs v3 ADF).
-- [long-workflow-todos.md](../../references/long-workflow-todos.md) — read when the run files more than one bug or more than one target; keep the todo list.
 - [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) — read before recording any result that is not PASSED.
 - [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read when proposing a QA follow-up.
 - [qa-debug-discipline.md](../../references/qa-debug-discipline.md) — read when a test is flaky or a tool errors.

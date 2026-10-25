@@ -120,8 +120,9 @@ verbatim). One rule settles the two values, in this order:
 2. **Priority** — its own field: the column of the matrix cell, in the reporter's Severity row, whose
    example text matches the defect.
 3. **Ask, never decide** — when no Severity was given, the given word is not a matrix row, or the
-   reporter's Severity row has only `N/A` / no matching cell for this defect: show that matrix row and
-   ask the reporter to choose. Do not swap in another Severity or Priority yourself and do not draft the
+   reporter's Severity row has only `N/A` / no matching cell for this defect, or the reporter gave a
+   Priority that differs from the matrix cell: show that matrix row (and the cell) and ask the reporter
+   to choose. A reporter-given Priority is never silently replaced by your own pick. Do not swap in another Severity or Priority yourself and do not draft the
    bug until they answer.
 
 Steps to reproduce come only from the user's input and evidence. A step that seems missing is a
@@ -396,6 +397,6 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | NEVER replace a Severity the reporter gave with your own reading — a value the matrix cannot place is a question to the reporter (Phase A3, item 3), not a correction | The reporter's severity is the title bracket; a guessed one misroutes triage |
 | NEVER drop a label or field to make a create succeed (Phase B pre-flight, Phase D field errors) | A silently missing Severity/Priority hides the bug from the views that filter on it |
 | MUST search the board (Phase B2) before filing; drop any bug already settled as intended in a prior/closed ticket and report it with the reference link | Re-filing a closed decision wastes a full retest round |
-| MUST use only the bug-priority-matrix vocabulary for Priority and Severity and cite the cell (Severity value from the reporter, Priority from the cell — Phase A3) | An invented scale cannot be compared with the verdicts that use the matrix |
+| MUST use only the bug-priority-matrix vocabulary for Priority and Severity and cite the cell (Severity value from the reporter, Priority from the cell; a reporter value the cell does not match is asked, never replaced — Phase A3) | An invented scale cannot be compared with the verdicts that use the matrix |
 | MUST verify each issue URL in Phase F | Silent partial failure |
 | MUST lock Jira v2/v3 per session when user specifies | Rewrite cost |
