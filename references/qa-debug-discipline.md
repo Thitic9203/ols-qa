@@ -57,7 +57,7 @@ Link failures to **testing-ticket** Phase F or **retest** comment only after use
 
 ## Flaky selector diagnosis (Playwright)
 
-When a Playwright step fails on locating an element, classify before fixing — see [resilient-selectors.md](resilient-selectors.md).
+When a Playwright step fails on locating an element, classify before fixing — see also [resilient-selectors.md](resilient-selectors.md), linked from every Playwright-running skill's SKILL.md.
 
 ```text
 H1: selector drift  — falsify by: element present via higher tier (data-testid/role)?

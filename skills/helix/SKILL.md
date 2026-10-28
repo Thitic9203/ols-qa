@@ -3,7 +3,7 @@ name: helix
 description: |
   Helix QA assistant menu — routes the user to the right QA workflow: TC FE prep, TC API prep, retest bug, testing ticket, create bug, catch-ai or TC review (content takedown, review result, smoke test and test data prep exist only in the ols-qa workspace).
   Use when the user says Helix, /helix or QA assistant menu, asks which QA workflow fits, or wants help with QA work without naming a workflow (e.g. "help me test this ticket", "ช่วยดูงาน QA นี้ให้หน่อย").
-  Do NOT use for a request that already names a specific workflow — that goes straight to the matching command (listed in references/skill-routing.md).
+  Do NOT use when the request already names a specific workflow — run that workflow's command instead (listed in references/skill-routing.md); if Helix is loaded anyway, it routes straight to that workflow without showing the menu.
 metadata:
   proactive_triggers:
     - Helix

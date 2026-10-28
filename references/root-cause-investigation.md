@@ -72,7 +72,7 @@ after one looks wrong — the first anomaly is often downstream of the real one.
 - Every row is either an artifact or the word `not checked` — never a guess and never blank.
 - Capture the artifact **at the moment of failure**, not reconstructed afterwards.
 - Timing first: after any state-changing step, hard-reload before you record a boundary
-  ([defect-report-completeness.md](defect-report-completeness.md) §3a). A stale client makes rows 1–3
+  (defect-report completeness §3a — see also [defect-report-completeness.md](defect-report-completeness.md), linked from every defect-writing skill's SKILL.md). A stale client makes rows 1–3
   lie.
 - One boundary changed at a time. Never change two things and read one result.
 
