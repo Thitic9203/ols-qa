@@ -62,6 +62,29 @@ const OBJECT_THEN_VERB = new RegExp(`${AGENT_OBJECT.source}[^\\n]{0,${NEAR_CHARS
 // ปลายทางจริง (Jira/ticket/issue/บั๊ก) แทน ไม่ใช่แค่ปรากฏที่ไหนก็ได้ในบรรทัดเดียวกับ AGENT_OBJECT
 const POST_TO_TRACKER_VERB = /ลง\s*(Jira|jira|บั๊ก|บัค|ticket|issue|bug|defect|improvement)/i;
 
+// ชื่อสกิล · branch · path · ไฟล์ ไม่ใช่คำสั่งให้เปิด issue (docs/sdd/issue-guard-identifier-fp R1 R2)
+// เคสจริง 2026-10-28: "create-bug-workflow" และ "fix/r5-testing-ticket, PR #74 open" ถูกบล็อกผิด
+const VERB_WORD = /^(open|create|file|raise|submit)$/i;
+const OBJECT_WORD = /^(ticket|issue|bug|defect|improvement)s?$/i;
+function isIdentifier(token) {
+  const core = token.replace(/^[`'"(\[<]+|[`'"),.;:\]>]+$/g, "");
+  if (core.includes("/") && /[-.]/.test(core)) return true; // path หรือ branch
+  if (/\.[A-Za-z]{1,5}$/.test(core) && !/\s/.test(core) && /^[\w~./-]+$/.test(core)) return true; // ไฟล์
+  const parts = core.split("-");
+  if (parts.length >= 3 && parts.every((p) => /^[A-Za-z0-9_]+$/.test(p))) return true; // kebab ≥3 ส่วน
+  if (parts.length === 2 && parts.every((p) => /^[A-Za-z0-9_]+$/.test(p))) {
+    const [a, b] = parts;
+    if ((VERB_WORD.test(a) && OBJECT_WORD.test(b)) || (OBJECT_WORD.test(a) && VERB_WORD.test(b))) return true;
+  }
+  return false;
+}
+function stripIdentifiers(line) {
+  return line
+    .split(/(\s+)/)
+    .map((tok) => (/\S/.test(tok) && isIdentifier(tok) ? " " : tok))
+    .join("");
+}
+
 function readState() {
   try {
     return JSON.parse(fs.readFileSync(STATE_FILE, "utf8"));
@@ -139,11 +162,12 @@ function inspectAgentPrompt(text) {
   // ดูทีละบรรทัด เพื่อไม่ให้ "อย่าเปิดบั๊ก" ที่อยู่คนละย่อหน้ากับคำกริยาอื่นถูกนับ
   for (const raw of text.split(/\n+/)) {
     const line = raw.trim();
-    if (!AGENT_OBJECT.test(line)) continue;
+    const words = stripIdentifiers(line);
+    if (!AGENT_OBJECT.test(words)) continue;
     if (
-      !VERB_THEN_OBJECT.test(line) &&
-      !OBJECT_THEN_VERB.test(line) &&
-      !POST_TO_TRACKER_VERB.test(line)
+      !VERB_THEN_OBJECT.test(words) &&
+      !OBJECT_THEN_VERB.test(words) &&
+      !POST_TO_TRACKER_VERB.test(words)
     )
       continue;
     // บรรทัดที่เป็น "ข้อห้าม" ไม่ใช่คำสั่งให้เปิด
@@ -304,6 +328,7 @@ module.exports = {
   ATTEMPT_FILE,
   inspectBash,
   inspectAgentPrompt,
+  stripIdentifiers,
   isFresh,
   readState,
   writeState,
