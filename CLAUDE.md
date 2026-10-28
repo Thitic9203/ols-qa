@@ -43,6 +43,7 @@
 - งานยาว/ชนไฟล์ → `git worktree` ของตัวเองใต้ `.worktrees/` · push ตอนมีงานค้าง → worktree ชั่วคราว cherry-pick
 - สคริปต์จาก git hook ที่รัน git ที่อื่น ต้อง source `scripts/git-env-clean.sh` + `git_env_clean` และยืนยัน `--show-toplevel`
 - เคลม "push แล้ว / ขึ้น main แล้ว" ได้หลัง `bash scripts/verify-on-origin.sh <sha|branch>` พิมพ์ `ON-ORIGIN` เท่านั้น — `git log` ในเครื่องไม่นับ (#0190)
+- ทดสอบหลาย branch รวมกันก่อน merge ใช้ `bash scripts/test-combined-merge.sh <branch>...` เท่านั้น ห้ามพิมพ์ chain เอง · รายงานผลต้องยกบรรทัด `in-test` ทุก branch + `combined HEAD` (#0198)
 - Pull main ก่อนเริ่มงาน · commit แบบ conventional (feat:/fix:/docs:) · แก้ `tools/**/*.js` ต้องเขียวก่อน commit + เพิ่ม test คู่กฎใหม่:
 
 ```bash
