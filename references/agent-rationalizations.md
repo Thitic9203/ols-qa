@@ -16,9 +16,9 @@ When you notice these thoughts, **stop** and follow the linked reference or skil
 | Rationalization | Correct action |
 |-----------------|----------------|
 | “One scenario failed but overall pass” | Report per-scenario PASSED/FAILED; no aggregate pass |
-| “VPN usually works” | Run [playwright-preflight.md](playwright-preflight.md) |
 | “Trace is too big, skip” | Use [qa-debug-discipline.md](qa-debug-discipline.md) — sample failing request |
 | “I'll increase timeout until green” | Find root cause — do not mask flake |
+| “VPN usually works” | Run the Playwright preflight (see also [playwright-preflight.md](playwright-preflight.md), linked from every test-running skill's SKILL.md) |
 
 ## Cause statements ([root-cause-investigation.md](root-cause-investigation.md))
 
