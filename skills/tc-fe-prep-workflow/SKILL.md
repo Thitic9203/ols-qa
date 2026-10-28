@@ -2,7 +2,7 @@
 name: tc-fe-prep-workflow
 description: |
   Prepare frontend manual test cases (Thai, ราชบัณฑิตยสภา) from a Jira story (AC/EC) with mandatory AC/EC coverage review and ISTQB/29119-3 quality check, show an HTML draft for approval, then post one comment on that story only with the Draft_Jira and Import_Qase (plus per-Type) CSV attachments, and close with a four-axis final TC review report (AC/EC alignment, spelling, numbering, scope).
-  Use when the user asks for FE test cases, manual TC from acceptance criteria or edge cases (even without saying FE), a TC comment on a Jira story, or TC FE Preparation from Helix (/tc-fe-prep).
+  Use when the user asks for FE test cases, manual TC from acceptance criteria or edge cases (even without saying FE), a TC comment on a Jira story, or TC FE Preparation from Helix (/tc-fe-prep) (e.g. "เขียนเทสเคส FE", "เตรียม TC FE").
   Do NOT use for API-only Swagger test cases (tc-api-prep-workflow), Playwright execution (testing-ticket-workflow), retest-after-fix (retest-bug-workflow), or opening bug tickets (create-bug-workflow).
 metadata:
   proactive_triggers:
@@ -11,6 +11,8 @@ metadata:
     - FE test cases
     - manual test cases from story
     - acceptance criteria test cases
+    - เขียนเทสเคส FE
+    - เตรียม TC FE
 ---
 
 # TC FE Prep (discovery stub)
