@@ -135,7 +135,7 @@ Compare against the story's AC/EC and description across these areas:
 Then handle user decisions in chat:
 - If Step 2a found issues → post the Step 2a.3 decision prompt in chat.
 - If Step 2.5 found conflicts or gaps → present recommendations in chat and wait for the user to confirm or override.
-- If both checks are clean → tell the user in chat and proceed to Step 3.
+- If both checks are clean → tell the user in chat and proceed to Step 2.6.
 
 **Column detail rules** (apply when building the HTML) — every cell must be fully written out, never summarised or abbreviated:
 
@@ -148,7 +148,7 @@ Then handle user decisions in chat:
 | **Newer source (ICT)** | Source name + its last-updated datetime in `DD Mon YYYY HH.MM AM/PM` |
 | **Severity** | High = blocks TC design or changes core flow; Medium = affects expected result wording or label; Low = cosmetic / minor label difference |
 
-**If NO conflicts and no gaps and no Step 2a issues:** generate the HTML (both sections show clean status), tell the user in chat, then continue to Step 3 immediately.
+**If NO conflicts and no gaps and no Step 2a issues:** generate the HTML (both sections show clean status), tell the user in chat, then continue to Step 2.6 immediately.
 
 **If conflicts, gaps, or Step 2a issues found:** generate the HTML, open in Chrome, then handle each set of issues in chat. Do NOT start Step 3 until all issues are resolved — TCs built on contradictory or inconsistent requirements must be redesigned.
 

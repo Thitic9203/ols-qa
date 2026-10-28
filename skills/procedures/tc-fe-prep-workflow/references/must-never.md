@@ -36,7 +36,7 @@ Shared rules: [shared-must-never.md](../../../../references/shared-must-never.md
 | MUST format datetimes as `DD Mon YYYY HH.MM AM/PM` (e.g. `11 Dec 2026 11.45 AM`) | Consistent, readable format agreed with user |
 | MUST show "Newer source (ICT)" column with datetime per conflict row in the report | User needs to know which version to trust and exactly how much newer it is |
 | MUST NOT start Step 3 while conflicts from Step 2.5 are unresolved | Designing TCs on contradictory requirements creates rework |
-| MUST post the Step 2.5 conflict report block even when no conflicts found | Gives user visibility that cross-check was done |
+| MUST generate the Step 2.5d pre-draft review HTML and post its one-line chat notice even when no conflicts found | Gives user visibility that cross-check was done |
 | MUST run Step 4 review before the Step 5 HTML draft | Prevents out-of-scope cases reaching Jira |
 | MUST run the Step 4 review as a LOOP that exits only on a clean (zero-comment) round — no fixed 2-round cap — and MUST run the Step 4f independent reviewer-agent pass (≥2 reviewers per round for a thorough/"superpowers" request) | One or two passes can still leave fabricated/uncovered cases; the exit condition is a clean round, not a round count |
 | MUST report the verdict of EVERY review round to the user as it finishes (round number + CLEAN/defects + fixes applied) — never batch rounds into one summary, never go silent between rounds | The user must always know a round ran and what it found; silent multi-round work reads as a stalled session |

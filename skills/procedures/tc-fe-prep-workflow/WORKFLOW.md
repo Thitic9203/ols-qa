@@ -163,7 +163,7 @@ Do NOT post the TC table as markdown in chat. Instead:
 
 ## Step 6 — Save artifacts in the user's workspace [medium freedom]
 
-**Suite gate (do before writing the CSV):** The Qase CSV needs a **Suite** value per row. Inspect the project's existing Qase suite tree first (Qase project code: the project guide) (Qase web UI → Test cases → suite sidebar, or ask the user to paste the current suite list — there is no Qase MCP) and reuse a fitting suite; only propose a new suite (with user approval) when none fits. Never assign a suite blind, never create a duplicate. Full rules: [qase-import-format.md](references/qase-import-format.md) — Suite rules. In the same pass, check the project's **Type** and **Status** option lists (Qase UI → project settings, or the import wizard preview, or ask the user to paste them) contain `Unit Test` / `Integration Test` / `System Test` and `Done` in Status; if any is missing, stop and tell the user before writing the CSV ([qase-import-format.md](references/qase-import-format.md) — Field option values).
+**Suite gate (do before writing the CSV):** The Qase CSV needs a **Suite** value per row. Inspect the project's existing Qase suite tree first (Qase project code: the project guide) (Qase web UI → Test cases → suite sidebar, or ask the user to paste the current suite list — there is no Qase MCP) and reuse a fitting suite; only propose a new suite (with user approval) when none fits. Never assign a suite blind, never create a duplicate. Full rules: [qase-import-format.md](references/qase-import-format.md) — Suite rules. In the same pass, check the project's **Type** and **Status** option lists (Qase UI → project settings, or the import wizard preview, or ask the user to paste them) contain `Unit Test` / `Integration Test` / `System Test` and `Done` in Status; if any is missing, stop and tell the user before writing the CSV ([qase-import-format.md](references/qase-import-format.md) — Field option values). If the suite list (or the Type/Status option lists) cannot be read and the user cannot paste it → stop before writing any CSV, keep the approved draft, and tell the user the Qase export is **Not exported** and what is needed to finish it.
 
 After approval (and Suite confirmed), write the files below inside the user's project (paths relative to workspace root) — each row's Condition decides whether it is written: always the `.md` and the two CSVs (or their xlsx pair when the user asked for Excel), plus one typed CSV per Type that has TCs (0–3):
 
@@ -346,7 +346,7 @@ Run the **full review checklist** from [jira-comment-post-review.md](../../../re
 
 - [ ] All TC rows visible (not header only) — count must match approved draft.
 - [ ] **No literal `<br>`, HTML tags, or `**` markers** visible as text in any cell (zero tolerance).
-- [ ] Numbered items (`1. ` `2. ` `3. `) each on a **separate line** — not running together.
+- [ ] In the shared prep block, numbered items (`1. ` `2. ` `3. `) each on a **separate line** — not running together (the slim TC table has single-line cells).
 - [ ] Cell content matches approved draft (spot-check first, middle, last rows).
 - [ ] **Both** `Draft_Jira_{ISSUE_KEY}.csv` and `Import_Qase_{ISSUE_KEY}.csv` attached to the same issue (not just in workspace) and **both** footer links work.
 - [ ] Comment is on the **story**, not a sub-task.
@@ -368,11 +368,11 @@ Follow [tc-final-review-report.md](references/tc-final-review-report.md):
 1. Compare **published** Jira comment + attachment (or final approved draft + export) against the **story** AC, EC, description, and deferred-scope notes.
 2. Score all four dimensions: **AC/EC alignment**, **spelling**, **numbering order**, **content / scope**.
 3. Post the **user-facing report** from that reference (summary table + sections 1–4 + optional improvements).
-4. Overall **PASS** required before Step 8. On **FAIL** → fix TC → re-publish or re-show draft → re-run (max 2 rounds).
+4. Overall **PASS** required before Step 8. On **FAIL** → fix TC → re-publish or re-show draft → re-run (max 2 rounds). After 2 failed rounds → post the report with the failing axes verbatim, do not say TC prep is complete, and ask the user how to proceed.
 
 **MUST NOT** say TC prep is complete, post the Step 8 `Verdict:` block, or offer the next workflow until this report is posted with overall **PASS**.
 
-**Go back:** On **FAIL**, fix the TC and return to Step 7 (published) or Step 5 (draft-only), then run Step 7.5 again — max 2 rounds.
+**Go back:** On **FAIL**, fix the TC and return to Step 7 (published) or Step 5 (draft-only), then run Step 7.5 again — max 2 rounds. Still **FAIL** after round 2 → stop as in item 4 (failing axes verbatim, not complete, ask the user).
 
 ---
 
@@ -399,7 +399,7 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] Step 6.5: the ticket's TC tab was created (exit `0`, `"readback": "clean"`), or the step was skipped because the project guide has no "Create the per-ticket TC tab" row, or a refusal (exit `2` or `3`) or an exit `4` with its `next_step` was reported verbatim; the gate counted only an exact `passed` from the owner in this draft's DM thread.
 - [ ] Disclaimer appended as **last line** of the Jira comment, after all attachment links (exact wording, not translated or shortened).
 - [ ] Jira UI matches approved draft (not MCP output alone).
-- [ ] Post-publish review passed per [jira-comment-post-review.md](../../../references/jira-comment-post-review.md) — no stray tags, numbered items on separate lines, attachment present.
+- [ ] Post-publish review passed per [jira-comment-post-review.md](../../../references/jira-comment-post-review.md) — no stray tags, shared-prep numbered items on separate lines, attachment present.
 - [ ] Step 7.5 final TC review report posted per [tc-final-review-report.md](references/tc-final-review-report.md) — all four axes **PASS**.
 - [ ] Close-out includes `Verified:` after Jira re-open.
 - [ ] Publish fix-verify (Step 7) completed — at least one Jira UI re-read.
@@ -430,7 +430,7 @@ Complete [verify-closing-checklist.md](../../../references/verify-closing-checkl
 | [gotchas.md](references/gotchas.md) | Common failures |
 | [markdown-template.md](references/markdown-template.md) | Copy-paste skeleton |
 | [project-config-template.md](references/project-config-template.md) | First-time project questions |
-| [publish-options.md](references/publish-options.md) | MCP vs browser vs manual |
+| [publish-options.md](references/publish-options.md) | ADF-direct publish; manual handoff (Option C) fallback |
 | [worked-example.md](references/worked-example.md) | On-demand: anonymized sample (read only when format reference needed) |
 | [ac-ec-coverage-review.md](references/ac-ec-coverage-review.md) | AC/EC traceability + scope review (pre-draft) |
 | [html-pre-draft-review-template.md](references/html-pre-draft-review-template.md) | Pre-draft review HTML template (Step 2a + 2.5) |
