@@ -132,7 +132,11 @@ comment endpoint, GET it again and run `adf_colwidth.js --check readback.json` �
 It sets `colwidth` [50, 75, 230, 200, 330, 230, 65] on the single table and centres every clip and
 image in the `No.` / `Evidence` / `Status` columns (each MP4 `mediaGroup` becomes a centred
 `mediaSingle`); owner: "จัดกลางเสมอ อย่าให้ต้องบอกซ้ำ". The readback check is the evidence — not the
-PUT status.
+PUT status. When the workspace has no `adf_colwidth.js` ([which tools count](../../retest-bug-workflow/SKILL.md#tool-not-available)),
+edit the GET'd ADF by hand to the same `colwidth` values and centring, PUT it, GET it again and check
+each width and each centred clip/image in the readback one by one; write
+`adf_colwidth not installed — widths set and read back by hand` in the round report. A readback that
+still differs → fix and PUT again; never report widths as set from the PUT status alone.
 
 <a id="design-ref-line"></a>🔴 **The table carries NO design-node column — not on any retest, ever.** The design reference is
 one fact about the round, not a per-row fact, so it belongs on the header's `Design ref:` line and
@@ -304,12 +308,17 @@ QA — or another agent given the ticket, the deliverable and nothing else*. Mak
 3. **Binary verdict per round:** `CLEAN` or `HAS-COMMENTS` with a numbered list. Nitpicks are not
    defects; only gaps against the ticket and the evidence count.
 4. **Report the round to the user** as it finishes, then fix every finding and dispatch a **fresh**
-   round. Loop until a round is clean — no cap, and a round whose result was never reported does not
-   count.
+   round. Loop until a round is clean — no round cap ([round-time-contract.md](../../../references/round-time-contract.md) §3
+   step 1), and a round whose result was never reported does not count.
+   **Exit when the loop stops converging:** the same finding comes back in two consecutive rounds
+   after you fixed it → stop dispatching reviewers. The draft is **not** CLEAN: put that finding in the
+   Step 6d decisions popup as a queued question (the reviewer's claim, your evidence for each side)
+   and tell the user the reviewer and the draft disagree on it. Nothing is posted until the user
+   answers; their answer is applied and checked by one fresh reviewer round.
 5. **Verify the reviewer's claims yourself before acting on them** — a subagent's report is not
    evidence, it is a lead.
 
-**Go back:** If a round returns `HAS-COMMENTS`, fix every finding and return to 6c item 1 with a fresh reviewer. The Step 6d approval popup waits for `CLEAN`.
+**Go back:** If a round returns `HAS-COMMENTS`, fix every finding and return to 6c item 1 with a fresh reviewer. The Step 6d approval popup waits for `CLEAN` (or, for a non-converging finding, for the user's answer to it).
 
 **Unattended / bot mode:** run one reviewer round, fold its findings in, and record any it could not
 resolve as BLOCKED rows with reasons — never halt the queue, never post over an unanswered finding.

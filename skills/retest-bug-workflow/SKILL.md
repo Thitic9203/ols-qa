@@ -90,6 +90,8 @@ All close-out gates are in WORKFLOW.md and [verify-closing-checklist.md](../../r
 
 **Before any comment draft is written to disk or shown as final** — including "draft only" requests — run `node tools/retest-guard/retest_guard.js --body <draft> --format v2 --bug-type FE` (for other bug types use the `--format`/`--bug-type` values the WORKFLOW comment step names) and keep fixing the draft until it exits 0. If the guard fails, return to the comment step in WORKFLOW.md; never hand over a draft the guard has not passed. When the workspace has no `tools/retest-guard/` ([dependencies.md](../../references/dependencies.md)), apply the same rules by hand from the comment step and state `guard not installed — checked by hand` with the draft; exit 2 (guard present but could not run) is not a pass — fix the run.
 
+<a id="tool-not-available"></a>**Which tools count (every `tools/…` step in this workflow).** "The workspace" is the repository of the project being retested — the one its project guide lives in. A tool counts only when it is in that workspace **and** ran in this round. A copy found in any other checkout or repository on the machine is not this project's tool: never run it against this ticket and never cite it. An offline or mock run (the input says so) has no tools: apply each tool's checks by hand and write `<tool> not installed — checked by hand` beside the result. Report an exit code or "passed" only by quoting the real output line of a run made in this round; a missing tool is never a lighter standard.
+
 ## Dependencies
 
 Run the check for each of these before step 1 — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
