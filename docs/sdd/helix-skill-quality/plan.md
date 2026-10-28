@@ -22,6 +22,12 @@ Node ≥18 built-ins only, no new dependency. No paid service. No change to any 
 - Credential test: regex over shipped text with an allowlist for lines that forbid asking (chosen; deterministic) vs model grader (rejected: not repeatable in CI).
 - tc-fe-prep effectiveness: investigate first (R10) instead of loosening the glossary gate.
 
+## Rounds 5+ (R13, R14 — added 2026-10-28)
+- Exit gate is judged on one evaluation round, item by item, by the round board generator reading every round's `summary.json`; nobody types a pass by hand.
+- Timing (R14) goes into the evaluation tooling in the evidence repo, not into the skills. No new dependency, no paid service.
+- Each round's lanes are scoped to the R13 items their skill failed in the previous round, so a skill that already passes is not touched again.
+- The helix lane also owns SKILL.md frontmatter and the shared `references/` files that skill lanes could not edit in round 4.
+
 ## What could break
 - helix CI red if order is wrong → mitigated by step 1.
 - Tools that parse frontmatter top-level `proactive_triggers`: grep found none in either repo (only CI + docs).

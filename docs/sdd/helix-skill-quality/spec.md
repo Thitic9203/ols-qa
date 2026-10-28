@@ -32,6 +32,8 @@ Source of truth: ols-qa `skills/ references/ commands/` → helix via `scripts/s
 **R10 (effectiveness).** The helix router must say which workflow it routes to before acting (effect helix p1). tc-fe-prep's low with-skill pass rate (7/15) must be investigated with systematic-debugging before any change; a change that weakens a gate needs owner approval.
 **R11 (public repo).** Real customer ticket keys must not appear in shipped files; use `{ISSUE_KEY}`. A test must fail on `OLS-<digits>` in skills/ references/ commands/ shipped to helix. Source: catch-ai#1, catch-ai#2, create-bug#4, retest-bug#8, testing-ticket#5; CLAUDE.md §5.
 **R12 (no regression).** `bash scripts/run-test-suites.sh` (ols-qa) and helix CI must be green before merge. A skill whose re-evaluation scores lower than baseline on the paired comparison is reverted, not merged.
+**R13 (exit gate, owner decision 2026-10-28).** The effort ends only when one evaluation round passes all of these for every helix skill at once: (a) P0 = 0 and P1 = 0; (b) the skill's darwin total is at or above its own highest total in every earlier round; (c) the average darwin total across all skills is ≥ 85; (d) every expected item passes with the skill (`exp_with_skill = exp_total`); (e) the with-skill run finishes fast, per R14. A round that fails any item is followed by a round that works only on the skills and items that failed. Source: owner, 2026-10-28 — "every skill scores its best after the fixes, the work ends quickly after the skill is invoked, correct and complete, the user is never let down".
+**R14 (speed is measured, not assumed).** Every evaluation run with the skill must record its wall-clock duration and turn count in the round's `summary.json`. The "fast" ceiling for R13(e) is set from the measured baseline values and approved by the owner before it is used to judge a round; until it is approved, R13(e) is reported as "not measured", never as a pass.
 
 ## Done when
 - quick_validate passes 8/8 helix skills (R1) and helix CI is green (R2).
@@ -39,3 +41,4 @@ Source of truth: ols-qa `skills/ references/ commands/` → helix via `scripts/s
 - R6–R9 contradictions and failure branches are resolved and re-checked by an independent reviewer.
 - Re-evaluation round `after-1` is published on the Helix Skill Scorecard with before/after per skill, P0 = 0 and P1 reduced ≥ 80%.
 - Changes are merged in ols-qa, synced to helix, and `helix-parity.sh` passes.
+- Final: one evaluation round passes every R13 item for every skill, shown on the round board's Exit gate box (computed from `summary.json`, not typed by hand).

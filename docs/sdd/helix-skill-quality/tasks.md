@@ -19,3 +19,7 @@
 | T15 | Investigate tc-fe-prep effectiveness (systematic-debugging) | R10 | — | root cause + proposal reported to owner |
 | T16 | Sync to helix, parity, tighten CI to metadata-only | R2, R12 | parity script | parity OK, helix CI green |
 | T17 | Re-evaluate round after-1, paired comparison, republish scorecard | R12 | — | Done-when list in spec.md all true |
+| T18 | Record with-skill duration + turn count per run into each round's `summary.json` (evidence repo eval tooling) | R14 | after-3 `summary.json` has no duration field → board shows "not measured" | new round's `summary.json` carries both fields; a known-answer run shows the right duration |
+| T19 | Measure baseline durations, propose the "fast" ceiling, get owner approval | R14 | — | owner-approved number written in this file |
+| T20 | Round 5 lanes: each skill works only on the R13 items it fails on after-3 (P1, regression cause, missed expected items); central work on frontmatter + shared refs in the helix lane | R13, R8, R9 | after-3 Exit gate box: 0/8 skills pass | PRs open, suites green, no gate weakened |
+| T21 | Evaluate after-4 with timing; repeat a narrowed round until R13 passes | R13, R12 | — | Exit gate box: 8/8 skills pass every item |
