@@ -1,8 +1,8 @@
 ---
 name: create-bug-workflow
 description: |
-  Open bug reports on Jira or GitHub after collecting target link, format template, and bug details — confirm before creating.
-  Use when the user chooses Create bug from Helix, invokes /create-bug, or wants issues filed from test findings.
+  Draft and file bug reports on Jira or GitHub after collecting the target link, format template and bug details — re-checks the board for an earlier decision, falsifies the defect, and confirms with the user before anything is created.
+  Use when the user chooses Create bug from Helix, invokes /create-bug, or wants a found defect recorded in a tracker — even without the word bug ("raise a ticket for this", "log this defect", "เปิดบั๊ก").
   Do NOT use for Playwright test runs (testing-ticket-workflow), retest-after-fix (retest-bug-workflow), posting manual TC tables (tc-fe-prep / tc-api-prep), or updating test result sheets without filing bugs.
 ---
 
@@ -211,8 +211,12 @@ agreed-upon expected value.)
 
 Runs here — after Phase B2, before the Phase C confirm — for every candidate that cleared B2.
 
-For each bug, if not already validated in a prior test, run every check below once and record its
-result (the board-conflict search is Phase B2 — do not skip it just because a bug "looks obvious"):
+For each bug, run every check below once and record its result (the board-conflict search is Phase B2 —
+do not skip it just because a bug "looks obvious"). A check counts as already done only when a
+testing-ticket run **in this same chat** recorded, for this exact defect, the evidence that check asks
+for (design source text, roles/accounts seen, occurrence count) — cite that record in the Record
+column. Anything else (a summary, memory, a run in another chat, "I tested it earlier") does not count:
+run the check.
 
 | Check | How | Record |
 |-------|-----|--------|
@@ -319,7 +323,10 @@ A markdown body on the v2 path returns HTTP 200 and renders as garbage — the g
 
 Attach screenshots to Jira before embedding them in wiki bodies, and embed them **bare** —
 `!file.png!`, resized to ~600–640 px before upload. A width parameter puts a pipe inside a
-table cell and splits the row. When the workspace carries `tools/retest-guard/retest_rules.js`,
+table cell and splits the row. If an attachment upload fails (rejected type, size limit, permission, any
+non-2xx), show the error verbatim, do not create or post a body that embeds the missing file, and
+ask the user: retry the upload, file without that image (embed line removed from the draft, shown
+again for **confirm**), or attach it by hand. Never continue on your own. When the workspace carries `tools/retest-guard/retest_rules.js`,
 run its scanner (rule `img-width-param`); when it does not, check every embed by hand for a bare
 `!file.png!` and say so.
 
