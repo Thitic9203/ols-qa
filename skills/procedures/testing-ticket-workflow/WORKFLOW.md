@@ -84,9 +84,8 @@ case below is trimmed, batched away or skipped to stay under it; time over it is
 
 **Gates:**
 
-- 🔴 GATE (Phase C): show the intake summary + plan and **wait for the user's confirmation before the
-  first Playwright run** — the one exception named in
-  [round-time-contract.md §2](../../../references/round-time-contract.md). After that, no mid-run waits.
+- 🔴 GATE (Phase C): confirm before the first Playwright run — the full rule, including the bot-run
+  branch, is stated once at **Phase C**.
 - 🔴 GATE (end of round): nothing is written outside the run (Jira comment, results destination, notify)
   until the **single end-of-round approval popup** ([§3](../../../references/round-time-contract.md)) —
   because writes are costly to undo.
@@ -197,12 +196,21 @@ Use [parallel-prep.md](../../../references/parallel-prep.md) when Jira fetch and
    group the scenarios into units (shared record · multi-role · one screen's widths/states · chained
    precondition · barrier for anything every lane sees), lease **one account per lane**, and
    write the lease table. Parallel is the default — serial needs a named §4 predicate.
+   How this flow applies §2 to roles and guests:
+   - **Cross-role chain** (one role acts, a later scenario by another role checks the result — admin
+     archives, then the learner's catalog hides it): **one lane per role, each on its own account**,
+     with the order written in the lane plan as `L2 #n after L1 #m`. The later lane runs its
+     independent scenarios first; its dependent ones start after the earlier lane returns
+     (Phase E *Fan out*). Two roles share one lane only when a **single** scenario needs both at the
+     same moment, or when the pool has no second account (§3).
+   - **Guest / logged-out scenario:** needs no account, so it never adds a lane — it runs inside an
+     existing lane in a fresh logged-out browser context. Lane count stays min(units, leasable accounts).
 
 ---
 
 ## Phase C — Show the plan, wait for confirmation [medium freedom]
 
-🔴 GATE: print the intake summary + plan below, then **wait for the user's confirmation before the first Playwright run**, so the user approves scope, environment and accounts before anything runs (owner decision D2 — the one exception in [round-time-contract.md §2](../../../references/round-time-contract.md)). Do not start Phase D until the user confirms. A correction at this point updates the plan, which is shown again and waits again. After the confirmation
+🔴 GATE: print the intake summary + plan below, then **wait for the user's confirmation before the first Playwright run**, so the user approves scope, environment and accounts before anything runs (owner decision D2 — testing-ticket waits for the user's confirm before the first run, while retest-bug shows its plan and runs; it is the one exception to "no waits" in [round-time-contract.md §2](../../../references/round-time-contract.md)). Do not start Phase D until the user confirms. A correction at this point updates the plan, which is shown again and waits again. After the confirmation
 there are no mid-run waits; the plan rides again in the end decisions popup.
 
 **Unattended / bot trigger:** post the same intake summary + plan to the triggering channel with the
@@ -233,6 +241,7 @@ Out of scope: ...
 
 Execution:   parallel — {N} lanes   (or: serial — reason: {§4 predicate})
 Lanes:       L1 · {account} ({role}) · scenarios {ids} · data prefix QA-L1
+             L2 · {account} ({role}) · scenarios {ids} (#n after L1 #m) · data prefix QA-L2
              ...
 Barrier:     {scenario ids run alone after lanes — or none}
 
@@ -262,7 +271,7 @@ the authenticated user id before the first result line. Any of these missing = s
 **Login reuse** ([round-time-contract.md §5](../../../references/round-time-contract.md)): load the saved login file for the account (`{auth dir from guide}/{env}-{role}-{alias}.json`, named by account, not by lane, gitignored), then call the session endpoint and expect the account's user id. On 401/403, a redirect to login, or a different user, a lane stops that account's cases and
 returns `SESSION-DEAD {account tag}` — it never logs in itself. One account belongs to one lane and is never shared across concurrent sessions.
 
-**Fresh login = main thread, login by command** ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3 *Dead session*). Pick lane accounts whose sessions are live first. Claude never opens a browser, login window or sign-in page, and never drives a login form, for any test account, whether on the main thread or in a lane (spec: login-by-command). Instead the main thread
+**Fresh login = main thread, login by command** ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3 *Dead session*). Pick lane accounts whose sessions are live first. Claude never opens a browser, login window or sign-in page, and never drives a login form, for any test account, whether on the main thread or in a lane (owner order 2026-10-21: log in by command, as the e2e suite does — lanes that logged in by themselves popped a chain of login windows). Instead the main thread
 gives the user **ready-to-run commands** in chat as **one combined `bash` block** per step (relink, then setup/mint), never split per account or per command, built from the intake answers (`<project-dir>`, `<env>`, `<account>` and the relink/mint command names from the project guide or intake). The block loops over that step's accounts and isolates each one, so one account failing does
 not stop the next, and it prints `<account> OK` or `<account> FAILED (log: <path>)` for every account. The user presses Run, and Claude never runs them itself:
 
@@ -324,16 +333,30 @@ Follow [qa-closing-shared.md](../../../references/qa-closing-shared.md) + skill-
 - [ ] F1–F4 posted before any external update.
 - [ ] **AC/EC coverage gate (7-layer) PASSED — `enumerated AC*/EC* ids == rows carrying a verdict + evidence (or explicit BLOCKED)`** ([qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *AC/EC & bug-detail coverage*) — all seven layers green as stated at Phase B step 3, Phase E and Phase F (*AC/EC coverage reconciliation*). Fail closed: any id unrun/unrowed/verdict-less ⇒ story not complete.
 - [ ] Every scenario has PASSED/FAILED/BLOCKED/NOT TESTED with evidence reference.
-- [ ] **Design (Figma) comparison ran for every UI scenario** ([figma-design-comparison.md](../../../references/figma-design-comparison.md)) — as stated at Phase B step 4 and E0 (steps 1, 6, 7): design reference on the report header's `Design ref:` line, five points compared, no-reference screens BLOCKED, design-out-of-date and revised-AC cases handled as E0 step 6 says.
-- [ ] **Depth gates green** ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md)): the whole surface covered (its existing cases, not only this ticket's AC) · values checked against their source · every in-scope width run with overflow/overlap **measured**, out-of-scope widths stated · states exercised (empty/loading/error/over-limit/disabled) · fixture big
-      enough to overflow or scroll · build id recorded · evidence on **passed** rows too · no `caveat/not verifiable/assumed` row carrying a passing verdict · anything wrong that was seen is reported even where no AC asked for it.
-- [ ] **Story evidence-completeness gate (5-step) PASSED — the work is not done until it is green.** Per [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *Story-testing evidence-completeness gate*: every non-BLOCKED case carries a **whole-flow MP4 + one screenshot per Expected-Result item** (a retest-bug re-verify carries the MP4 per case + a screenshot only on
-      text-verification cases, attached to Jira not Drive); every **role the case names** has its own capture set (5 roles named = 5 sets, canonical ids copy-pasted, an unexercised role = a BLOCKED row naming it — never "covered by another role"); every MP4 clears the **7-layer quality+correctness gate** in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) (max quality per
-      the capture spec — 1920×1080 · dsf 2 · CRF 18 preset slow · yuv420p limited-range · **steady picture, ≤5% repeated moving frames** with declared still-holds capped at 25% · **provenance manifest** naming `cdp-screencast->x264`, never Playwright `recordVideo` — recorded with the toolkit's `capture/qa_recorder.js` and measured by `capture/verify_video.py`, not by eye · whole flow, no
-      skip · **scrolls to and holds the stated target in frame**, no early cut · ER on screen · legible · integrity+match · link-verified); every file resolves, plays/non-blank, and matches the exact case; verdict↔bug↔remark are consistent (minor-issue ⇒ a ≤Medium bug flagged, FAILED ⇒ High+, no stale BLOCKED note on a PASSED row). Fail closed: one red case = story not complete.
-- [ ] **Pre-delivery completeness gate (7-layer) PASSED before ANY external write — Phase G, the Jira post, the sheet, the notify, or telling the requester "done".** Per [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *Pre-delivery completeness*: scope re-counted from the ticket **this round** (not from the earlier plan) · role × case matrix full with no inherited
-      cells · **every** evidence file opened this round (not sampled) and shown to contain its ER · every claim points at a row · verdict↔bug↔priority↔remark agree · nothing recorded only in prose/หมายเหตุ/chat · **the 4-question adversarial pass answered with a pointer for every question** (judge the deliverable as a second QA/another AI told to "find where this was cut short") ·
-      handover states cases run/total, roles covered/named, files verified, and every BLOCKED with its reason. Fail closed: any layer red ⇒ nothing is delivered until it is fixed and the gate re-run.
+- [ ] **Design (Figma) comparison done for every UI scenario** — every item of Phase B step 4 and E0 (steps 1, 6, 7) satisfied.
+- [ ] **Depth gates green** ([customer-escape-prevention.md](../../../references/customer-escape-prevention.md)) — each of these holds:
+  - the whole surface covered (its existing cases, not only this ticket's AC);
+  - values checked against their source;
+  - every in-scope width run with overflow/overlap **measured**; out-of-scope widths stated;
+  - states exercised (empty / loading / error / over-limit / disabled);
+  - fixture big enough to overflow or scroll;
+  - build id recorded;
+  - evidence on **passed** rows too;
+  - no `caveat/not verifiable/assumed` row carrying a passing verdict;
+  - anything wrong that was seen is reported even where no AC asked for it.
+- [ ] **Story evidence-completeness gate (5-step) PASSED — the work is not done until it is green.** Per [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *Story-testing evidence-completeness gate*. Fail closed: one red case = story not complete.
+  - Every non-BLOCKED case carries a **whole-flow MP4 + one screenshot per Expected-Result item** (a retest-bug re-verify carries the MP4 per case + a screenshot only on text-verification cases, attached to Jira not Drive).
+  - Every **role the case names** has its own capture set (5 roles named = 5 sets, canonical ids copy-pasted, an unexercised role = a BLOCKED row naming it — never "covered by another role").
+  - Every MP4 clears the **7-layer quality+correctness gate** in [qa-evidence-gates.md](../../../references/qa-evidence-gates.md): max quality per the capture spec — 1920×1080 · dsf 2 · CRF 18 preset slow · yuv420p limited-range · **steady picture, ≤5% repeated moving frames** with declared still-holds capped at 25% · **provenance manifest** naming `cdp-screencast->x264`, never Playwright `recordVideo` — recorded with the toolkit's `capture/qa_recorder.js` and measured by `capture/verify_video.py`, not by eye · whole flow, no skip · **scrolls to and holds the stated target in frame**, no early cut · ER on screen · legible · integrity+match · link-verified.
+  - Every file resolves, plays/non-blank, and matches the exact case.
+  - Verdict↔bug↔remark are consistent (minor-issue ⇒ a ≤Medium bug flagged, FAILED ⇒ High+, no stale BLOCKED note on a PASSED row).
+- [ ] **Pre-delivery completeness gate (7-layer) PASSED before ANY external write — Phase G, the Jira post, the sheet, the notify, or telling the requester "done".** Per [qa-evidence-gates.md](../../../references/qa-evidence-gates.md) § *Pre-delivery completeness*. Fail closed: any layer red ⇒ nothing is delivered until it is fixed and the gate re-run.
+  - Scope re-counted from the ticket **this round** (not from the earlier plan).
+  - Role × case matrix full with no inherited cells.
+  - **Every** evidence file opened this round (not sampled) and shown to contain its ER.
+  - Every claim points at a row; verdict↔bug↔priority↔remark agree; nothing recorded only in prose/หมายเหตุ/chat.
+  - **The 4-question adversarial pass answered with a pointer for every question** (judge the deliverable as a second QA/another AI told to "find where this was cut short").
+  - Handover states cases run/total, roles covered/named, files verified, and every BLOCKED with its reason.
 - [ ] Every FAILED/BLOCKED defect has its repro matrix (one row per entry point, untried paths `not tested`), expected-line-verbatim vs actual, **root cause**, and — where the deviation is from the written expectation — resolution options with a named owner.
 - [ ] **E2 root-cause investigation ran for every FAILED and BLOCKED scenario** (during the run, not in Phase F): debugging skill invoked and named, 8-boundary sweep complete with `not checked` written where it applies, hypotheses ruled out recorded, cause labelled `Confirmed` / `Suspected` (+ the confirming check) / `Unknown — not investigated` (+ what is needed).
 - [ ] **E3 challenge gate ran for every non-PASSED scenario** ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)): expected side re-verified char-exact against an authoritative source **including related/linked tickets' AC/EC**; a wrong/superseded expected became a TC-adjustment (not a defect), an unclear/hedged spec became BLOCKED + a who-to-ask remark (not a
@@ -394,7 +417,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST run the plan in parallel lanes whenever it has 2+ units, one leased account per lane, lane count = min(units, leasable accounts) with no fixed cap, unless a [parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §4 predicate is named | Shortest run time with no shared login — a shared account ends sessions and shares state, producing false defects |
 | NEVER open a browser or login window for a test account (main thread or lane), and never ask for, collect or fill a password — a lane returns `SESSION-DEAD`; the main thread gives ready-to-run commands, one combined `bash` block per step (relink every needed account → setup/mint only the FAILED ones; each account isolated, prints OK / FAILED with a log path), then probes — full steps at Phase D *Login reuse* and *Fresh login* ([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3) | Login windows popped a chain of windows at the person; owner order 2026-10-21: login by command, as in the e2e suite |
 | MUST pass the 7-layer AC/EC coverage gate — rule stated at Phase B step 3 (enumerate, map 1:1), Phase E *Cover every enumerated AC/EC id* (own row, never a remark; a differing id is FAILED/PWMI per the matrix, an unreachable id is BLOCKED — a coverage gap, never a product FAILED) and Phase F *AC/EC coverage reconciliation* (fail-closed: no Phase G, no "100%/complete") | The run's scope is the ticket's AC/EC contract; a card was once passed with the gap footnoted in a remark — coverage is proven by rows, and "works except one point" reads as a clean pass downstream |
-| MUST print the Phase C intake summary + plan and wait for the user's confirmation before the first Playwright run; the plan rides again in the end decisions popup ([round-time-contract.md §2](../../../references/round-time-contract.md), testing-ticket exception) | Owner decision D2 (round-time-contract §2): the user approves scope, environment and accounts before anything runs; the wait is once, before execution, never mid-run (a bot run waits for an explicit confirm in its triggering channel — Phase C) |
+| MUST pass the Phase C confirm gate before the first Playwright run — rule stated once at Phase C | Owner decision D2 (wait for the user's confirm before the first run): the user approves scope, environment and accounts before anything runs; the wait is once, never mid-run |
 | NEVER wait mid-run for a user answer — apply the documented default and queue the question for the end decisions popup ([§2](../../../references/round-time-contract.md)) | Human wait blocks the round; the default keeps the run moving and the question still reaches the user |
 | MUST execute every external write (comment, result update, notify) under **one** approval popup that names each concrete action, with no second approval ([§3](../../../references/round-time-contract.md)) | One human touch per round; every action is still approved by name |
 | MUST end every round report with the measured `Round time: AGENT+EXEC {n} min · human wait {h} min · overrun {…} min` line — never estimated ([§1](../../../references/round-time-contract.md)) | The 15-minute cap is only real if it is measured |
@@ -408,8 +431,8 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST resolve any disagreement between your own observations with one clean re-run before writing F2/F3; unresolvable → BLOCKED, not FAILED | Resolving it in favour of the result you already wrote is how a wrong repro path ships |
 | MUST give every FAILED/BLOCKED defect the F3 blocks — repro matrix, expected line quoted verbatim vs actual, **root cause**, resolution options with a named owner | These are the questions the reader asks next; answering them in chat leaves the record incomplete |
 | MUST run the E2 root-cause investigation for EVERY FAILED and BLOCKED scenario, during the run, starting by invoking `superpowers:systematic-debugging` (Phases 1–3) and naming it in the write-up | The session state is open only during the run; improvised reasoning afterwards is where guessing enters |
-| MUST run the E3 challenge gate for EVERY non-PASSED scenario — re-verify the expected side char-exact against an authoritative source **including related/linked tickets' AC/EC**, then apply the documented default and queue expected-vs-observed + the AC/EC finding + a recommendation (adjust TC / re-test / confirm defect) for the end decisions popup before listing it as a defect ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)) | A non-PASS against a stale, superseded, or misread expected is a phantom defect; the expected side is the one that must be earned, and adjusting a spec or re-testing is the user's call (PM-006, [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)) |
-| MUST NOT file / list a defect whose expected turned out wrong, superseded, or unclear — that is a test-case adjustment or a BLOCKED question, never a defect; unattended bots resolve it as BLOCKED + remark, never a phantom bug and never a halt | Filing the app against an unverified expected is exactly how a phantom bug ships (PM-006) |
+| MUST run the E3 challenge gate for EVERY non-PASSED scenario — re-verify the expected side char-exact against an authoritative source **including related/linked tickets' AC/EC**, then apply the documented default and queue expected-vs-observed + the AC/EC finding + a recommendation (adjust TC / re-test / confirm defect) for the end decisions popup before listing it as a defect ([non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)) | A non-PASS against a stale, superseded, or misread expected is a phantom defect; the expected side is the one that must be earned, and adjusting a spec or re-testing is the user's call (post-mortem PM-006 — a bug was filed against an expected nobody had opened; [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md)) |
+| MUST NOT file / list a defect whose expected turned out wrong, superseded, or unclear — that is a test-case adjustment or a BLOCKED question, never a defect; unattended bots resolve it as BLOCKED + remark, never a phantom bug and never a halt | Filing the app against an unverified expected is exactly how a phantom bug ships (post-mortem PM-006 — bug filed on an unopened spec) |
 | MUST complete the 8-boundary sweep and write `not checked` where a boundary was not reached | A boundary not captured during the run cannot be reconstructed later — reconstruction is fabrication |
 | MUST attach a captured artifact to every cause statement and label it `Confirmed` / `Suspected` / `Unknown — not investigated`, carrying the label into every destination the sentence is copied to | A `Suspected` cause read as `Confirmed` sends a developer to the wrong layer |
 | MUST NOT use a hedge (`probably`, `น่าจะ`, `seems`, `flaky`, `cache issue`, `environment issue`) as a cause, restate the symptom as the cause, or infer a cause from another scenario/role/record | Hedged guessing is still guessing, and it ships as QA's finding |
@@ -418,7 +441,7 @@ Shared rules: [shared-must-never.md](../../../references/shared-must-never.md). 
 | MUST NOT rewrite a ticket's acceptance/expected text to match observed behavior | The spec owner decides; QA reports the conflict and names them |
 | MUST pass the F4 reader gate before Phase G | The gate exists so answers land in the write-up, not in a round-trip that ends in an edited record |
 | MUST re-verify before answering any question that arrives after publishing, then fold the answer into the published record in place (Phase H) | Answering from memory publishes wrong claims |
-| MUST compare every UI scenario against its **design node** on all five points and report a screen with **no design reference** back to the assigner with its visual points **BLOCKED** — rule stated at Phase B step 4 and E0 steps 1 and 7; the node link goes on the report header's `Design ref:` line, never a per-row column | An all-present, mis-ordered screen passes a "shows A, B, C" expected (the set that shipped 25 customer-found defects contained the word `figma` zero times); an assumed expected produces both phantom defects and false passes (PM-006) |
+| MUST compare every UI scenario against its design node — rule stated once at Phase B step 4 and E0 (steps 1, 6, 7) | An all-present, mis-ordered screen passes a "shows A, B, C" expected (the set that shipped 25 customer-found defects contained the word `figma` zero times); an assumed expected produces both phantom defects and false passes (post-mortem PM-006 — bug filed on an unopened spec) |
 | MUST report a screen this ticket intentionally changed as **design out of date** (name the design owner, ask for the node update in this ticket) instead of listing it as a defect | A relocated menu was reported missing when it existed in a submenu — a full round lost |
 | MUST spell out a mid-test AC revision in the verdict (`PASSED against AC as revised {date}, differs from design in {…}`) and hand the difference to the known-limitation list | A silent PASSED on a revised AC shipped the review's only High-severity escape |
 | MUST cover the whole **surface** the ticket touched — its existing cases, states, and in-scope widths — not only the ticket's own AC lines | A component passed on one screen while the defect sat on another screen reusing it |

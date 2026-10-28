@@ -39,7 +39,10 @@ Lane count = min(units, accounts leasable without collision); **no fixed lane ca
 **Each lane owns its unit end to end:** execution, the E0 Figma compare, recording during execution
 ([round-time-contract.md §8](../../../references/round-time-contract.md) — the run that executes the
 case is the recording; every clip still passes all 7 layers), the E1 repro shape, and the E2 root
-cause. Barrier units run alone after the lanes return. The **main thread only merges** — it runs the
+cause. Barrier units run alone after the lanes return. A **cross-role chain** (Phase B step 7 —
+`L2 #n after L1 #m`) dispatches the later lane's dependent scenarios as a second wave on that same
+lane's account as soon as the earlier lane returns; if `#m` did not PASS, `#n` is **BLOCKED —
+precondition #m not met** (through E2 like any BLOCKED row), never run against a half-done state. The **main thread only merges** — it runs the
 §6 merge (isolation · coverage · evidence) into one report and one bundle, and applies E3 (default +
 queue) on every non-PASS before Phase F. Execution stays agent-driven, step by step. Lanes never post
 or update anything outside the run.
@@ -362,7 +365,7 @@ Follow [round-time-contract.md §3](../../../references/round-time-contract.md):
    every C answer) "Open a bug for {TC/ER}?"** (*Not now — stays Not filed yet* / *Open it via
    create-bug-workflow*). Only a live *Open it* answer from the owner routes to create-bug.
 3. **Apply the answers** — re-render the draft and re-run the guard.
-4. **Approval popup** — one approval for the whole bundle, naming every concrete action: the comment
+4. 🔴 GATE: **Approval popup** — nothing is written outside the run until it is answered; one approval for the whole bundle, naming every concrete action: the comment
    (target ticket + endpoint), each external result update (destination + rows), and any notify
    (channel + resolved recipient).
 5. **Execute** — Phase G4–G7 with no second approval.
