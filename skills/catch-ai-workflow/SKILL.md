@@ -93,7 +93,7 @@ part of this workflow (see [MUST / NEVER](#must--never)); Priority comes from th
 2. **Enumerate** every claim, number, file, screen, endpoint, and section in scope. Output: a numbered inventory list.
 3. **Name the governing source for each** — spec, Figma frame, acceptance criterion, OpenAPI path, DB schema, ticket, or data file. A proxy that merely correlates (a file timestamp, a similar page, your own earlier message) governs nothing. Output: the source next to each inventory item.
 4. **Inspect the actual side directly** — read the file, run the command, call the endpoint, open the screen. Capture verbatim. Read-only inspection only: a command or call that writes, sends, deletes or changes state (POST/PUT/DELETE, a migration, a post, a create) → 🔴 ask the owner first and wait; without that yes the item is a Question. Output: the verbatim actual next to each item.
-5. **Compare character-exact** and classify each item: Defect / Defect (unsourced claim) / Question / checked-clean. Output: a classification table (item · expected + source · actual · class), then a count line that tallies each class on its own — `Defects (actual ≠ sourced expected): N · Unsourced claims: N · Questions: N · Clean: N`. 🔴 An unsourced claim keeps its severity and its cite-or-remove correction, but is never added to the Defect count, and no row is reclassified to reach the number the user claimed ([The Iron Law](#the-iron-law) — the count is whatever survives verification). When any tally, or their sum, equals the claimed number, apply the first [red flag](#red-flags--start-over) before reporting.
+5. **Compare character-exact** and classify each item: Defect / Defect (unsourced claim) / Question / checked-clean. Output: a classification table (item · expected + source · actual · class), then a count line that tallies each class on its own — `Defects (actual ≠ sourced expected): N · Unsourced claims: N · Questions: N · Clean: N`. 🔴 An unsourced claim keeps its severity and its cite-or-remove correction, but is never added to the Defect count, and no row is reclassified to reach the number the user claimed ([The Iron Law](#the-iron-law) — the count is whatever survives verification). When any tally, or their sum, equals the claimed number, apply the first [red flag](#red-flags--start-over) before reporting — once; its exit rule says when the matching count stands.
 6. **Map coverage** — what has no check at all. Output: the [coverage matrix](reference.md#coverage-matrix) table.
 7. **Find the root cause of each defect** using [root-cause-investigation.md](../../references/root-cause-investigation.md) — the owning layer, not the place it surfaced. Output: one Root cause line per defect — the owning layer and a label Confirmed / Suspected / Unknown (Unknown is a Question, never a guessed fix).
 8. **Propose the fix and the prevention, each with a citable source.** Output: one [remediation entry](reference.md#remediation-entry-template) per defect.
@@ -148,6 +148,8 @@ registry, and the report template: [reference.md](reference.md).
 
 **Go back:** Any red flag returns you to Procedure step 1 — Fix the scope, and the audit runs again from there.
 
+**Exit for a count that really matches (first red flag only).** The first red flag sends you back once, not forever. After one full re-run from step 1, if every Defect still has a quoted source and no other red flag fires, report the count as it stands — even when it equals the user's number — and add this line to the report: `Count equals the claim; re-verified once from step 1.` A second match after that re-run is not a reason to re-run again, and never a reason to reclassify a row.
+
 ## Result quality gate (mandatory before an audited verdict is confirmed) [low freedom]
 
 Run [result-quality-gate.md](../../references/result-quality-gate.md) — all 20 layers, every case, PASSED
@@ -159,6 +161,11 @@ and say in the record that the check was by hand ([dependencies.md](../../refere
 in-repo guard tools). A red layer blocks that case's verdict: report the case as BLOCKED with the
 reason, never drop it and never soften the layer. A lane's "gate green"
 is a claim — the main thread re-runs the gate itself (layer 20).
+
+**Two answers per case, never merged.** The classification (Procedure step 5) answers "does the audited work match its source?"; the gate answers "may this verdict be sent on now?". A gate hold never rewrites the classification, and the classification never skips the gate:
+
+- **Flaky case** (the run log shows a different result between identical runs — [Quick reference](#quick-reference)): the verdict the source supports is FAILED, labelled intermittent with its counts (layer 16), and an earlier PASSED for that case is a Defect in the audited work. Write that verdict in the correction and in the case line as `FAILED (intermittent, {failed_attempts} of {attempts})` — never "not confirmable", never BLOCKED alone. The gate runs on that FAILED line like on any other; a red layer adds its hold beside the verdict, named: `TC-n — FAILED (intermittent, 1 of 2) per run log · BLOCKED for sending: layer 17, no accepted clip`. It never becomes PASSED.
+- **Claim matches its source, evidence not in the audit input** (the audited work says PASSED and the run log line says PASS): the claim is checked-clean — report it as checked, no issue found in the audited work, and count it as Clean. Evidence the audit input does not include is not proof that none exists: list `evidence not provided for TC-n` once under coverage gaps as a Question, not as a Defect — unless the audited work itself states evidence it does not have. The gate's red layer (for example layer 9) still holds that case BLOCKED for sending, with its reason, in the gate record.
 
 **No test verdict in scope** (the audited work contains no PASSED / PWMI / FAILED / BLOCKED result for any case — for example a release note or a document) → mark this gate `N/A — no test verdict in scope` in the report, with that reason, and tick it. If even one case verdict is in scope, the gate runs in full for every case.
 
@@ -186,6 +193,7 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + this work
 | MUST report the count that survives verification, never the count claimed | Matching a claimed number is fabrication |
 | MUST open every source cited in a recommendation | A remembered citation is an invented one |
 | MUST attach a prevention layer to every defect | A fix without prevention returns as the same finding |
+| MUST NOT run a command or call that writes, sends, deletes or changes state during inspection without the owner's yes (Procedure step 4) | An audit must not change the thing it audits |
 | MUST NOT file a Jira bug from this workflow | Filing belongs to `create-bug-workflow` after the defect is confirmed |
 | MUST NOT rewrite the audited work beyond the reported corrections, and apply those only after the owner approves them (CHECKPOINT after step 9) | Audit and rewrite are different jobs; an unasked edit changes delivered work behind the owner's back |
 
@@ -198,7 +206,7 @@ Every file this skill's procedure requires, one hop from here. Read each at the 
 - Read [bug-priority-matrix.md](../../references/bug-priority-matrix.md) before setting any priority or a PWMI / FAILED verdict.
 - Read [defect-report-completeness.md](../../references/defect-report-completeness.md) before writing up any defect or non-pass.
 - Read [helix-session-constraints.md](../../references/helix-session-constraints.md) once at session start.
-- Read [long-workflow-todos.md](../../references/long-workflow-todos.md) when the workflow has many steps; keep the todo list.
+- Read [long-workflow-todos.md](../../references/long-workflow-todos.md) at the start of every audit (this procedure has 9 steps); keep the todo list.
 - Read [non-pass-challenge-gate.md](../../references/non-pass-challenge-gate.md) before recording any result that is not PASSED.
 - Read [qa-debug-discipline.md](../../references/qa-debug-discipline.md) when a test is flaky or a tool errors.
 - Read [qa-evidence-gates.md](../../references/qa-evidence-gates.md) before any completion claim.
@@ -209,18 +217,29 @@ Every file this skill's procedure requires, one hop from here. Read each at the 
 - Read [skill-rules-style.md](../../references/skill-rules-style.md) before asking the user or stopping on a missing input.
 - Read [user-communication.md](../../references/user-communication.md) before any message to the user.
 
-**Read only when the audit target needs it** — a UI screen or design, a Playwright run or selector, a Jira comment, a verify/retest close-out, a timed round, or a QA follow-up; the trigger at the end of each line says when:
+**Read only when the audit target needs it.** This workflow never posts, files or runs anything on its own; pick the group that matches the audit target from step 1 and read only that group (several groups only when the target spans them):
 
-- Read [figma-design-comparison.md](../../references/figma-design-comparison.md) when the audit target includes a UI screen or visual result, before judging it against the design.
-- Read [customer-escape-prevention.md](../../references/customer-escape-prevention.md) before any QA run; the gates that stop shipped defects.
-- Read [jira-comment-post-review.md](../../references/jira-comment-post-review.md) after posting a Jira comment, before saying done.
-- Read [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) before posting a Jira table with multi-line cells.
-- Read [playwright-preflight.md](../../references/playwright-preflight.md) before any Playwright run.
-- Read [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) when proposing a QA follow-up.
-- Read [resilient-selectors.md](../../references/resilient-selectors.md) when writing or fixing Playwright selectors.
-- Read [round-time-contract.md](../../references/round-time-contract.md) when a round starts and before reporting times.
-- Read [test-through-real-steps.md](../../references/test-through-real-steps.md) before testing an action; no API shortcut for the action under test.
-- Read [verify-closing-checklist.md](../../references/verify-closing-checklist.md) before reporting a verify or retest done.
+*UI screen or design in scope:*
+
+- Read [figma-design-comparison.md](../../references/figma-design-comparison.md) before judging a UI screen or visual result against the design.
+
+*Test run in scope (the audit re-executes a run, or audits a run's results):*
+
+- Read [customer-escape-prevention.md](../../references/customer-escape-prevention.md) when the audit re-executes a test run, or judges whether a run's gates would have stopped a shipped defect.
+- Read [playwright-preflight.md](../../references/playwright-preflight.md) only when the audit re-executes a Playwright run.
+- Read [resilient-selectors.md](../../references/resilient-selectors.md) only when the audited work includes Playwright selectors under review.
+- Read [test-through-real-steps.md](../../references/test-through-real-steps.md) when judging whether a run tested the action through its real steps (no API shortcut for the action under test).
+- Read [round-time-contract.md](../../references/round-time-contract.md) when the audited work reports round times or durations.
+- Read [verify-closing-checklist.md](../../references/verify-closing-checklist.md) when the audit target is a verify or retest close-out.
+
+*Jira artifact in scope (an already-posted comment or table is the audit target):*
+
+- Read [jira-comment-post-review.md](../../references/jira-comment-post-review.md) when the audit target is a Jira comment someone already posted.
+- Read [jira-linebreak-conversion.md](../../references/jira-linebreak-conversion.md) when that posted comment has a table with multi-line cells.
+
+*Follow-up after the report:*
+
+- Read [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) when proposing a QA follow-up workflow.
 
 ## Dependencies
 
