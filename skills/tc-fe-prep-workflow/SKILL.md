@@ -30,11 +30,23 @@ Every must-read file for this workflow, linked directly from here. References al
 
 ### Every run
 
+Read these on every run — each one is used in every TC prep session.
+
 - [WORKFLOW.md](../procedures/tc-fe-prep-workflow/WORKFLOW.md) — always: the full procedure, read end to end.
 - [must-never.md](../procedures/tc-fe-prep-workflow/references/must-never.md) — read at the start of every run, before Step 0, and again before any write or post — the skill-specific MUST / NEVER table; every row binds drafting, review and publishing.
 - [requirement-gates.md](../procedures/tc-fe-prep-workflow/requirement-gates.md) — before Step 3 — read and follow Steps 2a, 2.5 and 2.6, end to end.
 - [design-and-review.md](../procedures/tc-fe-prep-workflow/design-and-review.md) — before Step 5 — read and follow Steps 3, 4 and 4.5, end to end.
-- [csv-export-rules.md](../../references/csv-export-rules.md) — when exporting the CSV file(s).
+- [shared-preamble.md](../../references/shared-preamble.md) — at the start of every run, before the first reply (preamble, constraints, tone).
+- [tc-quality-standards.md](../../references/tc-quality-standards.md) — while writing every TC row.
+- [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) — read on the first response, to locate the workspace project guide for this workflow.
+- [helix-session-constraints.md](../../references/helix-session-constraints.md) — read once at session start.
+- [user-communication.md](../../references/user-communication.md) — read before any message to the user.
+
+### At the step or trigger stated next to each file
+
+Read each file below at the point written next to it, not up front. If that step or trigger does not happen in this run, the file is not read.
+
+- [csv-export-rules.md](../../references/csv-export-rules.md) — read when exporting the CSV file(s).
 - [jira-comment-adf-template.md](../procedures/tc-fe-prep-workflow/references/jira-comment-adf-template.md) — before building the Jira comment ADF, and always on a "draft only / do not post" request — write the .adf.json + preview per this template.
 - [jira-comment-post-review.md](../../references/jira-comment-post-review.md) — right after posting a Jira comment — full review checklist.
 - [jira-fast-publish.md](../../references/jira-fast-publish.md) — read when the fast-publish step returns an error.
@@ -44,14 +56,10 @@ Every must-read file for this workflow, linked directly from here. References al
 - [qa-closing-shared.md](../../references/qa-closing-shared.md) — before reporting done — shared QA closing gates, including the cross-ticket conflict check.
 - [session-closing.md](../../references/session-closing.md) — after the verify gate passes — artifact index, next workflow, handoff.
 - [shared-must-never.md](../../references/shared-must-never.md) — before any write or post — rules shared by every workflow.
-- [shared-preamble.md](../../references/shared-preamble.md) — at the start of every run, before the first reply (preamble, constraints, tone).
-- [tc-quality-standards.md](../../references/tc-quality-standards.md) — while writing every TC row.
-- [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) — read on the first response, to locate the workspace project guide for this workflow.
 - [agent-rationalizations.md](../../references/agent-rationalizations.md) — read when tempted to skip a step; each excuse has its correct action.
 - [coverage-delta-template.md](../../references/coverage-delta-template.md) — read after the coverage review, before the full draft.
 - [csv-template-types.md](../../references/csv-template-types.md) — read before exporting a CSV.
 - [figma-design-comparison.md](../../references/figma-design-comparison.md) — read before judging any UI or visual result against the design.
-- [helix-session-constraints.md](../../references/helix-session-constraints.md) — read once at session start.
 - [long-workflow-todos.md](../../references/long-workflow-todos.md) — read when the workflow has many steps; keep the todo list.
 - [portable-content.md](../../references/portable-content.md) — read before writing any repo, path, ticket number or project value into the skill output; nothing project-specific is hardcoded.
 - [proactive-qa-triggers.md](../../references/proactive-qa-triggers.md) — read when a QA follow-up could be suggested, at any point in the run (including session close).
@@ -61,13 +69,12 @@ Every must-read file for this workflow, linked directly from here. References al
 - [skill-routing.md](../../references/skill-routing.md) — read when choosing which skill handles a request.
 - [skill-rules-style.md](../../references/skill-rules-style.md) — read before asking the user or stopping on a missing input.
 - [test-md-format.md](../../references/test-md-format.md) — read when exporting Test.md.
-- [user-communication.md](../../references/user-communication.md) — read before any message to the user.
 - [ac-ec-coverage-review.md](../procedures/tc-fe-prep-workflow/references/ac-ec-coverage-review.md) — read before drafting; AC / EC coverage review.
 - [jira-formatting.md](../procedures/tc-fe-prep-workflow/references/jira-formatting.md) — read before posting the Jira comment.
 - [prerequisites.md](../procedures/tc-fe-prep-workflow/references/prerequisites.md) — read before step 1.
 - [publish-options.md](../procedures/tc-fe-prep-workflow/references/publish-options.md) — read when choosing how to publish.
 - [qase-import-format.md](../procedures/tc-fe-prep-workflow/references/qase-import-format.md) — read before exporting the Qase CSV.
-- [worked-example.md](../procedures/tc-fe-prep-workflow/references/worked-example.md) — read for a full worked example.
+- [worked-example.md](../procedures/tc-fe-prep-workflow/references/worked-example.md) — read only when you need a format reference for the TC table or comment (a full anonymized worked example).
 
 ### Only when the stated trigger occurs (outside manual TC drafting)
 
