@@ -141,6 +141,42 @@ t("agent must-catch: เปิด ticket ใหม่ (คำกริยาต�
 t("agent must-catch: กรรมมาก่อนกริยา — bug นี้สร้างให้ด้วย", () =>
   assert.strictEqual(G.inspectAgentPrompt("bug นี้สร้างให้ด้วยใน Jira").hit, true)
 );
+// ชื่อสกิล/branch/path ไม่ใช่คำสั่ง (docs/sdd/issue-guard-identifier-fp R1–R3, 2026-10-28):
+// brief ของเลนถูกบล็อกผิดเพราะ "create-bug" และ "fix/r5-testing-ticket, PR #74 open"
+t("agent must-pass: ชื่อสกิล create-bug-workflow + branch fix/r5-create-bug", () =>
+  assert.strictEqual(
+    G.inspectAgentPrompt(
+      "Your scope: create-bug-workflow bodies only, worktree `~/GitHub/ols-qa/.worktrees/fix/r5-create-bug` (branch fix/r5-create-bug, PR #72 already open with head 0e18d29)."
+    ).hit,
+    false
+  )
+);
+t("agent must-pass: branch ลงท้าย -ticket ตามด้วยสถานะ PR open", () =>
+  assert.strictEqual(
+    G.inspectAgentPrompt(
+      "Your scope: testing-ticket-workflow bodies only (and commands/testing-ticket.md), worktree `~/GitHub/ols-qa/.worktrees/fix/r5-testing-ticket` (branch fix/r5-testing-ticket, PR #74 open, head e519ccd)."
+    ).hit,
+    false
+  )
+);
+t("agent must-pass: ชื่อสั้นสองส่วน create-bug เป็นชื่อ ไม่ใช่คำสั่ง", () =>
+  assert.strictEqual(G.inspectAgentPrompt("Review the create-bug skill text for P1 findings.").hit, false)
+);
+t("agent must-catch: Open a GitHub issue ยังโดนบล็อก", () =>
+  assert.strictEqual(G.inspectAgentPrompt("Open a GitHub issue for the failing case.").hit, true)
+);
+t("agent must-catch: bug-report สองส่วนไม่มีกริยา ยังเป็นกรรม", () =>
+  assert.strictEqual(G.inspectAgentPrompt("open a bug-report for this").hit, true)
+);
+t("agent must-catch: ticket/bug ไม่มี - หรือ . ไม่ใช่ path", () =>
+  assert.strictEqual(G.inspectAgentPrompt("create a ticket/bug in Jira").hit, true)
+);
+t("stripIdentifiers: ตัดเฉพาะชื่อ ไม่แตะคำปกติ", () => {
+  assert.strictEqual(typeof G.stripIdentifiers, "function");
+  const out = G.stripIdentifiers("see fix/r5-create-bug and create-bug-workflow and notes.md then open a bug-report");
+  assert.ok(!/create-bug|notes\.md/.test(out), out);
+  assert.ok(/open a bug-report/.test(out), out);
+});
 
 // ---------- อายุของ confirm ----------
 t("isFresh: consumed แล้วใช้ไม่ได้", () =>
