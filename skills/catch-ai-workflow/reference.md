@@ -198,3 +198,5 @@ Scope: <what was audited> · Out of scope: <what was not>
 ```
 
 When nothing survives verification, the report still states it explicitly: `No issue found.` followed by what was checked and against which source.
+
+A conclusion the audited work closed on a hedge goes under Defects as `[<severity>] Hedged conclusion — <the claim>`, with the hedged sentence quoted verbatim as Actual and the `Confirmed` answer (artifact cited) as Correction. Every conclusion line the report itself writes — Verdict, Root cause, Correction, Remediation, Checked — is hedge-free (SKILL.md § Hedged conclusions); an item that could not be dug to `Confirmed` sits under Questions with its label, the exact check, and what is needed.
