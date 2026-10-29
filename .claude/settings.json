@@ -32,6 +32,11 @@
       "mcp__Claude_Browser__find",
       "mcp__claude-in-chrome__find",
       "mcp__af7c11f4-f132-429c-aef3-6f4f21f09a74__searchJiraIssuesUsingJql"
+    ],
+    "deny": [
+      "Read(~/.ols-qa-secrets/**)",
+      "Edit(~/.ols-qa-secrets/**)",
+      "Bash(*ols-qa-secrets*)"
     ]
   },
   "hooks": {
