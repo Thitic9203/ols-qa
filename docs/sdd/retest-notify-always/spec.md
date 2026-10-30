@@ -18,9 +18,13 @@ that a `SKIP` is not a send or that the send is its own job.
 - **R4.** The OLS project guide must name the transport concretely (webhook file, credentials file,
   `--jira-key`, `--registry`, success line) and say it applies to every OLS ticket tested by AI.
   No webhook URL or token is written in the repo. Source: owner order; CLAUDE.md §5.
-- **R5.** A test must fail when R1–R4 wording is missing. Source: owner rule 18.
+- **R5.** A test must fail when R1–R4 (and R6) wording is missing. Source: owner rule 18.
+- **R6.** The testing-ticket workflow must carry the same rules R1–R3 as a mandatory close-out step
+  whenever the project configures a QA notify channel — not only the retest workflow. Source: owner
+  2026-10-30 "/testing-ticket ด้วยนะ ไม่ใช่แค่ไอ้สกิลบัค".
 
 ## Done when
 - Step 9 of the retest workflow carries R1–R3.
+- The testing-ticket workflow has a mandatory notify step carrying R1–R3 (R6).
 - The OLS guide notify section carries R4 with no secret value.
 - The new test is red without the text and green with it; the full suite is green.
