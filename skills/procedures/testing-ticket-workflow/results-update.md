@@ -13,6 +13,7 @@ Part of [WORKFLOW.md](WORKFLOW.md). Section moved verbatim; read when the run up
   - [G5·M — Usage marker (last line of the tracker summary comment)](#g5m--usage-marker-last-line-of-the-tracker-summary-comment)
   - [G6 — Review before “complete” (mandatory)](#g6--review-before-complete-mandatory)
   - [G7 — Close](#g7--close)
+  - [G8 — QA result notify (mandatory when a channel is configured)](#g8--qa-result-notify-mandatory-when-a-channel-is-configured)
 
 ---
 
@@ -165,6 +166,7 @@ Updated: {link}
 Rows/fields written: {summary}
 Verified: {what you re-read}
 Adoption: {Counted in … | NOT counted yet — …}   (see below)
+Notify: {helper success line + message id | not configured — no channel in the guide}   (G8)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -191,5 +193,24 @@ comment to confirm the marker is its last line. The chat close-out MUST then car
 Never claim it without the search result.
 
 If verification failed partially, state what succeeded and what did not — NEVER say “complete” for unverified work — because partial writes look finished to stakeholders.
+
+### G8 — QA result notify (mandatory when a channel is configured)
+
+When the project guide configures a QA notify channel, this step is **mandatory** on every round — whoever
+started the run, asked for a notify or not. It is covered by the Step 4 approval bundle (channel + resolved
+recipient), so there is no second approval.
+
+- **The agent sends the notify itself — every time.** Load the helper's transport (webhook, credentials,
+  flags) from where the project guide says it lives, and run the real send yourself; never hand the send
+  command to the user.
+- Recipient = the ticket's **QA Owner** field the guide names, read fresh from the ticket for this send —
+  never the Reporter, never a name from another ticket.
+- Dry-run first and check: ticket key + title, PASS/FAIL/BLOCKED counts equal the posted result, result
+  link opens the posted comment, recipient matches the QA Owner field.
+- A helper skip / "transport unavailable" result is not a send: re-read the project guide's notify section
+  and every file or note it points to, fix the input, and send again —
+  never state a cause you have not checked.
+- The round is not closed until the helper prints its success line (the guide names it); put that line and
+  the message id on the G7 `Notify:` line.
 
 ---
