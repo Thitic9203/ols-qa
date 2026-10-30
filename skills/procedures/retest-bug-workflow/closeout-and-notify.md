@@ -158,6 +158,7 @@ After the transition, if the project defines a **QA notify channel** (Discord/Sl
 - **Recipient resolution (mandatory):** read the recipient from the ticket field the project guide names (e.g. a "QA Owner" custom field) — fetch that field's value from the bug itself for **every** notify; do not reuse a name from an earlier ticket, and do not default to the Reporter. The label printed next to the mention MUST match the field the value came from (label "QA Owner" ⇒ value from the QA Owner field). Resolve it before the 6d approval popup; if the field is empty or the guide names no field, queue the recipient question in the 6d decisions popup — never ask after approval.
 - This is a **result FYI**, not a "please review" request (the retest is already closed) — do not reuse the full-test-run "QA Review Requested / pending review" wording.
 - If the project provides a notify helper, **use it** (it gets @mention + headers right) instead of hand-assembling the payload.
+- **The agent sends the notify itself — every time.** Load the helper's transport (webhook, credentials, flags) from where the project guide says it lives, and run the real send yourself; never hand the send command to the user. A helper skip / "transport unavailable" result is not a send: re-read the project guide's notify section and every file or note it points to, fix the input, and send again — never state a cause you have not checked. The round is not closed until the helper prints its success line (the guide names it).
 
 ### Pre-notify review gate (mandatory, every send)
 
