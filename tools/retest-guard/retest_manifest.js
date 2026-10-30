@@ -131,6 +131,21 @@ function verdictLine(m) {
 function err(field, message, fix) { return { field, message, fix, severity: 'error' }; }
 
 /**
+ * docs/sdd/retest-scope-word-guard R1–R2. A point of an observed result that uses a universal scope word
+ * must carry the count it was measured on, as `N/N` or `N of N` with the same N — "Every item matches" was
+ * published for OLS-279 while only some cases had been measured. Returns the offending points.
+ */
+const SCOPE_WORD = /\b(every|all|always|any|none|never)\b|\bno item\b|ทุก/i;
+const FULL_COUNT = /\b(\d+)\s*(?:\/|of)\s*(\d+)\b/gi;
+function unsupportedScopeWords(actual) {
+  if (typeof actual !== 'string') return [];
+  return actual.split(' · ').map((p) => p.trim()).filter((p) => {
+    if (!SCOPE_WORD.test(p)) return false;
+    return ![...p.matchAll(FULL_COUNT)].some((m) => m[1] === m[2]);
+  });
+}
+
+/**
  * The lane plan the round actually ran (references/parallel-test-lanes.md §1, §3, §4).
  * Prose said "parallel by default, one leased account per lane"; rounds still ran serial in one
  * agent on a shared login. Here the plan is data: every in-scope case sits in exactly one lane,
@@ -312,6 +327,9 @@ function validate(m) {
     if (!contractIds.has(r.id)) out.push(err(`results[${i}].id`, `result for unknown contract id "${r.id}"`, 'results map 1:1 onto contract items'));
     if (!STATUSES.includes(r.status)) out.push(err(`results[${i}].status`, `status must be one of ${STATUSES.join(' | ')}`, 'no row is status-less'));
     if (!isNonEmptyString(r.actual)) out.push(err(`results[${i}].actual`, 'the observed result is missing', 'what did the screen or the response actually do'));
+    unsupportedScopeWords(r.actual).forEach((p) => out.push(err(`results[${i}].actual`,
+      `scope word without its measured count: "${p}"`,
+      'state what was measured as N/N (e.g. "24/24 items"), or narrow the wording to what was measured')));
     const passing = PASSING.includes(r.status);
     if (passing && m.bugType === 'FE' && asArray(r.evidence).length === 0) {
       out.push(err(`results[${i}].evidence`, 'a passing row carries no evidence', 'passed rows carry evidence too — that is how a layout defect survived a green round'));

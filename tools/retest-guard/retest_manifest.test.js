@@ -456,5 +456,38 @@ check('the symptom line has a third state for a round that did not check it', ()
   });
 });
 
+// docs/sdd/retest-scope-word-guard R1–R3: a universal scope word needs its measured count in the same point.
+const scopeFlagged = (actual) => {
+  const m = base();
+  m.results[1].actual = actual;
+  return M.validate(m).some((f) => f.field === 'results[1].actual' && /scope word/.test(f.message));
+};
+check('scope word without a count is rejected (every / all / always / any / none / never / no item / ทุก)', () => {
+  [
+    'Every first-page item carries the term',
+    'All sections return 0',
+    'always shows the badge',
+    'badge present · no duplicate in any section',
+    'none of the rows is flagged',
+    'the toast never appears',
+    'No item appears twice',
+    'แสดงผลทุกหน้า',
+  ].forEach((a) => assert.ok(scopeFlagged(a), 'accepted: ' + a));
+});
+check('scope word with a matching measured count passes', () => {
+  [
+    'Every first-page item carries the term (24/24 items)',
+    'All 6 of 6 sections return 0',
+    'No item appears twice in any section across 63/63 runs',
+    'แสดงผลทุกหน้า 3/3',
+  ].forEach((a) => assert.ok(!scopeFlagged(a), 'rejected: ' + a));
+});
+check('a count that does not match itself does not support the scope word', () => {
+  assert.ok(scopeFlagged('Every item matches (20/24 items)'), '20/24 accepted as a full count');
+});
+check('points without a scope word are untouched', () => {
+  ['badge present', 'reads "Review Failed" · list refreshed', 'calling the hall'].forEach((a) => assert.ok(!scopeFlagged(a), 'rejected: ' + a));
+});
+
 console.log(failed ? '\n' + failed + ' FAILED' : '\nALL PASS');
 process.exit(failed ? 1 : 0);
