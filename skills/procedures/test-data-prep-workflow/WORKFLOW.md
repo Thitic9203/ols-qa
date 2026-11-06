@@ -44,6 +44,7 @@ Test data prep progress:
 - [ ] Step 5 — Videos (motion-graphics)
 - [ ] Step 6 — Gates (pass every layer before use)
 - [ ] Step 7 — Report
+- [ ] Step 8 — Register + clean up
 ```
 
 ## Discipline
@@ -199,6 +200,38 @@ Fail any layer → root-cause → fix at source → **restart from layer 1**. No
 
 Report to the user: what was **reused**, what was **created** (type · id · final status · name), every **gate result**, and any **clash / block** encountered. Record any new user correction into `CLAUDE.md` + ols-data-prep.md.
 
+## Step 8 — Register every record, then clean up after the test [low freedom]
+
+Test data left on a shared env (dev) is never anonymous or permanent. Registering happens **at creation** (Steps 2, 4, 5), not at the end.
+
+**Register.** Append one row to the run's `data-register.md` (in the run's evidence folder) the moment each record is created:
+
+| Column | Content |
+|--------|---------|
+| `id` | Record id returned by the API |
+| `type` | media · course · learning-path · cover · video |
+| `env` | Exactly the env confirmed at Gate 0 |
+| `created_by` | Account and the agent or person who ran it |
+| `ticket` | Ticket key the data serves (e.g. `{TICKET_KEY}`) |
+| `created_at` | Date and time with timezone |
+| `deletable` | `yes` (nothing else depends on it) · `no` (shared, reused, or a published item others use) · `unknown` (counts as `no`) |
+| `cleanup` | `pending` · `done {time}` · `kept — {reason + who approved}` |
+
+Reused records (Step 1) are listed with `created_by: existing` and `deletable: no` — never delete what you did not create.
+
+**Clean up.** When the test round ends (pass, fail or blocked), walk the register: delete each `deletable: yes` record in reverse creation order (children before parents), read the id back to confirm it is gone, then set `cleanup: done`. A record that stays gets `kept` with a reason and an approver. Every delete stays inside the env confirmed at Gate 0 and is bound to ids in the register — never a bulk or name-pattern delete.
+
+**Exit check (all true before "done"):**
+- [ ] every record created this run has a register row with all columns filled
+- [ ] no row has `cleanup: pending`
+- [ ] each `done` row was read back as gone
+- [ ] each `kept` row names a reason and an approver
+- [ ] the register is attached to the Step 7 report
+
+Example row: `| 4f2a… | course | dev | qa-bot / ols-agent | {TICKET_KEY} | 2026-11-06 10:42 +07 | yes | done 2026-11-06 11:30 |`
+
+**Go back:** a failed delete, or a read-back that still finds the record, returns to this step; root-cause it, never mark `done`.
+
 ## MUST / NEVER
 
 | Rule | Because |
@@ -212,3 +245,6 @@ Report to the user: what was **reused**, what was **created** (type · id · fin
 | NEVER ship data that fails any gate, or call unfinished data "done" | Incomplete data silently corrupts a test run |
 | NEVER create a duplicate name silently | Clash → stop and ask the user first |
 | NEVER fall back to a solid/gradient/PIL/doodle cover when Draw Things is unavailable | The cover work is BLOCKED until the API is up — report it |
+| MUST register each record in `data-register.md` at the moment it is created | Data with no owner, ticket or time cannot be cleaned up safely, and it piles up on dev |
+| MUST clean up every `deletable: yes` record after the round and read it back as gone | Leftover test data pollutes later runs and is seen by real users |
+| NEVER delete a record that is not in the register as created by this run, and never bulk-delete by name pattern | A pattern can match real users' content |
