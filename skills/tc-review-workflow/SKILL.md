@@ -351,7 +351,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 |------|---------|
 | MUST read the ticket's own AC/EC/business-rules text this session before writing any finding | A finding built from memory of a similar ticket is a guess wearing a citation |
 | MUST anchor every finding to a TC/AC id or a quoted source | An unanchored finding cannot be checked by the user and cannot be regenerated when scope changes |
-| NEVER claim a design-source (Figma/PRD) match without having opened that source this session | A guessed match reads as verified and is trusted like one |
+| NEVER claim a design-source (Figma/PRD) match without having opened that source this session. NEVER mark a row **Good**, or pass the document, when its Expected Result is interpreted or borrowed from another ticket, a similar feature or memory: each expected needs a quote from THIS ticket (AC/EC, design node, PRD section, or a PO/dev comment with author and date). List the rest under Need Improve as "unverified expected" and give the document the verdict **Unverified** | A guessed match or an unsourced expected reads as verified, runs as spec and can open a false defect (global rule 10) |
 | MUST distinguish a spec-level gap (missing from the ticket's own AC list) from a TC-authoring defect | Blaming the document for a hole the ticket never asked it to fill misdirects the fix |
 | NEVER count or mention a struck-through AC/EC | The ticket has already taken it out of scope, so mentioning it is noise |
 | NEVER report a business rule or comment that does not conflict with an AC/EC | The AC/EC are the contract. A rule with no TC but no conflict is not a defect in the document |
