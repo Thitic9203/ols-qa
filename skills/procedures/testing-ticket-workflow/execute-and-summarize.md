@@ -61,7 +61,13 @@ lease, and re-dispatches that unit **once** on a fresh lease. A second failure �
 unit with no reported result becomes a **BLOCKED** row (`lane did not return` + the lane's log path)
 and goes through E2 like any other BLOCKED case. A lane's cases are never dropped, never inferred from
 another lane, and never PASSED without the lane's own result line. A lane that returns `SESSION-DEAD`
-follows Phase D *Fresh login* instead.
+mid-run is never waited on: the main thread posts the Phase D *Fresh login* relink/mint blocks for that
+account without waiting, records that account's remaining cases as **BLOCKED** ("session not
+restored"), keeps the other lanes running, and queues the re-run for the end decisions popup
+([round-time-contract.md §2](../../../references/round-time-contract.md)). If the user runs the blocks
+and the probe is OK while other lanes are still running, the parent re-dispatches per
+[parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3, and the re-run's result lines
+supersede those BLOCKED rows.
 
 Drive every scenario through its **real surface** — a UI scenario through the UI (Playwright clicks the
 button / submits the form), following the case's steps completely. The API is for test-data /
