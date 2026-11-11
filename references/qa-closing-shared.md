@@ -4,7 +4,7 @@ Every skill's QA closing section MUST include these items **plus** skill-specifi
 
 ## Doubt and fix-verify
 
-Follow [skill-rules-style.md — doubt and fix-verify](skill-rules-style.md#qa-closing-doubt-and-fix-verify).
+Follow [skill-rules-style.md — doubt and fix-verify](skill-rules-style.md#qa-closing--doubt-and-fix-verify).
 
 1. **Assume the first draft/output is wrong** — name which phase catches it.
 2. Complete **skill-specific** checkboxes (3–5 items in each SKILL.md).
