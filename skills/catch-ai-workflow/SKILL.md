@@ -1,6 +1,6 @@
 ---
 name: catch-ai-workflow
-description: |
+description: |-
   Audit work that is already finished — the agent's own prior output, a document or report, a test artifact, or a feature under test — by tracing every claim to the source that governs it, separating confirmed defects from open questions, and closing each defect with a sourced fix and a prevention layer.
   Use when the user says CatchAI, /catch-ai, claims mistakes exist in something already delivered, asks the agent to review its own work again, says "check yourself" or "find your own mistakes", QA or audit a deliverable, or says ตรวจงานตัวเองอีกรอบ. Also use before reporting that a check passed, that a defect exists, or that work is complete, and when a result was concluded on a guess (น่าจะ / อาจจะ / probably) instead of evidence.
   Do NOT use for retesting a Jira bug after a dev fix (retest-bug-workflow), for drafting new TC tables (tc-fe-prep-workflow / tc-api-prep-workflow), for running a ticket's Playwright pass (testing-ticket-workflow), or for filing the bug once a defect is confirmed (create-bug-workflow).
@@ -149,6 +149,7 @@ item to Procedure step 4 — Inspect the actual side directly — and then step 
 | Conclusion closed on a hedge (น่าจะ / อาจจะ / probably …) with no artifact | **Defect (hedged conclusion)** — dig to the deepest layer until Confirmed, or keep it open as a Question naming the missing check |
 | Matches its source | **Checked, no issue found** |
 | Nothing covers it at any level | **Coverage gap** — reported separately from defects |
+| An item a wrong aggregate claim covers ('all N PASSED') but nothing tested | The aggregate claim is **one Defect**; the untested item is a **Coverage gap** only, never a second Defect |
 | Fix backed by a document you opened and quoted | **Recommendation** — with source, version, date |
 | Fix you believe is right but no standard governs it | **Judgment** — labelled, with the trade-off stated |
 | Result changes between identical runs | **FAILED** — flaky is a failure, not a re-run |
@@ -285,6 +286,6 @@ Every file this skill's procedure requires, one hop from here. Read each at the 
 
 Run the check for each of these before step 1 — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
 
-- Node.js
+- Node.js — only when the workspace has `tools/result-gate/check.js`; otherwise the by-hand walk (Result quality gate) needs none
 - in-repo guard tools (`tools/result-gate`)
 - `superpowers:systematic-debugging`
