@@ -249,8 +249,8 @@ only, **both** runs G1 then G2 (G2 attaches the G1 files). Every branch ends in 
 1. Write markdown with the table to `references/{SCOPE}_API_TC.md` (or user path).
 2. **CSV:** export per [csv-export-rules.md](../../../references/csv-export-rules.md) to `references/{SCOPE}_API_TC.csv` (in-agent by default).
 3. **Excel:** `.xlsx` only if user asked Excel or `both` — follow the Excel/xlsx section in [csv-export-rules.md](../../../references/csv-export-rules.md) (Python + openpyxl inline). When openpyxl is missing or fails, warn the user and ask before falling back to CSV — never silently produce CSV when xlsx was requested.
-4. **Test.md:** only if the user asked for it — write it from the same approved rows per [delivery-options.md](references/delivery-options.md) § Test.md, alongside CSV/Excel, never instead of them.
-5. **Write failure (steps 1–2, `.md` / `.csv`):** any error (permission, missing folder, disk) → 🔴 **STOP**: report the exact error text and the exact path tried; do not say the file is ready and give no download path for it. Offer two ways forward — write to the workspace root, or to a path the user names — and write only after the user picks one. Under **both**, ask this before G2. Delivery A may then continue without the attachment: the comment does not mention one and uses no `__ATT1_ID__` placeholder.
+4. **Write failure (steps 1–2, `.md` / `.csv`):** any error (permission, missing folder, disk) → 🔴 **STOP**: report the exact error text and the exact path tried; do not say the file is ready and give no download path for it. Offer two ways forward — write to the workspace root, or to a path the user names — and write only after the user picks one. Under **both**, ask this before G2. Delivery A may then continue without the attachment: the comment does not mention one and uses no `__ATT1_ID__` placeholder.
+5. **Test.md:** only if the user asked for it — write it from the same approved rows per [delivery-options.md](references/delivery-options.md) § Test.md, alongside CSV/Excel, never instead of them; a write error here is handled as in step 4.
 
 `{SCOPE}` = user-provided name, ticket key, or short slug from API title.
 
