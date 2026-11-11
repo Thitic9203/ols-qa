@@ -93,7 +93,7 @@ Handoffs after a workflow ends: [skill-routing.md § Handoffs](../../references/
 Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + router-specific:
 
 - [ ] User selected a workflow (1–13 or named skill).
-- [ ] Child workflow skill is loaded (not just described).
+- [ ] Child workflow skill is loaded (not just described) — or, when no child was loaded (declined, fallback none, out of scope), the reply says 'not routed' and why.
 - [ ] No Jira post or issue create happened in this router skill.
 
 If routing only, hint the command from the Command column of [skill-routing.md § Primary menu](../../references/skill-routing.md#primary-menu) for the chosen row.
