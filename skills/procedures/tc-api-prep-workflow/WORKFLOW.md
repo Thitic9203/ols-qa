@@ -85,7 +85,7 @@ Load the spec:
 
 If load fails → stop and report; ask for export file or VPN.
 
-Count the Swagger operations in scope (one operation = one method + path pair). If the count is **more than 15**, or the user asks for a whole service, follow [tc-api-chunked-scope.md](../../../references/tc-api-chunked-scope.md) before Phase D — agree chunks with the user.
+Count the Swagger operations in scope (one operation = one method + path pair). If the count is **more than 15**, or the user asks for a whole service, follow [tc-api-chunked-scope.md](../../../references/tc-api-chunked-scope.md) before Phase D — 🔴 STOP until the user agrees the chunk list.
 
 ### Phase A optional — Swagger / spec diff
 
@@ -122,16 +122,18 @@ Ask in **one** message:
 After you approve the draft, how should I deliver the test cases?
 
 A) **Comment on a link** — paste the full URL (e.g. Jira issue, Confluence page).
-B) **Downloadable file** — I will create CSV and/or Excel in your workspace (you choose format).
+B) **Downloadable file** — I will create CSV and/or Excel in your workspace (you choose format), and/or a Test.md file (agent hand-off, alongside CSV/Excel).
 
-You can pick A, B, or both. For (A), provide the link now. For (B), say CSV, Excel (.xlsx), or both, and preferred folder (default: references/).
+You can pick A, B, or both. For (A), provide the link now. For (B), say CSV, Excel (.xlsx), or both, whether you also want Test.md, and preferred folder (default: references/).
 ```
 
 | Choice | Collect now |
 |--------|----------------|
 | **A — Comment** | Full destination URL (a Jira issue is always published as ADF in G2) |
-| **B — File** | `CSV` / `Excel` / `both`; optional path e.g. `references/{name}_API_TC.csv` |
+| **B — File** | `CSV` / `Excel` / `both`, and/or a Test.md file (agent hand-off, alongside CSV/Excel); optional path e.g. `references/{name}_API_TC.csv` |
 | **Both** | Link + file preferences |
+
+Link is neither a Jira issue nor a Confluence page → 🔴 **STOP**: say it is unsupported; offer B or a Jira/Confluence link.
 
 Skip the question for any field the user's messages already fixed (the link for A; format and folder for B — folder defaults to `references/`), and state the recorded choice in one line instead.
 
@@ -223,7 +225,7 @@ Draft API test cases (not published yet)
 **Columns:** {final Phase B list} · **Priority rule:** {only when the spec states no criticality — see api-tc-guidelines § Priority}
 
 | Test Case ID | Module / Feature | ... |
-| --- | --- |
+| --- | --- | --- |
 | ... one row per TC ... |
 ```
 
@@ -247,8 +249,8 @@ only, **both** runs G1 then G2 (G2 attaches the G1 files). Every branch ends in 
 1. Write markdown with the table to `references/{SCOPE}_API_TC.md` (or user path).
 2. **CSV:** export per [csv-export-rules.md](../../../references/csv-export-rules.md) to `references/{SCOPE}_API_TC.csv` (in-agent by default).
 3. **Excel:** `.xlsx` only if user asked Excel or `both` — follow the Excel/xlsx section in [csv-export-rules.md](../../../references/csv-export-rules.md) (Python + openpyxl inline). When openpyxl is missing or fails, warn the user and ask before falling back to CSV — never silently produce CSV when xlsx was requested.
-
-4. **Write failure (steps 1–2, `.md` / `.csv`):** any error (permission, missing folder, disk) → 🔴 **STOP**: report the exact error text and the exact path tried; do not say the file is ready and give no download path for it. Offer two ways forward — write to the workspace root, or to a path the user names — and write only after the user picks one. Under **both**, ask this before G2. Delivery A may then continue without the attachment: the comment does not mention one and uses no `__ATT1_ID__` placeholder.
+4. **Test.md:** only if the user asked for it — write it from the same approved rows per [delivery-options.md](references/delivery-options.md) § Test.md, alongside CSV/Excel, never instead of them.
+5. **Write failure (steps 1–2, `.md` / `.csv`):** any error (permission, missing folder, disk) → 🔴 **STOP**: report the exact error text and the exact path tried; do not say the file is ready and give no download path for it. Offer two ways forward — write to the workspace root, or to a path the user names — and write only after the user picks one. Under **both**, ask this before G2. Delivery A may then continue without the attachment: the comment does not mention one and uses no `__ATT1_ID__` placeholder.
 
 `{SCOPE}` = user-provided name, ticket key, or short slug from API title.
 
