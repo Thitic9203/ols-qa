@@ -16,6 +16,7 @@ Use when the user writes **Thai, informal, or mixed language**. Map intent → w
 | สโม้คเทส, smoke test, เช็ค build ใหม่หลัง deploy | `smoke-test-workflow` (ols-qa workspace only) |
 | เตรียมเทสดาต้า, สร้างข้อมูลทดสอบ, test data prep, seed test data | `test-data-prep-workflow` |
 | เปลี่ยนฟอร์แมต TC, ย้าย TC ลง template, release TC file | `tc-change-format-workflow` |
+| ลง taskfolio, ลง timesheet, ลงเวลางาน, fill taskfolio | `taskfolio-log-workflow` |
 | Helix, เมนู, ทำอะไรได้บ้าง | Show menu (`helix` / `/helix`) |
 
 Extract `PROJ-123` or URLs from the same message when present.
