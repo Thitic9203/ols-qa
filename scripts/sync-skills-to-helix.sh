@@ -15,6 +15,14 @@
 # Usage: sync-skills-to-helix.sh [FILE ...]   (no args = files changed in the last ols-qa commit)
 # Env:   HELIX_REPO (default ~/GitHub/helix) ; HELIX_SYNC_PUSH=0 to skip push ;
 #        HELIX_SYNC_NEW=1 to also create new generic skills/commands files in helix.
+#        HELIX_SYNC_MODE=main (default, unchanged: commit on the helix checkout's main, push main)
+#                       =pr   helix main is ruleset-protected (pluton-ai-agent docs/sdd/helix-auto-sync H1-H6, H9):
+#                             content from ols-qa origin/main only, built in a temporary helix worktree on
+#                             helix origin/main, one commit with a "Synced-From: ols-qa@<sha>" trailer, pushed
+#                             to branch sync/ols-qa-auto only, then `gh pr create` or `gh pr edit` of the one
+#                             open PR. Never pushes helix main, never merges, never edits
+#                             rule-line-register.json or token-budget.json (scripts/sync-skills-pr-mode.sh).
+#                             HELIX_GH_REPO=<owner/repo> overrides the repo gh talks to (default: helix origin URL).
 
 set -o pipefail
 . "$(dirname "$0")/git-env-clean.sh" || { echo "sync: ❌ scripts/git-env-clean.sh missing — NOTHING deployed."; exit 1; }
@@ -23,17 +31,27 @@ OLSQA="$(cd "$(dirname "$0")/.." && pwd)"
 HELIX="${HELIX_REPO:-$HOME/GitHub/helix}"
 PUSH="${HELIX_SYNC_PUSH:-1}"
 SYNC_NEW="${HELIX_SYNC_NEW:-0}"
+MODE="${HELIX_SYNC_MODE:-main}"
+case "$MODE" in
+  main|pr) ;;
+  *) echo "sync: ❌ HELIX_SYNC_MODE must be main or pr (got: $MODE) — NOTHING deployed."; exit 1 ;;
+esac
 
 # --- ols-qa must be on main: only merged content may deploy. 2026-10-14 two feature-branch
 #     commits (one from a linked worktree) reached helix main and shipped unreviewed text. ---
 OLSQA_BRANCH="$(git -C "$OLSQA" symbolic-ref --quiet --short HEAD 2>/dev/null || echo "(detached)")"
-if [ "$OLSQA_BRANCH" != "main" ]; then
+if [ "$MODE" = "pr" ]; then
+  # pr mode never reads the local checkout: only what is merged on ols-qa origin/main (the caller fetches it).
+  SRC_COMMIT="$(git -C "$OLSQA" rev-parse --verify --quiet 'refs/remotes/origin/main^{commit}')" || { echo "sync: ❌ ols-qa has no origin/main to sync from (fetch it first). NOTHING deployed."; exit 1; }
+elif [ "$OLSQA_BRANCH" != "main" ]; then
   echo "sync: ❌ ols-qa checkout is on $OLSQA_BRANCH, not main — refusing to deploy unmerged content. NOTHING deployed."
   echo "sync:    Merge the change to ols-qa main, then run the sync from a checkout on main."
   exit 1
 fi
 # Content is read from this commit, never from the working tree (uncommitted edits must not ship).
-SRC_COMMIT="$(git -C "$OLSQA" rev-parse --verify --quiet HEAD^{commit})" || { echo "sync: ❌ cannot resolve the ols-qa commit to sync. NOTHING deployed."; exit 1; }
+if [ "$MODE" = "main" ]; then
+  SRC_COMMIT="$(git -C "$OLSQA" rev-parse --verify --quiet HEAD^{commit})" || { echo "sync: ❌ cannot resolve the ols-qa commit to sync. NOTHING deployed."; exit 1; }
+fi
 
 [ -d "$HELIX/.git" ] || { echo "sync: helix repo not found at $HELIX — skip"; exit 0; }
 [ -x "$HELIX/scripts/check-no-secrets.sh" ] || { echo "sync: helix guard missing — ABORT (refuse to sync without the secret guard)"; exit 1; }
@@ -81,6 +99,51 @@ fi
 
 [ "${#FILES[@]}" -gt 0 ] || { echo "sync: no shared skill files to sync — nothing to do"; exit 0; }
 
+# --- register any new top-level skill in plugin.json of the current directory (helix CI fails on an
+#     unregistered skill; tc-review-workflow left helix main red 2026-09-15 → 2026-10-06 this way) ---
+register_new_skills() {
+  local f n
+  local new=()
+  for f in "${FILES[@]}"; do
+    case "$f" in
+      skills/procedures/*|skills/in-progress/*) ;;
+      skills/*/SKILL.md)
+        n="${f#skills/}"; n="${n%/SKILL.md}"
+        case "$n" in */*) ;; *) new+=("$n") ;; esac ;;
+    esac
+  done
+  [ "${#new[@]}" -gt 0 ] || return 0
+  python3 - "${new[@]}" <<'PY' || return 1
+import json, pathlib, sys
+p = pathlib.Path(".claude-plugin/plugin.json")
+data = json.loads(p.read_text())
+skills = data.setdefault("skills", [])
+added = [f"./skills/{n}" for n in sys.argv[1:] if f"./skills/{n}" not in skills]
+skills.extend(added)
+if added:
+    p.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+    print("sync: registered in plugin.json: " + ", ".join(added))
+PY
+  git add -- .claude-plugin/plugin.json
+}
+
+# --- helix's own CI gate on HEAD of the current directory; sets GATE_FAILED and returns 1 on red ---
+run_helix_gates() {
+  local g script arg gate_out
+  for g in "sync-version.sh --check" "ci-check-portable-skills.sh" "ci-check-skill-structure.sh"; do
+    script="${g%% *}"; arg=""; [ "$g" = "$script" ] || arg="${g#* }"
+    if [ ! -f "scripts/$script" ]; then
+      GATE_FAILED="helix gate script missing: scripts/$script"; return 1
+    fi
+    if ! gate_out="$(bash "scripts/$script" $arg 2>&1)"; then
+      GATE_FAILED="helix gate failed: scripts/$script"
+      printf '%s\n' "$gate_out" | tail -20
+      return 1
+    fi
+  done
+  return 0
+}
+
 echo "sync: propagating to helix ($HELIX):"
 printf '  · %s\n' "${FILES[@]}"
 
@@ -98,6 +161,13 @@ done
 if ! SCAN_ROOT="$SRC_DIR" "$HELIX/scripts/check-no-secrets.sh" "${FILES[@]}"; then
   echo "sync: ❌ OLS secret in ols-qa SOURCE file(s) — refusing to copy, NOTHING deployed."
   exit 1
+fi
+
+if [ "$MODE" = "pr" ]; then
+  # shellcheck source=sync-skills-pr-mode.sh
+  . "$(dirname "$0")/sync-skills-pr-mode.sh" || { echo "sync: ❌ scripts/sync-skills-pr-mode.sh missing — NOTHING deployed."; exit 1; }
+  sync_pr_mode
+  exit $?
 fi
 
 cd "$HELIX" || exit 1
@@ -153,35 +223,11 @@ if ! ./scripts/check-no-secrets.sh "${FILES[@]}"; then
   exit 1
 fi
 
-# --- register any new top-level skill in plugin.json (helix CI fails on an unregistered skill;
-#     tc-review-workflow left helix main red 2026-09-15 → 2026-10-06 this way) ---
-NEW_SKILLS=()
-for f in "${FILES[@]}"; do
-  case "$f" in
-    skills/procedures/*|skills/in-progress/*) ;;
-    skills/*/SKILL.md)
-      n="${f#skills/}"; n="${n%/SKILL.md}"
-      case "$n" in */*) ;; *) NEW_SKILLS+=("$n") ;; esac ;;
-  esac
-done
-if [ "${#NEW_SKILLS[@]}" -gt 0 ]; then
-  if ! python3 - "${NEW_SKILLS[@]}" <<'PY'
-import json, pathlib, sys
-p = pathlib.Path(".claude-plugin/plugin.json")
-data = json.loads(p.read_text())
-skills = data.setdefault("skills", [])
-added = [f"./skills/{n}" for n in sys.argv[1:] if f"./skills/{n}" not in skills]
-skills.extend(added)
-if added:
-    p.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
-    print("sync: registered in plugin.json: " + ", ".join(added))
-PY
-  then
-    echo "sync: ❌ could not register new skill(s) in plugin.json — reverting copies, NOTHING deployed."
-    git checkout -- "${FILES[@]}" .claude-plugin/plugin.json 2>/dev/null || true
-    exit 1
-  fi
-  git add -- .claude-plugin/plugin.json
+# --- register any new top-level skill in plugin.json ---
+if ! register_new_skills; then
+  echo "sync: ❌ could not register new skill(s) in plugin.json — reverting copies, NOTHING deployed."
+  git checkout -- "${FILES[@]}" .claude-plugin/plugin.json 2>/dev/null || true
+  exit 1
 fi
 
 # --- stage + commit in helix (pre-commit hook re-guards on staged blobs + auto-bumps) ---
@@ -200,17 +246,7 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"; then
   # --- helix's own CI gate, BEFORE deploying: sync commits go straight to main, so helix's
   #     pr-check never sees them (helix main stayed red 21 days, 2026-09). Red = drop the commit. ---
   GATE_FAILED=""
-  for g in "sync-version.sh --check" "ci-check-portable-skills.sh" "ci-check-skill-structure.sh"; do
-    script="${g%% *}"; arg=""; [ "$g" = "$script" ] || arg="${g#* }"
-    if [ ! -f "scripts/$script" ]; then
-      GATE_FAILED="helix gate script missing: scripts/$script"; break
-    fi
-    if ! gate_out="$(bash "scripts/$script" $arg 2>&1)"; then
-      GATE_FAILED="helix gate failed: scripts/$script"
-      printf '%s\n' "$gate_out" | tail -20
-      break
-    fi
-  done
+  run_helix_gates || true
   if [ -n "$GATE_FAILED" ]; then
     echo "sync: ❌ $GATE_FAILED — dropping the sync commit, NOTHING deployed."
     git reset --quiet --keep HEAD~1 || echo "sync: ⚠️ could not drop the local sync commit — remove it by hand before the next push."
