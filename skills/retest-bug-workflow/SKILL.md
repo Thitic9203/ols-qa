@@ -37,8 +37,6 @@ Claude Code shortcut: `/retest-bug` → [commands/retest-bug.md](../../commands/
 
 Read at start: [WORKFLOW.md](../procedures/retest-bug-workflow/WORKFLOW.md) and [shared-preamble.md](../../references/shared-preamble.md). Every other file below is opened only at the step or moment its line names.
 
-See also (optional lookup, not read at start): [skill-reference-index.md](../../references/skill-reference-index.md).
-
 - [execute-and-evidence.md](../procedures/retest-bug-workflow/execute-and-evidence.md) — open at step 4 (Steps 4–5 and the result quality gate).
 - [comment-and-post.md](../procedures/retest-bug-workflow/comment-and-post.md) — open at step 6 (Steps 6–7).
 - [closeout-and-notify.md](../procedures/retest-bug-workflow/closeout-and-notify.md) — open at step 8, after the post (Steps 8–10).

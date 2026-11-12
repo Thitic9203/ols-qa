@@ -337,7 +337,6 @@ Then, in this order (items 1–6 every send; items 7 and 8 only when correcting 
 
 ## Out of scope
 
-- Designing or editing test cases — this workflow only judges what is already written.
 - Deciding the product's pass/fail verdict — this workflow judges whether the *document* would prove
   that verdict, not whether the product itself is correct.
 
@@ -354,6 +353,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Ski
 | NEVER count or mention a struck-through AC/EC |
 | NEVER report a business rule or comment that does not conflict with an AC/EC |
 | MUST give every Need Improve item a sourced "→ Suggest:" fix, and NEVER invent a value for it |
+| MUST run Step 5 exactly as written — it is the single source for the notify rules |
 | MUST NOT post to Jira/Confluence/GitHub or send an external message before the user has seen the review in chat |
 
 ## Must-read files

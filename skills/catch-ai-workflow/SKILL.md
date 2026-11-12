@@ -158,16 +158,7 @@ item to Procedure step 4 — Inspect the actual side directly — and then step 
 
 ## Rationalizations — STOP
 
-| Excuse | Answer |
-|---|---|
-| "They said three, so three" / "one finding looks lazy" | Iron Law: the count is what survives |
-| "The file timestamp proves it" | Step 3: a proxy governs nothing |
-| "Nothing backs it, so it is false" | Quick reference: unsourced claim or Question |
-| "I know this API" / "the URL is probably right" | Iron Law: open and quote the source |
-| "Fix it where it showed up" | Step 7: the owning layer |
-| "The title should also change" | MUST NOT rewrite beyond the corrections |
-| "It passed the second time" | Flaky is FAILED |
-| "Probably the cache" / "`Suspected` is allowed" / "the guess was right" | Hedged conclusions rules 2–4 |
+Each excuse below is already answered by the rule named after it — stop and apply that rule: "they said three, so three" / "one finding looks lazy" (Iron Law: the count is what survives) · "the file timestamp proves it" (step 3: a proxy governs nothing) · "nothing backs it, so it is false" (Quick reference: unsourced claim or Question) · "I know this API" / "the URL is probably right" (Iron Law: open and quote the source) · "fix it where it showed up" (step 7: owning layer) · "the title should also change" (MUST NOT rewrite) · "it passed the second time" (flaky is FAILED) · "probably the cache" / "`Suspected` is allowed" / "the guess was right" (Hedged conclusions rules 2–4).
 
 ## Red flags — start over
 
@@ -223,16 +214,17 @@ Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + this work
 
 ## MUST / NEVER
 
-| Rule | Because |
-|------|---------|
-| MUST verify the expected side against its governing source before reporting a defect | A guess dressed as spec wastes a retest |
-| MUST report the count that survives verification, never the count claimed | Matching a claimed number is fabrication |
-| MUST open every source cited in a recommendation | A remembered citation is an invented one |
-| MUST attach a prevention layer to every defect | Without it the finding comes back |
-| MUST apply [Hedged conclusions](#hedged-conclusions--dig-to-the-deepest-layer-low-freedom) rules 2–5 | A quiet guess ships as fact |
-| MUST NOT run a command or call that writes, sends, deletes or changes state during any step (Procedure 4 and 7, Hedged conclusions rule 3) without the owner's yes | An audit must not change what it audits |
-| MUST NOT file a Jira bug from this workflow | Filing belongs to `create-bug-workflow` |
-| MUST NOT rewrite the audited work beyond the reported corrections, and apply those only after the owner approves them (CHECKPOINT after step 9) | An unasked edit changes delivered work |
+| Rule |
+|------|
+| MUST verify the expected side against its governing source before reporting a defect |
+| MUST report the count that survives verification, never the count claimed |
+| MUST open every source cited in a recommendation |
+| MUST attach a prevention layer to every defect |
+| MUST treat every conclusion closed on a hedge as a Defect (hedged conclusion) and dig it to the deepest layer until Confirmed |
+| MUST NOT write a hedge in any conclusion line of the report, or let a `Suspected` cause close a defect while its confirming check can be run |
+| MUST NOT run a command or call that writes, sends, deletes or changes state during any step (Procedure 4 and 7, Hedged conclusions rule 3) without the owner's yes |
+| MUST NOT file a Jira bug from this workflow |
+| MUST NOT rewrite the audited work beyond the reported corrections, and apply those only after the owner approves them (CHECKPOINT after step 9) |
 
 ## Must-read files
 

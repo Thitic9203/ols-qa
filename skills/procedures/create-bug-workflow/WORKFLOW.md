@@ -195,9 +195,9 @@ Shared rules: at Phase D, before the first write, read [shared-must-never.md](..
 | NEVER file a bug whose expected side is a transliteration, a feature name or a hedged line ("should be…", "confirm with PO") | App vs an assumed spec is a question, not a bug (Refusal-first) |
 | NEVER file a second ticket for a defect already open on the board (Phase B2 duplicate) | Two tickets split the discussion and the retest |
 | NEVER call a create API before the user replies **confirm** in Phase C | An unapproved issue is public at once and must be cleaned up by hand |
-| NEVER replace a reporter-given Severity or Priority with your own pick (Phase A3 item 3) | A guessed value misroutes triage |
+| NEVER replace a Severity the reporter gave with your own reading — a value the matrix cannot place is a question to the reporter (Phase A3, item 3), not a correction | The reporter's severity is the title bracket; a guessed one misroutes triage |
 | NEVER drop a label or field to make a create succeed (Phase B pre-flight, Phase D field errors) | A silently missing Severity/Priority hides the bug from the views that filter on it |
 | MUST search the board (Phase B2) before filing; drop any bug already settled as intended in a prior/closed ticket and report it with the reference link | Re-filing a closed decision wastes a full retest round |
-| MUST use only the bug-priority-matrix vocabulary and cite the cell (Phase A3) | An invented scale cannot be compared with the verdicts that use the matrix |
+| MUST use only the bug-priority-matrix vocabulary for Priority and Severity and cite the cell (Severity value from the reporter, Priority from the cell; a reporter value the cell does not match is asked, never replaced — Phase A3) | An invented scale cannot be compared with the verdicts that use the matrix |
 | MUST verify each issue URL in Phase F | Silent partial failure |
 | MUST lock Jira v2/v3 per session when user specifies | Rewrite cost |

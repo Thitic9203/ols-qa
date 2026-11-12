@@ -29,7 +29,7 @@ When invoked:
 6. **Login by command, never a login window or a password** — WORKFLOW Phase D *Fresh login* ([parallel-test-lanes.md](../../references/parallel-test-lanes.md) §3).
 7. **Result quality gate, all 20 layers on every case before any verdict** — [result-quality-gate.md](../../references/result-quality-gate.md); mechanical layers by checker, judgement layers by hand, gate time counted in the round line (execute-and-summarize *Result quality gate*).
 8. **No-wait decision gate, all 20 layers before any BLOCKED / "needs decision" / held post** — [no-wait-decision-gate.md](../../references/no-wait-decision-gate.md); runs at E3 (execute-and-summarize); never park a case or a finished post waiting for someone.
-9. 🔴 GATE: confirm before the first Playwright run — WORKFLOW Phase C (bot-run branch included).
+9. 🔴 GATE: confirm before the first Playwright run — stated once at WORKFLOW Phase C (bot-run branch included).
 10. Read and follow [WORKFLOW.md](../procedures/testing-ticket-workflow/WORKFLOW.md) step by step — open each phase or reference file at the step that names it (the progress checklist names each file at its step); no gate is skipped.
 
 Claude Code shortcut: `/testing-ticket` → [commands/testing-ticket.md](../../commands/testing-ticket.md).
@@ -37,8 +37,6 @@ Claude Code shortcut: `/testing-ticket` → [commands/testing-ticket.md](../../c
 ## Contents
 
 The must-read files for this workflow, linked directly from here (references already linked above are not repeated; WORKFLOW.md links any further file at the step that uses it). Read the **Always** tier at the start; read each **On trigger** file only when its trigger is reached.
-
-Full index of shared references: [skill-reference-index.md](../../references/skill-reference-index.md). Only the files below are listed here.
 
 ### Always (at the start of every run)
 
