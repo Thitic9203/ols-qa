@@ -10,7 +10,7 @@ Treat Helix like any **AGENTS.md**-driven repo: read skills from disk, execute s
 | Playwright | `npx playwright test` per user project — never assume project-specific paths |
 | Long tasks | Split phases; optional todos per [long-workflow-todos.md](long-workflow-todos.md) |
 
-After install, `~/.codex/skills/` should contain **helix + 10 workflow stubs**.
+After install, `~/.codex/skills/` should contain **helix + 11 workflow stubs**.
 
 **Priority:** user message > Helix `SKILL.md` > default Codex behavior.
 

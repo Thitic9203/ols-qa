@@ -44,10 +44,18 @@ t('R6 routing section and menu text keep the one-question rule (replaces the ori
   assert.strictEqual(asks.length, 1, `opening block asks ${asks.length} questions, expected 1`);
   assert.strictEqual((block.match(/^Reply with /gm) || []).length, 1, 'opening block must have exactly one "Reply with" line');
 });
-t('menu range 1-13 consistent in SKILL.md and menu-text.md', () => {
+t('menu range consistent: Other is the last option, and SKILL.md uses that number everywhere', () => {
   const m = fs.readFileSync(path.join(root, 'references/menu-text.md'), 'utf8');
-  assert.ok(/13\. \*\*Other\*\*/.test(m));
-  assert.ok(!/\b12 \(Other\)|1[–-]12\b/.test(S), 'SKILL.md says 12 for Other');
+  const nums = [...m.matchAll(/^(\d+)\. \*\*/gm)].map((x) => Number(x[1]));
+  const last = Math.max(...nums);
+  assert.ok(new RegExp(`^${last}\\. \\*\\*Other\\*\\*`, 'm').test(m), `option ${last} is not Other`);
+  assert.deepStrictEqual(nums, nums.map((_, i) => i + 1), 'menu options are not numbered 1..N without gaps');
+  assert.ok(m.includes(`**1**–**${last}**`), `menu-text "Reply with" does not say 1–${last}`);
+  const ranges = [...S.matchAll(/1[–-](\d+)\b/g)].map((x) => Number(x[1]));
+  const others = [...S.matchAll(/\b(\d+) \(Other\)/g)].map((x) => Number(x[1]));
+  assert.ok(ranges.length && others.length, 'SKILL.md names no menu range / Other number');
+  assert.ok(ranges.every((n) => n === last), `SKILL.md ranges ${ranges} != 1–${last}`);
+  assert.ok(others.every((n) => n === last), `SKILL.md Other numbers ${others} != ${last}`);
 });
 t('size: SKILL.md <= 155 lines, under skill-lint 500', () => {
   assert.ok(S.split('\n').length <= 155);
