@@ -63,7 +63,7 @@ Refuse, say why in one line, and route instead when:
 |-----------------------|-----|
 | Post a Jira comment, transition a ticket, or create an issue directly from `/helix` | Refuse the action here; route to the workflow that owns it (create-bug, retest-bug, testing-ticket) via Routing — that workflow keeps its own approval gate. |
 | Run tests or Playwright directly from `/helix` | Refuse; route to testing-ticket or retest-bug via Routing. |
-| A request that is not QA work (no row in skill-routing.md or intent-shortcuts.md matches) | Say it is outside Helix's scope; show the menu once, then treat it as 13 (Other). |
+| A request that is not QA work (no row in skill-routing.md or intent-shortcuts.md matches) | Say it is outside Helix's scope; show the menu once, then treat it as 14 (Other). |
 
 ## Proactive suggestion (suggest-only, opt-out)
 
@@ -90,7 +90,7 @@ When routing cannot proceed:
 
 | Situation | Do |
 |-----------|-----|
-| Reply is not 1–13, an option name, or an intent-shortcuts phrase | Re-show the menu once; if still unclear, treat it as 13 (Other). |
+| Reply is not 1–14, an option name, or an intent-shortcuts phrase | Re-show the menu once; if still unclear, treat it as 14 (Other). |
 | User ignores or declines a proactive suggestion (replies about something else, or says no) | Do not start that workflow. Show the menu once; do not repeat the same suggestion in this session. |
 | Row 8 or 10 chosen and its `skills/{name}/SKILL.md` is not in the loaded skill set | Say it is not shipped in helix, then offer only that row's named fallback. |
 | The routed `SKILL.md` is missing or cannot be loaded | Say which file is missing, do not imitate the workflow from memory, and show the menu again. |
@@ -104,7 +104,7 @@ Handoffs after a workflow ends: [skill-routing.md § Handoffs](../../references/
 
 Follow [qa-closing-shared.md](../../references/qa-closing-shared.md) + router-specific:
 
-- [ ] User selected a workflow (1–13 or named skill).
+- [ ] User selected a workflow (1–14 or named skill).
 - [ ] Child workflow skill is loaded (not just described) — or, when no child was loaded (declined, fallback none, out of scope), the reply says 'not routed' and why.
 - [ ] No Jira post or issue create happened in this router skill.
 
@@ -118,7 +118,7 @@ Shared rules: [shared-must-never.md](../../references/shared-must-never.md). Rou
 |------|---------|
 | MUST show the menu from references/menu-text.md in the user's language | Same numbers and option names at every entry point; user-communication.md |
 | MUST state the workflow it routes to before loading it | The user can correct a wrong route before any work starts |
-| MUST NOT start a workflow without user picking 1–13 or naming one | Avoid wrong scope |
+| MUST NOT start a workflow without user picking 1–14 or naming one | Avoid wrong scope |
 | MUST NOT post to Jira or create issues from this router | Side effects belong in child workflows |
 
 ## Must-read files
