@@ -10,7 +10,7 @@ Helix skills are **markdown procedures**. Copilot does not have Claude’s **Ski
 | Playwright | Run terminal commands from `testing-ticket-workflow`; user workspace owns config |
 | Evidence | Apply [qa-evidence-gates.md](qa-evidence-gates.md) manually |
 
-After install, expect **11 skills** under `~/.copilot/skills/` or project `.github/skills/`: `helix` + ten `*-workflow` stubs.
+After install, expect **12 skills** under `~/.copilot/skills/` or project `.github/skills/`: `helix` + ten `*-workflow` stubs.
 
 **Announce:** `Using **{skill-name}** to {purpose}.` (same discipline as [skill-invocation-discipline.md](skill-invocation-discipline.md))
 

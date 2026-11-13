@@ -25,7 +25,8 @@ What would you like to do?
 10. **Smoke Test** (ols-qa workspace only) — smoke test a deployed build on a named environment
 11. **Test Data Prep** — create, fix, or verify test data (content, covers, accounts)
 12. **TC Change Format** — copy a ticket's TC tab into the release TC template (Google Sheet)
-13. **Other** — describe what you need
+13. **Taskfolio Log** — fill your own Taskfolio timesheet for this week from Jira, Slack and Calendar evidence (never submits)
+14. **Other** — describe what you need
 
-Reply with **1**–**13**, or the option name. You can also pass a Jira key or URL with your choice.
+Reply with **1**–**14**, or the option name. You can also pass a Jira key or URL with your choice.
 ```
