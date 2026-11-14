@@ -4,9 +4,8 @@ Each skill's `## Dependencies` names the rows it uses. Run the **Check** for eac
 named row at the skill's dependency step (before its first phase), or at the later point that section names. A failed check is a stop: install it, use the stated fallback, or report the
 step as BLOCKED with the missing dependency named. Never skip the step silently, never guess a path.
 
-Paths are never machine paths. A local root is a
-placeholder resolved from the workspace project guide (`references/{PROJECT}-guide.md` in the
-workspace under test), or asked once and saved there.
+Paths are never machine paths: a local root is a placeholder from the workspace project guide
+(`references/{PROJECT}-guide.md`), or asked once and saved there.
 
 ## Runtimes and CLIs
 
@@ -62,4 +61,4 @@ workspace under test), or asked once and saved there.
 | Figma (Dev Mode MCP or browser view) | open the design node and read one frame | enable Dev Mode MCP, or view the file in a browser session; when neither opens, design comparison is "not verified" |
 | Browser automation MCP (Chrome extension or equivalent) | list tabs and get a result | install and connect the extension; else BLOCKED for steps that need a real browser |
 | Qase (TC suite tree, FE prep import) | open the project's suite tree, or the user pastes it | ask the owner for access; still unreadable → tc-fe-prep Step 6 suite gate: no CSV, export **Not exported** |
-| Notify channel webhook / bot — tc-review: every run, its project's TC-review channel; testing-ticket: every round when the project guide sets a QA notify channel (results-update G8); retest-bug: every retest (Step 9); other workflows: only on an explicit share request | webhook or bot id in the secrets folder; channel from the project guide (`references/{PROJECT}-guide.md` § TC review notify) | ask the owner; never invent a channel, thread or id |
+| Notify channel webhook / bot — tc-review: its project's TC-review channel on every run; testing-ticket: every round when the project guide configures a QA notify channel (results-update G8); retest-bug: every retest at its Step 9 notify; every other workflow: only on an explicit share request | the webhook or bot id is in the secrets folder; the channel comes from the project guide (`references/{PROJECT}-guide.md` § TC review notify) | ask the owner; never invent a channel, thread or id |
