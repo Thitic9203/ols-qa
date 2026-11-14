@@ -248,19 +248,20 @@ check('rule 1: a FULL round prints no Scope line; a CASES round still does', () 
   assert.ok(RENDER.render(m).includes('*Scope:* CASES: TC_01'));
 });
 
-check('rule 2: a multi-point header field is a label line, one bullet per point, then ONE blank line', () => {
+// after19 R7 (owner 15/Nov/2026): header lines are bullets; a multi-point value is a label bullet + `**` sub-bullets + ONE blank line.
+check('rule 2: a multi-point header field is a label bullet, one sub-bullet per point, then ONE blank line', () => {
   const lines = RENDER.render(multiCaseManifest()).split('\n');
-  const b = lines.indexOf('*Build:*');
+  const b = lines.indexOf('* *Build:*');
   assert.ok(b > -1, 'Build label is not on its own line');
   assert.deepStrictEqual(lines.slice(b, b + 4),
-    ['*Build:*', '* PR #12 in tag v1', '* the env shows no build number', '']);
-  const f = lines.indexOf('*Fixture:*');
+    ['* *Build:*', '** PR #12 in tag v1', '** the env shows no build number', '']);
+  const f = lines.indexOf('* *Fixture:*');
   assert.strictEqual(f, b + 4, 'Fixture label must follow Build\'s blank line at the same level');
   assert.deepStrictEqual(lines.slice(f, f + 4),
-    ['*Fixture:*', '* queue item created for the run', '* deleted after, count back to 0', '']);
+    ['* *Fixture:*', '** queue item created for the run', '** deleted after, count back to 0', '']);
   assert.notStrictEqual(lines[f + 4], '', 'more than one blank line after a list');
   // A single-point field stays inline.
-  assert.ok(lines.includes('*Date:* 2026-07-23'));
+  assert.ok(lines.includes('* *Date:* 2026-07-23'));
 });
 
 check('rule 3: ONE table with the seven columns; no "Test cases run" table', () => {

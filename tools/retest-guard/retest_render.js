@@ -95,8 +95,19 @@ function pushAll(L, lines) {
   });
 }
 
+// Header lines are bullets (after19 R7, owner 15/Nov/2026): `* *Env:* …`; a multi-point value keeps
+// its own label bullet with nested sub-bullets (`**` in wiki, indented in markdown), then one blank line.
+function headerField(label, value, bold, bullet) {
+  const sub = bullet === '*' ? '**' : `  ${bullet}`;
+  return fieldLines(label, value, bold, bullet).map((l, i) => {
+    if (l === '') return l;
+    if (i === 0) return `${bullet} ${l}`;
+    return l.replace(new RegExp(`^${bullet.replace(/[*]/g, '\\*')} `), `${sub} `);
+  });
+}
+
 function headerLines(m, bold, bullet) {
-  const f = (k, v) => fieldLines(k, v, bold, bullet);
+  const f = (k, v) => headerField(k, v, bold, bullet);
   const out = [...f('Env', m.env)];
   if (m.bugType === 'API') {
     out.push(...f('API', m.api || ''), ...f('Swagger', m.swagger || ''));

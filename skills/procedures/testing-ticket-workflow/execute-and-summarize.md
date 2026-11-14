@@ -178,7 +178,8 @@ What is specific to testing a ticket:
   sources disagree, data missing, or "needs a decision" → run the
   **[no-wait decision gate](../../../references/no-wait-decision-gate.md) (20 layers)** and decide from
   evidence (every source read, precedent applied, missing data created, decision logged); BLOCKED only
-  for its layer-17 causes with the layer-18 record. Test-side cause → fix and re-run; confirmed defect →
+  for its layer-17 causes with the layer-18 record, or for an expected superseded by a related ticket (BLOCKED
+  spec conflict until the owner picks A, [non-pass-challenge-gate.md](../../../references/non-pass-challenge-gate.md) §2). Test-side cause → fix and re-run; confirmed defect →
   record as normal. Only what no layer can resolve is queued. Queue `expected (+source) · observed · AC/EC finding · recommendation (A adjust the TC ·
   B re-test · C confirm defect — C only while the expected is not superseded)` for the end decisions popup; a **B re-test** answer starts a new round
   ([§1](../../../references/round-time-contract.md)).

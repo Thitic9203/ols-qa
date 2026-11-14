@@ -11,7 +11,7 @@ discussed and concluded is *intended behavior* is not a bug, even if it looks wr
 re-filing it wastes a full file → retest → close-out round.
 
 1. **Search the board** for existing or closed tickets covering the same **screen / field / message /
-   behavior** as each candidate bug. On Jira use `searchJiraIssuesUsingJql` (search summaries **and**
+   behavior** as each candidate bug. On Jira use `searchJiraIssuesUsingJql`, or the same JQL through Jira REST (`/rest/api/3/search`) when the run posts by REST (Phase D accepts REST credentials) (search summaries **and**
    comment text — the deciding conclusion often lives in a comment, not the title); on GitHub search
    open **and** closed issues. Use the distinctive terms of the finding (the exact error text, the
    field label, the component) — not just the ticket type. No status filter, so resolved tickets are
@@ -39,7 +39,7 @@ re-filing it wastes a full file → retest → close-out round.
    - **No conflict.** No ticket settles it → proceed to Phase B3 for this candidate.
 4. **Uncertain whether a match truly settles it?** Treat it as a **question to the user / PO, not a
    bug** — surface the ticket link and ask, rather than filing over a possible prior decision.
-5. **The search itself cannot run** (no tracker read access, MCP down, search error) → **STOP.**
+5. **The search itself cannot run** (no tracker read access, neither MCP nor REST reachable, search error) → **STOP.**
    Report the error verbatim, hold every candidate as **BLOCKED (board search not run)**, and do not
    move to Phase B3 or Phase C until a search has completed for each candidate.
 

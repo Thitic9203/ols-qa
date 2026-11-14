@@ -31,8 +31,8 @@ node tools/retest-guard/retest_guard.js --manifest run.json --out body.txt --evi
 ## Line order of the body
 
 1. `*Retest Result: <PASSED|FAILED|BLOCKED|PWMI>*` plus its icon (scoped rounds: `PASSED (scoped: TC_nn)`).
-2. Header lines: `*Env:*`, `*Design ref:*`, `*Role:*`, `*Date:*`, `*Build:*`, `*Fixture:*` — a
-   multi-point value is the label on its own line, one bullet per point, then one blank line.
+2. Header lines, one bullet each: `* *Env:*`, `* *Design ref:*`, `* *Role:*`, `* *Date:*`, `* *Build:*`, `* *Fixture:*` — a
+   multi-point value is the label bullet, one `**` sub-bullet per point, then one blank line.
 3. `----`
 4. `*Test Step (from ticket):*` and `*Expected Result (from ticket, verbatim):*`.
 5. ONE table: `||*No.*||*ER*||*Case (Role)*||*Expected Result*||*Actual Result*||*Evidence*||*Status*||`
@@ -123,17 +123,17 @@ body with `--body body.txt --format v2 --bug-type FE`):
 ```text
 *Retest Result: PASSED* ✅
 
-*Env:* <ENV_NAME> (<ENV_HOST>)
-*Design ref:* <DESIGN_NODE_LINK>
-*Role:* <ROLE_A>
-*Date:* 2026-10-14
-*Build:*
-* <BUILD_TAG>
-* <FIX_COMMIT>
+* *Env:* <ENV_NAME> (<ENV_HOST>)
+* *Design ref:* <DESIGN_NODE_LINK>
+* *Role:* <ROLE_A>
+* *Date:* 2026-10-14
+* *Build:*
+** <BUILD_TAG>
+** <FIX_COMMIT>
 
-*Fixture:*
-* <FIXTURE_A> created for the run
-* deleted after the run
+* *Fixture:*
+** <FIXTURE_A> created for the run
+** deleted after the run
 
 ----
 

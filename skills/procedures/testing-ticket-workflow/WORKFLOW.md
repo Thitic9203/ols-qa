@@ -43,8 +43,8 @@ Testing ticket progress:
 - [ ] Phase E — Execute tests (Playwright) — open execute-and-summarize.md (E2 root-cause-investigation.md, E3 non-pass-challenge-gate.md)
 - [ ] Result quality gate (mandatory before Phase F) — result-quality-gate.md (in execute-and-summarize.md)
 - [ ] Phase F — Summarize in this chat (mandatory) — execute-and-summarize.md Phase F; defects → defect-candidates.md
+- [ ] QA closing (mandatory; its pre-delivery gate runs before any Phase G write) — qa-closing-shared.md
 - [ ] Phase G — Optional: update results elsewhere — open results-update.md + references/result-update-discipline.md
-- [ ] QA closing (mandatory before session end) — qa-closing-shared.md
 - [ ] Phase H — only if a question arrives after results were published (event-driven)
 ```
 

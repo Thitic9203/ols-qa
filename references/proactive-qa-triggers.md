@@ -1,6 +1,6 @@
 # Proactive QA triggers (suggest-only)
 
-Rules for **offering** the right Helix workflow from context (branch, linked ticket, changed files) instead of waiting for the user to open the `/helix` menu. **Offer only — never auto-run** (do not act on work the user did not ask for).
+Rules for **offering** the right Helix workflow from context (branch, linked ticket, last commit subject) instead of waiting for the user to open the `/helix` menu. **Offer only — never auto-run** (do not act on work the user did not ask for).
 
 ## Hard guardrails
 
@@ -20,7 +20,7 @@ Match the **strongest** signal available: linked ticket type, then branch, then 
 | Signal | Offer | Command |
 |--------|---------|---------|
 | Branch `feat/*` **+** linked Jira type = Story | TC FE prep | `/tc-fe-prep` |
-| Branch `feat/*` touching API/Swagger only | TC API prep | `/tc-api-prep` |
+| Branch `feat/*` whose name or last commit subject names an API/endpoint/Swagger change | TC API prep | `/tc-api-prep` |
 | Branch `fix/*` **+** linked Jira type = Bug | Retest bug | `/retest-bug` |
 | Linked ticket or the user's message asks for a browser / Playwright / E2E run | Testing ticket | `/testing-ticket` |
 | Defects found in chat, no ticket filed yet | Create bug | `/create-bug` |

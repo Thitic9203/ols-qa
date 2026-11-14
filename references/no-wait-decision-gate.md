@@ -79,13 +79,13 @@ Fail-closed: if any layer is skipped, the case is not written as BLOCKED, EVIDEN
     (b) the cases of an account whose session is not restored after the relink → mint → probe sequence
     (`retest-bug-workflow/execute-and-evidence.md` § 4b), with layer 15 exhausted first; (c) the cases that need a tool absent from the
     environment with no sanctioned alternative, e.g. no Playwright for a UI case (`retest-bug-workflow/WORKFLOW.md` § Extra skills) —
-    a capture or harness limit that has an alternative stays under layer 16; (d) two of the tester's own
+    a capture or harness limit that has an alternative stays under layer 16 (stills never replace a story clip: no recorder → this cause, with the install step from [dependencies.md](dependencies.md)); (d) two of the tester's own
     observations that still disagree after one clean re-run (`retest-bug-workflow/execute-and-evidence.md` § 4g), or a failure seen once that does not
     reproduce on another env, user or data (`retest-bug-workflow/references/debug-discipline.md` § 1); (e) an expected side that is
     absent, hedged or unconfirmed after layers 1–12 — a Task stating no verifiable AC (`retest-bug-workflow/WORKFLOW.md` § Step 2),
     Swagger and error docs silent (`retest-bug-workflow/execute-and-evidence.md` § 4f), or an expected the challenge gate could not confirm
     (`retest-bug-workflow/execute-and-evidence.md` § 4i). A missing fixture is BLOCKED only under the hard-rule cause above.
-    **`testing-ticket-workflow` adds seven**, also after layers 1–16: (a), (b) and (d)'s first half, at its Phase B 4b, *Lane failure* and E1 step 3; (c) as a row under 1920 px ([qa-evidence-capture.md](qa-evidence-capture.md#narrow-width-rows));
+    **`testing-ticket-workflow` adds seven**, also after layers 1–16: (a), (b) and (d)'s first half, at its Phase B 4b, *Lane failure* and E1 step 3; (c) as a clip the recorder cannot make: no `{QA_TOOLS_ROOT}`, or a row width it cannot emulate ([qa-evidence-capture.md](qa-evidence-capture.md#narrow-width-rows));
     (e) as an AC/EC list empty after Phase B step 3; a unit whose lane failed twice (*Lane failure*); a cross-lane case whose precondition case did not PASS (*Fan out*).
 18. **A surviving BLOCKED** carries: every layer checked with its source, the single concrete thing
     still missing, and the role that decides — and the run **continues** with every other case.
