@@ -18,9 +18,14 @@ let fail = 0;
 function t(name, fn) {
   try { fn(); console.log(`PASS  ${name}`); } catch (e) { fail += 1; console.log(`FAIL  ${name}\n      ${e.message}`); }
 }
+// Step 5 lives in notify.md (after17-tc-review R13): the origin/main side reads SKILL.md + notify.md too.
 function base() {
-  try { return execFileSync('git', ['show', `origin/main:${P}`], { cwd: root, encoding: 'utf8' }); }
+  let s;
+  try { s = execFileSync('git', ['show', `origin/main:${P}`], { cwd: root, encoding: 'utf8' }); }
   catch (e) { return null; }
+  try { s += '\n' + execFileSync('git', ['show', 'origin/main:skills/tc-review-workflow/notify.md'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); }
+  catch (e) { /* older main: Step 5 still inside SKILL.md */ }
+  return s;
 }
 t('R1 item 1 takes the mention id from config "TC review notify", does not ask', () => {
   assert.ok(item1.length > 0, 'item 1 not found');
