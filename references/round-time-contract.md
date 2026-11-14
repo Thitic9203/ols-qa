@@ -32,7 +32,7 @@ This contract is shared by `retest-bug-workflow`, `testing-ticket-workflow`, and
 1. **Reviewer and bundle in parallel.** Start the independent reviewer subagent in the background. Meanwhile, build the bundle: run the render and media check (§6) and prepare the popups. The reviewer must return CLEAN before step 4. Its loop has no round cap, as today.
 2. **Decisions popup.** Shown only when questions are queued. Use one structured-question popup (e.g. `AskUserQuestion`; none → one numbered list in chat), batched 4 at a time. It holds: the scope plan, each queued non-PASS (A/B/C), missing design, and conflicts (Investigate / Close).
 3. **Apply the answers.** Re-render the draft and re-run the guard.
-4. **Approval popup.** One approval for the whole bundle, listing every concrete action by name:
+4. **Approval popup.** One approval for the whole bundle, listing every concrete action by name (each name resolved from the project guide, else the ticket or request; one nobody gave is a decisions-popup question, never a placeholder):
    - the comment (target ticket and endpoint);
    - each transition (ticket, from → to);
    - each assign (ticket and person);

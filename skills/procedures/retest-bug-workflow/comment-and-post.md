@@ -346,7 +346,10 @@ At step 6d, follow [round-time-contract.md](../../../references/round-time-contr
 4. **One approval popup for the whole bundle**, listing every concrete action by name: the comment
    (target ticket + endpoint, e.g. `/rest/api/2/issue/{KEY}/comment` for v2) · each transition (ticket, from → to, Step 8a) · each assign (default: back to the fixing dev — ticket +
    person, Step 8c) · each linked story to unblock (Step 8d) · each notify (channel + resolved
-   recipient by name, Step 9) · each external result update (destination + rows).
+   recipient by name, Step 9) · each external result update (destination + rows). Every name is
+   resolved before the popup: from the project guide, else from the ticket or the user's request;
+   never "names come from the project guide" in place of a name. A name nobody gave is a
+   decisions-popup question (items 1–2), not a placeholder.
 5. **Execute** — post (Step 7), then the 7d post-publish re-read, then transition, assign, unblock,
    notify and update results under that same approval. **No second approval.**
 

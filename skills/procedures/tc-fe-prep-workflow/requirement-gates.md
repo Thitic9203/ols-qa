@@ -183,7 +183,7 @@ Post in chat, before any test case design:
 Tab: {tab name} (gid {gid}) · {N} คำ
 ไฟล์: {GLOSSARY_CSV}
 
-{diff vs committed CSV — added / removed / changed rows, or "ไม่มีการเปลี่ยนแปลงจากครั้งก่อน"}
+{diff vs committed CSV — added / removed / changed rows, or "ไม่มีการเปลี่ยนแปลงจากครั้งก่อน"; no committed CSV yet (first run) → "ครั้งแรก — ยังไม่มีไฟล์เดิมให้เทียบ · {N} คำใหม่ทั้งหมด"}
 ```
 
 Attach or link the CSV. The user must be able to see the words, not take the agent's word for them.

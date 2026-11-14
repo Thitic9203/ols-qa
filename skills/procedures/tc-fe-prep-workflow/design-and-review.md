@@ -261,13 +261,15 @@ The agent's own 4a–4e pass is not enough — draft TCs MUST also be checked by
 subagents** (Agent/Task tool), which catch fabrication and coverage gaps the author is blind to.
 
 0. **Author self-check before round 1** (fix in the draft, n/a when moot; not a review round, never replaces one):
-   1. Each Step with an observable result has its own Expected line, same order, one outcome per line.
+   1. Each Step with an observable result has its own Expected line, same order, one outcome per line (a "X และ Y" Expected is two lines).
    2. Expected names the observable outcome, never only ถูกต้อง / ครบถ้วน / correct / complete.
    3. Unit TC precondition = direct function access, not the browser shared prep.
    4. Nothing the ticket does not state (role, reload behaviour, "no other change"); every outcome clause of each AC/EC asserted.
    5. A pre-filled field is cleared before typing.
    6. Glossary Thai in every column you write, Services Impacted included (AC/EC column stays verbatim).
    7. Test data exact, no quotes inside code spans, spaces spelled out.
+   8. A "saved / บันทึก" clause has its own step that reopens the screen and reads the value back.
+   9. Row order: every AC row (BLOCKED ones too) comes before EC-only rows.
 1. **Dispatch reviewer(s).** Give each reviewer the ticket's **verbatim AC/EC + seed** and the current
    TC draft **as a file path, not pasted text** (the working-draft file below;
    one reviewer by default, ≥2 per round only on the thorough request below), and instruct them to judge **only** against the ticket content (no requirements of their
@@ -291,7 +293,7 @@ subagents** (Agent/Task tool), which catch fabrication and coverage gaps the aut
    go back to step 2. Give it the previous round's numbered findings and the changed row IDs; it checks
    each finding fixed (or its rejection sound), every step-1 check on changed rows, and coverage,
    fabrication, Type, order and IDs on the whole draft — rows already cleared and untouched are not
-   re-judged row by row (a thorough request keeps full rounds). **If CLEAN →** the loop is done; continue to Step 4.5.
+   re-judged row by row (a thorough request keeps full rounds). **If CLEAN →** the loop is done; continue to Step 4.5. While a reviewer round runs, draft the Step 4.5 term table from the same draft (re-check it against any fix before posting).
 5. **No round cap and no silent rounds.** Loop until a reviewer round returns zero comments, however
    many rounds it takes; a round whose result was never reported to the user does not count.
 6. **Not converging → checkpoint.** The same finding back in 3 consecutive rounds after a fix → stop,
