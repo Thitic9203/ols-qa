@@ -24,7 +24,7 @@ Screenshots: gh uploads no files — embed reporter image URLs; the user attache
 
 **🔴 GATE — `gh issue create` exits non-zero** (rejected label, validation error, auth, rate limit,
 network) → run `gh issue list --repo <owner/repo> --state all --search '"<title>" in:title'` (a
-timeout can still create it — never file twice): an equal title → this run's issue, record its URL; none →
+timeout can still create it — never file twice): one equal title → this run's issue, record its URL; two or more → show them and ask which is this run's, create nothing; none →
 not created; **the search itself fails** → **🔴 STOP:** that bug's outcome is unknown (never "not created")
 — ask the user to check the repo before any retry. Show the user the stderr **verbatim**, which bugs were and were not created, and the fix you propose; **retry
 nothing until the user approves.** Rate limit → say when `gh api rate_limit` reports the reset and

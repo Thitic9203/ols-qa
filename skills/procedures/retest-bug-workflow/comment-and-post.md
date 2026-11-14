@@ -34,21 +34,21 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 ```text
 *Retest Result: PASSED* ✅   (or FAILED ❌ · BLOCKED ⛔ · PWMI ⚠️ — the round's real verdict; scoped rounds read "PASSED (scoped: TC_03)")
 
-*Env:* {ENV} ({url})
-*API:* {METHOD} {path}   (if API bug)
-*Swagger:* {link}
-*Design ref:* {figma node link}   (UI retest — or "none, to ask {who} (not yet sent)", once sent "none, asked {who} {YYYY-MM-DD}"; no " — " in the value, " · " only between `TC → node` mappings)
-*Role:* {role(s) the cases were run as}
-*Date:* {YYYY-MM-DD}   (the date the cases ran; dry run or offline round = the session's current date — never a placeholder)
-*Build:*
-* {build / tag the fix landed in}
-* {second point, when the value has more than one}
+* *Env:* {ENV} ({url})
+* *API:* {METHOD} {path}   (if API bug)
+* *Swagger:* {link}
+* *Design ref:* {figma node link}   (UI retest — or "none, to ask {who} (not yet sent)", once sent "none, asked {who} {YYYY-MM-DD}"; no " — " in the value, " · " only between `TC → node` mappings)
+* *Role:* {role(s) the cases were run as}
+* *Date:* {YYYY-MM-DD}   (the date the cases ran; dry run or offline round = the session's current date — never a placeholder)
+* *Build:*
+** {build / tag the fix landed in}
+** {second point, when the value has more than one}
 
-*Fixture:*
-* {what was used}
-* {whether it was restored, and how that was checked}
+* *Fixture:*
+** {what was used}
+** {whether it was restored, and how that was checked}
 
-*Scope:* CASES: TC_03, TC_07   (scoped rounds only — a full round prints NO Scope line)
+* *Scope:* CASES: TC_03, TC_07   (scoped rounds only — a full round prints NO Scope line)
 
 ----
 

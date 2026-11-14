@@ -106,12 +106,12 @@ Output (full comment — this is the entire body, nothing added; both markers sh
 ```text
 *Retest Result: PASSED* ✅
 
-*Env:* Staging (app.staging.example.com)
-*Design ref:* https://figma.example.com/design/abc/Review?node-id=210-4471
-*Role:* CONTENT_ADMIN
-*Date:* 2026-07-23
-*Build:* 9c3ab77
-*Fixture:*
+* *Env:* Staging (app.staging.example.com)
+* *Design ref:* https://figma.example.com/design/abc/Review?node-id=210-4471
+* *Role:* CONTENT_ADMIN
+* *Date:* 2026-07-23
+* *Build:* 9c3ab77
+* *Fixture:*
 * Existing queue item
 * No new fixture created or modified
 

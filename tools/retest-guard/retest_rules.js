@@ -420,7 +420,7 @@ function scanBody(body, opts = {}) {
     if (h.when === 'api' && !isApi) return;
     if (h.when === 'ui' && isApi) return;
     if (h.when === 'scoped' && !isScoped) return;
-    const re = new RegExp(`^\\**${h.key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:?\\**`, 'im');
+    const re = new RegExp(`^(?:[*-]\\s+)?\\**${h.key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:?\\**`, 'im'); // header lines may be bullets (after19 R7)
     if (!lines.some((l) => re.test(l.trim()))) {
       out.push(finding('header-line-missing', 0, `header line "${h.key}:" is missing`, 'every retest comment carries it'));
     }

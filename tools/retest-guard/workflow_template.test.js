@@ -49,7 +49,7 @@ check('the template shows every header line the rules require of a UI retest', (
   const missing = R.HEADER_LINES
     .filter((h) => h.when === 'always' || h.when === 'ui')
     .map((h) => h.key)
-    .filter((key) => !new RegExp('^\\*' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':\\*', 'm').test(tpl));
+    .filter((key) => !new RegExp('^\\* \\*' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':\\*', 'm').test(tpl));
   assert.deepStrictEqual(missing, [], 'template omits header line(s): ' + missing.join(', '));
 });
 
@@ -64,18 +64,19 @@ check('the template carries ONE table and no separate case table (owner, 2026-09
 });
 
 check('the template prints no "*Scope:* FULL" line, only the scoped form', () => {
-  assert.ok(!/^\*Scope:\* FULL/m.test(tpl), 'template teaches the Scope: FULL line the owner removed');
-  assert.ok(/^\*Scope:\* CASES:/m.test(tpl), 'template no longer shows the scoped Scope line');
+  assert.ok(!/^(?:\* )?\*Scope:\* FULL/m.test(tpl), 'template teaches the Scope: FULL line the owner removed');
+  assert.ok(/^\* \*Scope:\* CASES:/m.test(tpl), 'template no longer shows the scoped Scope line');
 });
 
-check('the template shows multi-point Build / Fixture as label + bullets + one blank line', () => {
+// after19 R7 (owner 15/Nov/2026: header lines are bullets): label bullet, `**` sub-bullets, then one blank line.
+check('the template shows multi-point Build / Fixture as label bullet + sub-bullets', () => {
   const lines = tpl.split('\n');
   ['Build', 'Fixture'].forEach((k) => {
-    const i = lines.indexOf('*' + k + ':*');
+    const i = lines.indexOf('* *' + k + ':*');
     assert.ok(i > -1, k + ' label is not on its own line');
-    assert.ok(/^\* /.test(lines[i + 1]), k + ' has no bullet under it');
+    assert.ok(/^\*\* /.test(lines[i + 1]), k + ' has no sub-bullet under it');
     let j = i + 1;
-    while (/^\* /.test(lines[j])) j += 1;
+    while (/^\*\* /.test(lines[j])) j += 1;
     assert.strictEqual(lines[j], '', k + ' list is not followed by a blank line');
     assert.notStrictEqual(lines[j + 1], '', k + ' list is followed by more than one blank line');
   });
@@ -152,7 +153,7 @@ const designRefFindings = (value) => R.scanBody([
 ].join('\n'), {}).filter((f) => f.rule === 'header-inline-list');
 
 check('the template\'s "no design node" fallback passes header-inline-list (eval RB-1..3)', () => {
-  const line = tpl.split('\n').find((l) => l.startsWith('*Design ref:*')) || '';
+  const line = (tpl.split('\n').find((l) => l.startsWith('* *Design ref:*')) || '').replace(/^\* /, '');
   const m = /or "([^"]+)"/.exec(line);
   assert.ok(m, 'the Design ref line no longer shows a quoted fallback: ' + line);
   const filled = m[1].replace('{who}', 'PO').replace('{YYYY-MM-DD}', '2026-10-14');

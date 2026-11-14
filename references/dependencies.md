@@ -36,7 +36,7 @@ workspace under test), or asked once and saved there.
 
 | Dependency | Check | Install / fallback |
 |------------|-------|--------------------|
-| QA capture and verify tools (recorder, `verify_video.py`, `verify_shot.py`, `freeze_cut.py`, reconcilers) and the smoke templates | `test -d "{QA_TOOLS_ROOT}/capture"` | live outside this repo; `{QA_TOOLS_ROOT}` missing → stop and ask for it — evidence that needs them is BLOCKED until they run |
+| QA capture and verify tools (recorder, `verify_video.py`, `verify_shot.py`, `freeze_cut.py`, reconcilers) and the smoke templates | `test -d "{QA_TOOLS_ROOT}/capture"` | live outside this repo; `{QA_TOOLS_ROOT}` missing → stop and ask for it (install: clone the QA tooling and set `{QA_TOOLS_ROOT}` to its folder) — evidence that needs them is BLOCKED until they run; stills or Playwright `recordVideo` never stand in |
 | Clones of the product repo and the e2e repo | `git -C "{MONOREPO}" rev-parse --is-inside-work-tree` (same for `{E2E_REPO}`) | `git clone` from the URL in the project guide |
 | Private evidence repo (test-data files and covers) | `git -C "{EVIDENCE_REPO}" rev-parse --is-inside-work-tree` | ask the owner for access; never substitute self-written content |
 | Local image API (cover generation) | `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:{IMAGE_API_PORT}/` returns 200 | start the app and enable its API; else BLOCKED |
