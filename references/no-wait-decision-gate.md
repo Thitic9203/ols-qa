@@ -86,7 +86,7 @@ Fail-closed: if any layer is skipped, the case is not written as BLOCKED, EVIDEN
     Swagger and error docs silent (`retest-bug-workflow/execute-and-evidence.md` § 4f), or an expected the challenge gate could not confirm
     (`retest-bug-workflow/execute-and-evidence.md` § 4i). A missing fixture is BLOCKED only under the hard-rule cause above.
     **`testing-ticket-workflow` adds seven**, also after layers 1–16: (a), (b) and (d)'s first half, at its Phase B 4b, *Lane failure* and E1 step 3; (c) as a clip the recorder cannot make: no `{QA_TOOLS_ROOT}`, or a row width it cannot emulate ([qa-evidence-capture.md](qa-evidence-capture.md#narrow-width-rows));
-    (e) as an AC/EC list empty after Phase B step 3, or an expected still hedged or unconfirmed after E3 (`testing-ticket-workflow/execute-and-summarize.md` § E3); a unit whose lane failed twice (*Lane failure*); a cross-lane case whose precondition did not PASS (*Fan out*).
+    (e) as an AC/EC list empty after Phase B step 3, or an expected still hedged or unconfirmed after E3 (`testing-ticket-workflow/execute-and-summarize.md` § E3); a unit whose lane failed twice (*Lane failure*); a cross-lane case whose precondition case did not PASS (*Fan out*).
 18. **A surviving BLOCKED** carries: every layer checked with its source, the single concrete thing
     still missing, and the role that decides — and the run **continues** with every other case.
 
