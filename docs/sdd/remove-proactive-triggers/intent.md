@@ -1,0 +1,3 @@
+# remove proactive_triggers — intent
+
+`metadata.proactive_triggers` repeats each skill's `description` in 12 ols-qa skills. Claude Code routes a skill from `description` only, so the list costs read tokens and drifts from the description without changing routing. The owner decided on 13 Nov 2026 to remove it and fix CI ("ลบ + แก้ CI ด้วย"; ols-qa-evidence memory note "a17 owner decisions"). helix already carries the spec (`docs/sdd/remove-proactive-triggers` on helix main, PR #45). ols-qa is the skill source, so the removal lands here first and is synced to helix after (plan row 27 "After board 100%", ols-qa-evidence map `docs/helix-quality/wayfinder-a20-finish/map.md`).
