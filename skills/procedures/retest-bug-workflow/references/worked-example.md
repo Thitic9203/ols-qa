@@ -112,8 +112,8 @@ Output (full comment — this is the entire body, nothing added; both markers sh
 * *Date:* 2026-07-23
 * *Build:* 9c3ab77
 * *Fixture:*
-* Existing queue item
-* No new fixture created or modified
+** Existing queue item
+** No new fixture created or modified
 
 ----
 
