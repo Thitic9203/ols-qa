@@ -16,7 +16,7 @@ When invoked:
 
 1. First, before any other work, follow [session-start-context.md](../../references/session-start-context.md) (caveman lite + context-mode).
 2. Announce once: `Using **tc-api-prep-workflow** to prepare API manual test cases.`
-3. Read [WORKFLOW.md](../procedures/tc-api-prep-workflow/WORKFLOW.md) and run its progress checklist in order; open each phase or reference file at the step that names it, not before. Never skip a step or gate.
+3. Read [WORKFLOW.md](../procedures/tc-api-prep-workflow/WORKFLOW.md) and run its progress checklist in order; open every other phase or reference file at the step that names it, not before. Never skip a step or gate.
 
 Slash-command shortcut (runtimes that support commands): `/tc-api-prep` → [commands/tc-api-prep.md](../../commands/tc-api-prep.md).
 
@@ -24,7 +24,7 @@ Slash-command shortcut (runtimes that support commands): `/tc-api-prep` → [com
 
 Shared reference index, with the trigger that opens each file (see also; open on demand only, never at the start): [skill-reference-index.md](../../references/skill-reference-index.md).
 
-At the start of every run: [shared-preamble.md](../../references/shared-preamble.md), [user-communication.md](../../references/user-communication.md), [long-workflow-todos.md](../../references/long-workflow-todos.md), then [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) and [intake-one-pager.md](../../references/intake-one-pager.md) on the first response (WORKFLOW Refusal-first).
+Read at start: [shared-preamble.md](../../references/shared-preamble.md), [user-communication.md](../../references/user-communication.md), [long-workflow-todos.md](../../references/long-workflow-todos.md), then [workspace-guide-discovery.md](../../references/workspace-guide-discovery.md) and [intake-one-pager.md](../../references/intake-one-pager.md) on the first response (WORKFLOW Refusal-first).
 
 API-specific notes on shared files (apply when the step opens them):
 

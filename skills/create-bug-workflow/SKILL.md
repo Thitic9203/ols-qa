@@ -51,7 +51,7 @@ All close-out gates are in WORKFLOW.md and [verify-closing-checklist.md](../../r
 
 ## Dependencies
 
-Run the check for each of these after step 1, before step 2 — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
+Run at Phase B pre-flight, target's row only; others at their step — commands and install hints are in [dependencies.md](../../references/dependencies.md):
 
 - GitHub CLI `gh` (GitHub targets)
 - Atlassian MCP or Jira REST credentials (Jira targets)
