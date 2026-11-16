@@ -4,18 +4,11 @@ description: |-
   Audit finished work (doc, artifact): trace claims to source, split defects from questions, fix with source + prevention.
   Use when the user says CatchAI, /catch-ai, "check yourself", ตรวจงานตัวเองอีกรอบ; before reporting pass/defect/done; or a result rests on a guess (น่าจะ).
   Do NOT use for bug retest (retest-bug), TC tables (tc-fe-prep, tc-api-prep), TC review (tc-review), ticket testing (testing-ticket) or bug filing (create-bug).
-metadata:
-  proactive_triggers:
-    - /catch-ai
-    - CatchAI
-    - review your work again
-    - find your own mistakes
-    - check yourself
-    - audit this deliverable
-    - ตรวจงานตัวเองอีกรอบ
 ---
 
 # Catch AI
+
+Also triggers on: review your work again; find your own mistakes; audit this deliverable.
 
 **Session start:** before anything else, follow [session-start-context.md](../../references/session-start-context.md).
 

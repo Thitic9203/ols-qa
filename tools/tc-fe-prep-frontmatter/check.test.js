@@ -20,7 +20,10 @@ t('R1 WORKFLOW.md has no frontmatter and no description block', () => {
 t('R1 SKILL.md keeps name, description and triggers', () => {
   assert.ok(/^name: tc-fe-prep-workflow/m.test(SKILL));
   assert.ok(/^description:/m.test(SKILL));
-  assert.ok(/proactive_triggers/.test(SKILL));
+  // docs/sdd/remove-proactive-triggers R1/R2: triggers live in description (+ one body line), never in a metadata list.
+  assert.ok(/^  Use when /m.test(SKILL), 'description lost its Use when trigger line');
+  assert.ok(/^Also triggers on: .*TC FE prep/m.test(SKILL), 'Also triggers on line missing');
+  assert.ok(!/proactive_triggers/.test(SKILL), 'proactive_triggers is back');
 });
 t('R2 pointer line to SKILL.md in retest-bug style', () => {
   const head = WF.split('\n').slice(0, 4).join('\n');

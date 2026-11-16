@@ -3,7 +3,8 @@
 /* Skill structure check — the same rules helix CI applies to every shipped SKILL.md
  * (helix scripts/ci-check-skill-structure.sh), run here so a PR in ols-qa fails before the sync
  * does. Spec: docs/sdd/helix-skill-quality R12.
- *   1. frontmatter lists proactive_triggers under metadata: (with at least one item)
+ *   1. frontmatter has no proactive_triggers key (removed 13 Nov 2026, docs/sdd/remove-proactive-triggers R7:
+ *      routing reads description only; the key must not creep back)
  *   2. has a "## QA closing" section
  *   3. mentions "Refusal-first" (the precondition-gate section)
  *   4. the first 20 lines contain "do not use" (negative trigger case)
@@ -17,8 +18,7 @@ const path = require('path');
 function checkText(name, text) {
   const out = [];
   const fm = /^---\n([\s\S]*?)\n---\n/.exec(text);
-  const meta = fm && /^metadata:\s*\n((?:[ \t]+.*\n?)*)/m.exec(fm[1] + '\n');
-  if (!meta || !/^\s+proactive_triggers:\s*\n\s+- \S/m.test(meta[1])) out.push(`${name}: proactive_triggers must be listed under metadata:`);
+  if (fm && /^\s*proactive_triggers:/m.test(fm[1])) out.push(`${name}: frontmatter still has proactive_triggers (removed; put trigger phrases in description)`);
   if (!text.includes('## QA closing')) out.push(`${name}: missing ## QA closing section`);
   if (!text.includes('Refusal-first')) out.push(`${name}: missing Refusal-first section`);
   if (!/do not use/i.test(text.split('\n').slice(0, 20).join('\n'))) out.push(`${name}: description must include Do NOT use (negative case) in the first 20 lines`);

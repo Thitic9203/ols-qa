@@ -4,16 +4,11 @@ description: |-
   Write API manual test cases from the API spec and Swagger with coverage + ISTQB review; confirm columns and delivery (Jira comment and/or CSV/Excel).
   Use when the user says /tc-api-prep or TC API prep, or wants manual TCs for REST endpoints, OpenAPI/Swagger or Postman — even if they do not say Swagger or TC ("เขียนเทสเคส API").
   Do NOT use for FE story AC/EC tables (tc-fe-prep), execution (testing-ticket), retest (retest-bug), or bugs (create-bug).
-metadata:
-  proactive_triggers:
-    - /tc-api-prep
-    - TC API prep
-    - API test cases
-    - Swagger test cases
-    - OpenAPI test cases
 ---
 
 # TC API Prep (discovery stub)
+
+Also triggers on: API test cases; Swagger test cases; OpenAPI test cases.
 
 **Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../procedures/tc-api-prep-workflow/WORKFLOW.md).
 

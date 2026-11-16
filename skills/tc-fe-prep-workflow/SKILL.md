@@ -4,18 +4,11 @@ description: |-
   Write Thai FE manual test cases from a Jira story's AC/EC with coverage + ISTQB review, HTML draft for approval, then one story comment with CSVs and a final review report.
   Use when asked for FE test cases, manual TC from AC/EC (even without "FE"), a TC comment on a story, /tc-fe-prep ("เขียนเทสเคส FE", "เตรียม TC FE").
   Do NOT use for API/Swagger TCs (tc-api-prep), Playwright runs (testing-ticket), retest (retest-bug), or bugs (create-bug).
-metadata:
-  proactive_triggers:
-    - /tc-fe-prep
-    - TC FE prep
-    - FE test cases
-    - manual test cases from story
-    - acceptance criteria test cases
-    - เขียนเทสเคส FE
-    - เตรียม TC FE
 ---
 
 # TC FE Prep (discovery stub)
+
+Also triggers on: TC FE prep; manual test cases from story; acceptance criteria test cases.
 
 **Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../procedures/tc-fe-prep-workflow/WORKFLOW.md).
 

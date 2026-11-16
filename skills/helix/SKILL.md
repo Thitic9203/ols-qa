@@ -4,13 +4,6 @@ description: |-
   Helix QA assistant — routes to the right workflow (TC FE/API prep, retest bug, testing ticket, create bug, catch-ai, TC review, TC change format, review result, test data).
   Use when the user says Helix, /helix, Helix menu, QA menu or "what can Helix do", asks which fits, or wants QA help with none named ("ช่วยดูงาน QA นี้ให้หน่อย").
   Do NOT use when a workflow is named, even as "Helix → {workflow}" — run that workflow.
-metadata:
-  proactive_triggers:
-    - Helix
-    - /helix
-    - QA assistant
-    - Helix menu
-    - what can Helix do
 ---
 
 # Helix router
