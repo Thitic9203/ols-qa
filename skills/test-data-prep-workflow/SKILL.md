@@ -4,17 +4,11 @@ description: |-
   Create, fix, or verify OLS test data — media, courses, learning paths, covers, videos, PDFs, accounts — per ols-data-prep.md, passing every quality gate first.
   Use when the user says /test-data-prep or asked to prepare / build / seed / fix OLS content or covers.
   Do NOT use for ticket testing (testing-ticket-workflow), bug retest (retest-bug-workflow), or TC tables (tc-fe-prep / tc-api-prep).
-metadata:
-  proactive_triggers:
-    - /test-data-prep
-    - prepare test data
-    - create test data
-    - build training content
-    - make covers
-    - seed media / course / learning path
 ---
 
 # Test data prep (discovery stub)
+
+Also triggers on: prepare test data; create test data; build training content; make covers; seed media / course / learning path.
 
 **Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../procedures/test-data-prep-workflow/WORKFLOW.md).
 

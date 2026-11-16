@@ -4,18 +4,11 @@ description: |-
   Review an existing TC document (sheet/CSV/markdown) against its ticket's AC/EC and rules: traceability matrix, Good vs Need Improve with quoted sources, notify the TC-review channel.
   Use when asked to review or audit TCs or a TC sheet, check coverage/quality, /tc-review, "รีวิวเทสเคส", or when TCs come with "is this enough / OK?".
   Do NOT use for drafting TCs (tc-fe-prep / tc-api-prep), executing (testing-ticket), evidence clips (review-result), or retest.
-metadata:
-  proactive_triggers:
-    - /tc-review
-    - review test cases
-    - review the test case sheet
-    - review tc
-    - check tc coverage
-    - review testcase
-    - รีวิวเทสเคส
 ---
 
 # TC Review Workflow
+
+Also triggers on: review test cases; review the test case sheet; review tc; check tc coverage; review testcase.
 
 **Session start:** before anything else, follow [session-start-context.md](../../references/session-start-context.md).
 

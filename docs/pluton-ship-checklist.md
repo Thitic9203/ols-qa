@@ -6,7 +6,6 @@ Use before merging a **new or materially changed** workflow skill. Based on [cla
 
 - [ ] `description` is a **trigger** (verb + scenario + edge cases)
 - [ ] `description` includes **Do NOT use when** (negative cases / other Helix skills)
-- [ ] `metadata.proactive_triggers` lists realistic user phrases (not a top-level key)
 
 ## Structure
 

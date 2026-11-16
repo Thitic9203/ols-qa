@@ -4,20 +4,13 @@ description: |-
   Take published content out of public view: inventory, prove items healthy, use the least damaging mechanism the accounts allow, then prove with guest-side evidence they're gone and nothing else moved.
   Use when the user says hide this content, take these down, unpublish this batch, ซ่อนสื่อ, นำออกจากคลัง, /content-takedown.
   Do NOT use for permanent deletion, metadata fixes, or bug retest.
-metadata:
-  proactive_triggers:
-    - /content-takedown
-    - hide this content
-    - take these down
-    - remove from the public catalogue
-    - unpublish this batch
-    - ซ่อนสื่อ
-    - นำออกจากคลัง
 ---
 
 <!-- ols-only: this file is not synced to the generic plugin, so it may link to other
      workspace-only references. -->
 # Content takedown (discovery stub)
+
+Also triggers on: remove from the public catalogue.
 
 **Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../procedures/content-takedown-workflow/WORKFLOW.md).
 

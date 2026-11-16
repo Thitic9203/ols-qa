@@ -4,16 +4,11 @@ description: |-
   Copy each ticket's TCs from a Google Sheet tab into a new sheet from the release TC template in the chosen release folder; keep template styling, fill mapped columns only, owners as people tags.
   Use when given TC sheet links and asked to change TC format / move to the release template, or /tc-change-format, เปลี่ยนฟอร์แมต TC, ย้าย TC ลง template.
   Do NOT use for writing, reviewing or recording TCs.
-metadata:
-  proactive_triggers:
-    - /tc-change-format
-    - change tc format
-    - move tc to template
-    - เปลี่ยนฟอร์แมต TC
-    - ย้าย TC ลง template
 ---
 
 # TC change format
+
+Also triggers on: move tc to template.
 
 Announce once: `Using **tc-change-format-workflow** to copy the TC tab into the release template.`
 

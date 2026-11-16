@@ -4,18 +4,11 @@ description: |-
   Review recorded test results and evidence clips: a contact sheet per clip, judge each case on ten criteria, record PASSED / FAILED / AWAITING RE-REVIEW, group fixes cheapest-first.
   Use when the user says review result, review the clips, check the evidence, audit recorded runs, verify the result sheet, or /review-result — any suite.
   Do NOT use for first runs (testing-ticket), retest (retest-bug), new TC tables (tc-fe-prep / tc-api-prep), or bugs (create-bug).
-metadata:
-  proactive_triggers:
-    - /review-result
-    - review result
-    - review results
-    - review the clips
-    - check the evidence
-    - audit recorded runs
-    - review evidence videos
 ---
 
 # Review Result (discovery stub)
+
+Also triggers on: review results; review evidence videos.
 
 **Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../procedures/review-result-workflow/WORKFLOW.md).
 
