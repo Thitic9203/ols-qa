@@ -59,19 +59,17 @@ t('R4 QA closing design item is one line with a pointer', () => {
   assert.ok(/stated once at/.test(l) && !/five points compared/.test(l), `QA closing: ${l.slice(0, 160)}`);
 });
 // R3 — MUST rows become pointers and keep their Because.
+// after21-fixes R2c: the verdict, coverage and design pointer rows fold into one row; pointers and Because text kept.
 t('R3 design MUST rows are pointers keeping Because', () => {
-  const a = lineWith(WF, /^\| MUST compare every UI case against its \*\*design node\*\*/);
-  const b = lineWith(WF, /^\| MUST report a missing design reference/);
-  assert.ok(/stated once at/.test(a) && /`figma` appeared zero times in the set that shipped the escapes/.test(a), `row 488: ${a.slice(0, 160)}`);
-  assert.ok(/stated once at/.test(b) && /it produces both phantom bugs and false passes \(PM-006\)/.test(b), `row 489: ${b.slice(0, 160)}`);
+  const a = lineWith(WF, /^\| MUST apply each rule at its single home/);
+  assert.ok(/#design-reference-gate/.test(a) && /Step 4d design comparison/.test(a), `pointer row: ${a.slice(0, 160)}`);
+  assert.ok(/`figma` appeared zero times in the set that shipped the escapes/.test(a) && /produces both phantom bugs and false passes \(PM-006\)/.test(a), 'design Because lost');
 });
 t('R3 verdict MUST rows are pointers keeping Because', () => {
-  const a = lineWith(WF, /^\| MUST compare actual text against the Expected Result field/);
-  const b = lineWith(WF, /^\| MUST verdict from the bug's OWN expected results/);
-  const c = lineWith(WF, /^\| MUST NOT post PASSED on partial coverage/);
-  for (const [n, l] of [['445', a], ['460', b], ['463', c]]) assert.ok(/stated once at/.test(l) && /#verdict-rule/.test(l), `row ${n}: ${l.slice(0, 160)}`);
-  assert.ok(/Bug details are the contract; a partial match is never PASSED \(user rule 2026-07-15\)/.test(b), 'row 460 lost Because');
-  assert.ok(/"Fixed except one point" hidden as a caveat is misread as a full pass/.test(c), 'row 463 lost Because');
+  const a = lineWith(WF, /^\| MUST apply each rule at its single home/);
+  assert.ok(/#verdict-rule/.test(a) && /#coverage-gate/.test(a), `pointer row: ${a.slice(0, 160)}`);
+  assert.ok(/Bug details are the contract; a partial match is never PASSED \(user rule 2026-07-15\)/.test(a), 'verdict Because lost');
+  assert.ok(/"Fixed except one point" hidden as a caveat is misread as a full pass/.test(a), 'partial-coverage Because lost');
 });
 // R2 — clauses moved to kept places, none lost.
 t('R2 clauses moved into kept places', () => {
