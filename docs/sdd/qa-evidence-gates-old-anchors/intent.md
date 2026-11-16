@@ -1,0 +1,3 @@
+# qa-evidence-gates old-anchor table — intent
+
+The token-diet split (`docs/sdd/token-diet` R3) moved capture, re-record and coverage sections out of `references/qa-evidence-gates.md` and left a "Related: moved sections (old anchors)" table so that links into the old file kept resolving during the rollout. Every skill that opens the core file reads that table (≈3.5 KB) for nothing. Plan row 27 "After board 100%" (ols-qa-evidence map `docs/helix-quality/wayfinder-a20-finish/map.md`) removes the leftover after the board reaches 100%: repoint the last links at each section's real home, then delete the table.
