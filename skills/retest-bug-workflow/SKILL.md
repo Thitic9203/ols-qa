@@ -14,9 +14,9 @@ Also triggers on: retest task; retest the fix; check if bug is fixed.
 
 When invoked:
 
-0. **Session start first** — do [session-start-context.md](../../references/session-start-context.md) before step 1.
+0. **Start order:** [session-start-context.md](../../references/session-start-context.md) → [Dependencies](#dependencies) → step 1 → step 2.
 1. Announce once: `Using **retest-bug-workflow** to retest the bug fix.`
-2. **Settle and strategize first** — right after step 0, before any other tool call, follow [settle-and-strategize.md](../../references/settle-and-strategize.md): invoke **`engineering:testing-strategy`** to plan the retest approach, no guessing an expected/spec, no blind retry loops.
+2. **Settle and strategize** — after step 1, follow [settle-and-strategize.md](../../references/settle-and-strategize.md): invoke **`engineering:testing-strategy`** to plan the retest approach, no guessing an expected/spec, no blind retry loops.
 3. **Design (Figma) comparison is mandatory on every UI retest** ([figma-design-comparison.md](../../references/figma-design-comparison.md)) — rule stated once at [Step 2d](../procedures/retest-bug-workflow/WORKFLOW.md#design-reference-gate) (no reference → visual points BLOCKED) and [Step 4d](../procedures/retest-bug-workflow/execute-and-evidence.md#design-comparison) (the comparison).
 4. **Retest deeply** — [customer-escape-prevention.md](../../references/customer-escape-prevention.md): cover the whole surface the fix touched, measure overflow/overlap at every in-scope width, evidence on passed rows too, and never PASSED over a "cannot verify" actual result.
 5. **Run in parallel lanes by default** — [parallel-test-lanes.md](../../references/parallel-test-lanes.md): split the case list across subagents, **one leased account per lane** (never two lanes on one login), barrier for anything every lane sees; serial only with a named predicate.
@@ -91,7 +91,7 @@ All close-out gates are in WORKFLOW.md and [verify-closing-checklist.md](../../r
 
 ## Dependencies
 
-Run the check for each of these before step 1 — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
+Run these checks at step 0 — check commands and install hints are in [dependencies.md](../../references/dependencies.md):
 
 - Node.js + in-repo guard tools (`tools/retest-guard`, `tools/result-gate`, `tools/lane-lease-check`, `tools/run-time`, `tools/adoption-check`)
 - curl + Jira REST credentials
