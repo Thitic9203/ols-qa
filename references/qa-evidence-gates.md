@@ -6,7 +6,6 @@ Adapted from evidence-before-claims discipline for **QA deliverables**. Use with
 
 - [Gate function](#gate-function)
 - [Claim → evidence map](#claim--evidence-map)
-- [Related: moved sections (old anchors)](#related-moved-sections-old-anchors)
 - [Wording red flags](#wording-red-flags)
 - [Workflow pointers](#workflow-pointers)
 - [Evidence must be a real FE screen — a raw-data page is never evidence](#evidence-must-be-a-real-fe-screen--a-raw-data-page-is-never-evidence)
@@ -40,7 +39,7 @@ Skip a step → treat as unverified.
 
 ## Related gates (split into their own files)
 
-- Capture scope, still spec, MP4 7-layer gate → [qa-evidence-capture.md](qa-evidence-capture.md)
+- Story-testing evidence-completeness gate (5-step), capture scope, still spec, MP4 7-layer gate → [qa-evidence-capture.md](qa-evidence-capture.md)
 - Re-recording delivered evidence (R1–R6) → [qa-evidence-rerecord.md](qa-evidence-rerecord.md)
 - AC/EC & bug-detail coverage, pre-delivery 7-layer gate → [qa-evidence-coverage.md](qa-evidence-coverage.md)
 
@@ -80,24 +79,3 @@ Never acceptable in evidence:
 If what the case needs to prove has no screen that shows it, use the screen that surfaces the same
 value (a count rendered on a detail page, a status chip, a toast). If none exists, the case is
 **BLOCKED and goes to the PO** — a raw-data page is not a substitute.
-
-## Related: moved sections (old anchors)
-
-Each old anchor below still resolves; follow the link to the section's home.
-
-| Section | Now in |
-|---|---|
-| <a id="story-testing-evidence-completeness-gate-5-step-per-story"></a>Story-testing evidence-completeness gate (5-step, per story) | [qa-evidence-capture.md](qa-evidence-capture.md#story-testing-evidence-completeness-gate-5-step-per-story) |
-| <a id="capture-scope--every-role-every-step-every-target-the-ticket-names"></a>Capture scope | [qa-evidence-capture.md](qa-evidence-capture.md#capture-scope--every-role-every-step-every-target-the-ticket-names) |
-| <a id="capture-red-flags--stop-this-recording-is-not-evidence-yet"></a>Capture red flags | [qa-evidence-capture.md](qa-evidence-capture.md#capture-red-flags--stop-this-recording-is-not-evidence-yet) |
-| <a id="still-spec--the-screenshots-carry-most-of-the-verdicts-so-they-get-a-floor-too"></a>Still spec | [qa-evidence-capture.md](qa-evidence-capture.md#still-spec--the-screenshots-carry-most-of-the-verdicts-so-they-get-a-floor-too) |
-| <a id="mp4-evidence--7-layer-quality--correctness-defense-gate-mandatory-fail-closed"></a>MP4 evidence | [qa-evidence-capture.md](qa-evidence-capture.md#mp4-evidence--7-layer-quality--correctness-defense-gate-mandatory-fail-closed) |
-| <a id="capture-spec--the-pipeline-layers-1--1b--1c-are-measured-against"></a>Capture spec | [qa-evidence-capture.md](qa-evidence-capture.md#capture-spec--the-pipeline-layers-1--1b--1c-are-measured-against) |
-| <a id="re-recording-evidence-that-was-already-delivered--6-layer-gate-mandatory-fail-closed"></a>Re-recording evidence that was already delivered | [qa-evidence-rerecord.md](qa-evidence-rerecord.md#re-recording-evidence-that-was-already-delivered--6-layer-gate-mandatory-fail-closed) |
-| <a id="why-r2-exists--the-shape-it-keeps-catching"></a>Why R2 exists | [qa-evidence-rerecord.md](qa-evidence-rerecord.md#why-r2-exists--the-shape-it-keeps-catching) |
-| <a id="fixture-selection-when-the-demonstration-burns-the-fixture"></a>Fixture selection when the demonstration burns the fixture | [qa-evidence-rerecord.md](qa-evidence-rerecord.md#fixture-selection-when-the-demonstration-burns-the-fixture) |
-| <a id="replacing-the-delivered-file-without-breaking-anything"></a>Replacing the delivered file without breaking anything | [qa-evidence-rerecord.md](qa-evidence-rerecord.md#replacing-the-delivered-file-without-breaking-anything) |
-| <a id="acec--bug-detail-coverage--7-layer-completeness-defense-gate-mandatory-fail-closed"></a>AC/EC & bug-detail coverage | [qa-evidence-coverage.md](qa-evidence-coverage.md#acec--bug-detail-coverage--7-layer-completeness-defense-gate-mandatory-fail-closed) |
-| <a id="coverage-red-flags--stop-you-are-about-to-pass-on-partial-coverage"></a>Coverage red flags | [qa-evidence-coverage.md](qa-evidence-coverage.md#coverage-red-flags--stop-you-are-about-to-pass-on-partial-coverage) |
-| <a id="pre-delivery-completeness--7-layer-defense-gate-before-handing-results-to-the-requester"></a>Pre-delivery completeness | [qa-evidence-coverage.md](qa-evidence-coverage.md#pre-delivery-completeness--7-layer-defense-gate-before-handing-results-to-the-requester) |
-| <a id="adversarial-review-pass--read-your-own-deliverable-as-the-reviewer-hunting-for-the-shortcut"></a>Adversarial review pass | [qa-evidence-coverage.md](qa-evidence-coverage.md#adversarial-review-pass--read-your-own-deliverable-as-the-reviewer-hunting-for-the-shortcut) |

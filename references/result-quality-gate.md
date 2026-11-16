@@ -139,7 +139,7 @@ has an accepted clip; API-only cases use `evidence_mode: "api"` with a verified 
 (`api_verified`). Runs: checker `PASS_CLIP_UNVERIFIED` / `FAILED_NO_VERIFIED_CLIP` /
 `CLIP_HARD_FAILURE`. Proof: verifier output per clip, plus the reviewer record when the waiver is
 used. The waiver accepts the clip for the **result line** only. A clip that is posted or attached as
-evidence still clears the fail-closed MP4 gate in [qa-evidence-gates.md](qa-evidence-gates.md#mp4-evidence--7-layer-quality--correctness-defense-gate-mandatory-fail-closed)
+evidence still clears the fail-closed MP4 gate in [qa-evidence-gates.md](qa-evidence-gates.md#related-gates-split-into-their-own-files)
 before it is delivered: a freeze-only red is cut with `freeze_cut.py` and re-verified, and a too-little-motion
 refusal is re-recorded with the flow that leads to the still screen. No reviewer record waives that gate.
 
