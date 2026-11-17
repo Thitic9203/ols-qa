@@ -8,7 +8,7 @@ After [install](../README.md#install-one-time), use the path that matches your t
 /helix
 ```
 
-Or: `/tc-fe-prep`, `/tc-api-prep`, `/retest-bug`, `/testing-ticket`, `/create-bug`, `/catch-ai`, `/tc-review`, `/review-result`, `/test-data-prep`, `/tc-change-format`
+Or: `/tc-fe-prep`, `/tc-api-prep`, `/retest-bug`, `/testing-ticket`, `/create-bug`, `/catch-ai`, `/tc-review`, `/review-result`, `/test-data-prep`, `/tc-change-format`, `/taskfolio-log`
 
 ## Cursor
 
@@ -42,7 +42,7 @@ Or: “Use skill helix and show the menu.”
 /skills list
 ```
 
-Then ask to use skill `helix`, or a workflow stub by name (e.g. `tc-fe-prep-workflow`). After install, expect **11 skills** in `~/.gemini/skills/`.
+Then ask to use skill `helix`, or a workflow stub by name (e.g. `tc-fe-prep-workflow`). After install, expect **12 skills** in `~/.gemini/skills/`.
 
 ## Cline
 
@@ -54,7 +54,7 @@ Use the helix skill — show the Helix QA menu and wait for my workflow choice.
 
 ## Codex CLI
 
-Skills under `~/.codex/skills/` (**helix + 10 workflow stubs**). Ask the agent to load `helix` or a specific `*-workflow` skill.
+Skills under `~/.codex/skills/` (**helix + 11 workflow stubs**). Ask the agent to load `helix` or a specific `*-workflow` skill.
 
 Tool mapping: [codex-tools.md](codex-tools.md).
 
@@ -76,3 +76,4 @@ Open [AGENTS.md](../AGENTS.md) in the Helix repo (or add a line in your project�
 | Review recorded results | `review-result-workflow` |
 | Prepare test data | `test-data-prep-workflow` |
 | Copy a TC tab into the release TC template | `tc-change-format-workflow` |
+| Fill your Taskfolio timesheet from evidence | `taskfolio-log-workflow` |
