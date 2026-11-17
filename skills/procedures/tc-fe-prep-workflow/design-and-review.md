@@ -165,6 +165,8 @@ Default **10 columns** for the HTML draft, CSV files, and markdown `.md` — Typ
 | Priority | High / Medium / Low |
 | **Type** | `System Test` / `Unit Test` / `Integration Test` (Step 3d) |
 
+**Expected Result must read as plain assertions.** Write one observable result per numbered item, using the ticket's own labels, messages and values. Never copy Gherkin connectors (`Given`, `When`, `Then`, `And`, `But`) into the cell: a ticket result `Then X And Y` becomes `1. X` and `2. Y`. Cover the whole result of the mapped AC/EC (never half of it), and never add a line from an unrelated business rule. The verbatim ticket wording stays in the Acceptance Criteria column.
+
 > **Jira comment table** uses a **slim 6-column** version (see Step 7) — Precondition, Test Data, Steps, Expected are omitted to stay within Jira's comment size limit. Full content is always available in the attached CSV files.
 
 The Qase import CSV uses a **different** column set (AC/EC, Title, Preconditions, Priority, Type, Status, Suite, Steps, Tags) — see [qase-import-format.md](references/qase-import-format.md). The Jira markdown table above and the Qase CSV describe the same test cases in two layouts.
