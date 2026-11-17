@@ -1,9 +1,9 @@
 ---
 name: taskfolio-log-workflow
 description: |
-  Fill the user's own Taskfolio timesheet (week view) for the current week from evidence of what they actually did each day — Jira changes, bugs they opened, Slack, Google Calendar — so nothing is typed from memory. Proposes a per-day table, validates every entry's time, project and completeness, saves only after the user confirms, then re-reads every saved entry. Never submits the week.
+  Fill the user's own Taskfolio week from evidence (Jira, own bugs, Slack, Calendar), never from memory; check each entry's time and project, save only after the user confirms, re-read what was saved. Never submits the week.
   Use when the user says ลง taskfolio, ลง timesheet, ลงเวลางาน, fill taskfolio, log timesheet, or /taskfolio-log.
-  Do NOT use for leave requests, for another person's timesheet, for clicking Submit week, or for logging work in Jira worklogs.
+  Do NOT use for leave requests, another person's timesheet, Submit week, or Jira worklogs.
 ---
 
 # Taskfolio log
