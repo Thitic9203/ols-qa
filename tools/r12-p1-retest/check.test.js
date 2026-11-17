@@ -62,8 +62,9 @@ t('R4 QA closing design item is one line with a pointer', () => {
 // after21-fixes R2c: the verdict, coverage and design pointer rows fold into one row; pointers and Because text kept.
 t('R3 design MUST rows are pointers keeping Because', () => {
   const a = lineWith(WF, /^\| MUST apply each rule at its single home/);
-  assert.ok(/#design-reference-gate/.test(a) && /Step 4d design comparison/.test(a), `pointer row: ${a.slice(0, 160)}`);
-  assert.ok(/`figma` appeared zero times in the set that shipped the escapes/.test(a) && /produces both phantom bugs and false passes \(PM-006\)/.test(a), 'design Because lost');
+  const d = lineWith(WF, /^\| MUST report a missing design reference/);
+  assert.ok(/Step 4d design comparison/.test(a) && /`figma` appeared zero times in the set that shipped the escapes/.test(a), `pointer row: ${a.slice(0, 160)}`);
+  assert.ok(/stated once at/.test(d) && /#design-reference-gate/.test(d) && /it produces both phantom bugs and false passes \(PM-006\)/.test(d), `design row: ${d.slice(0, 160)}`);
 });
 t('R3 verdict MUST rows are pointers keeping Because', () => {
   const a = lineWith(WF, /^\| MUST apply each rule at its single home/);
