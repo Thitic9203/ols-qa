@@ -1,8 +1,8 @@
 # 9. Environment / login / session
 
-- ยืนยัน env + account กับ user ก่อนเทสทุกครั้ง ห้ามเลือกเอง (dev/pre-prod ต้อง VPN · training ห้ามเลือกเพราะไม่ต้อง VPN) · ระบุแล้วในรอบ = แจ้งแล้วใช้เลย
+- เทสและทำ test data บน **dev เท่านั้น** (เจ้าของงานสั่ง 18 Nov 2026 ทั้ง OLS และ Pyrite) ห้ามเลือก env อื่นเอง (dev ต้อง VPN · training ห้ามเลือกเพราะไม่ต้อง VPN) · ยืนยัน account กับ user ก่อนเทสทุกครั้ง · ระบุแล้วในรอบ = แจ้งแล้วใช้เลย
 - เครื่องมือที่เลือก env ห้ามมีค่าเริ่มต้น · ค่าปลายทาง/ตัวตนต้องมีชื่อ env ในตัว · คำสั่งที่ยกให้คนอื่นรัน ต้องเทียบ env ก่อนส่ง (`session_capture_prod.sh` = production เท่านั้น)
-- **training ห้ามแตะทุกกรณี** (ไม่สแกน ไม่เขียน ไม่ probe) · env อื่นนอก pre-prod ยืนยันก่อน
+- **training ห้ามแตะทุกกรณี** (ไม่สแกน ไม่เขียน ไม่ probe) · env อื่นนอก dev ห้ามใช้จนกว่าเจ้าของงานเปลี่ยนคำสั่ง
 - agent ห้ามพิมพ์รหัสผ่านทุกบัญชี · ใช้ saved session `capture/state_<tag>.json` (`accounts_sync.py` · `session_capture.js` · `session_status.js` · `session_verify.js` · `session_refresh.js`) · หลังเก็บต้อง `session_verify.js`
 - คุกกี้ auth 24 ชม. นับเฉพาะ 4 ตัว (access/refresh/user_proof/session_id) · refresh = `POST <AUTH_API>/auth/refresh-token` สำเร็จแล้วต้องเซฟ storageState ทันที (หมุนโทเคน) · ห้ามยิงแบบ "สำรวจ" · ห้ามเปิดเว็บ NDLP/auth API ด้วยไฟล์ session · dev ต่ออายุอัตโนมัติด้วย `session_relink_dev.js` ใน job keepalive-dev (พิสูจน์ 10/Oct) — ต่อเมื่อคุกกี้ NDLP เหลือ < 18 ชม. ทุกรอบที่ VPN ต่อ ไม่รอช่วงท้าย · ข้ามบัญชีที่โปรเซสอื่นใช้อยู่ + ฟื้น session ที่ OLS ตายแต่ NDLP ยังดีเอง (#0187, [`references/session-renewal-resilience.md`](../references/session-renewal-resilience.md)) · refresh ได้ 401 = คุกกี้ NDLP หมดแล้ว → ถามเจ้าของงานก่อน แล้วล็อกอินผ่าน `login_from_sheet.py --env <env> --rows <a:b> --tag <บัญชีเดียว>` (`SIGNIN_URL=<OLS>/?signIn=1`) — เปิดทีละ 1 หน้าต่าง เติมอีเมลให้ ข้ามบัญชีที่ยังใช้ได้เอง · เฉพาะเธรดหลัก เลนห้ามล็อกอินเอง (คืน `SESSION-DEAD`)
 - ก่อนบอกว่าบัญชีพร้อม/ส่งเลน: ชี้ keepalive ที่ยังมีชีวิตที่ดูแล tag นั้น + เธรดหลักรัน `recording_preflight.js` เอง ถาม session จากไฟล์ตรง ไม่ผ่านการโหลดหน้า · ห้ามปิด keepalive เพื่อประสิทธิภาพ (idle ตัด 30 นาที)
