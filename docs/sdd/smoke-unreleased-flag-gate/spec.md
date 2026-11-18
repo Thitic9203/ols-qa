@@ -23,8 +23,9 @@ that does show must be listed as a bullet: which ticket, which fix version, whic
   version ในทิคเกตบน jira"; owner 2026-11-18 plan answer "นับเฉพาะ releaseDate".
 - **R4.** The check must cover every ticket whose fix version is a future release, every status and
   issue type. The search uses `GET /rest/api/3/search/jql`, paged with `nextPageToken` until
-  `isLast` is true; the count read must equal `POST /rest/api/3/search/approximate-count` for the
-  same JQL, and both numbers are recorded. `/rest/api/2/search` must not be used — it returns HTTP 410
+  `isLast` is true (Atlassian Jira Cloud REST v3, Issue search, read 2026-11-18). `POST
+  /rest/api/3/search/approximate-count` for the same JQL is a cross-check only; both numbers are
+  recorded and a difference is reported, never resolved by picking one. `/rest/api/2/search` must not be used — it returns HTTP 410
   (removed), measured 2026-11-18. Source: owner "ทั้งหมด"; CLAUDE.md §0 (numbers carry query + divisor).
 - **R5.** For each ticket the check derives what it would put on screen (route, label, button, section)
   from the ticket's description / AC fields and the `ols-monorepo` commits that cite its key, plus the
