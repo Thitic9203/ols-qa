@@ -98,7 +98,11 @@ check('an evidence file named in the manifest but absent on disk exits 1', () =>
 
 check('the same manifest passes once the evidence file is there', () => {
   fs.writeFileSync(path.join(tmp, 'PROJ-88_TC_01_CONTENT_ADMIN.mp4'), 'not a real clip, but present');
-  const r = run(['--manifest', write('good4.json', GOOD_MANIFEST), '--evidence-dir', tmp]);
+  // --evidence-dir turns on the pre-review checks (docs/sdd/test-time-cut-guard): the clip needs a
+  // passing verifier output and the round needs its decisions file, or the run is unchecked (exit 2).
+  fs.writeFileSync(path.join(tmp, 'verify-video.txt'), 'PASS  PROJ-88_TC_01_CONTENT_ADMIN.mp4\n');
+  const decisions = write('ROUND_DECISIONS.md', '# decisions\n| 1 | none |\n');
+  const r = run(['--manifest', write('good4.json', GOOD_MANIFEST), '--evidence-dir', tmp, '--decisions', decisions]);
   assert.strictEqual(r.code, 0, r.out);
 });
 

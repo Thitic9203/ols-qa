@@ -120,6 +120,30 @@ Refused: a manifest without `testRunTime`, `minutes` that is not a positive numb
 measurement), a non-boolean `hasVideo`, or any `method` other than the tool's id; and a body whose
 line above the marker is not a `Test run time: {n} min` line (`run-time-line-missing`).
 
+## Pre-review evidence checks — before the 6c reviewer (owner, 2026-11-18)
+
+Spec: [docs/sdd/test-time-cut-guard/spec.md](../../docs/sdd/test-time-cut-guard/spec.md). The step-6c
+reviewer needed 7 rounds on one retest catching the same five classes by eye; they are decided here
+first so the reviewer's rounds go to judgement. The reviewer stays independent and still has to reach CLEAN.
+
+```bash
+node tools/retest-guard/retest_guard.js --manifest run.json --out body.txt \
+  --evidence-dir <clips> --verify-dir <verify_video outputs> --decisions ROUND_DECISIONS.md
+```
+
+They run when `--evidence-dir` and/or `--decisions` is passed (without either, nothing changes):
+
+| rule id | spec | refuses |
+|---|---|---|
+| `width-claim-without-evidence` | R1 | a row naming `… px` widths with no evidence file of that width (name `w375` / `-390-`, or `<stem>.capture.json` `viewport.width`) |
+| `role-claim-without-evidence` | R2 | a row naming roles its evidence does not show (file names the role, or cites a single-role case) |
+| `clip-unverified-no-decision` | R3 | a cited clip without a `PASS  <clip>.mp4` verifier line (any `FAIL` line counts against it) and no decisions row naming it. `verified.passed` in capture.json is not accepted (#0113) |
+| `decision-time-unsourced` · `decision-timezone-mismatch` | R4 | an `HH:MM` in the decisions file with no code span or file name on the same line; a time in another timezone than the heading names |
+| `inline-image-too-wide` | R5 | an inline `!name.png!` wider than 640 px (PNG IHDR) |
+
+What cannot be decided is reported `UNCHK` (`*-unchecked`) and the run **exits 2** — no `--decisions`,
+no verifier outputs to read, an embedded image not in the evidence dir. Unchecked is never a pass.
+
 ## What it does not check, and never implies
 
 Whether the clip reached its target · whether the cause is real · whether the expected side was

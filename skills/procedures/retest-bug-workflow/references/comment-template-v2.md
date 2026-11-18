@@ -16,7 +16,7 @@ order and one checked input→output pair. The full step that uses it is Step 6 
 ## Command
 
 ```text
-node tools/retest-guard/retest_guard.js --manifest run.json --out body.txt --evidence-dir <EVIDENCE_DIR>
+node tools/retest-guard/retest_guard.js --manifest run.json --out body.txt --evidence-dir <EVIDENCE_DIR> --decisions <ROUND_DECISIONS.md> --verify-dir <VERIFY_DIR>
 ```
 
 - Exit **0** is required. Exit 1 = findings (fix the manifest, render again); exit 2 = the gate

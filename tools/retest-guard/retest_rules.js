@@ -598,6 +598,170 @@ function scanBody(body, opts = {}) {
   return out;
 }
 
+/* ------------------------------------------------------------------ *
+ * Pre-review evidence rules — docs/sdd/test-time-cut-guard/spec.md R1–R5.
+ *
+ * The step-6c reviewer needed 7 rounds on one retest, catching the same five
+ * classes by eye. They are decided here, before the reviewer, so 6c spends its
+ * rounds on judgement. Pure functions only — file reading is retest_evidence.js.
+ * ------------------------------------------------------------------ */
+
+/** R5 — the widest PNG that may sit inline in a table cell (comment-and-post § 7c resized copy). */
+const INLINE_IMAGE_MAX_WIDTH = 640;
+/** R5 — an inline wiki image: `!name.png!` (no parameters — `img-width-param` refuses those). */
+const INLINE_WIKI_IMAGE = /!([^!|\s]+\.png)!/gi;
+
+/** R1 — a px width claim, single or a list: `390 px`, `1440px`, `1440 / 820 / 390 px`. */
+const WIDTH_CLAIM = /((?:\b\d{3,4}\s*(?:\/|,|·|&|\band\b|\bor\b|และ|หรือ)\s*)*\b\d{3,4})\s*px\b/gi;
+
+/** R1 — widths a file name carries: `w375` anywhere, or `<n>` between separators (not the `-640.png` resize suffix). */
+function widthsBackedByName(name) {
+  const stem = String(name).replace(/\.[A-Za-z0-9]+$/, '');
+  const out = new Set();
+  let m;
+  const w = /(?:^|[-_.])w(\d{3,4})(?=$|[-_.])/gi;
+  while ((m = w.exec(stem))) out.add(Number(m[1]));
+  const mid = /[-_](\d{3,4})(?=[-_])/g;
+  while ((m = mid.exec(stem))) { out.add(Number(m[1])); mid.lastIndex -= 1; }
+  return [...out];
+}
+
+/** R1 — every px width the text claims, in order. */
+function widthClaims(text) {
+  const out = [];
+  let m;
+  const re = new RegExp(WIDTH_CLAIM.source, 'gi');
+  while ((m = re.exec(String(text || '')))) {
+    (m[1].match(/\d{3,4}/g) || []).forEach((n) => out.push(Number(n)));
+  }
+  return out;
+}
+
+/** R2 — a role name in letters only, lower case: `CONTENT_ADMIN` / `Content Admin` → `contentadmin`. */
+function roleKey(role) { return String(role).toLowerCase().replace(/[^a-z]/g, ''); }
+
+/** R2 — the role vocabulary of a manifest: every `cases[].role` part and top-level `role[]`. */
+function roleVocabulary(m) {
+  const set = new Map();
+  const add = (r) => String(r || '').split(/\s*(?:,|\/|&|\band\b)\s*/).map((x) => x.trim()).filter(Boolean)
+    .forEach((x) => { if (roleKey(x) && !set.has(roleKey(x))) set.set(roleKey(x), x); });
+  (Array.isArray(m && m.role) ? m.role : [m && m.role]).forEach(add);
+  ((m && m.cases) || []).forEach((c) => add(c.role));
+  return [...set.values()];
+}
+
+/** R2 — the roles a text names. A shorter role inside a longer match (`Admin` in `Content Admin`) is not a claim. */
+function roleClaims(text, vocabulary) {
+  const s = String(text || '');
+  const hits = [];
+  vocabulary.forEach((role) => {
+    const words = String(role).split(/[\s_-]+/).filter(Boolean).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    if (!words.length) return;
+    const re = new RegExp(`(?<![A-Za-z])${words.join('[\\s_-]*')}(?![A-Za-z])`, 'gi');
+    let m;
+    while ((m = re.exec(s))) hits.push({ role, from: m.index, to: m.index + m[0].length });
+  });
+  const kept = hits.filter((h) => !hits.some((o) => o !== h && o.from <= h.from && o.to >= h.to && (o.to - o.from) > (h.to - h.from)));
+  const out = [];
+  kept.sort((a, b) => a.from - b.from).forEach((h) => { if (!out.includes(h.role)) out.push(h.role); });
+  return out;
+}
+
+/** R2 — case ids a file name cites: `TC_02` and the joined form `TC_02_03` → TC_02 + TC_03. */
+function caseIdsInName(name, caseIds) {
+  const s = String(name);
+  const out = new Set();
+  caseIds.forEach((id) => {
+    const re = new RegExp(`(?<![A-Za-z0-9])${id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!\\d)`);
+    if (re.test(s)) out.add(id);
+  });
+  let m;
+  const joined = /([A-Za-z]+)_(\d+(?:_\d+)+)/g;
+  while ((m = joined.exec(s))) m[2].split('_').forEach((n) => out.add(`${m[1]}_${n}`));
+  return [...out];
+}
+
+/** R2 — role keys a file backs: roles its name carries, plus single-role cases it cites. */
+function rolesBackedByFile(name, cases, vocabulary) {
+  const key = roleKey(name);
+  const out = new Set(vocabulary.map(roleKey).filter((k) => key.includes(k)));
+  const ids = caseIdsInName(name, (cases || []).map((c) => c.id));
+  (cases || []).forEach((c) => {
+    if (!ids.includes(c.id)) return;
+    const parts = String(c.role || '').split(/\s*(?:,|\/|&|\band\b)\s*/).filter(Boolean);
+    if (parts.length === 1) out.add(roleKey(parts[0]));
+  });
+  return out;
+}
+
+/** R3 — the line shape `verify_video.py` prints per clip: `PASS  <clip>.mp4` / `FAIL  <clip>.mp4`. */
+const VERIFIER_LINE = /^(PASS|FAIL)\s+(\S+\.mp4)\s*$/gm;
+function parseVerifierOutput(text) {
+  const out = [];
+  let m;
+  const re = new RegExp(VERIFIER_LINE.source, 'gm');
+  while ((m = re.exec(String(text || '')))) out.push({ clip: m[2], pass: m[1] === 'PASS' });
+  return out;
+}
+
+/** R3 — true when a `|` row of the decisions file names the clip by file name or stem, whole-token. */
+function decisionNamesClip(decisionsText, clip) {
+  const stem = String(clip).replace(/\.mp4$/i, '');
+  const re = new RegExp(`(?<![A-Za-z0-9_])${stem.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z0-9_])`);
+  return String(decisionsText || '').split('\n').some((l) => l.trim().startsWith('|') && re.test(l));
+}
+
+/** R4 — a clock time `HH:MM` (not part of `+07:00`, a ratio, or a longer number). */
+const CLOCK_TIME = /(?<![\d:+-])(?:[01]?\d|2[0-3]):[0-5]\d(?![\d:])/g;
+/** R4 — what counts as a source on the same line: a code span or a file name with an evidence extension. */
+const TIME_SOURCE = /`[^`\n]+`|[\w./-]+\.(?:txt|log|json|jsonl|md|csv|png|mp4)\b/i;
+/** R4 — timezone names a heading or a row can carry. */
+const TIMEZONE_TOKEN = /\b(UTC|ICT|GMT[+-]\d{1,2}|Asia\/Bangkok)\b|[+-]\d{2}:\d{2}\b/gi;
+
+function timezonesIn(line) {
+  return [...String(line).matchAll(new RegExp(TIMEZONE_TOKEN.source, 'gi'))].map((m) => m[0].toUpperCase());
+}
+
+/** R4 — findings for one decisions file's text. */
+function checkDecisionTimes(text) {
+  const out = [];
+  const lines = String(text || '').split('\n');
+  const headingTz = new Set();
+  lines.forEach((l) => { if (/^\s*#/.test(l)) timezonesIn(l).forEach((z) => headingTz.add(z)); });
+  lines.forEach((l, i) => {
+    const times = l.match(new RegExp(CLOCK_TIME.source, 'g'));
+    if (!times) return;
+    if (!TIME_SOURCE.test(l)) {
+      out.push(finding('decision-time-unsourced', i + 1,
+        `clock time ${times.join(', ')} with no source on the same line`,
+        'cite where it was read (`date` output, a log or capture file name), or remove the time'));
+    }
+    if (headingTz.size) {
+      const other = timezonesIn(l).filter((z) => !headingTz.has(z));
+      if (other.length) {
+        out.push(finding('decision-timezone-mismatch', i + 1,
+          `the heading names ${[...headingTz].join('/')}, this line names ${other.join('/')}`,
+          'convert the time to the heading timezone, or name both and state the conversion'));
+      }
+    }
+  });
+  return out;
+}
+
+/** R5 — inline image file names in a body. */
+function inlineWikiImages(body) {
+  return [...String(body || '').matchAll(new RegExp(INLINE_WIKI_IMAGE.source, 'gi'))].map((m) => m[1]);
+}
+
+/** R5 — PNG width from the IHDR chunk, or null when the bytes are not a PNG. */
+function pngWidth(buf) {
+  if (!buf || buf.length < 24) return null;
+  const sig = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  if (!sig.every((b, i) => buf[i] === b)) return null;
+  if (buf.toString('ascii', 12, 16) !== 'IHDR') return null;
+  return buf.readUInt32BE(16);
+}
+
 /**
  * Counter-example allowlist for `rules_drift.test.js`.
  *
@@ -684,4 +848,24 @@ module.exports = {
   findTables,
   kindOfTable,
   scanBody,
+  finding,
+  INLINE_IMAGE_MAX_WIDTH,
+  INLINE_WIKI_IMAGE,
+  WIDTH_CLAIM,
+  widthClaims,
+  widthsBackedByName,
+  roleKey,
+  roleVocabulary,
+  roleClaims,
+  caseIdsInName,
+  rolesBackedByFile,
+  VERIFIER_LINE,
+  parseVerifierOutput,
+  decisionNamesClip,
+  CLOCK_TIME,
+  TIME_SOURCE,
+  TIMEZONE_TOKEN,
+  checkDecisionTimes,
+  inlineWikiImages,
+  pngWidth,
 };
