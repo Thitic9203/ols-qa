@@ -185,23 +185,12 @@ All URLs, credentials, transition names, and Swagger URLs come from config — *
 
 ## Step 2 — Fetch Jira ticket [high freedom]
 
-**Parallel intake (test-time-cut R1–R2).** Start these independent reads together, as subagents or parallel tool calls, then merge
-them into one intake ([parallel-prep.md](../../../references/parallel-prep.md)):
-- the ticket fetch (below);
-- the project config (Step 1);
-- the design reference (Step 2d);
-- a **background session check** of every account the round will lease, using the project guide's session-verify command.
+Intake reads and session check in parallel (for details: [parallel-prep.md](../../../references/parallel-prep.md)).
 
-A dead account found by that check is reported to the user at once, with the ready-to-run relink/mint command for that account
-([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3), and the rest of the prep keeps going. Never open a
-login window and never type a password.
-
-**Round N (a ticket retested before) — fingerprint check first.** Read
-`<workspace>/references/helix-handoff-{KEY}.md` and fetch each source's fingerprint fresh: ticket `updated` +
-comment count · Figma `lastModified` · Swagger spec hash · build version where exposed. A matching
-fingerprint skips the full re-read of that source; a changed or missing one re-reads that source only
-([round-time-contract.md](../../../references/round-time-contract.md) §10). The bug's contract is
-still re-counted fresh at Step 2c.
+**Round N — fingerprint first.** Read `<workspace>/references/helix-handoff-{KEY}.md`; fetch each source's
+fingerprint (ticket `updated` + comment count · Figma `lastModified` · Swagger hash · exposed build version).
+Re-read only sources whose fingerprint changed or is missing ([round-time-contract.md](../../../references/round-time-contract.md) §10);
+the contract is still re-counted at Step 2c.
 
 Use Atlassian integration (`getJiraIssue` or equivalent):
 
