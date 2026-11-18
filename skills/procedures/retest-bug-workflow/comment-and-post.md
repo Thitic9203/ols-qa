@@ -200,7 +200,7 @@ apply and this step is done by hand against the template below — a missing too
 standard, and "the guard is not installed here" is never a reason to post something it would reject.
 
 ```
-node tools/retest-guard/retest_guard.js --manifest run.json --out body.txt --evidence-dir out/
+node tools/retest-guard/retest_guard.js --manifest run.json --out body.txt --evidence-dir out/ --decisions ROUND_DECISIONS.md --verify-dir out/sources/
 ```
 
 - **exit 0** — the mechanical rules pass: markup for the locked endpoint, header lines, table headers,

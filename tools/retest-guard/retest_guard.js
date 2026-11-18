@@ -24,6 +24,7 @@ const path = require('path');
 const R = require('./retest_rules');
 const M = require('./retest_manifest');
 const RENDER = require('./retest_render');
+const EVIDENCE = require('./retest_evidence');
 
 function parseArgs(argv) {
   const a = { format: null, bugType: null, ticketType: null };
@@ -37,6 +38,8 @@ function parseArgs(argv) {
     else if (k === '--bug-type') a.bugType = next();
     else if (k === '--ticket-type') a.ticketType = next();
     else if (k === '--evidence-dir') a.evidenceDir = next();
+    else if (k === '--decisions') a.decisions = next();
+    else if (k === '--verify-dir') a.verifyDir = next();
     else if (k === '--json') a.json = true;
     else if (k === '--help' || k === '-h') a.help = true;
     else return { error: `unknown argument: ${k}` };
@@ -54,9 +57,16 @@ const USAGE = `retest-guard — the mechanical gate for a retest comment
   --bug-type FE|API     for --body; defaults to FE
   --ticket-type Bug|Task  for --body; column 2 must then read ER (Bug) or AC (Task)
   --evidence-dir <dir>  check that every evidence file named in the manifest exists
+  --decisions <file>    the round's ROUND_DECISIONS.md (pre-review checks R3, R4)
+  --verify-dir <dir>    where the verify_video outputs (*.txt) are; defaults to --evidence-dir
   --json                machine-readable output
 
-exit 0 clean · 1 findings · 2 could not run`;
+Pre-review mode (--evidence-dir and/or --decisions): also checks width and role claims
+against evidence, clip verifier results or owner decisions, times in the decisions file,
+and inline image width (docs/sdd/test-time-cut-guard/spec.md). A check it cannot decide is
+reported UNCHK and the run exits 2 — never 0.
+
+exit 0 clean · 1 findings · 2 could not run (or something stayed unchecked)`;
 
 function report(findings, asJson) {
   if (asJson) {
@@ -68,15 +78,17 @@ function report(findings, asJson) {
     console.log('             (judgement gates are not checked here and have not passed by implication)');
     return;
   }
-  const errors = findings.filter((f) => f.severity !== 'warn');
+  const errors = findings.filter((f) => f.severity === 'error' || !f.severity);
   const warns = findings.filter((f) => f.severity === 'warn');
+  const unchk = findings.filter((f) => f.severity === 'unchecked');
+  const label = { warn: 'WARN ', unchecked: 'UNCHK' };
   for (const f of findings) {
     const where = f.field ? `field ${f.field}` : `line ${f.line || '-'}`;
-    console.log(`${f.severity === 'warn' ? 'WARN ' : 'ERROR'}  ${f.rule || f.field}  (${where})`);
+    console.log(`${label[f.severity] || 'ERROR'}  ${f.rule || f.field}  (${where})`);
     console.log(`        ${f.message}`);
     if (f.fix) console.log(`        fix: ${f.fix}`);
   }
-  console.log(`\n${errors.length} error(s), ${warns.length} warning(s)`);
+  console.log(`\n${errors.length} error(s), ${warns.length} warning(s)${unchk.length ? `, ${unchk.length} unchecked — not a pass` : ''}`);
 }
 
 function main() {
@@ -98,6 +110,7 @@ function main() {
       console.error(`could not read manifest: ${e.message}`);
       return 2;
     }
+    a.parsedManifest = manifest;
     const manifestFindings = M.validate(manifest);
     findings.push(...manifestFindings);
     format = manifest.format || format;
@@ -142,14 +155,25 @@ function main() {
 
   if (body) findings.push(...R.scanBody(body, { format, bugType, ticketType }));
 
+  if (a.evidenceDir || a.decisions) {
+    if (a.decisions && !fs.existsSync(a.decisions)) {
+      console.error(`could not read decisions file: ${a.decisions}`);
+      return 2;
+    }
+    findings.push(...EVIDENCE.check({ manifest: a.parsedManifest || null, body, evidenceDir: a.evidenceDir,
+      verifyDir: a.verifyDir, decisionsPath: a.decisions }));
+  }
+
   report(findings, a.json);
-  const hasErrors = findings.some((f) => f.severity !== 'warn');
+  const hasErrors = findings.some((f) => f.severity === 'error' || !f.severity);
+  const hasUnchecked = findings.some((f) => f.severity === 'unchecked');
   if (a.wroteOut && hasErrors && !a.json) {
     // The file exists so the findings can be read against it — but it is not postable,
     // and a rendered file sitting on disk looks finished.
     console.log(`\nNOTE: ${a.out} was written for inspection. It is NOT postable while findings stand.`);
   }
-  return hasErrors ? 1 : 0;
+  if (hasErrors) return 1;
+  return hasUnchecked ? 2 : 0;          // a check that could not be decided is not a pass
 }
 
 if (require.main === module) {
