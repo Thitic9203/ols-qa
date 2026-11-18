@@ -12,7 +12,18 @@ Use at workflow **start** when two or more **read-only** fetches do not depend o
 | Retest ticket fetch | Project config + design reference | Retest intake (retest Step 2) |
 | Session check of every account the round leases (background) | Ticket fetch / case list | Dead account reported at intake with its relink/mint command |
 
-## While waiting at an owner gate
+## Retest intake
+
+At retest Step 2, start these reads together, then merge them into one intake:
+- the ticket fetch;
+- the project config;
+- the design reference;
+- a background session check of every account the round leases, using the project guide's session-verify command.
+
+Report a dead account to the user at once, with its relink/mint command ([parallel-test-lanes.md](parallel-test-lanes.md) §3).
+Never open a login window and never type a password.
+
+## While waiting
 
 At the testing-ticket Phase C confirmation and the retest Step 6d approval, run only the prep the answer does not change:
 - the session check;
