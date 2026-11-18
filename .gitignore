@@ -63,7 +63,7 @@ __pycache__/
 /continue/
 /reports/
 /smoke-test/
-/references/*OLS-*
+/references/*OLS-[0-9]*
 /references/tc-glossary.csv
 
 # Local-only QA working docs — contain real test-account emails/passwords. NEVER commit (repo is public).
