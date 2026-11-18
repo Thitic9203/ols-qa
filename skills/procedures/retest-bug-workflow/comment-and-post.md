@@ -24,10 +24,6 @@ Part of [WORKFLOW.md](WORKFLOW.md). Read before drafting the comment.
 🔴 **GATE — STOP: Do not post until the user approves** (or delegated that action by name — 6d *Delegated actions*) — through the single
 Step 6d approval popup.
 
-**While waiting for the 6d answer (test-time-cut R3):** run only independent prep the answer does not change, such as the session
-check for any follow-up lane, the notify-recipient and assignee lookup, and the readback inputs. Never post, transition or notify
-before the approval.
-
 **Draft in the syntax of the endpoint chosen at Step 3 — never in markdown "and convert later".**
 A markdown draft posted to `/rest/api/2/` does not error — it renders as garbage (`**x**` → `*<b>x</b>*`).
 Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
@@ -332,6 +328,10 @@ unanswered finding. No subagents: post nothing; hold the ticket with the reason.
 🔴 **GATE — STOP:** nothing is posted, transitioned or notified until item 4's approval is in (or that action is delegated by name, below).
 
 **Delegated actions:** the approval wait is skipped only for an outward action — post, transition, or notify — that the owner explicitly delegated by name, in this session, for this round (for example "post and transition this round without asking me"). General cues ("handle it", "don't ask", "don't wait") never skip a write approval; the [no-wait decision gate](../../../references/no-wait-decision-gate.md) layer 19 states the same rule. For a delegated action, the decisions popup carries only what the no-wait decision gate could not resolve; print the item 4 bundle list in chat before executing it, and every format, syntax and readback gate below still runs. An action not named still waits for item 4. Opening new bugs still needs a live yes.
+
+**While waiting for the 6d answer (test-time-cut R3):** run only independent prep the answer does not change, such as the session
+check for any follow-up lane, the notify-recipient and assignee lookup, and the readback inputs. Never post, transition or notify
+before the approval.
 
 This rule (a bare "skip approval" included) wins over the "unless they waive it" wording in `helix-session-constraints.md` and `agent-rationalizations.md`.
 
