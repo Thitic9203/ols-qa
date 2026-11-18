@@ -29,6 +29,7 @@ public: never write a resolved host, id, account or channel into any file here.
 - [Stage 2 — Identify the deployed version \[high freedom\]](#stage-2--identify-the-deployed-version-high-freedom)
 - [Stage 2.5 — The one-shot rule (read this before running anything) \[low freedom\]](#stage-25--the-one-shot-rule-read-this-before-running-anything-low-freedom)
 - [Stage 3 — Run \[low freedom\]](#stage-3--run-low-freedom)
+- [Stage 3.5 — Unreleased-work check (production / training only)](#stage-35--unreleased-work-check-production--training-only)
 - [Stage 4 — Triage every non-passing case \[high freedom\]](#stage-4--triage-every-non-passing-case-high-freedom)
 - [Stage 5 — Fix what is ours, then re-verify \[medium freedom\]](#stage-5--fix-what-is-ours-then-re-verify-medium-freedom)
 - [Result quality gate (mandatory before the summary is built) \[low freedom\]](#result-quality-gate-mandatory-before-the-summary-is-built-low-freedom)
@@ -76,6 +77,7 @@ Smoke test progress:
 - [ ] Stage 2 — Identify the deployed version
 - [ ] Stage 2.5 — The one-shot rule (read this before running anything)
 - [ ] Stage 3 — Run
+- [ ] Stage 3.5 — Unreleased-work check (production / training only)
 - [ ] Stage 4 — Triage every non-passing case
 - [ ] Stage 5 — Fix what is ours, then re-verify
 - [ ] Result quality gate (mandatory before the summary is built)
@@ -201,6 +203,50 @@ run (reruns, targeted checks, triage): without it the partial run rewrites `play
 the full round's report — a deliverable — is gone (2026-10-08: a 15-case rerun overwrote the full
 round's report and forced a whole new run before the notify). A case that passes on the rerun is
 unstable, not a defect.
+
+## Stage 3.5 — Unreleased-work check (production / training only)
+
+Runs when the round's environment is production or a training environment the owner named for this
+round. On dev and pre-prod this stage is skipped — write `Stage 3.5: n/a (<env>)` and move on.
+
+Work that has not been released as of the test day must be switched off by its flag and must not show
+on the web. The fix version on the Jira ticket says when work releases.
+
+1. **Measure the test date** with `date` (Asia/Bangkok) at the start of this stage. Never assume it.
+2. **List the future releases.** Read the project's versions read-only:
+   `GET https://<JIRA_DOMAIN>/rest/api/2/project/<PROJECT>/versions` (same token and CA as Stage 4).
+   A version is a future release only when its `releaseDate` is after the test date. A version
+   releasing on the test day counts as released. A version with no `releaseDate` is not counted —
+   name it once in the round record as `no release date — not checked`.
+3. **List every ticket in those versions** —
+   `GET /rest/api/2/search?jql=project=<PROJECT> AND fixVersion in ("<v1>","<v2>")&fields=summary,status,issuetype,fixVersions`,
+   all statuses and issue types, paged with `startAt` until the count read equals the reported total.
+   Record both numbers.
+4. **Pin what each ticket would put on screen** — the route, label, button or section. Read the
+   ticket's description and AC fields (OLS keeps content in custom fields), then
+   `git log --all --grep=<KEY>` in `<MONOREPO>` for the strings and routes the commits added, and the
+   flag that guards them when the code has one. A ticket that changes no screen is `no UI surface`
+   (cite the commit or field that shows it). A ticket whose surface cannot be pinned is `unverifiable`
+   with the reason. Both are never counted as `hidden`.
+5. **Look through the real UI** of the environment, read-only, as every role that could reach the
+   surface (guest, learner, creator, admin). Evidence is a front-end screenshot in `<WORKDIR>`.
+   Write nothing to the environment and nothing to Jira.
+6. **One outcome per ticket:** `hidden` · `visible` · `no UI surface` · `unverifiable`. Write one line
+   per ticket to `<WORKDIR>/unreleased-check.md` with the outcome, the evidence path and the role.
+7. **Report every `visible` ticket as one bullet**, in the chat report and the round record:
+
+   ```text
+   - พบงานของ ticket <KEY> (<summary>) · fix version <version> · แสดงบน <env> (<role>, <page>)
+   ```
+
+   List the `unverifiable` tickets in their own bullets with the reason.
+
+A `visible` ticket is a release-gate finding, not a filed bug: never open a ticket or issue for it
+without the owner's live order (CLAUDE.md §7). While any `visible` finding is open the round is
+not reported clean, and the findings go to the end-of-round decisions popup.
+
+**Go back:** If the count read in step 3 is below the reported total, page again before step 4. If
+the session for a role is gone, restore it the way Stage 1 allows and repeat step 5 for that role.
 
 ## Stage 4 — Triage every non-passing case [high freedom]
 
@@ -363,6 +409,10 @@ See the attached files for details:
 **This build is cleared to deploy to pre-production.** <@id>
 ```
 
+On production or training with any Stage 3.5 `visible` finding, replace the "cleared" line with an
+**Unreleased work visible:** block — the Stage 3.5 bullets, one per ticket — and never claim the
+build is clear.
+
 ## Stage 7.5 — The numbers gate (the trap that cost a round) [low freedom]
 
 The PDF, the Discord text and the Playwright report are three surfaces showing the same run. **They
@@ -391,11 +441,13 @@ grep -E '^\s+[0-9]+ (passed|failed|flaky|skipped)' <WORKDIR>/run.log   # what th
 - **MUST** end every non-passing case at a verified root cause. "Test-suite limitation" written into
   a deliverable without a `path:line` behind it is unfinished work, not a finding.
 - **MUST** re-run the whole suite after any fix.
+- **MUST** run Stage 3.5 on production and training, and list every unreleased ticket that shows
+  on the web as `ticket · fix version · env`.
 - **MUST** look at the rendered PDF before sending it.
 - **NEVER** report a harness or VPN failure as a product verdict.
 - **MUST** end the chat report with the measured `Round time:` line.
 - **NEVER** wait for the owner mid-run. Queue the question for the end decisions popup, then send under one approval.
-- **NEVER** run this against training — real people work there.
+- **NEVER** run this against training unless the owner named it for this round — real people work there.
 - **NEVER** touch anything whose title or description contains `RGS`; that is the customer's data.
 - **NEVER** publish the Playwright report publicly without the owner's explicit decision.
 - **NEVER** claim a version without the tag evidence from Stage 2.
