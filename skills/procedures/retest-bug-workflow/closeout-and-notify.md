@@ -159,6 +159,7 @@ Run this checklist on the **dry-run output** before every real send — no excep
 1. **Ticket key + title** match the Jira issue exactly.
 2. **Verdict + counts** match the posted Jira retest comment (PASS/FAIL/BLOCKED numbers add up to the cases actually run).
 3. **Body bullets** describe what was actually tested against the **bug's own expected results** — no copy-paste from another ticket.
+3b. **Body is generated, never hand-typed.** When every case passed, build the body with the helper's generator (an AC-range / env / roles option where the helper has one). Never add a bullet that restates the verdict or counts, or a status line. A helper format refusal (non-zero exit) is a gate: fix the input, never the layout.
 4. **Result link** opens the correct issue and `focusedCommentId` = the retest comment ID just posted.
 5. **Recipient**: re-read the QA Owner field value fetched in this session for THIS ticket; confirm the resolved `<@id>` maps to that name in the roster, and the label matches the field source.
 6. Only after all 5 pass → send. The dry-run text and resolved recipient are already listed in the 6d approval popup; any doubt found here → stop and report it, never send a message the user did not see in that bundle.
