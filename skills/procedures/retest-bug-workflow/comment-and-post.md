@@ -24,6 +24,10 @@ Part of [WORKFLOW.md](WORKFLOW.md). Read before drafting the comment.
 🔴 **GATE — STOP: Do not post until the user approves** (or delegated that action by name — 6d *Delegated actions*) — through the single
 Step 6d approval popup.
 
+**While waiting for the 6d answer (test-time-cut R3):** run only independent prep the answer does not change, such as the session
+check for any follow-up lane, the notify-recipient and assignee lookup, and the readback inputs. Never post, transition or notify
+before the approval.
+
 **Draft in the syntax of the endpoint chosen at Step 3 — never in markdown "and convert later".**
 A markdown draft posted to `/rest/api/2/` does not error — it renders as garbage (`**x**` → `*<b>x</b>*`).
 Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in

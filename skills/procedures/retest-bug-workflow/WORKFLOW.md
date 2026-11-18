@@ -185,6 +185,17 @@ All URLs, credentials, transition names, and Swagger URLs come from config — *
 
 ## Step 2 — Fetch Jira ticket [high freedom]
 
+**Parallel intake (test-time-cut R1–R2).** Start these independent reads together, as subagents or parallel tool calls, then merge
+them into one intake ([parallel-prep.md](../../../references/parallel-prep.md)):
+- the ticket fetch (below);
+- the project config (Step 1);
+- the design reference (Step 2d);
+- a **background session check** of every account the round will lease, using the project guide's session-verify command.
+
+A dead account found by that check is reported to the user at once, with the ready-to-run relink/mint command for that account
+([parallel-test-lanes.md](../../../references/parallel-test-lanes.md) §3), and the rest of the prep keeps going. Never open a
+login window and never type a password.
+
 **Round N (a ticket retested before) — fingerprint check first.** Read
 `<workspace>/references/helix-handoff-{KEY}.md` and fetch each source's fingerprint fresh: ticket `updated` +
 comment count · Figma `lastModified` · Swagger spec hash · build version where exposed. A matching

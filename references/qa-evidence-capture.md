@@ -159,11 +159,12 @@ whose clips are the quality bar. Every number below was **measured on real clips
 — changing one changes what "same quality as the reference" means.
 
 **Do not hand-roll any of this: the compliant recorder already exists.** It lives with the rest of the
-QA bot tooling, outside this repo, as `capture/qa_recorder.js` — it measures the viewport and
+QA tooling, outside this repo, and is driven only through the `manual-maker:screen-record` skill (owner rule 30 Oct 2026). The
+recorder measures the viewport and
 `devicePixelRatio` from the page rather than trusting the caller, refuses anything under the floor,
 fails closed under the fps floor, writes the manifest layer 1c is checked against, and runs the
 verifier on the encoded file before it returns. `capture/README.md` beside it carries the usage and the
-migration steps for an older script; `node capture/qa_recorder.test.js` is its self-test.
+migration steps for an older script; the screen-record skill carries its own self-test.
 
 **The instrument for layers 1 / 1b / 1c / 6 is `capture/verify_video.py`**, in the same place:
 
