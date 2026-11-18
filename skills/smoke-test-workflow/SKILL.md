@@ -219,9 +219,11 @@ on the web. The fix version on the Jira ticket says when work releases.
    releasing on the test day counts as released. A version with no `releaseDate` is not counted —
    name it once in the round record as `no release date — not checked`.
 3. **List every ticket in those versions** —
-   `GET /rest/api/2/search?jql=project=<PROJECT> AND fixVersion in ("<v1>","<v2>")&fields=summary,status,issuetype,fixVersions`,
-   all statuses and issue types, paged with `startAt` until the count read equals the reported total.
-   Record both numbers.
+   `GET /rest/api/3/search/jql?jql=project=<PROJECT> AND fixVersion in ("<v1>","<v2>")&fields=summary,status,issuetype,fixVersions&maxResults=100`,
+   all statuses and issue types. Page by passing the response's `nextPageToken` back until `isLast`
+   is true. Then `POST /rest/api/3/search/approximate-count` with `{"jql": "<same JQL>"}` — the count
+   read must equal its `count`. Record both numbers. Never use `/rest/api/2/search`: Jira returns
+   HTTP 410 (removed).
 4. **Pin what each ticket would put on screen** — the route, label, button or section. Read the
    ticket's description and AC fields (OLS keeps content in custom fields), then
    `git log --all --grep=<KEY>` in `<MONOREPO>` for the strings and routes the commits added, and the
