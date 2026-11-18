@@ -110,7 +110,7 @@ Input — `run.json` (placeholders; a FE bug, PASSED, one ER with two observed p
     "method": "evidence-burst-v1"
   },
   "marker": {
-    "src": "ols-qa",
+    "src": "helix",
     "via": "retest-bug",
     "agent": "claude-code"
   }
@@ -148,7 +148,7 @@ body with `--body body.txt --format v2 --bug-type FE`):
 
 *Test run time:* 12.4 min — includes evidence capture (screenshots and video); excludes re-checks, design lookup and comment drafting
 
-_retestskillmarker · skill=retest-bug-workflow · src=ols-qa · via=retest-bug · agent=claude-code_
+_retestskillmarker · skill=retest-bug-workflow · src=helix · via=retest-bug · agent=claude-code_
 ```
 
 ## Anti-example

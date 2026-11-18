@@ -105,10 +105,10 @@ counts both skills, and `skill=` tells them apart:
 ```text
 *Test run time:* {minutes} min — includes evidence capture ({screenshots|screenshots and video}); excludes re-checks, design lookup and comment drafting
 
-_retestskillmarker · skill=testing-ticket · src={ols-qa|helix} · via={testing-ticket|testing-ticket-workflow|helix-menu} · agent={claude-code|cursor|codex|copilot|other} · result={PASSED|FAILED|BLOCKED|PWMI} · passed={n} · failed={n} · pwmi={n} · blocked={n}_
+_retestskillmarker · skill=testing-ticket · src={workspace|helix} · via={testing-ticket|testing-ticket-workflow|helix-menu} · agent={claude-code|cursor|codex|copilot|other} · result={PASSED|FAILED|BLOCKED|PWMI} · passed={n} · failed={n} · pwmi={n} · blocked={n}_
 ```
 
-Fill it from the run, never guess: `src=helix` from the Helix plugin, `src=ols-qa` when run from the ols-qa workspace build;
+Fill it from the run, never guess: `src` = workspace name from the workspace guide (`helix` if none);
 `via` = the command or skill the user invoked; `agent` = the AI tool doing the run. `result` = the
 overall result the F1 executive summary states; `passed` / `failed` / `pwmi` / `blocked` = the F2 row
 counts per verdict (they add up to the F2 row count).

@@ -8,7 +8,7 @@
  *   2. has a "## QA closing" section
  *   3. mentions "Refusal-first" (the precondition-gate section)
  *   4. the first 20 lines contain "do not use" (negative trigger case)
- * Skills marked "(ols-qa workspace only)" in references/skill-routing.md are not shipped to helix
+ * Skills marked "(workspace only)" in references/skill-routing.md are not shipped to helix
  * and are skipped — that table is the single source for what ships.
  *   node tools/skill-structure/check.js [--root <dir>]   exit 0 clean · 1 violations · 2 no skills/
  */
@@ -28,7 +28,7 @@ function checkText(name, text) {
 function localOnly(root) {
   const f = path.join(root, 'references', 'skill-routing.md');
   const t = fs.existsSync(f) ? fs.readFileSync(f, 'utf8') : '';
-  return new Set([...t.matchAll(/`([a-z0-9-]+)` \(ols-qa workspace only\)/g)].map((m) => m[1]));
+  return new Set([...t.matchAll(/`([a-z0-9-]+)` \(workspace only\)/g)].map((m) => m[1]));
 }
 
 function run(root) {

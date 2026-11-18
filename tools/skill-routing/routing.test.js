@@ -19,7 +19,7 @@
  *   A5  the numbered menu covers every skill: each skills/<name>/SKILL.md (helix excluded) is
  *       linked from a numbered row of the "## Primary menu" table in references/skill-routing.md,
  *       or — for an ols-qa-only skill that is not shipped to helix (owner decision 14/Oct/2026) —
- *       named there as plain text `<name>` on a row that says "(ols-qa workspace only)", so the
+ *       named there as plain text `<name>` on a row that says "(workspace only)", so the
  *       shared file has no link that would break in helix,
  *       and references/menu-text.md lists one numbered option per row, each with the same bold
  *       name as that row's Option column, with the "Reply with 1–N" line matching the last number.
@@ -141,7 +141,7 @@ function helixMenuProblems(root) {
   for (const r of rows) {
     for (const m of r[3].matchAll(/\]\(\.\.\/skills\/([a-z0-9-]+)\/SKILL\.md\)/g)) linked.add(m[1]);
     // ols-qa-only skill: plain-text `name` (no link) accepted only on a row labelled as such.
-    if (/\(ols-qa workspace only\)/.test(r[3])) for (const m of r[3].matchAll(/`([a-z0-9-]+)`/g)) linked.add(m[1]);
+    if (/\(workspace only\)/.test(r[3])) for (const m of r[3].matchAll(/`([a-z0-9-]+)`/g)) linked.add(m[1]);
   }
   for (const s of listSkills(root)) {
     if (s !== 'helix' && !linked.has(s)) problems.push(`Primary menu: no numbered row links ${s}`);
@@ -287,7 +287,7 @@ test('A5 must-find: option name differs between menu-text.md and skill-routing.m
     ['option 3: menu-text.md says "Content Takedown", skill-routing.md says "Opt 3"']);
 });
 test('A5 must-not-find: an ols-qa-only skill named as plain text on a labelled numbered row', () => {
-  const rows = [ROW_A, '| 2 | Opt 2 | `b-workflow` (ols-qa workspace only) | `/b` | x |', ROW_OTHER(3)];
+  const rows = [ROW_A, '| 2 | Opt 2 | `b-workflow` (workspace only) | `/b` | x |', ROW_OTHER(3)];
   assert.deepStrictEqual(helixMenuProblems(menuFixture(rows, menuText(3))), []);
 });
 test('A5 must-find: a plain-text skill name on a numbered row without the ols-qa-only label', () => {

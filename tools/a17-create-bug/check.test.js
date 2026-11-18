@@ -49,7 +49,7 @@ t('R6 shared references say what create-bug uses', () => {
 t('R7 portability', () => {
   lacks('references/bug-priority-matrix.md', /ยึดหลักนี้/);
   has('references/jira-wiki-vs-markdown.md', /!\[alt\]\(http:\/\/x\/a\.png\)/);
-  has('references/skill-reference-index.md', /## Workspace-specific \*\(ols-only\)\*/);
+  has('references/skill-reference-index.md', /## Workspace-specific \*\(workspace-only\)\*/); // project-agnostic R7: names no product workspace
 });
 t('R8 intake and draft slots', () => {
   has('references/intake-one-pager.md', /entry points tried, expected \+ source link/);

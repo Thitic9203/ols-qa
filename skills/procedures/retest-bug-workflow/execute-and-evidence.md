@@ -244,8 +244,8 @@ capture/evidence_reconcile.py <KEY>_evidence_plan.json --dir out/ [--jira]
 
 It opens and measures every file rather than counting names, and with `--jira` it fetches each
 attachment from the ticket so "the link resolves" stops being a claim. Contracts (arguments, exit
-codes, manifest names) are pinned in
-`<workspace>/references/qa-capture-tooling.md`; a tool that cannot run is a
+codes, manifest names) are pinned where the workspace guide says
+(often `<workspace>/references/qa-capture-tooling.md`); a tool that cannot run is a
 **stop**, never a silent pass. Without these tools, do the same by hand: open every file on the
 Step 2c plan (play each MP4, view each PNG) and say so with the round.
 A file the reconciler or the hand check cannot find or play is a BLOCKED row with its reason,

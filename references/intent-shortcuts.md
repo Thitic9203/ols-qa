@@ -11,9 +11,9 @@ Use when the user writes **Thai, informal, or mixed language**. Map intent → w
 | สร้างบั๊ก, file bug, open issue, log defect | `create-bug-workflow` |
 | ตรวจงานตัวเองอีกรอบ, audit this, review my work, check yourself, CatchAI | `catch-ai-workflow` |
 | รีวิวเทสเคส, review TC sheet, check TC coverage against AC, review test case document | `tc-review-workflow` |
-| ซ่อนคอนเทนต์, เอาคอนเทนต์ลง, content takedown, hide content | `content-takedown-workflow` (ols-qa workspace only) |
+| ซ่อนคอนเทนต์, เอาคอนเทนต์ลง, content takedown, hide content | `content-takedown-workflow` (workspace only) |
 | รีวิวผลเทส, ตรวจคลิปหลักฐาน, review result, review evidence clips | `review-result-workflow` |
-| สโม้คเทส, smoke test, เช็ค build ใหม่หลัง deploy | `smoke-test-workflow` (ols-qa workspace only) |
+| สโม้คเทส, smoke test, เช็ค build ใหม่หลัง deploy | `smoke-test-workflow` (workspace only) |
 | เตรียมเทสดาต้า, สร้างข้อมูลทดสอบ, test data prep, seed test data | `test-data-prep-workflow` |
 | เปลี่ยนฟอร์แมต TC, ย้าย TC ลง template, release TC file | `tc-change-format-workflow` |
 | ลง taskfolio, ลง timesheet, ลงเวลางาน, fill taskfolio | `taskfolio-log-workflow` |
