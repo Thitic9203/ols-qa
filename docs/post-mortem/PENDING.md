@@ -223,6 +223,7 @@
 | PM-2026-10-28-02 | 2026-10-28 | session ที่สองรันรอบ eval after-4 ซ้ำขณะ session "Automate" เป็นเจ้าของอยู่ · ทำขั้น 0/5 ซ้ำทับ (ตรงทุก byte) และ dispatch agent ขั้น 1 อีก 4 ตัว หนึ่งตัวเขียนทับ `baseline/helix.json` เป็นโครงว่าง · หยุดได้ภายใน 110 วินาที · Automate รันขั้น 1 ของ helix ใหม่ | เจ้าของงานสั่ง "แยกเลนทำ … ไม่รอ" ระหว่างที่ Automate รัน after-4 | DONE | 20261028-post-mortem-report-0199-second-session-reran-owned-eval-round.md |
 | PM-2026-10-28-03 | 2026-10-28 | ลูป `for s in $SK` บน zsh วนครั้งเดียว + ตัวตรวจ md5 นับค่าว่างเท่ากันเป็นตรง (พิมพ์ 2/16) · จับได้ในคำสั่งถัดไป รันใหม่ด้วย array ได้ 16/16 · zsh-split-guard มีกฎจับได้แต่ยังไม่ได้ผูก hook | eval after-4 ขั้น 0 | DONE | 20261028-post-mortem-report-0200-zsh-unsplit-loop-guard-not-wired.md |
 | PM-2026-11-10-01 | 2026-11-10 | ส่งคำสั่ง relink ให้เจ้าของงานรันโดยไม่ได้อ่านว่า `session_relink_dev.js` บังคับตัวแปร `OLS` (`:266`) · คำสั่งล้ม `FAILED` ทันทีโดยไม่แตะ session · ผมอ่านหัวสคริปต์ครึ่งเดียวแล้วประกอบจากแม่แบบทั่วไป | รีเทส OLS-1001 บน dev ขั้น 4b (login by command) | DONE | 20261110-post-mortem-report-0201-gave-relink-command-without-reading-required-target-env.md |
+| PM-2026-11-18-01 | 2026-11-17 | โนติ Discord ผล retest ใช้ body ที่พิมพ์เอง (ทวน `PASSED n/n` + บรรทัด `สถานะ: Done`) ฟอแมตไม่ตรงฉบับก่อน · แก้ทับด้วย PATCH แล้ว | retest-bug Step 9 notify | DONE | 20261118-post-mortem-report-0202-retest-notify-hand-written-body-off-format.md |
 
 ---
 
