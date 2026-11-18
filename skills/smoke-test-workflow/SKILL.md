@@ -221,11 +221,12 @@ on the web. The fix version on the Jira ticket says when work releases.
 3. **List every ticket in those versions** —
    `GET /rest/api/3/search/jql?jql=project=<PROJECT> AND fixVersion in ("<v1>","<v2>")&fields=summary,status,issuetype,fixVersions&maxResults=100`,
    all statuses and issue types. Page by passing the response's `nextPageToken` back until `isLast`
-   is true. Then `POST /rest/api/3/search/approximate-count` with `{"jql": "<same JQL>"}` — the count
-   read must equal its `count`. Record both numbers. Never use `/rest/api/2/search`: Jira returns
+   is true — that is the complete list. Then `POST /rest/api/3/search/approximate-count` with
+   `{"jql": "<same JQL>"}` as a cross-check (the endpoint is named approximate). Record both numbers;
+   if they differ, page the search once more and report both counts rather than pick one. Never use `/rest/api/2/search`: Jira returns
    HTTP 410 (removed).
 4. **Pin what each ticket would put on screen** — the route, label, button or section. Read the
-   ticket's description and AC fields (OLS keeps content in custom fields), then
+   ticket's description and AC fields (OLS bugs often leave `description` empty and keep content in custom fields), then
    `git log --all --grep=<KEY>` in `<MONOREPO>` for the strings and routes the commits added, and the
    flag that guards them when the code has one. A ticket that changes no screen is `no UI surface`
    (cite the commit or field that shows it). A ticket whose surface cannot be pinned is `unverifiable`
@@ -248,7 +249,7 @@ without the owner's live order (CLAUDE.md §7). While any `visible` finding is o
 not reported clean, and the findings go to the end-of-round decisions popup.
 
 **Go back:** If the count read in step 3 is below the reported total, page again before step 4. If
-the session for a role is gone, restore it the way Stage 1 allows and repeat step 5 for that role.
+the session for a role is gone, renew it per [session-renewal-resilience.md](../../references/session-renewal-resilience.md) and repeat step 5 for that role.
 
 ## Stage 4 — Triage every non-passing case [high freedom]
 
