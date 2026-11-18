@@ -57,7 +57,7 @@ Testing ticket progress:
 5. Phase A — intake; 🔴 GATE: wait for the required fields.
 6. Phase B — load context and build the scenarios; the scenarios decide which roles are in scope.
 7. Login smoke gate for those roles only (*Refusal-first*); 🛑 stop on a failing role.
-8. Phase C — show the intake summary + plan (with the smoke table); 🔴 GATE: wait for the user's confirmation..
+8. Phase C — show the intake summary + plan (with the smoke table); 🔴 GATE: wait for the user's confirmation.
 9. Phase D — preflight (re-uses the smoke result; checks each lane's session right before its first scenario).
 
 ## Discipline
