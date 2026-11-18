@@ -2,7 +2,14 @@
 
 ## Files touched
 
-- The 11 shared files in spec M1 — copied from Helix 60a426a.
+- The 11 shared files in spec M1 — copied from Helix 60a426a:
+  `references/workspace-guide-discovery.md`, `references/skill-routing.md`, `references/menu-text.md`,
+  `references/intent-shortcuts.md`, `references/result-quality-gate.md`, `references/skill-reference-index.md`,
+  `skills/procedures/retest-bug-workflow/comment-and-post.md`,
+  `skills/procedures/retest-bug-workflow/execute-and-evidence.md`,
+  `skills/procedures/retest-bug-workflow/references/comment-template-v2.md`,
+  `skills/procedures/retest-bug-workflow/references/worked-example.md`,
+  `skills/procedures/testing-ticket-workflow/results-update.md`.
 - `references/ols-project-guide.md` — one line: workspace name `ols-qa` (M2). OLS-only, never synced.
 - `tools/skill-structure/check.js`, `tools/skill-routing/routing.test.js` — label `(workspace only)` (M3).
 - `tools/a17-create-bug/check.test.js`, `tools/retest-guard/workflow_template.test.js` — new pinned text (M4).
