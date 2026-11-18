@@ -49,6 +49,13 @@ The workflow's Stage 2.5 exists so this command does **not** turn into eleven ru
 3. Start the VPN watchdog with the run. A dropped tunnel produces failures that look like the
    product; that round is thrown away, not triaged.
 
+## Production and training: unreleased work stays hidden
+
+On production or a training environment the workflow's Stage 3.5 also checks that work whose Jira
+fix version releases after the test day is flagged off on the web. Every ticket that still shows is
+listed as one bullet — which ticket, which fix version, which environment. Nothing is filed without
+the owner's order.
+
 ## Before it will run
 
 - The owner has named the environment.
