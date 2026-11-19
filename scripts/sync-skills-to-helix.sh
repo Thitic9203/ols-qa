@@ -56,6 +56,32 @@ fi
 [ -d "$HELIX/.git" ] || { echo "sync: helix repo not found at $HELIX — skip"; exit 0; }
 [ -x "$HELIX/scripts/check-no-secrets.sh" ] || { echo "sync: helix guard missing — ABORT (refuse to sync without the secret guard)"; exit 1; }
 
+# --- files Helix owns are never synced (Spec: docs/sdd/helix-owned-files O1-O6; helix docs/sdd/project-agnostic R8).
+#     One repo-relative path per line, '#' to end of line is a comment, no globs. Absent = skip nothing + warn;
+#     present but unreadable = abort (a list we cannot read must not turn into "nothing is owned"). ---
+OWNED_LIST="$HELIX/helix-owned-files.txt"
+OWNED=()
+if [ -e "$OWNED_LIST" ]; then
+  [ -f "$OWNED_LIST" ] && [ -r "$OWNED_LIST" ] || { echo "sync: ❌ cannot read $OWNED_LIST — NOTHING deployed."; exit 1; }
+  OWNED_RAW="$(cat -- "$OWNED_LIST")" || { echo "sync: ❌ cannot read $OWNED_LIST — NOTHING deployed."; exit 1; }
+  while IFS= read -r line; do
+    line="${line%%#*}"
+    line="${line%$'\r'}"
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [ -n "$line" ] && OWNED+=("$line")
+  done <<EOF
+$OWNED_RAW
+EOF
+else
+  echo "sync: ⚠️  $OWNED_LIST not found — no file is treated as Helix-owned."
+fi
+is_owned() {
+  local o
+  for o in ${OWNED[@]+"${OWNED[@]}"}; do [ "$o" = "$1" ] && return 0; done
+  return 1
+}
+
 # --- changed files ---
 if [ "$#" -gt 0 ]; then CHANGED="$(for a in "$@"; do printf '%s\n' "$a"; done)"
 else CHANGED="$(git -C "$OLSQA" diff --name-only "$SRC_COMMIT~1" "$SRC_COMMIT" 2>/dev/null)"; fi
@@ -64,10 +90,12 @@ else CHANGED="$(git -C "$OLSQA" diff --name-only "$SRC_COMMIT~1" "$SRC_COMMIT" 2
 FILES=()          # to sync (relative paths)
 SKIPPED_NEW=()    # generic-looking files not present in helix (new candidates)
 SKIPPED_REF=()    # new references/* not present in helix (never auto-created; reported)
+SKIPPED_OWNED=()  # listed in helix-owned-files.txt (never synced; reported)
 while IFS= read -r f; do
   [ -n "$f" ] || continue
   case "$f" in skills/*|references/*|commands/*) ;; *) continue ;; esac
   git -C "$OLSQA" cat-file -e "$SRC_COMMIT:$f" 2>/dev/null || continue     # skip deletions / not in the commit
+  if is_owned "$f"; then SKIPPED_OWNED+=("$f"); continue; fi
   if [ -f "$HELIX/$f" ]; then
     FILES+=("$f")
   else
@@ -84,6 +112,11 @@ while IFS= read -r f; do
 done <<EOF
 $CHANGED
 EOF
+
+if [ "${#SKIPPED_OWNED[@]}" -gt 0 ]; then
+  echo "sync: skipped ${#SKIPPED_OWNED[@]} Helix-owned file(s):"
+  printf '  · %s\n' "${SKIPPED_OWNED[@]}"
+fi
 
 if [ "${#SKIPPED_NEW[@]}" -gt 0 ]; then
   echo "sync: NOT syncing ${#SKIPPED_NEW[@]} new skills/commands file(s) absent from helix (set HELIX_SYNC_NEW=1 to include):"

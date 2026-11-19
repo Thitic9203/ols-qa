@@ -4,7 +4,7 @@ Helix QA assistant pre-configured for the **OLS** project at <ORG>.
 
 Helix skills embedded directly — no separate install needed.
 
-**OLS Workspace version: v1.55.213** (18 Nov 2026) — Helix skills vendored in-repo (see *Helix commands* below)
+**OLS Workspace version: v1.55.219** (18 Nov 2026) — Helix skills vendored in-repo (see *Helix commands* below)
 
 ## Quick start
 
@@ -76,7 +76,7 @@ over the Jira REST API — they never touch a visible browser or the user's scre
 | `/tc-review` | Review an already-written TC document against a ticket's AC/EC and business rules — traceability matrix, row-quality check, Good vs Need Improve findings anchored to quoted sources |
 | `/tc-change-format` | Copy each ticket's TC tab from a Google Sheet into a new sheet made from the release TC template, in the release folder you pick; optionally record the delivered file in the tracking sheet (OLS values in `references/ols-project-guide.md` § TC change format) |
 | `/taskfolio-log` | Fill your own Taskfolio timesheet for this week from Jira, Slack and Calendar evidence — per-day table, time/project/completeness gate before saving, per-entry re-read after; never submits the week |
-| `/smoke-test` | **OLS-local** — post-deployment smoke test of OLS core features on a named env; triage every non-passing case to a verified root cause; output a one-page A4-landscape PDF summary + the Playwright per-case report and post to the QA release channel |
+| `/smoke-test` | **OLS-local** — post-deployment smoke test of OLS core features on a named env; triage every non-passing case to a verified root cause; on production / training also list every ticket whose Jira fix version releases after the test day yet still shows on the web (ticket · fix version · env); output a one-page A4-landscape PDF summary + the Playwright per-case report and post to the QA release channel |
 | `/review-result` | **OLS-local** — review already-recorded results + their evidence clips: one contact sheet per clip, judge each case against the 10 review criteria, record PASSED / FAILED / AWAITING RE-REVIEW |
 | `/sync-tc-result` | **OLS-local** — route every TC result from the QA source sheet into the 3 test-type deliverable sheets (System / Integration / Unit), all-or-nothing per tab behind a 5-layer gate. Run manually — the hourly `ols-tc-result-sync` launchd job is frozen (2026-08-11) |
 | `/content-takedown` | **OLS-local** — take a set of published content items out of public view: inventory the set, health-check, pick the least-damaging mechanism the accounts can use, execute, verify |

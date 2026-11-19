@@ -12,7 +12,7 @@
 ## Data
 
 - Jira versions: `GET /rest/api/2/project/<PROJECT>/versions` → `name`, `released`, `releaseDate`.
-- Tickets: `GET /rest/api/2/search?jql=project=<PROJECT> AND fixVersion in (<future versions>)&fields=summary,status,issuetype,fixVersions&startAt=…`.
+- Tickets: `GET /rest/api/3/search/jql?jql=project=<PROJECT> AND fixVersion in (<future versions>)&fields=summary,status,issuetype,fixVersions&nextPageToken=…` until `isLast`; cross-check `POST /rest/api/3/search/approximate-count`. (`/rest/api/2/search` returns HTTP 410 — measured 2026-11-18.)
 - Round record: `<WORKDIR>/unreleased-check.md` (off-repo, permanent folder) — one line per ticket.
 
 ## Choices weighed

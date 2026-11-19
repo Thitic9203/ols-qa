@@ -27,6 +27,7 @@ Workspace name (usage marker `src=`): `ols-qa`.
 - [Retest-bug QA notify](#retest-bug-qa-notify)
 - [TC glossary (terminology source of truth)](#tc-glossary-terminology-source-of-truth)
 - [Test Environment](#test-environment)
+- [Test data prep recipe](#test-data-prep-recipe)
 - [OLS domain — LP states & test-data recipes (learned OLS-26, 2026-07-13)](#ols-domain--lp-states--test-data-recipes-learned-ols-26-2026-07-13)
 - [Content-detail click pitfall — two buttons named "บันทึก" (learned OLS-721 retest, 2026-09-24)](#content-detail-click-pitfall--two-buttons-named-บันทึก-learned-ols-721-retest-2026-09-24)
 - [Comment list and replies — facts for test scripts (learned OLS-829, 2026-10-08)](#comment-list-and-replies--facts-for-test-scripts-learned-ols-829-2026-10-08)
@@ -841,6 +842,15 @@ OLS ไม่มีหน้า login ของตัวเอง — login ผ�
 - **Automated login (verified working):** ใช้ headless `use_browser` (skill `superpowers-chrome:browsing`) — invisible, ไม่แตะจอ user. Flow: accept PDPA overlay ("ยอมรับ") → เปิด login modal (`#email` / `#password`) → submit. **reCAPTCHA v3 ผ่านแบบ headless ได้ ไม่โดน block.** Full runbook + selectors อยู่ใน agent memory `reference_ols-ndlp68-auto-login`. (แก้ note เดิม: automation ไม่ได้โดน classifier block — login มือเป็น fallback สุดท้ายเท่านั้น)
 - Verify creator mode: sidebar มี "จัดการสื่อการเรียนรู้" + ปุ่มล่างเขียน "เปลี่ยนเป็น Learner mode" (dev-ols เปิดมาเป็น Learner view ก่อน, `localStorage.isCreator=false` → กด toggle เป็น Creator mode)
 - **Detailed runbook** (tooling workarounds, สร้าง test data, status transitions): `docs/result/OLS-44/ols-44-creator-media-editing-testing.md` § Setup & Runbook
+
+## Test data prep recipe
+
+`test-data-prep-workflow` (Helix) reads the OLS recipe at `{EVIDENCE_REPO}/docs/ols-data-prep.md` (private repo
+[Thitic9203/ols-qa-evidence](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ols-data-prep.md)).
+**Appendix H** there holds the OLS values the generic workflow needs (environments + VPN rule, roles, data types,
+target statuses, style buckets, list/create paths, tools root, naming, cover + video rules, gates, clean-up).
+Edit OLS data-prep rules there, not in Helix. *Source:* Helix spec `docs/sdd/project-agnostic` R4, R6, R11;
+ols-qa-evidence main `7ea5187e`.
 
 ## OLS domain — LP states & test-data recipes (learned OLS-26, 2026-07-13)
 
