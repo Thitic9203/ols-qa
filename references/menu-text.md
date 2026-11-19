@@ -20,9 +20,9 @@ What would you like to do?
 5. **Create Bug** — open bug(s) on Jira or GitHub (target link, format, details → confirm → file)
 6. **Catch AI** — audit finished work (your own output, a document, a report, a feature): sourced findings, questions, coverage gaps, verdict
 7. **TC Review** — check an existing test case document against a ticket's AC/EC and business rules: traceability matrix, Good vs Need Improve findings
-8. **Content Takedown** (ols-qa workspace only) — hide a set of published content from public view (inventory, hide, verify)
+8. **Content Takedown** (workspace only) — hide a set of published content from public view (inventory, hide, verify)
 9. **Review Result** — review already-recorded test results and their evidence clips
-10. **Smoke Test** (ols-qa workspace only) — smoke test a deployed build on a named environment
+10. **Smoke Test** (workspace only) — smoke test a deployed build on a named environment
 11. **Test Data Prep** — create, fix, or verify test data (content, covers, accounts)
 12. **TC Change Format** — copy a ticket's TC tab into the release TC template (Google Sheet)
 13. **Taskfolio Log** — fill your own Taskfolio timesheet for this week from Jira, Slack and Calendar evidence (never submits)

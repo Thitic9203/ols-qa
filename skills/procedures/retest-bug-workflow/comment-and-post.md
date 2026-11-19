@@ -66,11 +66,11 @@ Pick the template below that matches `COMMENT_FORMAT`; syntax map and gates in
 
 *Test run time:* {minutes} min — includes evidence capture ({screenshots|screenshots and video}); excludes re-checks, design lookup and comment drafting
 
-_retestskillmarker · skill=retest-bug-workflow · src={ols-qa|helix} · via={retest-bug|retest-bug-workflow|helix-menu} · agent={claude-code|cursor|codex|copilot|other}_
+_retestskillmarker · skill=retest-bug-workflow · src={workspace|helix} · via={retest-bug|retest-bug-workflow|helix-menu} · agent={claude-code|cursor|codex|copilot|other}_
 ```
 
 🔴 **Last line = the usage marker, after one blank line — every retest result, every format.** Fill it
-from the run, never guess: `src=helix` when running from the Helix plugin, `src=ols-qa` when running from the ols-qa source repository;
+from the run, never guess: `src` = workspace name from the workspace guide (`helix` if none);
 `via` = the command or skill the user invoked; `agent` = the AI tool doing the run. In `run.json` set
 `marker: {src, via, agent}` and the renderer prints it; `retest_guard.js` refuses a body without it (`marker-missing`).
 

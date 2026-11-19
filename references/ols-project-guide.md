@@ -4,6 +4,7 @@
 
 Project-specific config for all Helix workflows in this workspace.
 AI reads this file before asking any OLS-related questions.
+Workspace name (usage marker `src=`): `ols-qa`.
 
 ## Contents
 

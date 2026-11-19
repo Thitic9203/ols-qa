@@ -130,7 +130,7 @@ check('the template ends with the usage marker, after one blank line', () => {
 });
 
 check('the workflow tells the reader how to fill the marker and to keep it on an in-place edit', () => {
-  assert.ok(/src=helix/.test(wf) && /src=ols-qa/.test(wf), 'src values are not explained');
+  assert.ok(/`src` = workspace name from the workspace guide \(`helix` if none\)/.test(wf), 'src values are not explained'); // project-agnostic R7
   assert.ok(/commentId[^\n]*usage marker/.test(wf), 'the commentId in-place edit does not say to keep the marker');
 });
 

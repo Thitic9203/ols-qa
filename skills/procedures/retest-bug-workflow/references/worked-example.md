@@ -83,7 +83,7 @@ the expected result. Decided by: spec owner.
 
 **Test run time:** 6.4 min — includes evidence capture (screenshots); excludes re-checks, design lookup and comment drafting
 
-_retestskillmarker · skill=retest-bug-workflow · src=ols-qa · via=retest-bug · agent=claude-code_
+_retestskillmarker · skill=retest-bug-workflow · src=helix · via=retest-bug · agent=claude-code_
 ```
 
 ## Lessons
@@ -101,7 +101,7 @@ _retestskillmarker · skill=retest-bug-workflow · src=ols-qa · via=retest-bug 
 **Result:** PASSED ✅
 
 FE bug → evidence → **v2 wiki markup**, so the body below is wiki markup, **not markdown**.
-Output (full comment — this is the entire body, nothing added; both markers show `src=ols-qa` — fill `src` from your own run):
+Output (full comment — this is the entire body, nothing added; both markers show `src=helix` — fill `src` from your own run):
 
 ```text
 *Retest Result: PASSED* ✅
@@ -129,7 +129,7 @@ Output (full comment — this is the entire body, nothing added; both markers sh
 
 *Test run time:* 18.2 min — includes evidence capture (screenshots and video); excludes re-checks, design lookup and comment drafting
 
-_retestskillmarker · skill=retest-bug-workflow · src=ols-qa · via=retest-bug · agent=claude-code_
+_retestskillmarker · skill=retest-bug-workflow · src=helix · via=retest-bug · agent=claude-code_
 ```
 
 ## Lessons (example 2)

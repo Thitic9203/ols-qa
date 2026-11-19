@@ -1,6 +1,6 @@
 # Skill reference index (open on demand)
 
-One line per reference: link — when to open it. **Do not read this file at start.** Open it only when a step needs a reference the skill did not name, then open just that one file. Files marked *(ols-only)* are plain paths: they exist only in the OLS workspace build.
+One line per reference: link — when to open it. **Do not read this file at start.** Open it only when a step needs a reference the skill did not name, then open just that one file. Files marked *(workspace-only)* are plain paths: only some workspaces ship them.
 
 ## Contents
 - [Session start and routing](#session-start-and-routing)
@@ -143,6 +143,5 @@ One line per reference: link — when to open it. **Do not read this file at sta
 - [posting-discipline.md](../skills/procedures/create-bug-workflow/references/posting-discipline.md) — creating the Jira/GitHub issue.
 - [worked-example.md](../skills/procedures/create-bug-workflow/references/worked-example.md) — unsure what good output looks like.
 
-## Workspace-specific *(ols-only)*
-- `references/ols-project-guide.md` *(ols-only)* — OLS project config (envs, accounts, channels).
-- `references/qa-capture-tooling.md` *(ols-only)* — capture tool contracts the gates rely on.
+## Workspace-specific *(workspace-only)*
+- the workspace guide ([discovery](workspace-guide-discovery.md)) — project config and where its capture tool contracts live.
