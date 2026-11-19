@@ -17,7 +17,8 @@ These files are Helix-owned (`helix-owned-files.txt` in Helix), so Helix is the 
 
 ## Rules
 
-- **D1** The four Helix-owned test-data-prep files must be byte-identical to Helix origin/main 025560c:
+- **D1** The four Helix-owned test-data-prep files must be byte-identical to Helix origin/main once helix#68 is merged
+  (025560c plus #68's one Contents line `workspace-guide-discovery.md` in SKILL.md, owner-approved token raise +43):
   `skills/test-data-prep-workflow/SKILL.md`, `skills/procedures/test-data-prep-workflow/WORKFLOW.md`,
   `commands/test-data-prep.md`, `references/data-prep-recipe-template.md`. *Source:* owner 2026-11-19 (above); Helix
   `helix-owned-files.txt`; pluton-ai-agent `scripts/ols/lib/skills-sync.mjs` S9.
@@ -33,6 +34,8 @@ These files are Helix-owned (`helix-owned-files.txt` in Helix), so Helix is the 
 ## Edge cases
 
 - Helix moves on before this merges: copy from the Helix origin/main of the day, and name its sha in the PR.
+- Merge order: helix#68 first, then the ols-qa mirror PR. Merged the other way round, ols-qa would hold the line Helix
+  main lacks, and the next ols-qa → Helix sync PR would carry a token raise without its approval.
 - A skill-structure or routing check reads a value that the generic text no longer has: re-pin per D3, never relax.
 
 ## Done when
