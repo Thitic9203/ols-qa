@@ -121,6 +121,16 @@ Match the target tracker's own convention when it has one.
 
 - Write **What happens** (actual) as **bullet points — one fact per line**, not a single run-on
   paragraph. Reviewers scan bullets; they skip walls of prose. The source quote inside What should happen stays verbatim.
+- **Write for a person, not a log.** Short plain-language sentences a PO or dev understands on first read;
+  one fact per bullet; group the description under short headings (summary · cause · what dev must confirm ·
+  fix options · code location · related). Use the tracker's emphasis so the key facts stand out —
+  **bold** for the symptom and the key numbers, *italic* for quoted UI text and side notes, underline for the
+  expected behavior (Jira wiki: `*bold*`, `_italic_`, `+underline+`, `{{code}}`). Keep code paths and raw
+  responses in code style, never as the main sentence.
+- **Jira rich-text custom fields**: write wiki markup through REST **v2** (or ADF media nodes through v3) so
+  `!file.png!` and `!file.mp4!` become an inline image and an inline video player; a v3 plain-string write
+  shows them as literal text. Read the rendered field back (`expand=renderedFields`) and confirm an `<img>`
+  and the video player are present.
 - **Embed the evidence screenshot inline in the actual-result field** when the tracker supports inline
   images (for a new bug create the issue first, attach, then update the body to reference it inline) — not only as a loose attachment — so the
   proof sits next to the claim. Re-render and confirm the image resolved (not a literal `!filename!`).

@@ -189,5 +189,6 @@ Shared rules: at Phase D, before the first write, read [shared-must-never.md](..
 | MUST use only the bug-priority-matrix vocabulary and cite the cell (Phase A3) | An invented scale cannot be compared with the verdicts that use the matrix |
 | MUST verify each issue URL in Phase F | Silent partial failure |
 | MUST attach the MP4 of the failing run and the failing-step screenshot to every bug (MP4 Drive link in the actual-result-link field, screenshot inline in the actual result); either missing = BLOCKED (no evidence) | A bug without the recording and the screen cannot be re-checked by dev or QA |
+| MUST write the bug body in short plain language with headings and emphasis (bold symptom/numbers, italic quoted UI text, underlined expected behavior), and confirm the screenshot and MP4 render inline (bug-draft-template § Field formatting) | A wall of technical prose is skipped; a literal `!file!` hides the evidence |
 | MUST write each expected line as `{expected} — อิงจาก AC_yy/EC_zz จากทิคเกต KEY {link}`, after reading later tickets on the same screen so the cited AC/EC is the one in force; link the bug to that story | An expected side with no AC/EC id, an old AC or no story link sends dev to the wrong spec |
 | MUST lock Jira v2/v3 per session when user specifies | Rewrite cost |
