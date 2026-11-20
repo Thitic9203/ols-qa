@@ -26,9 +26,10 @@ What happens:
 - {observable behavior, one fact per line}
 
 What should happen:
-- {expected behavior, one fact per line}
+- {expected behavior} — อิงจาก {AC_yy / EC_zz} จากทิคเกต {KEY} {ticket link}   (one line per AC/EC)
 > "{the expected-result line from its source, copied character for character}"
 - Source: {design frame / AC id / PRD section / PO decision} — {link}
+- Latest source check: {later tickets on the same screen, read; which one is in force, and why}
 
 Why failed: "{the expected-result line, copied character for character}" → {the exact deviation, one observable fact}
 
@@ -65,8 +66,9 @@ Environment:
 - Browser / viewport:
 - Date: YYYY-MM-DD
 
-Evidence:
-- Screenshot: {path or none}
+Evidence (all required — a missing MP4 or screenshot = no bug):
+- MP4: {the recording of the failing run, attached to the issue + its shared-storage link in the evidence-link field the workspace project guide names}
+- Screenshot: {the failing step, attached and shown inline in the actual result}
 - Console / network: {snippet or none}
 ━━━━━━━━━━━━━━
 ```
@@ -82,6 +84,14 @@ Evidence:
   A paraphrase, a feature name or a
   translation is not an expected side; with no quotable source the candidate is a question, not a bug
   (WORKFLOW Refusal-first).
+- **Expected source, correct and latest** — every expected line names its AC/EC id and the ticket it comes
+  from, with the ticket link, in the form `{expected} — อิงจาก AC_yy/EC_zz จากทิคเกต KEY {link}`. Before
+  writing it, search the board for later tickets that changed the same screen or flow (improvements, tasks,
+  follow-up stories) and read their AC/EC; cite the one in force and say why on the Latest source check line.
+  Also link the bug to that story (`Relates`, or `Blocks` when the bug blocks it).
+- **Evidence** — attach **both** the MP4 of the failing run and the screenshot of the failing step to the
+  issue, put the MP4's shared-storage link in the evidence-link field the workspace project guide names, and show the screenshot inline in the
+  actual result. Either one missing = the candidate is BLOCKED (no evidence), never filed without it.
 - **Why failed** — the expected-result line quoted verbatim (the same line as in What should happen) and
   the exact deviation from it, as one observable fact.
 - **Resolution options** — both rows, each with a named owner in Decided by; name the exact surface to
@@ -111,6 +121,25 @@ Match the target tracker's own convention when it has one.
 
 - Write **What happens** (actual) as **bullet points — one fact per line**, not a single run-on
   paragraph. Reviewers scan bullets; they skip walls of prose. The source quote inside What should happen stays verbatim.
+- **Write for a person, not a log.** Short plain-language sentences a PO or dev understands on first read;
+  one fact per bullet; group the description under short headings (summary · cause · what dev must confirm ·
+  fix options · code location · related). Use the tracker's emphasis so the key facts stand out —
+  **bold** for the symptom and the key numbers, *italic* for quoted UI text and side notes, underline for the
+  expected behavior (Jira wiki: `*bold*`, `_italic_`, `+underline+`, `{{code}}`). Keep code paths and raw
+  responses in code style, never as the main sentence.
+- **Root cause description** (the tracker's root-cause field and the cause section of the body): two or three
+  plain sentences a non-developer follows — what the page does, what tips it over (with the measured numbers),
+  what the user sees. No "waiting for X to confirm", no "อาจ / น่าจะ / possibly"; state what the code and the
+  measurements show. Code paths go in the code-location section, not here.
+- **Where it lands**: a drafted bug goes to the backlog (no sprint), with the epic as parent and a link to the
+  story whose AC/EC it breaks.
+- **Review every field after create**: read the issue back and check each field the create-meta marks required
+  is non-empty (a people or select field can come back empty after create), every text field reads as plain language with
+  no hedge or wait words, and the image and video render inline. Fix and re-read before reporting done.
+- **Jira rich-text custom fields**: write wiki markup through REST **v2** (or ADF media nodes through v3) so
+  `!file.png!` and `!file.mp4!` become an inline image and an inline video player; a v3 plain-string write
+  shows them as literal text. Read the rendered field back (`expand=renderedFields`) and confirm an `<img>`
+  and the video player are present.
 - **Embed the evidence screenshot inline in the actual-result field** when the tracker supports inline
   images (for a new bug create the issue first, attach, then update the body to reference it inline) — not only as a loose attachment — so the
   proof sits next to the claim. Re-render and confirm the image resolved (not a literal `!filename!`).
