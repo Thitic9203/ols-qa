@@ -26,9 +26,10 @@ What happens:
 - {observable behavior, one fact per line}
 
 What should happen:
-- {expected behavior, one fact per line}
+- {expected behavior} — อิงจาก {AC_yy / EC_zz} จากทิคเกต {KEY} {ticket link}   (one line per AC/EC)
 > "{the expected-result line from its source, copied character for character}"
 - Source: {design frame / AC id / PRD section / PO decision} — {link}
+- Latest source check: {later tickets on the same screen, read; which one is in force, and why}
 
 Why failed: "{the expected-result line, copied character for character}" → {the exact deviation, one observable fact}
 
@@ -65,8 +66,9 @@ Environment:
 - Browser / viewport:
 - Date: YYYY-MM-DD
 
-Evidence:
-- Screenshot: {path or none}
+Evidence (all required — a missing MP4 or screenshot = no bug):
+- MP4: {the recording of the failing run, attached to the issue + its Drive link in the actual-result-link field}
+- Screenshot: {the failing step, attached and shown inline in the actual result}
 - Console / network: {snippet or none}
 ━━━━━━━━━━━━━━
 ```
@@ -82,6 +84,14 @@ Evidence:
   A paraphrase, a feature name or a
   translation is not an expected side; with no quotable source the candidate is a question, not a bug
   (WORKFLOW Refusal-first).
+- **Expected source, correct and latest** — every expected line names its AC/EC id and the ticket it comes
+  from, with the ticket link, in the form `{expected} — อิงจาก AC_yy/EC_zz จากทิคเกต KEY {link}`. Before
+  writing it, search the board for later tickets that changed the same screen or flow (improvements, tasks,
+  follow-up stories) and read their AC/EC; cite the one in force and say why on the Latest source check line.
+  Also link the bug to that story (`Relates`, or `Blocks` when the bug blocks it).
+- **Evidence** — attach **both** the MP4 of the failing run and the screenshot of the failing step to the
+  issue, put the MP4's Drive link in the actual-result-link field, and show the screenshot inline in the
+  actual result. Either one missing = the candidate is BLOCKED (no evidence), never filed without it.
 - **Why failed** — the expected-result line quoted verbatim (the same line as in What should happen) and
   the exact deviation from it, as one observable fact.
 - **Resolution options** — both rows, each with a named owner in Decided by; name the exact surface to
