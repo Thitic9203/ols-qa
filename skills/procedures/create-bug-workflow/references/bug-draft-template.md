@@ -134,7 +134,7 @@ Match the target tracker's own convention when it has one.
 - **Where it lands**: a drafted bug goes to the backlog (no sprint), with the epic as parent and a link to the
   story whose AC/EC it breaks.
 - **Review every field after create**: read the issue back and check each field the create-meta marks required
-  is non-empty (the QA Owner people field can come back empty), every text field reads as plain language with
+  is non-empty (a people or select field can come back empty after create), every text field reads as plain language with
   no hedge or wait words, and the image and video render inline. Fix and re-read before reporting done.
 - **Jira rich-text custom fields**: write wiki markup through REST **v2** (or ADF media nodes through v3) so
   `!file.png!` and `!file.mp4!` become an inline image and an inline video player; a v3 plain-string write
