@@ -67,7 +67,7 @@ Environment:
 - Date: YYYY-MM-DD
 
 Evidence (all required — a missing MP4 or screenshot = no bug):
-- MP4: {the recording of the failing run, attached to the issue + its Drive link in the actual-result-link field}
+- MP4: {the recording of the failing run, attached to the issue + its shared-storage link in the evidence-link field the workspace project guide names}
 - Screenshot: {the failing step, attached and shown inline in the actual result}
 - Console / network: {snippet or none}
 ━━━━━━━━━━━━━━
@@ -90,7 +90,7 @@ Evidence (all required — a missing MP4 or screenshot = no bug):
   follow-up stories) and read their AC/EC; cite the one in force and say why on the Latest source check line.
   Also link the bug to that story (`Relates`, or `Blocks` when the bug blocks it).
 - **Evidence** — attach **both** the MP4 of the failing run and the screenshot of the failing step to the
-  issue, put the MP4's Drive link in the actual-result-link field, and show the screenshot inline in the
+  issue, put the MP4's shared-storage link in the evidence-link field the workspace project guide names, and show the screenshot inline in the
   actual result. Either one missing = the candidate is BLOCKED (no evidence), never filed without it.
 - **Why failed** — the expected-result line quoted verbatim (the same line as in What should happen) and
   the exact deviation from it, as one observable fact.
