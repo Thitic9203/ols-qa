@@ -127,6 +127,15 @@ Match the target tracker's own convention when it has one.
   **bold** for the symptom and the key numbers, *italic* for quoted UI text and side notes, underline for the
   expected behavior (Jira wiki: `*bold*`, `_italic_`, `+underline+`, `{{code}}`). Keep code paths and raw
   responses in code style, never as the main sentence.
+- **Root cause description** (the tracker's root-cause field and the cause section of the body): two or three
+  plain sentences a non-developer follows — what the page does, what tips it over (with the measured numbers),
+  what the user sees. No "waiting for X to confirm", no "อาจ / น่าจะ / possibly"; state what the code and the
+  measurements show. Code paths go in the code-location section, not here.
+- **Where it lands**: a drafted bug goes to the backlog (no sprint), with the epic as parent and a link to the
+  story whose AC/EC it breaks.
+- **Review every field after create**: read the issue back and check each field the create-meta marks required
+  is non-empty (the QA Owner people field can come back empty), every text field reads as plain language with
+  no hedge or wait words, and the image and video render inline. Fix and re-read before reporting done.
 - **Jira rich-text custom fields**: write wiki markup through REST **v2** (or ADF media nodes through v3) so
   `!file.png!` and `!file.mp4!` become an inline image and an inline video player; a v3 plain-string write
   shows them as literal text. Read the rendered field back (`expand=renderedFields`) and confirm an `<img>`
