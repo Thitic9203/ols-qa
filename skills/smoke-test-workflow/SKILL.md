@@ -227,10 +227,16 @@ on the web. The fix version on the Jira ticket says when work releases.
    HTTP 410 (removed).
 4. **Pin what each ticket would put on screen** — the route, label, button or section. Read the
    ticket's description and AC fields (OLS bugs often leave `description` empty and keep content in custom fields), then
-   `git log --all --grep=<KEY>` in `<MONOREPO>` for the strings and routes the commits added, and the
+   `git log --all --grep=<KEY>` in `<MONOREPO>` (add `-i`: commit messages may write the key in lower case)
+   for the strings and routes the commits added, and the
    flag that guards them when the code has one. A ticket that changes no screen is `no UI surface`
    (cite the commit or field that shows it). A ticket whose surface cannot be pinned is `unverifiable`
    with the reason. Both are never counted as `hidden`.
+   **Read the environment's live flags** before step 5 (read-only, the endpoint is in the workspace
+   guide). A surface whose guarding flag reads off is expected hidden; step 5 still confirms it on
+   screen. Flags the workspace
+   guide lists as expected-off for this environment (for example, integrations the environment does
+   not have) are correct when off: never report them as a finding.
 5. **Look through the real UI** of the environment, read-only, as every role that could reach the
    surface (guest, learner, creator, admin). Evidence is a front-end screenshot in `<WORKDIR>`.
    Write nothing to the environment and nothing to Jira.

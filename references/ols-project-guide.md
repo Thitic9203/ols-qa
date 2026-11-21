@@ -169,6 +169,18 @@ Smoke-test case list + verdicts for the training-ols (prod) run. Resolve `<SMOKE
 | Columns | A Module · B Test case · C Pre-req · D Test data · E Test step · F Expected · **G/H/I = Training-ols69** status/img·VDO/Remark. *(Restructured 2026-08-09: the old pre-prod section was removed and Training-ols results moved from J/K/L to **G/H/I** — verified live: header `Training-ols69: Test Status / Image/VDO / Remark`, 81 verdicts in col G. **J/K/L are now empty/unused** — do not write them.)* |
 | Write scope | verdict → **col G** · evidence link (`=HYPERLINK(folder,"Link")`) → **col H** · linked bug / remark → **col I**. Verdict = outcome-state shown in the capture (completeness gate), never "action done". Writer = `smoke_write.py` (scoped to G/H/I, RAW status + read-back). |
 
+### Training feature flags — expected values (owner rule, 2026-11-21, permanent)
+
+Read the live flags anonymously and read-only: `GET https://<TRAINING_HOST>/api/feature-flags` (the OLS API sits under `/api` on the app host, not on the school-core-api host).
+
+| Flag | Expected on training | Why |
+|------|----------------------|-----|
+| `bpm_approval_vote_enabled` | `false` | training has no BPM |
+| `bpm_moderation_report_enabled` | `false` | training has no BPM |
+| `google_analytics` | `false` | training has no GA |
+
+These three reading `false` is correct: never report them as a finding, a defect or "work switched off". Ask the owner only if one reads `true`. Any other flag is judged against the release it belongs to (smoke-test-workflow Stage 3.5).
+
 ## QA tracking sheet (ticket list + TC status)
 
 Master sheet of OLS tickets with QA/TC status. AI reads this to decide which tickets to test and to load each ticket's reviewed test cases. See workflow: [ai-assisted-testing-template.md](https://github.com/Thitic9203/ols-qa-evidence/blob/main/docs/ai-assisted-testing-template.md).
