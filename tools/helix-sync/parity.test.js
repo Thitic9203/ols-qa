@@ -169,7 +169,7 @@ check('a fetch that never answers is CANNOT-VERIFY within the bound, never OK, a
   git(f.helix, 'remote', 'set-url', 'origin', 'git@stalled.example.invalid:owner/helix.git');
   const started = Date.now();
   const r = run('/bin/bash', [SCRIPT], {
-    env: { ...CLEAN_ENV, OLS_REPO: f.ols, HELIX_REPO: f.helix, GIT_SSH_COMMAND: fakeSsh, HELIX_PARITY_FETCH_TIMEOUT: '2' },
+    env: { ...CLEAN_ENV, OLS_REPO: f.ols, HELIX_REPO: f.helix, GIT_SSH_COMMAND: fakeSsh, HELIX_PARITY_FETCH_TIMEOUT_HELIX: '2' },
     timeout: 30000,
   });
   const secs = (Date.now() - started) / 1000;
@@ -211,7 +211,7 @@ check('a transport that respawns a child while its tree is being killed leaves n
     const r = run('/bin/bash', [SCRIPT], {
       env: {
         ...CLEAN_ENV, PATH: `${shim}:${CLEAN_ENV.PATH}`, OLS_REPO: f.ols, HELIX_REPO: f.helix,
-        GIT_SSH_COMMAND: fakeSsh, GIT_SSH_VARIANT: 'ssh', HELIX_PARITY_FETCH_TIMEOUT: '3',
+        GIT_SSH_COMMAND: fakeSsh, GIT_SSH_VARIANT: 'ssh', HELIX_PARITY_FETCH_TIMEOUT_HELIX: '3',
       },
       timeout: 120000,
     });
@@ -235,6 +235,31 @@ check('a non-numeric or zero fetch bound is refused as CANNOT-VERIFY', () => {
     if (bad === '') { assert.strictEqual(r.status, 1, `empty falls back to the default: ${r.stdout}`); continue; }
     assert.strictEqual(r.status, 2, r.stdout);
     assert.match(r.stdout, /^CANNOT-VERIFY HELIX_PARITY_FETCH_TIMEOUT must be/);
+  }
+});
+
+// R7/R8 (27 Nov 2026): one shared 2 s bound let the LOCAL ols-qa fetch time out first on a loaded machine.
+check('each fetch has its own bound: an ols-qa fetch slower than the shared bound uses _OLS', () => {
+  const f = fixture({ olsFiles: BASE_OLS, helixFiles: BASE_HELIX });
+  const slowSsh = path.join(f.base, 'slow-failing-ssh.sh');
+  fs.writeFileSync(slowSsh, '#!/bin/sh\nsleep 4\nexit 1\n', { mode: 0o755 });
+  git(f.ols, 'remote', 'set-url', 'origin', 'git@slow.example.invalid:owner/ols-qa.git');
+  const r = run('/bin/bash', [SCRIPT], {
+    env: { ...CLEAN_ENV, OLS_REPO: f.ols, HELIX_REPO: f.helix, GIT_SSH_COMMAND: slowSsh,
+      HELIX_PARITY_FETCH_TIMEOUT: '2', HELIX_PARITY_FETCH_TIMEOUT_OLS: '60' },
+    timeout: 30000,
+  });
+  assert.strictEqual(r.status, 2, r.stdout + r.stderr);
+  // The ols-qa bound (60 s) applies, so the 4 s fetch FAILS on its own instead of timing out at 2 s.
+  assert.match(r.stdout, /^CANNOT-VERIFY fetch of ols-qa origin\/main failed/);
+});
+
+check('a non-numeric or zero per-repo bound is refused as CANNOT-VERIFY', () => {
+  const f = fixture({ olsFiles: BASE_OLS, helixFiles: BASE_HELIX });
+  for (const key of ['HELIX_PARITY_FETCH_TIMEOUT_OLS', 'HELIX_PARITY_FETCH_TIMEOUT_HELIX']) {
+    const r = run('/bin/bash', [SCRIPT], { env: { ...CLEAN_ENV, OLS_REPO: f.ols, HELIX_REPO: f.helix, [key]: 'abc' } });
+    assert.strictEqual(r.status, 2, `${key}: ${r.stdout}`);
+    assert.match(r.stdout, new RegExp(`^CANNOT-VERIFY ${key} must be`));
   }
 });
 
