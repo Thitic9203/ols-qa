@@ -1,0 +1,6 @@
+# Paths under skills/, references/, commands/ that Helix also has, but this repo keeps its own copy of.
+# The Helix → ols-qa sync (scripts/helix-sync/apply.py) never writes or deletes them.
+# Spec: docs/sdd/helix-sync-pull R3. One repo-relative path per line.
+
+# The ols-qa copy carries the OLS test-data link; the Helix copy is generic (Helix helix-owned-files.txt).
+commands/test-data-prep.md
