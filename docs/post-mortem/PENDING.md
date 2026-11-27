@@ -225,6 +225,8 @@
 | PM-2026-11-10-01 | 2026-11-10 | ส่งคำสั่ง relink ให้เจ้าของงานรันโดยไม่ได้อ่านว่า `session_relink_dev.js` บังคับตัวแปร `OLS` (`:266`) · คำสั่งล้ม `FAILED` ทันทีโดยไม่แตะ session · ผมอ่านหัวสคริปต์ครึ่งเดียวแล้วประกอบจากแม่แบบทั่วไป | รีเทส OLS-1001 บน dev ขั้น 4b (login by command) | DONE | 20261110-post-mortem-report-0201-gave-relink-command-without-reading-required-target-env.md |
 | PM-2026-11-18-01 | 2026-11-17 | โนติ Discord ผล retest ใช้ body ที่พิมพ์เอง (ทวน `PASSED n/n` + บรรทัด `สถานะ: Done`) ฟอแมตไม่ตรงฉบับก่อน · แก้ทับด้วย PATCH แล้ว | retest-bug Step 9 notify | DONE | 20261118-post-mortem-report-0202-retest-notify-hand-written-body-off-format.md |
 | PM-2026-11-27-01 | 2026-11-27 | **ผิดซ้ำจาก #0178 / memory 14/Oct** — รัน `npx playwright test` (rerun เคส blocked บน dev) โดยไม่มี `rtk proxy` · rtk บังคับ `--reporter=json` ลง stdout แทน reporter ใน config → ไม่มี `results.json`, tee ตัด 1 MiB · รอบ 10 นาทีใช้ไม่ได้ รันซ้ำผ่าน `rtk proxy` | rerun เคส blocked จาก Qase run 11 | DONE | 20261127-post-mortem-report-0203-rtk-forced-json-reporter-lost-rerun-results.md |
+| PM-2026-11-27-02 | 2026-11-27 | แก้ `~/.claude/hooks/rtk-rewrite.sh` เองตอนทำ P2 ของ #0203 · rtk มี integrity hash จึงปฏิเสธทุกคำสั่ง `rtk …` จนคืนไฟล์จาก backup · P2 ทำใหม่ผ่าน `exclude_commands` | มาตรการ P2 ของ #0203 | DONE | 20261127-post-mortem-report-0204-edited-rtk-hook-broke-integrity-check.md |
+| PM-2026-11-27-03 | 2026-11-27 | **ผิดซ้ำจาก memory 23/Oct** — รัน Playwright / `npm test` / pre-push โดยไม่ผ่าน `heavy.sh` บนเครื่อง load 120+ · pre-push #0203 ล้มที่เทสต์ parity ที่ไวต่อโหลด | rerun เคส blocked + push งานแก้ | DONE | 20261127-post-mortem-report-0205-heavy-runs-without-heavy-sh-on-loaded-mac.md |
 
 ---
 
