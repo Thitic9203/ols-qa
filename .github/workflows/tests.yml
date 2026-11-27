@@ -103,3 +103,8 @@ jobs:
 
       - name: SDD commit gate
         run: node tools/sdd-gate/check.js --base "origin/${{ github.base_ref }}"
+
+      # Shared skill files come from Helix only (docs/sdd/helix-sync-pull R7): a human PR that changes a file listed
+      # in .helix-sync.lock on the base branch fails here. The sync's own branch (bot/helix-sync) is exempt.
+      - name: Helix sync guard
+        run: node tools/helix-sync-pull/guard.js --base "origin/${{ github.base_ref }}"
