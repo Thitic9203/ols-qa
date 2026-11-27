@@ -32,6 +32,17 @@ reparented to init and keeps running. Unmodified script: orphan in 1 of 12 runs;
   (a transport that respawns a child when one of its children dies, plus a slow `pgrep` that widens the
   window) and pass against the fixed order.
 
+- **R7** — Each fetch has its own bound: `HELIX_PARITY_FETCH_TIMEOUT_OLS` for the ols-qa fetch and
+  `HELIX_PARITY_FETCH_TIMEOUT_HELIX` for the helix fetch, each defaulting to `HELIX_PARITY_FETCH_TIMEOUT`
+  (default 120) and validated the same way (positive whole seconds). The timed-out message names the bound
+  of the fetch that timed out. Source: 27 Nov 2026, a pre-push on a machine at load average 120+ failed
+  `a fetch that never answers…`: the test set one 2 s bound to stall helix, and the *ols-qa* fetch of a
+  local bare repo timed out first (`CANNOT-VERIFY fetch of ols-qa origin/main timed out after 2s`, 2 of 6
+  runs, with and without `GIT_INDEX_FILE`). Owner approved 27 Nov 2026 ("แก้ให้ stall เฉพาะ helix").
+- **R8** — Tests that stall only helix must set only `HELIX_PARITY_FETCH_TIMEOUT_HELIX`, so the ols-qa
+  fetch never races the short bound. A regression test must make the ols-qa fetch slower than the shared
+  bound and prove its own bound applies (fails on the old script).
+
 ## Edge cases
 
 - A parent that ignores or handles `SIGTERM` itself is out of scope (git does not respawn on `SIGTERM`).
@@ -40,7 +51,8 @@ reparented to init and keeps running. Unmodified script: orphan in 1 of 12 runs;
 
 ## Out of scope
 
-Changing the fetch timeout, transport options, or the parity comparison itself.
+Changing the default fetch timeout (R7 adds per-repo overrides only), transport options, or the parity
+comparison itself.
 
 ## Done when
 

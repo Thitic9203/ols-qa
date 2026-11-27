@@ -12,6 +12,7 @@
 # Env: HELIX_REPO (default: the directory beside this clone's main checkout, i.e. ../helix)
 #      OLS_REPO   (default: the clone this script lives in)
 #      HELIX_PARITY_FETCH_TIMEOUT  seconds each fetch may take before it is killed (default 120)
+#      HELIX_PARITY_FETCH_TIMEOUT_OLS / HELIX_PARITY_FETCH_TIMEOUT_HELIX  per-repo override of that bound
 #
 # Output uses repo-relative paths only.
 #   exit 0  HELIX-PARITY OK 0 of <N> shared files differ
@@ -43,6 +44,12 @@ git -C "$HELIX" rev-parse --is-inside-work-tree >/dev/null 2>&1 || cannot "helix
 #     otherwise be orphaned still holding the socket) and reports CANNOT-VERIFY, never OK.
 FETCH_TIMEOUT="${HELIX_PARITY_FETCH_TIMEOUT:-120}"
 case "$FETCH_TIMEOUT" in ''|*[!0-9]*|0) cannot "HELIX_PARITY_FETCH_TIMEOUT must be a positive whole number of seconds" ;; esac
+# Per-repo bounds (docs/sdd/helix-parity-kill-order R7): a test that stalls only helix must not make the
+# local ols-qa fetch race the same short bound (27 Nov 2026: it timed out first on a machine at load 120+).
+FETCH_TIMEOUT_OLS="${HELIX_PARITY_FETCH_TIMEOUT_OLS:-$FETCH_TIMEOUT}"
+FETCH_TIMEOUT_HELIX="${HELIX_PARITY_FETCH_TIMEOUT_HELIX:-$FETCH_TIMEOUT}"
+case "$FETCH_TIMEOUT_OLS" in *[!0-9]*|0) cannot "HELIX_PARITY_FETCH_TIMEOUT_OLS must be a positive whole number of seconds" ;; esac
+case "$FETCH_TIMEOUT_HELIX" in *[!0-9]*|0) cannot "HELIX_PARITY_FETCH_TIMEOUT_HELIX must be a positive whole number of seconds" ;; esac
 export GIT_TERMINAL_PROMPT=0
 
 # Children are collected before the parent dies, or they are reparented and escape. A parent that
@@ -66,9 +73,9 @@ kill_tree() {
   kill -CONT "$pid" 2>/dev/null
 }
 
-# fetch_bounded <repo>: 0 fetched · 124 timed out · other = git's own failure status
+# fetch_bounded <repo> <seconds>: 0 fetched · 124 timed out · other = git's own failure status
 fetch_bounded() {
-  local repo="$1" pid dog rc ssh_cmd=()
+  local repo="$1" bound="$2" pid dog rc ssh_cmd=()
   if [ -z "${GIT_SSH_COMMAND:-}" ] && [ -z "$(git -C "$repo" config core.sshCommand 2>/dev/null)" ]; then
     ssh_cmd=(-c "core.sshCommand=ssh -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=3")
   fi
@@ -76,7 +83,7 @@ fetch_bounded() {
   git ${ssh_cmd[@]+"${ssh_cmd[@]}"} -c http.lowSpeedLimit=1000 -c http.lowSpeedTime=30 -C "$repo" \
     fetch --quiet origin "+refs/heads/main:refs/remotes/origin/main" >/dev/null 2>&1 &
   pid=$!
-  ( sleep "$FETCH_TIMEOUT"; kill_tree "$pid"; exit 124 ) 2>/dev/null &
+  ( sleep "$bound"; kill_tree "$pid"; exit 124 ) 2>/dev/null &
   dog=$!
   wait "$pid" 2>/dev/null; rc=$?   # quiet: bash reports a killed job as "Terminated: 15"
   if kill -0 "$dog" 2>/dev/null; then
@@ -90,9 +97,10 @@ fetch_bounded() {
 }
 
 for repo in "$OLS" "$HELIX"; do
-  name="ols-qa"; [ "$repo" = "$HELIX" ] && name="helix"
-  fetch_bounded "$repo"; rc=$?
-  [ "$rc" -eq 124 ] && cannot "fetch of ${name} origin/main timed out after ${FETCH_TIMEOUT}s (process tree killed)"
+  name="ols-qa"; bound="$FETCH_TIMEOUT_OLS"
+  [ "$repo" = "$HELIX" ] && { name="helix"; bound="$FETCH_TIMEOUT_HELIX"; }
+  fetch_bounded "$repo" "$bound"; rc=$?
+  [ "$rc" -eq 124 ] && cannot "fetch of ${name} origin/main timed out after ${bound}s (process tree killed)"
   [ "$rc" -eq 0 ] || cannot "fetch of ${name} origin/main failed"
 done
 
