@@ -1,5 +1,5 @@
-<!-- ols-only: this file is never synced to the generic plugin (Helix has no such file, so
-     scripts/sync-skills-to-helix.sh skips it as a new references/* file). -->
+<!-- ols-only: this file is never synced to the generic plugin (Helix has no such file, and the
+     Helix → ols-qa sync writes only paths Helix has). -->
 # OLS test data prep recipe (pointer)
 
 Read by Helix **test-data-prep-workflow** through workspace discovery (`references/*-data-prep.md`). The OLS values
