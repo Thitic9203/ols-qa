@@ -7,8 +7,8 @@
  *                   credential (e.g. "ask user for a bearer token", "Login (user/password ...").
  *                   A line that forbids it ("never ask for a password") is not a violation.
  *   ticket-key      contains a real customer ticket key (OLS-<digits>). Use {ISSUE_KEY}.
- *                   references/ols-*.md is the OLS-only project guide: never synced to helix
- *                   (scripts/sync-skills-to-helix.sh), so real keys are allowed there.
+ *                   references/ols-*.md is the OLS-only project guide: Helix has no such file and
+ *                   nothing copies ols-qa into Helix, so real keys are allowed there.
  *
  * Scans git-tracked files only (what ships); a folder that is not a git repo is walked.
  *

@@ -46,9 +46,9 @@ Full routing and handoffs: [references/skill-routing.md](references/skill-routin
 
 ## Retest skill source of truth
 
-- Changes to `retest-bug-workflow` land in **ols-qa first**. Its renderer and the template test (`tools/retest-guard/`) exist only in ols-qa.
-- On commit, ols-qa's post-commit hook (`scripts/hooks/post-commit` → `scripts/sync-skills-to-helix.sh`) copies the shared skill, reference and command files to helix. A push to helix main then releases automatically, and teammates receive the change at their next session start.
-- If a retest fix has to land in helix first, backport it to ols-qa the same day. Otherwise the next sync overwrites it.
+- Shared skill, reference and command files (every path in `.helix-sync.lock`, `retest-bug-workflow` included) are edited in **Helix only**. ols-qa receives them through `.github/workflows/helix-sync.yml` (daily at 02:17 UTC, or by manual dispatch with an optional tag), one way. Nothing in ols-qa copies changes into Helix.
+- A PR here that changes a lock-owned path fails the `Helix sync guard` check. OLS-only files (not in the lock, plus `helix-keep.txt`) are edited here.
+- The retest renderer and its template test (`tools/retest-guard/`) exist only in ols-qa and are edited here.
 
 ## More
 
