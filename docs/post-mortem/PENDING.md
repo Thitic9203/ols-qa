@@ -224,6 +224,7 @@
 | PM-2026-10-28-03 | 2026-10-28 | ลูป `for s in $SK` บน zsh วนครั้งเดียว + ตัวตรวจ md5 นับค่าว่างเท่ากันเป็นตรง (พิมพ์ 2/16) · จับได้ในคำสั่งถัดไป รันใหม่ด้วย array ได้ 16/16 · zsh-split-guard มีกฎจับได้แต่ยังไม่ได้ผูก hook | eval after-4 ขั้น 0 | DONE | 20261028-post-mortem-report-0200-zsh-unsplit-loop-guard-not-wired.md |
 | PM-2026-11-10-01 | 2026-11-10 | ส่งคำสั่ง relink ให้เจ้าของงานรันโดยไม่ได้อ่านว่า `session_relink_dev.js` บังคับตัวแปร `OLS` (`:266`) · คำสั่งล้ม `FAILED` ทันทีโดยไม่แตะ session · ผมอ่านหัวสคริปต์ครึ่งเดียวแล้วประกอบจากแม่แบบทั่วไป | รีเทส OLS-1001 บน dev ขั้น 4b (login by command) | DONE | 20261110-post-mortem-report-0201-gave-relink-command-without-reading-required-target-env.md |
 | PM-2026-11-18-01 | 2026-11-17 | โนติ Discord ผล retest ใช้ body ที่พิมพ์เอง (ทวน `PASSED n/n` + บรรทัด `สถานะ: Done`) ฟอแมตไม่ตรงฉบับก่อน · แก้ทับด้วย PATCH แล้ว | retest-bug Step 9 notify | DONE | 20261118-post-mortem-report-0202-retest-notify-hand-written-body-off-format.md |
+| PM-2026-11-27-01 | 2026-11-27 | **ผิดซ้ำจาก #0178 / memory 14/Oct** — รัน `npx playwright test` (rerun เคส blocked บน dev) โดยไม่มี `rtk proxy` · rtk บังคับ `--reporter=json` ลง stdout แทน reporter ใน config → ไม่มี `results.json`, tee ตัด 1 MiB · รอบ 10 นาทีใช้ไม่ได้ รันซ้ำผ่าน `rtk proxy` | rerun เคส blocked จาก Qase run 11 | DONE | 20261127-post-mortem-report-0203-rtk-forced-json-reporter-lost-rerun-results.md |
 
 ---
 
