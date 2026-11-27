@@ -22,8 +22,22 @@ that this repo's sdd-gate finds it on main.
   PR left open (source R7).
 - R7. A CI check fails a human PR that changes a lock-owned path (source R8).
 - R8. `GITHUB_TOKEN` only (source R9).
+- R9. Cutover (source R10): `scripts/sync-skills-to-helix.sh`, `scripts/sync-skills-pr-mode.sh`, the suites that only
+  exercise them (`tools/helix-sync/owned_files.test.js`, `pr_mode.test.js`, `sync_env.test.js`) and the sync call in
+  `scripts/hooks/post-commit` must not exist. The post-commit hook had no other duty, so the file goes too.
+  `scripts/git-env-clean.sh` stays (pre-push, `helix-parity.sh`, `helix-link-check.sh` use it) and keeps its checks.
+  `scripts/helix-parity.sh` stays as a read-only check.
+- R10. `helix-sync.yml` must carry `schedule: cron '17 2 * * *'` next to `workflow_dispatch`; a scheduled run has no
+  inputs, so `inputs.tag` is empty and the run must resolve Helix's latest release, the same as an empty manual tag
+  (source R3).
+- R11. Docs in this repo (`AGENTS.md`, `CLAUDE.md`, `scripts/setup-hooks.sh`) must say shared skills are edited in
+  Helix and reach ols-qa through `.github/workflows/helix-sync.yml`; they must not tell anyone to run a sync to Helix
+  (source R1, R10).
 
 ## Done when
 
 - A manual run merges a Helix release; a no-change run opens no PR; a planted edit to an owned file fails red.
 - The old ols-qa → Helix scripts and the post-commit sync call are gone (cutover, source R10).
+- `node tools/helix-sync-pull/cutover.test.js` passes: removed files absent, no live reader left, schedule present,
+  empty tag resolves the latest release (R9-R11).
+- Merge only after the skl-vm `helix-sync.timer` is disabled (it runs the removed script).
