@@ -239,6 +239,7 @@
 | 0203 | 2026-11-27 | **ผิดซ้ำจาก #0178** (คลาส #0051/#0093/#0116/#0119) — rtk เขียน `npx playwright test` ใหม่เป็น `--reporter=json` บน stdout · reporter ใน config ถูกแทนที่ ไม่มี `results.json` ผลรันซ้ำ 12 เคสหาย · มาตรการชั้นใหม่ (config guard / rtk passthrough) รออนุมัติ | Low | [20261127-post-mortem-report-0203-rtk-forced-json-reporter-lost-rerun-results.md](20261127-post-mortem-report-0203-rtk-forced-json-reporter-lost-rerun-results.md) |
 | 0204 | 2026-11-27 | แก้ hook ของ rtk เองจน integrity check ล้ม ทุกคำสั่ง `rtk …` ถูกปฏิเสธ · คืนไฟล์จาก backup (`rtk verify` PASS) · P2 ใช้ `exclude_commands` แทน | Medium | [20261127-post-mortem-report-0204-edited-rtk-hook-broke-integrity-check.md](20261127-post-mortem-report-0204-edited-rtk-hook-broke-integrity-check.md) |
 | 0205 | 2026-11-27 | **ผิดซ้ำจาก memory 23/Oct** — งานหนักไม่ผ่าน `heavy.sh` บนเครื่อง load 120+ · มาตรการชั้นใหม่ (PreToolUse hook บังคับ heavy.sh) รออนุมัติ | Low | [20261127-post-mortem-report-0205-heavy-runs-without-heavy-sh-on-loaded-mac.md](20261127-post-mortem-report-0205-heavy-runs-without-heavy-sh-on-loaded-mac.md) |
+| 0206 | 2026-11-27 | `gh pr merge --auto` merge ทันทีก่อน CI จบ (repo `allow_auto_merge=false`, main ไม่ protect) · เขียวภายหลังโดยบังเอิญ · มาตรการ merge-if-green / hook / branch protection รออนุมัติ | Medium | [20261127-post-mortem-report-0206-gh-merge-auto-merged-before-ci-finished.md](20261127-post-mortem-report-0206-gh-merge-auto-merged-before-ci-finished.md) |
 
 ## ขั้นตอนเมื่อรู้ตัวว่าพลาด
 
