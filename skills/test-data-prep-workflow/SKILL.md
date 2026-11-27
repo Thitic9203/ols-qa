@@ -12,7 +12,7 @@ Also triggers on: prepare test data; create test data; build training content; m
 
 **Thin entry for agent skill discovery.** Full procedure: [WORKFLOW.md](../procedures/test-data-prep-workflow/WORKFLOW.md).
 
-> **Maintainer note (user directive 2026-08-08):** when editing THIS skill, invoke **superpowers:writing-skills** first — match the guidance form to the failure and craft precise, well-fitted wording. Sharpness and completeness checks stay strict per the project's recipe; cover titles must never overflow the frame, break lines badly, or split a compound word. This skill is Helix-owned (`helix-owned-files.txt`) and must carry no project's values.
+> **Maintainer note (user directive 2026-08-08):** when editing THIS skill, invoke **superpowers:writing-skills** first — match the guidance form to the failure and craft precise, well-fitted wording. Sharpness and completeness checks stay strict per the project's recipe; cover titles must never overflow the frame, break lines badly, or split a compound word. This skill is edited in Helix only and must carry no project's values.
 
 When invoked:
 

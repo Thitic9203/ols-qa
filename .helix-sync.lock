@@ -1,4 +1,4 @@
-# helix-sync lock - do not edit; written by scripts/helix-sync/apply.py. tag=v1.5.226
+# helix-sync lock - do not edit; written by scripts/helix-sync/apply.py. tag=v1.5.227
 d73c9840346bc5ba530b477301b18d4aec009380cf1da2ee50830d00a9f2faf1  commands/catch-ai.md
 6407566591de2aa7315d300182c5ec65e9cc3ea6612191aebd3a0068a47c385f  commands/create-bug.md
 30d50cb7719a5774eefb2be8568a4e988ae35da57f3a6b47cde26cf1210732d2  commands/helix-check.md
@@ -155,5 +155,5 @@ cba08b57ebdfa0862030710982a5907bb8a18230dcd1f7d8ce6325db2935248c  skills/tc-chan
 9f6db338852c17327ea2e45e201658dad7463ca77f806c017077d8a86288b231  skills/tc-fe-prep-workflow/SKILL.md
 1b278f137f8a984f661d0311463362c9a04db1a0e1f274cc726db7dfd2655cf6  skills/tc-review-workflow/SKILL.md
 dd9b2c286036b7e99add4026a92a6c9e524aaaeeb33188752da61afba27bc91a  skills/tc-review-workflow/notify.md
-6fe08699b2f914323f801b1f38c6aeb384d1a5fb78d17114ad799f8dc31301e2  skills/test-data-prep-workflow/SKILL.md
+77becd78355e2c847dc6c3ce6b249418ef286109265ada9f84b19a04eb251fba  skills/test-data-prep-workflow/SKILL.md
 fd8e934c58c6d924abdb325d806e9d41e78c4b1f8984d9d7b4e7e0bad0ac3d61  skills/testing-ticket-workflow/SKILL.md
