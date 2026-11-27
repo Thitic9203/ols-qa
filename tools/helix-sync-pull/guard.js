@@ -6,7 +6,8 @@
  *   node tools/helix-sync-pull/guard.js --base <ref>     (CI: --base origin/<base branch>)
  *
  * Owned paths are the ones listed in .helix-sync.lock on the BASE ref, so a PR cannot release a file by editing the
- * lock. The sync's own branch (GITHUB_HEAD_REF = bot/helix-sync) is exempt.
+ * lock. Only the sync's own PR is exempt: head branch bot/helix-sync, opened by github-actions[bot], from this
+ * repository (a branch name alone can be chosen by anyone). Renames count as a change to the old path too.
  * exit 0 = no owned path changed (or no lock on base yet), 1 = refused, 2 = git could not be read.
  */
 const { execFileSync } = require('child_process');
@@ -19,22 +20,32 @@ function git(args, cwd) {
   return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env });
 }
 
-function main(argv, cwd = process.cwd(), headRef = process.env.GITHUB_HEAD_REF || '') {
+function fromEnv() {
+  return {
+    headRef: process.env.GITHUB_HEAD_REF || '',
+    author: process.env.PR_AUTHOR || '',
+    headRepo: process.env.PR_HEAD_REPO || '',
+    repo: process.env.GITHUB_REPOSITORY || '',
+  };
+}
+
+function main(argv, cwd = process.cwd(), ctx = fromEnv()) {
   const i = argv.indexOf('--base');
   const base = i >= 0 ? argv[i + 1] : '';
   if (!base) {
     console.error('usage: guard.js --base <ref>');
     return 2;
   }
-  if (headRef === SYNC_BRANCH) {
-    console.log(`helix-sync guard: ${SYNC_BRANCH} is the sync itself; skipped`);
+  if (ctx.headRef === SYNC_BRANCH && ctx.author === 'github-actions[bot]' && ctx.repo && ctx.headRepo === ctx.repo) {
+    console.log(`helix-sync guard: the sync's own PR (${SYNC_BRANCH} by github-actions[bot]); skipped`);
     return 0;
   }
   let lockText;
   let changed;
   try {
     git(['rev-parse', '--verify', `${base}^{commit}`], cwd);
-    changed = git(['diff', '--name-only', `${base}...HEAD`], cwd).split('\n').filter(Boolean);
+    // --no-renames: a moved owned file shows its old path; -z: no quoting of non-ASCII names
+    changed = git(['diff', '--no-renames', '-z', '--name-only', `${base}...HEAD`], cwd).split('\0').filter(Boolean);
   } catch (e) {
     console.error(`helix-sync guard: cannot read git (${String(e.message).split('\n')[0]})`);
     return 2;
@@ -53,7 +64,7 @@ function main(argv, cwd = process.cwd(), headRef = process.env.GITHUB_HEAD_REF |
   if (hits.length) {
     console.error('helix-sync guard: these files come from Helix and are edited in Helix only:');
     for (const p of hits) console.error(`  ${p}`);
-    console.error('Make the change in Thitic9203/helix; the daily helix-sync brings it here. (docs/sdd/helix-sync-pull R7)');
+    console.error('Make the change in Thitic9203/helix; the helix-sync workflow brings it here. (docs/sdd/helix-sync-pull R7)');
     return 1;
   }
   console.log(`helix-sync guard: ${changed.length} changed file(s), none owned by the Helix sync`);

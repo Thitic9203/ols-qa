@@ -172,6 +172,27 @@ check('a symlink in the Helix tree is refused', () => {
   refuses(ols, helix, 'Helix tree has a symlink');
 });
 
+check('a Helix tree missing a folder is refused (never read as mass deletion)', () => {
+  const { helix, ols } = world();
+  apply(ols, helix);
+  fs.rmSync(path.join(helix, 'references'), { recursive: true });
+  refuses(ols, helix, 'Helix tree has no references/ folder');
+});
+
+check('a folder where Helix has a file is refused, not a traceback', () => {
+  const { helix, ols } = world();
+  fs.mkdirSync(path.join(ols, 'commands/a.md'), { recursive: true });
+  refuses(ols, helix, 'commands/a.md: is a folder or special file here');
+});
+
+check('a keep-list entry that is unsafe or matches no file is refused', () => {
+  for (const [entry, want] of [['./commands/x.md', 'is not a path under'], ['commands/typo.md', 'matches no file']]) {
+    const { helix, ols } = world();
+    fs.appendFileSync(path.join(ols, 'helix-keep.txt'), `${entry}\n`);
+    refuses(ols, helix, want);
+  }
+});
+
 check('usage: missing arguments exit 2', () => {
   const r = spawnSync('python3', [APPLY], { encoding: 'utf8' });
   assert.strictEqual(r.status, 2);

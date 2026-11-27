@@ -15,8 +15,11 @@ Spec: docs/sdd/helix-sync-pull R3-R5 (source: SkillLane/team-pluton-skills docs/
     a candidate exists here with different content and is not owned yet (first-run adoption takes only files that
       already equal Helix);
     a lock line is malformed, or any path is a symlink, absolute, contains '..', or leaves the three folders.
-- Otherwise: write new and changed candidates, delete owned files Helix no longer has (pruning folders left empty
-  inside the three folders), write the new lock. Every write is staged first, so an error mid-way changes nothing.
+- Also refused: a Helix tree missing one of the three folders or unreadable (never read as mass deletion), a
+  keep-list entry that is not a path under the three folders or matches no file, a folder where Helix has a file.
+- Otherwise: delete owned files Helix no longer has (pruning folders left empty inside the three folders), rename
+  the staged new and changed files into place, and replace the lock last. A staging error changes nothing; an error
+  while committing stops before the lock is replaced and says how to restore.
   When nothing changes, nothing is written, the lock included.
 Exit 0 = applied or nothing to do, 1 = refused, 2 = usage error.
 """
@@ -53,15 +56,19 @@ def no_symlink_on_path(root, rel):
     return True
 
 
-def read_keep(root):
+def read_keep(root, problems):
     path = os.path.join(root, KEEP)
     keep = set()
     if os.path.isfile(path):
         with open(path, encoding="utf-8") as fh:
-            for line in fh:
+            for n, line in enumerate(fh, 1):
                 line = line.split("#", 1)[0].strip()
-                if line:
-                    keep.add(line)
+                if not line:
+                    continue
+                if not safe(line):
+                    problems.append(f"{KEEP}:{n}: {line!r} is not a path under skills/, references/ or commands/")
+                    continue
+                keep.add(line)
     return keep
 
 
@@ -89,7 +96,13 @@ def helix_candidates(helix, keep, problems):
     out = {}
     for folder in FOLDERS:
         base = os.path.join(helix, folder)
-        for d, dirs, files in os.walk(base):
+        if not os.path.isdir(base) or os.path.islink(base):
+            # a release missing a folder would otherwise read as "delete every owned file in it"
+            problems.append(f"Helix tree has no {folder} folder (layout changed?); refusing to treat that as deletions")
+            continue
+        def walk_error(err):
+            problems.append(f"cannot read the Helix tree: {err}")
+        for d, dirs, files in os.walk(base, onerror=walk_error):
             for name in dirs + files:
                 if os.path.islink(os.path.join(d, name)):
                     problems.append(f"Helix tree has a symlink: {os.path.relpath(os.path.join(d, name), helix)}")
@@ -118,9 +131,12 @@ def main(argv):
         return 2
     root, helix, tag = os.path.abspath(argv[0]), os.path.abspath(argv[1]), argv[2]
     problems = []
-    keep = read_keep(root)
+    keep = read_keep(root, problems)
     owned, old_header = read_lock(root, problems)
     cand = helix_candidates(helix, keep, problems)
+    for k in sorted(keep):
+        if not os.path.isfile(os.path.join(root, k)) and not os.path.isfile(os.path.join(helix, k)):
+            problems.append(f"{KEEP}: {k} matches no file here or in Helix (typo?)")
 
     for rel, digest in sorted(owned.items()):
         if rel in keep:
@@ -143,6 +159,9 @@ def main(argv):
             problems.append(f"{rel}: path goes through a symlink")
             continue
         exists = os.path.lexists(local)
+        if exists and not os.path.isfile(local):
+            problems.append(f"{rel}: is a folder or special file here, but a file in Helix")
+            continue
         if exists and rel not in owned and sha256(local) != new:
             problems.append(f"{rel}: exists here with different content and is not synced yet; make the change in "
                             f"Helix, or list it in {KEEP} if this repo must keep its own copy")
@@ -182,11 +201,20 @@ def main(argv):
                 os.remove(tmp)
         print(f"apply: staging failed ({exc}); nothing changed", file=sys.stderr)
         return 1
-    for tmp, dest in staged:
-        os.replace(tmp, dest)
-    for rel in deletes:
-        os.remove(os.path.join(root, rel))
-        prune(root, rel)
+    # commit: deletes, then file renames, the lock last, so a lock never names a state that was not reached
+    try:
+        for rel in deletes:
+            os.remove(os.path.join(root, rel))
+            prune(root, rel)
+        for tmp, dest in staged:
+            os.replace(tmp, dest)
+    except OSError as exc:
+        for tmp, _ in staged:
+            if os.path.exists(tmp):
+                os.remove(tmp)
+        print(f"apply: writing failed part-way ({exc}); the lock was not updated, so the next run reports the "
+              "changed files; restore with `git checkout -- skills references commands`", file=sys.stderr)
+        return 1
     added = sum(1 for rel, _ in writes if rel not in owned)
     print(f"apply: Helix {tag}: {added} added, {len(writes) - added} updated, {len(deletes)} deleted, "
           f"{len(cand) - len(writes)} unchanged")

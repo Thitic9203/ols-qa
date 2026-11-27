@@ -81,11 +81,11 @@ jobs:
       - name: Stop when nothing changed
         id: diff
         run: |
-          if [ -z "$(git status --porcelain)" ]; then
+          if [ -z "$(git status --porcelain -- skills references commands .helix-sync.lock)" ]; then
             echo "No change: ols-qa already matches Helix ${{ steps.tag.outputs.tag }}." | tee -a "$GITHUB_STEP_SUMMARY"
             echo "changed=false" >> "$GITHUB_OUTPUT"
           else
-            git status --porcelain
+            git status --porcelain -- skills references commands .helix-sync.lock
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 

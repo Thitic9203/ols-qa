@@ -34,7 +34,9 @@ function w(root, rel, text) {
   fs.writeFileSync(p, text);
 }
 // a repo whose base commit has (or lacks) a lock owning references/shared.md, then a branch with one change
-function repo({ withLock = true, change }) {
+const HUMAN = { headRef: 'feature-x', author: 'someone', headRepo: 'Thitic9203/ols-qa', repo: 'Thitic9203/ols-qa' };
+const BOT = { headRef: 'bot/helix-sync', author: 'github-actions[bot]', headRepo: 'Thitic9203/ols-qa', repo: 'Thitic9203/ols-qa' };
+function repo({ withLock = true, change, move }) {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'helix-guard-'));
   tmpDirs.push(d);
   git(d, 'init', '-q', '-b', 'main');
@@ -47,7 +49,8 @@ function repo({ withLock = true, change }) {
   git(d, 'add', '-A');
   git(d, 'commit', '-q', '-m', 'base');
   git(d, 'checkout', '-q', '-b', 'pr');
-  w(d, change, 'changed');
+  if (move) git(d, 'mv', move[0], move[1]);
+  else w(d, change, 'changed');
   git(d, 'add', '-A');
   git(d, 'commit', '-q', '-m', 'change');
   return d;
@@ -60,28 +63,40 @@ function quiet(fn) {
 
 check('a human PR changing an owned file is refused', () => {
   const d = repo({ change: 'references/shared.md' });
-  assert.strictEqual(quiet(() => main(['--base', 'main'], d, 'feature-x')), 1);
+  assert.strictEqual(quiet(() => main(['--base', 'main'], d, HUMAN)), 1);
 });
 check('a human PR changing the lock itself is refused', () => {
   const d = repo({ change: '.helix-sync.lock' });
-  assert.strictEqual(quiet(() => main(['--base', 'main'], d, 'feature-x')), 1);
+  assert.strictEqual(quiet(() => main(['--base', 'main'], d, HUMAN)), 1);
 });
 check('a PR changing an OLS-only file passes', () => {
   const d = repo({ change: 'references/ols-project-guide.md' });
-  assert.strictEqual(quiet(() => main(['--base', 'main'], d, 'feature-x')), 0);
+  assert.strictEqual(quiet(() => main(['--base', 'main'], d, HUMAN)), 0);
 });
-check('the sync branch itself is exempt', () => {
+check('the sync PR itself (bot/helix-sync by github-actions[bot], same repo) is exempt', () => {
   const d = repo({ change: 'references/shared.md' });
-  assert.strictEqual(quiet(() => main(['--base', 'main'], d, 'bot/helix-sync')), 0);
+  assert.strictEqual(quiet(() => main(['--base', 'main'], d, BOT)), 0);
+});
+check('a human branch named bot/helix-sync is NOT exempt', () => {
+  const d = repo({ change: 'references/shared.md' });
+  assert.strictEqual(quiet(() => main(['--base', 'main'], d, { ...BOT, author: 'someone' })), 1);
+});
+check('a fork branch named bot/helix-sync is NOT exempt', () => {
+  const d = repo({ change: 'references/shared.md' });
+  assert.strictEqual(quiet(() => main(['--base', 'main'], d, { ...BOT, headRepo: 'someone/ols-qa' })), 1);
+});
+check('moving an owned file away (git mv) is refused', () => {
+  const d = repo({ move: ['references/shared.md', 'references/moved.md'] });
+  assert.strictEqual(quiet(() => main(['--base', 'main'], d, HUMAN)), 1);
 });
 check('no lock on base yet: nothing owned, passes', () => {
   const d = repo({ withLock: false, change: 'references/shared.md' });
-  assert.strictEqual(quiet(() => main(['--base', 'main'], d, 'feature-x')), 0);
+  assert.strictEqual(quiet(() => main(['--base', 'main'], d, HUMAN)), 0);
 });
 check('missing --base or unknown base ref: exit 2, never a pass', () => {
   const d = repo({ change: 'references/shared.md' });
-  assert.strictEqual(quiet(() => main([], d, 'feature-x')), 2);
-  assert.strictEqual(quiet(() => main(['--base', 'nope'], d, 'feature-x')), 2);
+  assert.strictEqual(quiet(() => main([], d, HUMAN)), 2);
+  assert.strictEqual(quiet(() => main(['--base', 'nope'], d, HUMAN)), 2);
 });
 
 for (const d of tmpDirs) fs.rmSync(d, { recursive: true, force: true });
