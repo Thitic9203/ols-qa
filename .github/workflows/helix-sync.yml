@@ -1,0 +1,151 @@
+name: helix-sync
+
+# Pulls the latest Helix release into the shared skill files (skills/, references/, commands/), one way.
+# Spec: docs/sdd/helix-sync-pull R2, R6, R8 (source: SkillLane/team-pluton-skills docs/sdd/skill-sync-simplify R3, R7, R9).
+#   - shared skills are edited in Helix only; this repo receives them (R1)
+#   - scripts/helix-sync/apply.py writes only Helix paths under the three folders, minus helix-keep.txt; OLS-only
+#     files are never touched; an owned file edited here fails the run (R3-R5)
+#   - the same suites, secret guard and post-mortem guard as tests.yml run on the synced tree before merge (R6)
+#   - no change = no PR; a failed gate = red run, PR left open (R2, R6)
+#   - GITHUB_TOKEN only; both repositories are public (R8)
+# Free on a public repository.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Helix tag to sync (e.g. v1.5.226). Empty = latest release.'
+        required: false
+        type: string
+
+concurrency:
+  group: helix-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  HELIX_SLUG: Thitic9203/helix
+  SYNC_BRANCH: bot/helix-sync
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Refuse anything but main
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "helix-sync runs only from main (got $GITHUB_REF)." | tee -a "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Resolve the Helix tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ -n "${INPUT_TAG:-}" ]; then TAG="$INPUT_TAG"; else TAG=$(gh release view -R "$HELIX_SLUG" --json tagName -q .tagName); fi
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::'$TAG' is not a v<major>.<minor>.<patch> tag"; exit 1; }
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Helix tag: $TAG"
+
+      - name: Fetch Helix at the tag
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: git clone --quiet --depth 1 --branch "$TAG" "https://github.com/$HELIX_SLUG.git" "$RUNNER_TEMP/helix"
+
+      - name: Apply (owned shared files only)
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          if ! python3 scripts/helix-sync/apply.py . "$RUNNER_TEMP/helix" "$TAG" > "$RUNNER_TEMP/apply.out" 2> "$RUNNER_TEMP/apply.log"; then
+            cat "$RUNNER_TEMP/apply.log"
+            { echo "## helix-sync failed at the apply step"; echo; echo "Nothing was committed and no PR was opened."
+              echo; echo '```'; cat "$RUNNER_TEMP/apply.log"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          cat "$RUNNER_TEMP/apply.out"
+
+      - name: Stop when nothing changed
+        id: diff
+        run: |
+          if [ -z "$(git status --porcelain -- skills references commands .helix-sync.lock)" ]; then
+            echo "No change: ols-qa already matches Helix ${{ steps.tag.outputs.tag }}." | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git status --porcelain -- skills references commands .helix-sync.lock
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Gates (same as tests.yml) on the synced tree
+        id: gate
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          set +e
+          FAILED=""
+          SUITES="$(bash scripts/list-test-suites.sh .)"; LIST_RC=$?
+          if [ "$LIST_RC" -ne 0 ]; then FAILED="$FAILED list-test-suites(exit $LIST_RC)"; fi
+          while IFS= read -r t; do
+            [ -n "$t" ] || continue
+            node "$t" > "$RUNNER_TEMP/suite.log" 2>&1 || { FAILED="$FAILED $t"; echo "::group::FAILED $t"; tail -40 "$RUNNER_TEMP/suite.log"; echo "::endgroup::"; }
+          done <<< "$SUITES"
+          git ls-files -z --cached --others --exclude-standard | xargs -0 bash scripts/check-no-secrets.sh > "$RUNNER_TEMP/secrets.log" 2>&1 || FAILED="$FAILED check-no-secrets"
+          node tools/postmortem-guard/check.js > "$RUNNER_TEMP/pm.log" 2>&1 || FAILED="$FAILED postmortem-guard"
+          echo "failed=$FAILED" >> "$GITHUB_OUTPUT"
+          echo "gates failed:${FAILED:- none}"
+
+      - name: Open or update the sync PR, merge only when every gate passed
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+          FAILED: ${{ steps.gate.outputs.failed }}
+        run: |
+          set -euo pipefail
+          fail() { echo "$1" | tee -a "$GITHUB_STEP_SUMMARY"; exit 1; }
+          BOT_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "$BOT_EMAIL"
+          REMOTE_TIP=$(git ls-remote origin "refs/heads/$SYNC_BRANCH" | cut -f1)
+          if [ -n "$REMOTE_TIP" ]; then
+            git fetch -q origin "$SYNC_BRANCH"
+            [ "$(git log -1 --format=%ae "$REMOTE_TIP")" = "$BOT_EMAIL" ] \
+              || fail "$SYNC_BRANCH has a commit not made by this workflow; nothing pushed."
+          fi
+          git checkout -B "$SYNC_BRANCH"
+          git add -A -- skills references commands .helix-sync.lock
+          git commit -q -m "chore(sync): Helix $TAG into the shared skill files" -m "Spec: docs/sdd/helix-sync-pull R2-R6"
+          git push -q --force-with-lease="$SYNC_BRANCH:$REMOTE_TIP" origin "$SYNC_BRANCH" || fail "Push to $SYNC_BRANCH refused; nothing merged."
+          {
+            echo "Automatic one-way sync of the shared skill files from Helix \`$TAG\` (spec: docs/sdd/helix-sync-pull)."
+            echo
+            echo "\`$(cat "$RUNNER_TEMP/apply.out" | tail -1)\`"
+            echo
+            if [ -z "$FAILED" ]; then echo "All gates passed (test suites, secret guard, post-mortem guard); merging automatically."
+            else echo "**Not merged.** Failed gate(s):$FAILED. The PR stays open; fix in Helix and re-run."; fi
+            echo
+            echo "Edit shared skills in Helix only. OLS-only files are never touched by this sync."
+          } > "$RUNNER_TEMP/body.md"
+          PR=$(gh pr list --head "$SYNC_BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -z "$PR" ]; then
+            gh pr create --base main --head "$SYNC_BRANCH" --title "chore(sync): Helix $TAG into the shared skill files" --body-file "$RUNNER_TEMP/body.md"
+            PR=$(gh pr list --head "$SYNC_BRANCH" --state open --json number --jq '.[0].number // empty')
+            [ -n "$PR" ] || fail "Opened the sync PR but could not find it."
+          else
+            gh pr edit "$PR" --title "chore(sync): Helix $TAG into the shared skill files" --body-file "$RUNNER_TEMP/body.md"
+          fi
+          if [ -n "$FAILED" ]; then fail "PR #$PR left open: failed gate(s)$FAILED"; fi
+          gh pr merge "$PR" --squash --delete-branch || fail "Merge of #$PR failed; PR left open."
+          echo "Merged #$PR (Helix $TAG)." >> "$GITHUB_STEP_SUMMARY"
